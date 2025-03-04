@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import "@/app/globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,11 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Middle Shipper",
-  description: "Middle Shipper Frontend Application",
+  title: "로그인 - Middle Shipper",
+  description: "Middle Shipper 로그인 페이지",
 };
 
-export default function RootLayout({
+export default function LoginLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -31,4 +31,4 @@ export default function RootLayout({
       </body>
     </html>
   );
-}
+} 

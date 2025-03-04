@@ -6,12 +6,14 @@ import {
   Bot,
   Command,
   Frame,
+  Home,
   LifeBuoy,
   Map,
   PieChart,
   Send,
   Settings2,
   SquareTerminal,
+  User,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -30,33 +32,43 @@ import {
 
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
+    name: "홍길동",
+    email: "user@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
     {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
+      title: "홈",
+      url: "/",
+      icon: Home,
       isActive: true,
+    },
+    {
+      title: "대시보드",
+      url: "/dashboard",
+      icon: SquareTerminal,
       items: [
         {
-          title: "History",
-          url: "#",
+          title: "통계",
+          url: "/dashboard/stats",
         },
         {
-          title: "Starred",
-          url: "#",
+          title: "보고서",
+          url: "/dashboard/reports",
         },
         {
-          title: "Settings",
-          url: "#",
+          title: "설정",
+          url: "/dashboard/settings",
         },
       ],
     },
     {
-      title: "Models",
+      title: "프로필",
+      url: "/profile",
+      icon: User,
+    },
+    {
+      title: "모델",
       url: "#",
       icon: Bot,
       items: [
@@ -75,47 +87,47 @@ const data = {
       ],
     },
     {
-      title: "Documentation",
+      title: "문서",
       url: "#",
       icon: BookOpen,
       items: [
         {
-          title: "Introduction",
+          title: "소개",
           url: "#",
         },
         {
-          title: "Get Started",
+          title: "시작하기",
           url: "#",
         },
         {
-          title: "Tutorials",
+          title: "튜토리얼",
           url: "#",
         },
         {
-          title: "Changelog",
+          title: "변경 로그",
           url: "#",
         },
       ],
     },
     {
-      title: "Settings",
+      title: "설정",
       url: "#",
       icon: Settings2,
       items: [
         {
-          title: "General",
+          title: "일반",
           url: "#",
         },
         {
-          title: "Team",
+          title: "팀",
           url: "#",
         },
         {
-          title: "Billing",
+          title: "결제",
           url: "#",
         },
         {
-          title: "Limits",
+          title: "제한",
           url: "#",
         },
       ],
@@ -123,29 +135,29 @@ const data = {
   ],
   navSecondary: [
     {
-      title: "Support",
+      title: "지원",
       url: "#",
       icon: LifeBuoy,
     },
     {
-      title: "Feedback",
+      title: "피드백",
       url: "#",
       icon: Send,
     },
   ],
   projects: [
     {
-      name: "Design Engineering",
+      name: "디자인 엔지니어링",
       url: "#",
       icon: Frame,
     },
     {
-      name: "Sales & Marketing",
+      name: "영업 및 마케팅",
       url: "#",
       icon: PieChart,
     },
     {
-      name: "Travel",
+      name: "여행",
       url: "#",
       icon: Map,
     },
@@ -159,13 +171,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
+              <a href="/">
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Acme Inc</span>
-                  <span className="truncate text-xs">Enterprise</span>
+                  <span className="truncate font-medium">Middle Shipper</span>
+                  <span className="truncate text-xs">프론트엔드</span>
                 </div>
               </a>
             </SidebarMenuButton>
