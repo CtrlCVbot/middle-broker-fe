@@ -10,12 +10,14 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { Button } from "@/components/ui/button"
 
 import { useState, useEffect } from "react";
 import { AddressSearch } from "@/components/address/address-search";
 import { AddressTable } from "@/components/address/address-table";
 import { AddressDeleteModal } from "@/components/address/address-delete-modal";
-import { getAddressesByPage } from "@/utils/mock-data";
+import { AddressFormSheet } from "@/components/address/address-form-sheet";
+import { getAddressesByPage, addAddress, updateAddress, deleteAddress } from "@/utils/mock-data";
 import { IAddress, IAddressResponse } from "@/types/address";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
@@ -29,6 +31,10 @@ export default function AddressPage() {
   const [addressesToDelete, setAddressesToDelete] = useState<IAddress[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
+  
+  // 주소 폼 시트 관련 상태
+  const [isFormSheetOpen, setIsFormSheetOpen] = useState<boolean>(false);
+  const [editingAddress, setEditingAddress] = useState<IAddress | undefined>(undefined);
   
   // 한 페이지당 표시할 항목 수
   const ITEMS_PER_PAGE = 10;
@@ -81,19 +87,40 @@ export default function AddressPage() {
 
   // 삭제 확인
   const handleConfirmDelete = () => {
-    // 현재는 클라이언트 사이드에서만 처리
-    // 백엔드 구현 시 API 호출로 대체
-    const addressIdsToDelete = addressesToDelete.map((address) => address.id);
-    
-    setAddresses((prevAddresses) =>
-      prevAddresses.filter((address) => !addressIdsToDelete.includes(address.id))
-    );
+    // 선택된 주소 삭제
+    addressesToDelete.forEach(address => {
+      deleteAddress(address.id);
+    });
     
     setAddressesToDelete([]);
     setIsDeleteModalOpen(false);
     
-    // 새로운 데이터 로드 (백엔드 구현 시 사용)
-    // loadAddresses();
+    // 데이터 다시 로드
+    loadAddresses();
+  };
+  
+  // 주소 등록/수정 폼 열기
+  const handleOpenFormSheet = (address?: IAddress) => {
+    setEditingAddress(address);
+    setIsFormSheetOpen(true);
+  };
+  
+  // 주소 등록/수정 제출 처리
+  const handleFormSubmit = (data: Omit<IAddress, "id">) => {
+    if (editingAddress) {
+      // 주소 수정
+      updateAddress(editingAddress.id, data);
+    } else {
+      // 새 주소 추가
+      addAddress(data);
+    }
+    
+    // 폼 닫기
+    setIsFormSheetOpen(false);
+    setEditingAddress(undefined);
+    
+    // 데이터 다시 로드
+    loadAddresses();
   };
 
   return (
@@ -121,9 +148,14 @@ export default function AddressPage() {
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         
             <Card className="container py-6">
-                <CardHeader>
-                    <CardTitle>주소록 관리</CardTitle>
-                    <CardDescription>상/하차지 주소록을 관리합니다.</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle>주소록 관리</CardTitle>
+                        <CardDescription>상/하차지 주소록을 관리합니다.</CardDescription>
+                    </div>
+                    <Button onClick={() => handleOpenFormSheet()}>
+                        주소 등록
+                    </Button>
                 </CardHeader>
                 <CardContent>
                     <AddressSearch onSearch={handleSearch} />
@@ -140,6 +172,7 @@ export default function AddressPage() {
                         onPageChange={handlePageChange}
                         onDeleteSingle={handleDeleteSingle}
                         onDeleteSelected={handleDeleteSelected}
+                        onEdit={handleOpenFormSheet}
                         />
                     )}
                     
@@ -148,6 +181,17 @@ export default function AddressPage() {
                         addresses={addressesToDelete}
                         onClose={() => setIsDeleteModalOpen(false)}
                         onConfirm={handleConfirmDelete}
+                    />
+                    
+                    <AddressFormSheet
+                        isOpen={isFormSheetOpen}
+                        onClose={() => {
+                            setIsFormSheetOpen(false);
+                            setEditingAddress(undefined);
+                        }}
+                        onSubmit={handleFormSubmit}
+                        defaultValues={editingAddress}
+                        title={editingAddress ? "주소 수정" : "주소 등록"}
                     />
                 </CardContent>
             </Card> 

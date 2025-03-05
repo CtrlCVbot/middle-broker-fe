@@ -156,3 +156,53 @@ export const getAddressesByPage = (page: number, limit: number, search?: string,
     }
   };
 };
+
+// 주소 추가 함수
+export const addAddress = (address: Omit<IAddress, "id">) => {
+  // 새 ID 생성 (기존 ID 중 가장 큰 값 + 1)
+  const newId = mockAddresses.length > 0 
+    ? Math.max(...mockAddresses.map(addr => addr.id)) + 1 
+    : 1;
+    
+  // 새 주소 객체 생성
+  const newAddress: IAddress = {
+    id: newId,
+    ...address
+  };
+  
+  // 목록에 추가
+  mockAddresses.push(newAddress);
+  
+  return newAddress;
+};
+
+// 주소 수정 함수
+export const updateAddress = (id: number, addressData: Omit<IAddress, "id">) => {
+  const index = mockAddresses.findIndex(address => address.id === id);
+  
+  if (index === -1) {
+    throw new Error(`ID ${id}에 해당하는 주소를 찾을 수 없습니다.`);
+  }
+  
+  // 해당 ID의 주소 업데이트
+  mockAddresses[index] = {
+    id,
+    ...addressData
+  };
+  
+  return mockAddresses[index];
+};
+
+// 주소 삭제 함수
+export const deleteAddress = (id: number) => {
+  const index = mockAddresses.findIndex(address => address.id === id);
+  
+  if (index === -1) {
+    throw new Error(`ID ${id}에 해당하는 주소를 찾을 수 없습니다.`);
+  }
+  
+  // 해당 ID의 주소 삭제
+  mockAddresses.splice(index, 1);
+  
+  return id;
+};

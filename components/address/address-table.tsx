@@ -28,6 +28,7 @@ interface IAddressTableProps {
   onPageChange: (page: number) => void;
   onDeleteSelected: (addresses: IAddress[]) => void;
   onDeleteSingle: (address: IAddress) => void;
+  onEdit?: (address?: IAddress) => void;
 }
 
 export function AddressTable({
@@ -37,6 +38,7 @@ export function AddressTable({
   onPageChange,
   onDeleteSelected,
   onDeleteSingle,
+  onEdit,
 }: IAddressTableProps) {
   const [selectedAddresses, setSelectedAddresses] = useState<IAddress[]>([]);
 
@@ -72,7 +74,7 @@ export function AddressTable({
     return (
       <div className="flex flex-col items-center justify-center p-8 border rounded-md">
         <p className="text-gray-500 mb-4">등록된 주소가 없습니다.</p>
-        <Button variant="outline">주소 추가하기</Button>
+        <Button variant="outline" onClick={() => onEdit && onEdit(undefined)}>주소 추가하기</Button>
       </div>
     );
   }
@@ -148,7 +150,7 @@ export function AddressTable({
               <TableHead className="w-[150px]">연락처</TableHead>
               <TableHead className="w-[100px]">담당자</TableHead>
               <TableHead className="w-[100px]">유형</TableHead>
-              <TableHead className="w-[80px]">삭제</TableHead>
+              <TableHead className="w-[160px]">관리</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -169,13 +171,24 @@ export function AddressTable({
                 <TableCell>{address.manager}</TableCell>
                 <TableCell>{address.type}</TableCell>
                 <TableCell>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => onDeleteSingle(address)}
-                  >
-                    삭제
-                  </Button>
+                  <div className="flex space-x-2">
+                    {onEdit && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onEdit(address)}
+                      >
+                        수정
+                      </Button>
+                    )}
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => onDeleteSingle(address)}
+                    >
+                      삭제
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
