@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -62,6 +62,9 @@ export function AddressFormSheet({
 }: IAddressFormSheetProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 디버깅용 로그 추가
+  console.log("AddressFormSheet - defaultValues:", defaultValues);
+
   const form = useForm<AddressFormValues>({
     resolver: zodResolver(addressFormSchema),
     defaultValues: defaultValues 
@@ -80,6 +83,20 @@ export function AddressFormSheet({
           type: "",
         },
   });
+
+  // useEffect 추가하여 defaultValues가 변경될 때 폼 값 업데이트
+  useEffect(() => {
+    if (defaultValues) {
+      console.log("Reset form with defaultValues:", defaultValues);
+      form.reset({
+        name: defaultValues.name,
+        address: defaultValues.address,
+        contact: defaultValues.contact,
+        manager: defaultValues.manager,
+        type: defaultValues.type,
+      });
+    }
+  }, [defaultValues, form]);
 
   const handleSubmit = async (data: AddressFormValues) => {
     setIsSubmitting(true);

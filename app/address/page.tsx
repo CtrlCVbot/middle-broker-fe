@@ -10,14 +10,13 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
 
 import { useState, useEffect } from "react";
 import { AddressSearch } from "@/components/address/address-search";
 import { AddressTable } from "@/components/address/address-table";
 import { AddressDeleteModal } from "@/components/address/address-delete-modal";
 import { AddressFormSheet } from "@/components/address/address-form-sheet";
-import { getAddressesByPage, addAddress, updateAddress, deleteAddress } from "@/utils/mock-data";
+import { getAddressesByPage } from "@/utils/mock-data";
 import { IAddress, IAddressResponse } from "@/types/address";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
@@ -31,8 +30,6 @@ export default function AddressPage() {
   const [addressesToDelete, setAddressesToDelete] = useState<IAddress[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
-  
-  // 주소 폼 시트 관련 상태
   const [isFormSheetOpen, setIsFormSheetOpen] = useState<boolean>(false);
   const [editingAddress, setEditingAddress] = useState<IAddress | undefined>(undefined);
   
@@ -87,40 +84,44 @@ export default function AddressPage() {
 
   // 삭제 확인
   const handleConfirmDelete = () => {
-    // 선택된 주소 삭제
-    addressesToDelete.forEach(address => {
-      deleteAddress(address.id);
-    });
+    // 현재는 클라이언트 사이드에서만 처리
+    // 백엔드 구현 시 API 호출로 대체
+    const addressIdsToDelete = addressesToDelete.map((address) => address.id);
+    
+    setAddresses((prevAddresses) =>
+      prevAddresses.filter((address) => !addressIdsToDelete.includes(address.id))
+    );
     
     setAddressesToDelete([]);
     setIsDeleteModalOpen(false);
     
-    // 데이터 다시 로드
-    loadAddresses();
+    // 새로운 데이터 로드 (백엔드 구현 시 사용)
+    // loadAddresses();
   };
-  
+
   // 주소 등록/수정 폼 열기
   const handleOpenFormSheet = (address?: IAddress) => {
+    console.log("handleOpenFormSheet called with address:", address);
     setEditingAddress(address);
     setIsFormSheetOpen(true);
   };
-  
+
   // 주소 등록/수정 제출 처리
   const handleFormSubmit = (data: Omit<IAddress, "id">) => {
+    console.log("handleFormSubmit called with data:", data, "editingAddress:", editingAddress);
+    // 백엔드 구현 시 API 호출로 대체
     if (editingAddress) {
-      // 주소 수정
-      updateAddress(editingAddress.id, data);
+      setAddresses((prevAddresses) =>
+        prevAddresses.map((address) =>
+          address.id === editingAddress.id ? { ...address, ...data } : address
+        )
+      );
     } else {
-      // 새 주소 추가
-      addAddress(data);
+      setAddresses((prevAddresses) => [...prevAddresses, { id: Date.now(), ...data }]);
     }
     
-    // 폼 닫기
     setIsFormSheetOpen(false);
     setEditingAddress(undefined);
-    
-    // 데이터 다시 로드
-    loadAddresses();
   };
 
   return (
