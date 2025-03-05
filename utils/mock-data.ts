@@ -123,6 +123,7 @@ export const getAddressesByPage = (page: number, limit: number, search?: string,
   // 검색어가 있는 경우 필터링
   if (search) {
     const searchTerm = search.toLowerCase();
+    console.log("검색어", searchTerm);
     filteredData = filteredData.filter(
       (address) =>
         address.name.toLowerCase().includes(searchTerm) ||

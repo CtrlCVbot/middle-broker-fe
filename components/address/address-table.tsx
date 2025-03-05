@@ -56,6 +56,7 @@ export function AddressTable({
   // 전체 선택 처리
   const handleSelectAll = (checked: boolean | "indeterminate") => {
     if (checked) {
+        console.log("전체 선택", addresses);
       setSelectedAddresses(addresses);
     } else {
       setSelectedAddresses([]);
@@ -71,6 +72,7 @@ export function AddressTable({
 
   // 주소 목록이 비어있는 경우
   if (addresses.length === 0) {
+    console.log("주소 목록이 비어있습니다.");
     return (
       <div className="flex flex-col items-center justify-center p-8 border rounded-md">
         <p className="text-gray-500 mb-4">등록된 주소가 없습니다.</p>

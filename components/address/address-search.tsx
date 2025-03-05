@@ -12,9 +12,12 @@ interface IAddressSearchProps {
 export function AddressSearch({ onSearch }: IAddressSearchProps) {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedType, setSelectedType] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
-  const handleSearch = () => {
-    onSearch(searchTerm, selectedType || undefined);
+  const handleSearch = () => {    
+    //onSearch(searchTerm, selectedType || undefined);
+    resetSearch(selectedType);
+    
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -24,11 +27,21 @@ export function AddressSearch({ onSearch }: IAddressSearchProps) {
   };
 
   const handleTypeChange = (value: string) => {
+    resetSearch(value);
+  };
+
+  const resetSearch = (value: string) => {
     setSelectedType(value);
-    if (value === "all") {
+    if (value === "전체") {
       // 모든 항목 표시 로직
+      console.log("모든 항목 표시");
+      setSearchTerm(""); // 검색어 초기화
+      setCurrentPage(1); // 첫 페이지로 이동
+      onSearch(searchTerm, undefined); // 모든 주소를 다시 로드
+      
     } else {
-      onSearch(searchTerm, value || undefined);
+      console.log("유형 변경", searchTerm + " : " + value);
+      onSearch(searchTerm, value || undefined);      
     }
   };
 
@@ -50,7 +63,7 @@ export function AddressSearch({ onSearch }: IAddressSearchProps) {
             <SelectValue placeholder="유형 선택" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">전체</SelectItem>
+            <SelectItem value="전체">전체</SelectItem>
             <SelectItem value="상차지">상차지</SelectItem>
             <SelectItem value="하차지">하차지</SelectItem>
           </SelectContent>

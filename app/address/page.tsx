@@ -19,6 +19,7 @@ import { AddressFormSheet } from "@/components/address/address-form-sheet";
 import { getAddressesByPage } from "@/utils/mock-data";
 import { IAddress, IAddressResponse } from "@/types/address";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function AddressPage() {
   // 상태 관리
@@ -63,6 +64,7 @@ export default function AddressPage() {
     setSearchTerm(term);
     setSelectedType(type || "");
     setCurrentPage(1); // 검색 시 첫 페이지로 이동
+    loadAddresses(); // 모든 주소를 다시 로드
   };
 
   // 페이지 변경 처리
