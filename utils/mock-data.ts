@@ -1,0 +1,158 @@
+import { IAddress } from "@/types/address";
+
+// 주소록 모킹 데이터
+export const mockAddresses: IAddress[] = [
+  {
+    id: 1,
+    name: "남산롯데캐슬",
+    address: "서울 중구 회현동1가 208, 102-701",
+    contact: "010-7491-2425",
+    manager: "유일",
+    type: "상차지"
+  },
+  {
+    id: 2,
+    name: "강남스테이션",
+    address: "서울 강남구 역삼동 858, 201호",
+    contact: "010-3456-7890",
+    manager: "김강남",
+    type: "하차지"
+  },
+  {
+    id: 3,
+    name: "부산항만창고",
+    address: "부산 영도구 해양로 45, 창고동 A-12",
+    contact: "010-2345-6789",
+    manager: "박부산",
+    type: "상차지"
+  },
+  {
+    id: 4,
+    name: "인천물류센터",
+    address: "인천 서구 경서동 680-1, 제2터미널",
+    contact: "010-9876-5432",
+    manager: "이인천",
+    type: "하차지"
+  },
+  {
+    id: 5,
+    name: "대전 중앙창고",
+    address: "대전 유성구 대학로 99, 과학단지 C동",
+    contact: "010-4567-8901",
+    manager: "최대전",
+    type: "상차지"
+  },
+  {
+    id: 6,
+    name: "광주 운송센터",
+    address: "광주 광산구 무진대로 251, 물류파크 2층",
+    contact: "010-5678-9012",
+    manager: "정광주",
+    type: "하차지"
+  },
+  {
+    id: 7,
+    name: "울산항 물류시설",
+    address: "울산 남구 산업로 304, 항만단지 B블록",
+    contact: "010-6789-0123",
+    manager: "강울산",
+    type: "상차지"
+  },
+  {
+    id: 8,
+    name: "제주 도심물류",
+    address: "제주 제주시 연동 263-15, 제주빌딩 1층",
+    contact: "010-7890-1234",
+    manager: "한제주",
+    type: "하차지"
+  },
+  {
+    id: 9,
+    name: "수원 신갈창고",
+    address: "경기 수원시 영통구 신원로 88, 지하 1층",
+    contact: "010-8901-2345",
+    manager: "서수원",
+    type: "상차지"
+  },
+  {
+    id: 10,
+    name: "평택항 국제물류",
+    address: "경기 평택시 포승읍 평택항로 98, 국제터미널",
+    contact: "010-9012-3456",
+    manager: "임평택",
+    type: "하차지"
+  },
+  {
+    id: 11,
+    name: "대전 중앙창고",
+    address: "대전 유성구 대학로 99, 과학단지 C동",
+    contact: "010-4567-8901",
+    manager: "최대전",
+    type: "상차지"
+  },
+  {
+    id: 12,
+    name: "대전 중앙창고",
+    address: "대전 유성구 대학로 99, 과학단지 C동",
+    contact: "010-4567-8901",
+    manager: "최대전",
+    type: "상차지"
+  },
+  {
+    id: 13,
+    name: "대전 중앙창고",
+    address: "대전 유성구 대학로 99, 과학단지 C동",
+    contact: "010-4567-8901",
+    manager: "최대전",
+    type: "상차지"
+  },
+  {
+    id: 14,
+    name: "대전 중앙창고",      
+    address: "대전 유성구 대학로 99, 과학단지 C동",
+    contact: "010-4567-8901",
+    manager: "최대전",
+    type: "상차지"
+  }
+];
+
+// 페이지별 데이터 조회 함수
+export const getAddressesByPage = (page: number, limit: number, search?: string, type?: string) => {
+  let filteredData = [...mockAddresses];
+  
+  // 검색어가 있는 경우 필터링
+  if (search) {
+    const searchTerm = search.toLowerCase();
+    filteredData = filteredData.filter(
+      (address) =>
+        address.name.toLowerCase().includes(searchTerm) ||
+        address.address.toLowerCase().includes(searchTerm) ||
+        address.manager.toLowerCase().includes(searchTerm) ||
+        address.contact.includes(searchTerm)
+    );
+  }
+  
+  // 유형 필터링
+  if (type) {
+    filteredData = filteredData.filter((address) => address.type === type);
+  }
+  
+  // 전체 데이터 수
+  const total = filteredData.length;
+  
+  // 페이지 계산
+  const startIndex = (page - 1) * limit;
+  const endIndex = Math.min(startIndex + limit, total);
+  
+  // 필요한 데이터만 잘라서 반환
+  const data = filteredData.slice(startIndex, endIndex);
+  
+  return {
+    data,
+    pagination: {
+      total,
+      page,
+      limit
+    }
+  };
+};

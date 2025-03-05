@@ -14,6 +14,7 @@ import {
   Settings2,
   SquareTerminal,
   User,
+  NotebookTabs
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -61,6 +62,11 @@ const data = {
           url: "/dashboard/settings",
         },
       ],
+    },
+    {
+      title: "주소록",
+      url: "/address",
+      icon: NotebookTabs,
     },
     {
       title: "프로필",
