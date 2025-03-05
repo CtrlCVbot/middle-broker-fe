@@ -17,6 +17,7 @@ import { AddressTable } from "@/components/address/address-table";
 import { AddressDeleteModal } from "@/components/address/address-delete-modal";
 import { getAddressesByPage } from "@/utils/mock-data";
 import { IAddress, IAddressResponse } from "@/types/address";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
 export default function AddressPage() {
   // 상태 관리
@@ -118,33 +119,39 @@ export default function AddressPage() {
         </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-            <div className="container py-6">
-            <h1 className="text-2xl font-bold mb-6">주소록 관리</h1>
-            
-            <AddressSearch onSearch={handleSearch} />
-            
-            {loading ? (
-                <div className="flex justify-center items-center h-64">
-                <p>데이터를 불러오는 중...</p>
-                </div>
-            ) : (
-                <AddressTable
-                addresses={addresses}
-                totalPages={totalPages}
-                currentPage={currentPage}
-                onPageChange={handlePageChange}
-                onDeleteSingle={handleDeleteSingle}
-                onDeleteSelected={handleDeleteSelected}
-                />
-            )}
-            
-            <AddressDeleteModal
-                isOpen={isDeleteModalOpen}
-                addresses={addressesToDelete}
-                onClose={() => setIsDeleteModalOpen(false)}
-                onConfirm={handleConfirmDelete}
-            />
-            </div>        
+        
+            <Card className="container py-6">
+                <CardHeader>
+                    <CardTitle>주소록 관리</CardTitle>
+                    <CardDescription>상/하차지 주소록을 관리합니다.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <AddressSearch onSearch={handleSearch} />
+                    
+                    {loading ? (
+                        <div className="flex justify-center items-center h-64">
+                        <p>데이터를 불러오는 중...</p>
+                        </div>
+                    ) : (
+                        <AddressTable
+                        addresses={addresses}
+                        totalPages={totalPages}
+                        currentPage={currentPage}
+                        onPageChange={handlePageChange}
+                        onDeleteSingle={handleDeleteSingle}
+                        onDeleteSelected={handleDeleteSelected}
+                        />
+                    )}
+                    
+                    <AddressDeleteModal
+                        isOpen={isDeleteModalOpen}
+                        addresses={addressesToDelete}
+                        onClose={() => setIsDeleteModalOpen(false)}
+                        onConfirm={handleConfirmDelete}
+                    />
+                </CardContent>
+            </Card> 
+              
         </div>
         
     </>
