@@ -115,7 +115,49 @@ export function AddressFormSheet({
         </SheetHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 py-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="grid gap-4 py-4 px-4">       
+
+
+            <div className="flex gap-4">
+
+            <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                <FormItem className="flex-1">
+                    <FormLabel>유형</FormLabel>
+                    <FormControl>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <SelectTrigger>
+                        <SelectValue placeholder="유형을 선택하세요" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        <SelectItem value="상차지">상차지</SelectItem>
+                        <SelectItem value="하차지">하차지</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
+
+            <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                <FormItem className="flex-1">
+                    <FormLabel>상/하차지명</FormLabel>
+                    <FormControl>
+                    <Input placeholder="상/하차지명을 입력하세요" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
+            
+            </div>
+
             <FormField
               control={form.control}
               name="name"
@@ -129,7 +171,7 @@ export function AddressFormSheet({
                 </FormItem>
               )}
             />
-
+            
             <FormField
               control={form.control}
               name="address"
@@ -184,37 +226,21 @@ export function AddressFormSheet({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>유형</FormLabel>
-                  <FormControl>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="유형을 선택하세요" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="상차지">상차지</SelectItem>
-                        <SelectItem value="하차지">하차지</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            
+            
 
             <SheetFooter className="pt-4">
-              <Button
+                {/* 취소 */}
+                {/*
+                <Button
                 type="button"
                 variant="outline"
                 onClick={handleSheetClose}
                 disabled={isSubmitting}
-              >
+                >
                 취소
-              </Button>
+                </Button>
+                */}
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "저장 중..." : defaultValues ? "수정" : "등록"}
               </Button>
