@@ -168,7 +168,7 @@ export function AddressTable({
                   />
                 </TableCell>
                 <TableCell className="font-medium">{address.name}</TableCell>
-                <TableCell>{address.address}</TableCell>
+                <TableCell>{address.address + ", " + address.detailedAddress}</TableCell>
                 <TableCell>{address.contact}</TableCell>
                 <TableCell>{address.manager}</TableCell>
                 <TableCell>{address.type}</TableCell>

@@ -35,12 +35,13 @@ import {
 const addressFormSchema = z.object({
   name: z.string().min(1, "상/하차지명은 필수입니다"),
   address: z.string().min(1, "주소는 필수입니다"),
+  detailedAddress: z.string().min(0, ""),
   contact: z
     .string()
     .min(1, "연락처는 필수입니다")
     .regex(/^[0-9-]+$/, "올바른 연락처 형식이 아닙니다"),
-  manager: z.string().min(1, "담당자는 필수입니다"),
-  type: z.string().min(1, "유형은 필수입니다"),
+  manager: z.string().min(0, ""),
+  type: z.string().min(0, ""),
 });
 
 type AddressFormValues = z.infer<typeof addressFormSchema>;
@@ -71,6 +72,7 @@ export function AddressFormSheet({
       ? {
           name: defaultValues.name,
           address: defaultValues.address,
+          detailedAddress: defaultValues.detailedAddress,
           contact: defaultValues.contact,
           manager: defaultValues.manager,
           type: defaultValues.type,
@@ -78,6 +80,7 @@ export function AddressFormSheet({
       : {
           name: "",
           address: "",
+          detailedAddress: "",
           contact: "",
           manager: "",
           type: "",
@@ -91,6 +94,7 @@ export function AddressFormSheet({
       form.reset({
         name: defaultValues.name,
         address: defaultValues.address,
+        detailedAddress: defaultValues.detailedAddress,
         contact: defaultValues.contact,
         manager: defaultValues.manager,
         type: defaultValues.type,
@@ -208,6 +212,22 @@ export function AddressFormSheet({
                       >
                         검색
                       </Button>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="detailedAddress"
+              render={({ field }) => (
+                <FormItem>
+                  
+                  <FormControl>
+                    <div className="flex gap-4">
+                      <Input placeholder="상세 주소를 입력하세요" className="flex-1" {...field} />                      
                     </div>
                   </FormControl>
                   <FormMessage />
