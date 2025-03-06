@@ -191,7 +191,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Middle Shipper</span>
+                  <span className="truncate font-medium">MiddleMile Shipper</span>
                   <span className="truncate text-xs">프론트엔드</span>
                 </div>
               </Link>

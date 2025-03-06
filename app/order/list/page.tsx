@@ -11,7 +11,7 @@ import {
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
 import { Home, ListFilter, Grid3x3 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { useOrderStore } from "@/store/order-store";
 import { getOrdersByPage } from "@/utils/mockdata/mock-orders";
 import { OrderSearch } from "@/components/order/order-search";
@@ -33,18 +33,35 @@ export default function OrderListPage() {
     setCurrentPage,
   } = useOrderStore();
 
+  // 디버깅을 위한 로그 추가
+  useEffect(() => {
+    console.log('Filter in OrderListPage:', filter);
+  }, [filter]);
+
   // 화물 목록 데이터 조회
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["orders", currentPage, pageSize, filter],
-    queryFn: () =>
-      getOrdersByPage(
+    queryFn: () => {
+      console.log('Query function called with:', {
         currentPage,
         pageSize,
-        filter.city,
+        departureCity: filter.departureCity,
+        arrivalCity: filter.arrivalCity,
+        vehicleType: filter.vehicleType,
+        weight: filter.weight,
+        searchTerm: filter.searchTerm
+      });
+      
+      return getOrdersByPage(
+        currentPage,
+        pageSize,
+        filter.departureCity,
+        filter.arrivalCity,
         filter.vehicleType,
         filter.weight,
         filter.searchTerm
-      ),
+      );
+    },
     staleTime: 1000 * 60, // 1분
   });
 
@@ -89,7 +106,10 @@ export default function OrderListPage() {
       <main className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>화물 목록</CardTitle>
+            <div> 
+            <CardTitle>화물 현황</CardTitle>
+            <CardDescription>화물 목록을 확인할 수 있습니다.</CardDescription>
+            </div>
             <ToggleGroup type="single" value={viewMode} onValueChange={(value: string) => value && setViewMode(value as 'table' | 'card')}>
               <ToggleGroupItem value="table" aria-label="테이블 보기">
                 <ListFilter className="h-4 w-4" />

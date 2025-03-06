@@ -1,22 +1,10 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -25,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useOrderStore } from "@/store/order-store";
-import { Search, Check, ChevronDown, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function OrderSearch() {
@@ -36,11 +24,25 @@ export function OrderSearch() {
     filterOptions
   } = useOrderStore();
 
-  const [openCity, setOpenCity] = useState(false);
+  // 디버깅을 위해 filterOptions 값을 확인
+  useEffect(() => {
+    console.log('FilterOptions in OrderSearch:', filterOptions);
+    console.log('Cities available:', filterOptions?.cities);
+  }, [filterOptions]);
 
   // 검색어 입력 시 필터 업데이트
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilter({ searchTerm: e.target.value });
+  };
+
+  // 출발지 도시 변경 시 필터 업데이트
+  const handleDepartureCityChange = (value: string) => {
+    setFilter({ departureCity: value === "all" ? undefined : value });
+  };
+
+  // 도착지 도시 변경 시 필터 업데이트
+  const handleArrivalCityChange = (value: string) => {
+    setFilter({ arrivalCity: value === "all" ? undefined : value });
   };
 
   // 차량 종류 변경 시 필터 업데이트
@@ -52,17 +54,6 @@ export function OrderSearch() {
   const handleWeightChange = (value: string) => {
     setFilter({ weight: value === "all" ? undefined : value });
   };
-
-  // 도시 선택 시 필터 업데이트
-  const handleCitySelect = useCallback((city: string) => {
-    setFilter({ city });
-    setOpenCity(false);
-  }, [setFilter]);
-
-  // 선택한 도시 필터 초기화
-  const handleCityReset = useCallback(() => {
-    setFilter({ city: undefined });
-  }, [setFilter]);
 
   // 모든 필터 초기화
   const handleResetAll = () => {
@@ -84,48 +75,48 @@ export function OrderSearch() {
             />
           </div>
 
-          {/* 도시 필터 */}
-          <div className="flex flex-col gap-2 w-full md:w-[200px]">
-            <Popover open={openCity} onOpenChange={setOpenCity}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={openCity}
-                  className="justify-between w-full"
-                >
-                  {filter.city ? filter.city : "도시 선택"}
-                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[200px] p-0">
-                <Command>
-                  <CommandInput placeholder="도시 검색..." className="h-9" />
-                  <CommandEmpty>검색 결과가 없습니다</CommandEmpty>
-                  <CommandGroup className="max-h-[200px] overflow-auto">
-                    {filterOptions.cities.map((city) => (
-                      <CommandItem
-                        key={city}
-                        value={city}
-                        onSelect={() => handleCitySelect(city)}
-                      >
-                        {city}
-                        <Check
-                          className={cn(
-                            "ml-auto h-4 w-4",
-                            filter.city === city ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
+          {/* 출발지 도시 필터 */}
+          <div className="w-full md:w-[180px]">
+            <Select
+              onValueChange={handleDepartureCityChange}
+              value={filter.departureCity || "all"}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="출발지 도시" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">모든 출발지</SelectItem>
+                {(filterOptions?.cities || []).map((city) => (
+                  <SelectItem key={`dep-${city}`} value={city}>
+                    {city}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 도착지 도시 필터 */}
+          <div className="w-full md:w-[180px]">
+            <Select
+              onValueChange={handleArrivalCityChange}
+              value={filter.arrivalCity || "all"}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="도착지 도시" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">모든 도착지</SelectItem>
+                {(filterOptions?.cities || []).map((city) => (
+                  <SelectItem key={`arr-${city}`} value={city}>
+                    {city}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* 차량 종류 필터 */}
-          <div className="w-full md:w-[200px]">
+          <div className="w-full md:w-[150px]">
             <Select
               onValueChange={handleVehicleTypeChange}
               value={filter.vehicleType || "all"}
@@ -135,7 +126,7 @@ export function OrderSearch() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">모든 차량</SelectItem>
-                {filterOptions.vehicleTypes.map((type) => (
+                {(filterOptions?.vehicleTypes || []).map((type) => (
                   <SelectItem key={type} value={type}>
                     {type}
                   </SelectItem>
@@ -145,7 +136,7 @@ export function OrderSearch() {
           </div>
 
           {/* 중량 필터 */}
-          <div className="w-full md:w-[150px]">
+          <div className="w-full md:w-[120px]">
             <Select
               onValueChange={handleWeightChange}
               value={filter.weight || "all"}
@@ -155,7 +146,7 @@ export function OrderSearch() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">모든 중량</SelectItem>
-                {filterOptions.weightTypes.map((weight) => (
+                {(filterOptions?.weightTypes || []).map((weight) => (
                   <SelectItem key={weight} value={weight}>
                     {weight}
                   </SelectItem>
@@ -177,7 +168,7 @@ export function OrderSearch() {
         </div>
 
         {/* 선택된 필터 표시 */}
-        {(filter.city || filter.vehicleType || filter.weight || filter.searchTerm) && (
+        {(filter.departureCity || filter.arrivalCity || filter.vehicleType || filter.weight || filter.searchTerm) && (
           <div className="mt-4 flex flex-wrap gap-2">
             {filter.searchTerm && (
               <Badge variant="secondary" className="flex items-center gap-1">
@@ -188,12 +179,21 @@ export function OrderSearch() {
                 />
               </Badge>
             )}
-            {filter.city && (
+            {filter.departureCity && (
               <Badge variant="secondary" className="flex items-center gap-1">
-                도시: {filter.city}
+                출발지: {filter.departureCity}
                 <X
                   className="h-3 w-3 cursor-pointer"
-                  onClick={handleCityReset}
+                  onClick={() => setFilter({ departureCity: undefined })}
+                />
+              </Badge>
+            )}
+            {filter.arrivalCity && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                도착지: {filter.arrivalCity}
+                <X
+                  className="h-3 w-3 cursor-pointer"
+                  onClick={() => setFilter({ arrivalCity: undefined })}
                 />
               </Badge>
             )}

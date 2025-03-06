@@ -6,6 +6,11 @@ import {
   WEIGHT_TYPES 
 } from '@/utils/mockdata/mock-orders';
 
+// 필터 옵션의 기본값 정의 (import가 실패하는 경우를 대비)
+const DEFAULT_CITIES = CITIES || ["서울", "부산", "인천", "대구", "대전", "광주", "울산", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
+const DEFAULT_VEHICLE_TYPES = VEHICLE_TYPES || ["카고", "윙바디", "탑차", "냉장", "냉동", "트레일러"];
+const DEFAULT_WEIGHT_TYPES = WEIGHT_TYPES || ["1톤", "2.5톤", "3.5톤", "5톤", "11톤", "25톤"];
+
 interface IOrderState {
   // 화면 표시 상태
   viewMode: 'table' | 'card';
@@ -34,7 +39,8 @@ interface IOrderState {
 
 // 초기 필터 상태
 const initialFilter: IOrderFilter = {
-  city: undefined,
+  departureCity: undefined,
+  arrivalCity: undefined,
   vehicleType: undefined,
   weight: undefined,
   searchTerm: ''
@@ -50,9 +56,9 @@ export const useOrderStore = create<IOrderState>((set) => ({
   
   // 필터 옵션 목록
   filterOptions: {
-    cities: CITIES,
-    vehicleTypes: VEHICLE_TYPES,
-    weightTypes: WEIGHT_TYPES,
+    cities: DEFAULT_CITIES,
+    vehicleTypes: DEFAULT_VEHICLE_TYPES,
+    weightTypes: DEFAULT_WEIGHT_TYPES,
   },
   
   // 액션 정의

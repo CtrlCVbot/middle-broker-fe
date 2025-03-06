@@ -1,8 +1,29 @@
 import { IOrder, IOrderResponse } from "@/types/order";
 
+// 도시 목록 (상수로 먼저 정의)
+export const CITIES = [
+  "서울",
+  "부산",
+  "인천",
+  "대구",
+  "대전",
+  "광주",
+  "울산",
+  "경기",
+  "강원",
+  "충북",
+  "충남",
+  "전북",
+  "전남",
+  "경북",
+  "경남",
+  "제주"
+];
+
 // 화물 상태 목록
 export const ORDER_STATUS = [
   "배차대기",
+  "배차전",
   "배차완료",
   "상차완료",
   "운송중",
@@ -30,34 +51,16 @@ export const WEIGHT_TYPES = [
   "25톤"
 ];
 
-// 도시 목록
-export const CITIES = [
-  "서울",
-  "부산",
-  "인천",
-  "대구",
-  "대전",
-  "광주",
-  "울산",
-  "경기",
-  "강원",
-  "충북",
-  "충남",
-  "전북",
-  "전남",
-  "경북",
-  "경남",
-  "제주"
-];
-
 // 목업 화물 데이터
 export const mockOrders: IOrder[] = [
   {
     id: "202103150123",
     status: "배차대기",
     departureDateTime: "2023-03-15 11:00",
+    departureCity: "경기",
     departureLocation: "경기도 성남시 중원구 은행동",
     arrivalDateTime: "2023-03-15 15:00",
+    arrivalCity: "경기",
     arrivalLocation: "경기도 성남시 중원구 은행동",
     amount: 114000,
     fee: 4000,
@@ -75,8 +78,10 @@ export const mockOrders: IOrder[] = [
     id: "202103150124",
     status: "배차완료",
     departureDateTime: "2023-03-16 09:00",
+    departureCity: "서울",
     departureLocation: "서울특별시 강남구 역삼동",
     arrivalDateTime: "2023-03-16 17:00",
+    arrivalCity: "부산",
     arrivalLocation: "부산광역시 해운대구 우동",
     amount: 370000,
     fee: 12000,
@@ -94,8 +99,10 @@ export const mockOrders: IOrder[] = [
     id: "202103150125",
     status: "상차완료",
     departureDateTime: "2023-03-15 13:30",
+    departureCity: "인천",
     departureLocation: "인천광역시 서구 청라동",
     arrivalDateTime: "2023-03-16 10:00",
+    arrivalCity: "대구",
     arrivalLocation: "대구광역시 동구 신천동",
     amount: 250000,
     fee: 8500,
@@ -113,8 +120,10 @@ export const mockOrders: IOrder[] = [
     id: "202103150126",
     status: "운송중",
     departureDateTime: "2023-03-16 07:00",
+    departureCity: "대전",
     departureLocation: "대전광역시 유성구 궁동",
     arrivalDateTime: "2023-03-16 14:00",
+    arrivalCity: "광주",
     arrivalLocation: "광주광역시 북구 용봉동",
     amount: 200000,
     fee: 7000,
@@ -132,8 +141,10 @@ export const mockOrders: IOrder[] = [
     id: "202103150127",
     status: "하차완료",
     departureDateTime: "2023-03-15 10:00",
+    departureCity: "울산",
     departureLocation: "울산광역시 남구 삼산동",
     arrivalDateTime: "2023-03-15 18:00",
+    arrivalCity: "경남",
     arrivalLocation: "경남 창원시 성산구 가음동",
     amount: 180000,
     fee: 6500,
@@ -151,8 +162,10 @@ export const mockOrders: IOrder[] = [
     id: "202103150128",
     status: "정산완료",
     departureDateTime: "2023-03-14 14:00",
+    departureCity: "경북",
     departureLocation: "경북 포항시 남구 오천읍",
     arrivalDateTime: "2023-03-15 01:00",
+    arrivalCity: "경북",
     arrivalLocation: "경북 구미시 원평동",
     amount: 220000,
     fee: 7800,
@@ -170,8 +183,10 @@ export const mockOrders: IOrder[] = [
     id: "202103150129",
     status: "배차대기",
     departureDateTime: "2023-03-17 08:00",
+    departureCity: "전북",
     departureLocation: "전북 전주시 완산구 효자동",
     arrivalDateTime: "2023-03-17 16:00",
+    arrivalCity: "전남",
     arrivalLocation: "전남 순천시 연향동",
     amount: 240000,
     fee: 8200,
@@ -189,8 +204,10 @@ export const mockOrders: IOrder[] = [
     id: "202103150130",
     status: "배차대기",
     departureDateTime: "2023-03-17 09:30",
+    departureCity: "충북",
     departureLocation: "충북 청주시 상당구 용암동",
     arrivalDateTime: "2023-03-17 15:30",
+    arrivalCity: "충남",
     arrivalLocation: "충남 천안시 서북구 두정동",
     amount: 190000,
     fee: 6700,
@@ -208,8 +225,10 @@ export const mockOrders: IOrder[] = [
     id: "202103150131",
     status: "배차완료",
     departureDateTime: "2023-03-16 11:00",
+    departureCity: "강원",
     departureLocation: "강원 춘천시 후평동",
     arrivalDateTime: "2023-03-16 19:00",
+    arrivalCity: "서울",
     arrivalLocation: "서울특별시 송파구 문정동",
     amount: 230000,
     fee: 8000,
@@ -227,8 +246,10 @@ export const mockOrders: IOrder[] = [
     id: "202103150132",
     status: "운송중",
     departureDateTime: "2023-03-15 16:00",
+    departureCity: "제주",
     departureLocation: "제주 제주시 노형동",
     arrivalDateTime: "2023-03-16 08:00",
+    arrivalCity: "제주",
     arrivalLocation: "제주 서귀포시 대정읍",
     amount: 150000,
     fee: 5500,
@@ -246,8 +267,10 @@ export const mockOrders: IOrder[] = [
     id: "202103150133",
     status: "정산완료",
     departureDateTime: "2023-03-14 08:30",
+    departureCity: "서울",
     departureLocation: "서울특별시 서초구 서초동",
     arrivalDateTime: "2023-03-14 14:30",
+    arrivalCity: "경기",
     arrivalLocation: "경기도 화성시 동탄",
     amount: 160000,
     fee: 5800,
@@ -265,8 +288,10 @@ export const mockOrders: IOrder[] = [
     id: "202103150134",
     status: "배차대기",
     departureDateTime: "2023-03-18 07:00",
+    departureCity: "부산",
     departureLocation: "부산광역시 사상구 감전동",
     arrivalDateTime: "2023-03-18 17:00",
+    arrivalCity: "경남",
     arrivalLocation: "경남 진주시 충무공동",
     amount: 280000,
     fee: 9500,
@@ -284,8 +309,10 @@ export const mockOrders: IOrder[] = [
     id: "202103150135",
     status: "상차완료",
     departureDateTime: "2023-03-16 10:30",
+    departureCity: "인천",
     departureLocation: "인천광역시 미추홀구 주안동",
     arrivalDateTime: "2023-03-16 15:30",
+    arrivalCity: "경기",
     arrivalLocation: "경기도 수원시 영통구",
     amount: 140000,
     fee: 5000,
@@ -303,8 +330,10 @@ export const mockOrders: IOrder[] = [
     id: "202103150136",
     status: "하차완료",
     departureDateTime: "2023-03-15 09:00",
+    departureCity: "대구",
     departureLocation: "대구광역시 수성구 범어동",
     arrivalDateTime: "2023-03-15 18:30",
+    arrivalCity: "경북",
     arrivalLocation: "경북 경주시 황성동",
     amount: 170000,
     fee: 6000,
@@ -322,8 +351,10 @@ export const mockOrders: IOrder[] = [
     id: "202103150137",
     status: "배차완료",
     departureDateTime: "2023-03-17 13:00",
+    departureCity: "광주",
     departureLocation: "광주광역시 서구 치평동",
     arrivalDateTime: "2023-03-17 19:00",
+    arrivalCity: "전남",
     arrivalLocation: "전남 목포시 상동",
     amount: 190000,
     fee: 6700,
@@ -343,19 +374,25 @@ export const mockOrders: IOrder[] = [
 export const getOrdersByPage = (
   page: number, 
   limit: number,
-  city?: string,
+  departureCity?: string,
+  arrivalCity?: string,
   vehicleType?: string,
   weight?: string,
   searchTerm?: string
 ): IOrderResponse => {
   let filteredData = [...mockOrders];
   
-  // 도시 필터링
-  if (city) {
+  // 출발지 도시 필터링
+  if (departureCity) {
     filteredData = filteredData.filter(
-      (order) =>
-        order.departureLocation.includes(city) || 
-        order.arrivalLocation.includes(city)
+      (order) => order.departureCity.includes(departureCity)
+    );
+  }
+  
+  // 도착지 도시 필터링
+  if (arrivalCity) {
+    filteredData = filteredData.filter(
+      (order) => order.arrivalCity.includes(arrivalCity)
     );
   }
   
@@ -379,6 +416,8 @@ export const getOrdersByPage = (
     filteredData = filteredData.filter(
       (order) =>
         order.id.toLowerCase().includes(term) ||
+        order.departureCity.toLowerCase().includes(term) ||
+        order.arrivalCity.toLowerCase().includes(term) ||
         order.departureLocation.toLowerCase().includes(term) ||
         order.arrivalLocation.toLowerCase().includes(term) ||
         order.driver.name.toLowerCase().includes(term) ||

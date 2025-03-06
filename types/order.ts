@@ -5,8 +5,10 @@ export interface IOrder {
   id: string;                  // 화물번호 (고유 식별자)
   status: string;              // 상태 (배차대기, 배차완료, 상차완료, 하차완료 등)
   departureDateTime: string;   // 출발 일시
+  departureCity: string;       // 출발지 도시
   departureLocation: string;   // 출발지
   arrivalDateTime: string;     // 도착 예정 일시
+  arrivalCity: string;         // 도착지 도시
   arrivalLocation: string;     // 도착지
   amount: number;              // 금액
   fee: number;                 // 수수료
@@ -36,7 +38,8 @@ export interface IOrderResponse {
 
 // 검색 필터 인터페이스
 export interface IOrderFilter {
-  city?: string;               // 도시 (출발지/도착지)
+  departureCity?: string;      // 출발지 도시
+  arrivalCity?: string;        // 도착지 도시
   vehicleType?: string;        // 차량 종류
   weight?: string;             // 중량
   searchTerm?: string;         // 검색어
