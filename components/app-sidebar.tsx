@@ -14,7 +14,10 @@ import {
   Settings2,
   SquareTerminal,
   User,
-  NotebookTabs
+  NotebookTabs,
+  CalendarClock,
+  Layers3,
+  Truck,
 } from "lucide-react"
 import Link from 'next/link'
 
@@ -32,7 +35,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-const data = {
+export const data = {
   user: {
     name: "홍길동",
     email: "user@example.com",
@@ -68,6 +71,11 @@ const data = {
       title: "주소록",
       url: "/address",
       icon: NotebookTabs,
+    },
+    {
+      title: "화물 현황",
+      url: "/order/list",
+      icon: Truck,
     },
     {
       title: "프로필",
