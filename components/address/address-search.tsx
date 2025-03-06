@@ -12,7 +12,7 @@ interface IAddressSearchProps {
 export function AddressSearch({ onSearch }: IAddressSearchProps) {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedType, setSelectedType] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  //const [currentPage, setCurrentPage] = useState<number>(1);
 
   const handleSearch = () => {    
     //onSearch(searchTerm, selectedType || undefined);
@@ -36,7 +36,7 @@ export function AddressSearch({ onSearch }: IAddressSearchProps) {
       // 모든 항목 표시 로직
       console.log("모든 항목 표시");
       setSearchTerm(""); // 검색어 초기화
-      setCurrentPage(1); // 첫 페이지로 이동
+      //setCurrentPage(1); // 첫 페이지로 이동
       onSearch(searchTerm, undefined); // 모든 주소를 다시 로드
       
     } else {

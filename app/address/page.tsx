@@ -11,7 +11,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AddressSearch } from "@/components/address/address-search";
 import { AddressTable } from "@/components/address/address-table";
 import { AddressDeleteModal } from "@/components/address/address-delete-modal";
@@ -38,7 +38,7 @@ export default function AddressPage() {
   const ITEMS_PER_PAGE = 10;
 
   // 주소록 데이터 로드
-  const loadAddresses = () => {
+  const loadAddresses = useCallback(() => {
     setLoading(true);
     
     // 모킹 데이터 사용 (백엔드 구현 시 API 호출로 대체)
@@ -52,12 +52,12 @@ export default function AddressPage() {
     setAddresses(response.data);
     setTotalPages(Math.ceil(response.pagination.total / ITEMS_PER_PAGE));
     setLoading(false);
-  };
+  }, [currentPage, searchTerm, selectedType]);
 
   // 페이지 로드 시 데이터 로드
   useEffect(() => {
     loadAddresses();
-  }, [currentPage, searchTerm, selectedType]);
+  }, [currentPage, searchTerm, selectedType, loadAddresses]);
 
   // 검색 처리
   const handleSearch = (term: string, type?: string) => {

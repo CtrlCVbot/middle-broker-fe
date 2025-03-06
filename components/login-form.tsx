@@ -15,11 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { loginWithEmail } from "@/utils/auth"
 
-// 목업 사용자 데이터
-const MOCK_USERS = [
-  { email: "user@example.com", password: "password123" },
-  { email: "admin@example.com", password: "admin123" },
-]
+
 
 export function LoginForm({
   className,

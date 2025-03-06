@@ -4,13 +4,14 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar";
+//import MainLayout from "@/app/main-layout";
 
 export const metadata: Metadata = {
   title: "대시보드 - Middle Shipper",
   description: "Middle Shipper 대시보드",
 };
 
-export default function DashboardLayout({
+export default function MainLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

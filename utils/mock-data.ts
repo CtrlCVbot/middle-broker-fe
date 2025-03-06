@@ -1,4 +1,5 @@
 import { IAddress } from "@/types/address";
+import { IUser } from "@/types/user";
 
 // 주소록 모킹 데이터
 export const mockAddresses: IAddress[] = [
@@ -129,6 +130,12 @@ export const mockAddresses: IAddress[] = [
     type: "상차지"
   }
 ];
+
+// 목업 사용자 데이터
+export const mockUsers: IUser[] = [
+  { email: "user@example.com", password: "password123" },
+  { email: "admin@example.com", password: "admin123" },
+]
 
 // 페이지별 데이터 조회 함수
 export const getAddressesByPage = (page: number, limit: number, search?: string, type?: string) => {
