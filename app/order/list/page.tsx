@@ -20,7 +20,7 @@ import { OrderCard } from "@/components/order/order-card";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
 export default function OrderListPage() {
   // Zustand 스토어에서 상태 및 액션 가져오기
@@ -85,11 +85,6 @@ export default function OrderListPage() {
     <>
       <header className="flex h-16 shrink-0 items-center gap-2">
         <div className="flex items-center gap-2 px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator
-            orientation="vertical"
-            className="mr-2 data-[orientation=vertical]:h-4"
-          />
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
@@ -97,18 +92,18 @@ export default function OrderListPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>화물 목록</BreadcrumbPage>
+                <BreadcrumbPage>화물 현황</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </div>
       </header>
-      <main className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <main className="flex flex-1 flex-col p-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div> 
-            <CardTitle>화물 현황</CardTitle>
-            <CardDescription>화물 목록을 확인할 수 있습니다.</CardDescription>
+              <CardTitle>화물 현황</CardTitle>
+              <CardDescription>화물 목록을 확인할 수 있습니다.</CardDescription>
             </div>
             <ToggleGroup type="single" value={viewMode} onValueChange={(value: string) => value && setViewMode(value as 'table' | 'card')}>
               <ToggleGroupItem value="table" aria-label="테이블 보기">
