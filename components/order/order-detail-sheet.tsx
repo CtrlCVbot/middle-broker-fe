@@ -77,6 +77,9 @@ export function OrderDetailSheet() {
           isMobile ? "h-[80vh]" : "w-full"
         )}
       >
+        {/* 화면에 노출되지 않지만 접근성을 위한 타이틀 */}
+        <SheetTitle className="sr-only">화물 상세 정보</SheetTitle>
+        
         {isLoading ? (
           // 로딩 상태
           <div className="flex items-center justify-center h-full">
