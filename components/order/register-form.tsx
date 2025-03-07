@@ -44,7 +44,7 @@ import {
   calculateDistance, 
   searchAddress 
 } from "@/utils/mockdata/mock-register";
-import { LocationForm } from "./register-location-form";
+import { LocationForm } from "@/components/order/register-location-form";
 import { OptionSelector } from "./register-option-selector";
 import { CalendarIcon, InfoIcon, TruckIcon, MapPinIcon, Settings2 as OptionsIcon, Calculator as CalculatorIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -387,21 +387,23 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
   // 데스크톱 환경에서는 2단 컬럼 레이아웃으로 표시
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
-        {/* 왼쪽 컬럼: 차량 정보 및 출발지/도착지 */}
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* 왼쪽 패널: 차량 및 화물 정보 */}
-          <div className="md:col-span-1 space-y-6">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <TruckIcon className="h-5 w-5 mr-2" />
-                  차량 및 화물 정보
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* 왼쪽: 화물 정보 카드 */}
+          <Card className="lg:col-span-3">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center">
+                <TruckIcon className="h-5 w-5 mr-2" />
+                화물 정보
+              </CardTitle>
+              <CardDescription>
+                  운송할 화물 정보를 입력하고 등록해주세요.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid md:grid-cols-12 gap-4">
                 {/* 차량 종류 */}
-                <div>
+                <div className="col-span-12 md:col-span-1">
                   <FormLabel>차량 종류</FormLabel>
                   <Select
                     value={registerData.vehicleType}
@@ -421,7 +423,7 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                 </div>
                 
                 {/* 차량 중량 */}
-                <div>
+                <div className="col-span-12 md:col-span-1">
                   <FormLabel>중량</FormLabel>
                   <Select
                     value={registerData.weightType}
@@ -439,45 +441,51 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 {/* 화물 품목 */}
-                <div>
-                  <FormLabel>화물 품목</FormLabel>
-                  <Input
-                    placeholder="화물 품목을 입력하세요 (최대 38자)"
-                    maxLength={38}
-                    value={registerData.cargoType}
-                    onChange={(e) => setCargoType(e.target.value)}
-                  />
-                </div>
-                
-                {/* 추가 요청사항 */}
-                <div>
-                  <FormLabel>추가 요청사항</FormLabel>
-                  <Textarea
-                    placeholder="추가 요청사항 (선택사항)"
-                    value={registerData.specialRequirements || ''}
-                    onChange={(e) => setSpecialRequirements(e.target.value)}
-                    className="resize-none h-20"
-                  />
-                </div>
-                
-                {/* 비고 */}
-                <div>
-                  <FormLabel>비고</FormLabel>
-                  <Textarea
-                    placeholder="비고 (선택사항)"
-                    value={registerData.remark || ''}
-                    onChange={(e) => setRemark(e.target.value)}
-                    className="resize-none h-20"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* 중앙 패널: 출발지/도착지 정보 */}
-          <div className="md:col-span-2 space-y-6">
+              <div className="col-span-12 md:col-span-10">
+                <FormLabel>화물 품목</FormLabel>
+                <Input
+                  placeholder="화물 품목을 입력하세요 (최대 38자)"
+                  maxLength={38}
+                  value={registerData.cargoType}
+                  onChange={(e) => setCargoType(e.target.value)}
+                />
+                <p className="text-xs text-right text-muted-foreground mt-1">
+                  {registerData.cargoType.length}/38자
+                </p>
+              </div>
+              </div>
+              
+              
+              <div className="grid md:grid-cols-2 gap-4">
+              {/* 추가 요청사항 */}
+              <div>
+                <FormLabel>추가 요청사항</FormLabel>
+                <Textarea
+                  placeholder="추가 요청사항 (선택사항)"
+                  value={registerData.specialRequirements || ''}
+                  onChange={(e) => setSpecialRequirements(e.target.value)}
+                  className="resize-none h-20"
+                />
+              </div>
+              
+              {/* 비고 */}
+              <div>
+                <FormLabel>비고</FormLabel>
+                <Textarea
+                  placeholder="비고 (선택사항)"
+                  value={registerData.remark || ''}
+                  onChange={(e) => setRemark(e.target.value)}
+                  className="resize-none h-20"
+                />
+              </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 중간: 출발지/도착지 정보 카드 */}
+          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* 출발지 정보 */}
             <Card>
               <CardHeader className="pb-3">
@@ -514,21 +522,17 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
               </CardContent>
             </Card>
           </div>
-        </div>
-        
-        {/* 하단 패널: 옵션 및 버튼 */}
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* 운송 옵션 */}
-          <div className="md:col-span-1">
+          
+          {/* 오른쪽: 예상 정보 및 옵션 카드 */}
+          <div className="lg:col-span-1 space-y-4">
+                        
+            {/* 운송 옵션 카드 */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center">
                   <OptionsIcon className="h-5 w-5 mr-2" />
                   운송 옵션
                 </CardTitle>
-                <CardDescription>
-                  필요한 옵션을 모두 선택하세요
-                </CardDescription>
               </CardHeader>
               <CardContent>
                 <OptionSelector
@@ -538,50 +542,46 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                 />
               </CardContent>
             </Card>
-          </div>
-          
-          {/* 예상 거리 및 금액 */}
-          <div className="md:col-span-2">
+
+            {/* 예상 정보 카드 */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center">
                   <CalculatorIcon className="h-5 w-5 mr-2" />
                   예상 정보
                 </CardTitle>
-                <CardDescription>
-                  출발지와 도착지를 입력하면 예상 거리와 금액이 자동 계산됩니다
-                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <FormLabel>예상 거리</FormLabel>
-                      <div className="flex items-center h-10 px-3 border rounded-md">
-                        {isCalculating ? (
-                          <div className="animate-pulse">계산 중...</div>
-                        ) : (
-                          <span>{typeof registerData.estimatedDistance === 'number' ? registerData.estimatedDistance.toLocaleString() : '0'}km</span>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <FormLabel>예상 금액</FormLabel>
-                      <div className="flex items-center h-10 px-3 border rounded-md font-medium">
-                        {isCalculating ? (
-                          <div className="animate-pulse">계산 중...</div>
-                        ) : (
-                          <span>{typeof registerData.estimatedAmount === 'number' ? registerData.estimatedAmount.toLocaleString() : '0'}원</span>
-                        )}
-                      </div>
-                    </div>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">예상 거리</span>
+                    <span className="font-medium">
+                      {isCalculating ? (
+                        <span className="animate-pulse">계산 중...</span>
+                      ) : (
+                        <span>{typeof registerData.estimatedDistance === 'number' ? `${registerData.estimatedDistance.toLocaleString()}km` : '0km'}</span>
+                      )}
+                    </span>
                   </div>
-                  <Button type="submit" className="mt-6 w-full" size="lg">
-                    화물 등록
-                  </Button>
+                  <Separator />
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">예상 금액</span>
+                    <span className="text-xl font-bold text-primary">
+                      {isCalculating ? (
+                        <span className="animate-pulse">계산 중...</span>
+                      ) : (
+                        <span>{typeof registerData.estimatedAmount === 'number' ? `${registerData.estimatedAmount.toLocaleString()}원` : '0원'}</span>
+                      )}
+                    </span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
+            
+            {/* 등록 버튼 */}
+            <Button type="submit" size="lg" className="w-full">
+              화물 등록
+            </Button>
           </div>
         </div>
       </form>

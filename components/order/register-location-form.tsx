@@ -108,7 +108,7 @@ export function LocationForm({
   
   return (
     <div className="space-y-3">
-      <h3 className="text-lg font-medium">{title}</h3>
+      {/* <h3 className="text-lg font-medium">{title}</h3> */} 
       
       {/* 최근 주소 표시 */}
       {filteredRecentLocations.length > 0 && (
