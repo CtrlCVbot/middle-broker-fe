@@ -17,6 +17,7 @@ import { getOrdersByPage } from "@/utils/mockdata/mock-orders";
 import { OrderSearch } from "@/components/order/order-search";
 import { OrderTable } from "@/components/order/order-table";
 import { OrderCard } from "@/components/order/order-card";
+import { OrderDetailSheet } from "@/components/order/order-detail-sheet";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
@@ -92,7 +93,7 @@ export default function OrderListPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>화물 현황</BreadcrumbPage>
+                <BreadcrumbPage>화물 목록</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -162,6 +163,9 @@ export default function OrderListPage() {
             )}
           </CardContent>
         </Card>
+        
+        {/* 화물 상세 정보 모달 */}
+        <OrderDetailSheet />
       </main>
     </>
   );

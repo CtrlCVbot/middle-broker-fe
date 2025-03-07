@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { IOrder } from "@/types/order";
 import { formatCurrency } from "@/lib/utils";
+import { useOrderDetailStore } from "@/store/order-detail-store";
 
 // 화물 상태에 따른 배지 색상 설정
 const getStatusBadge = (status: string) => {
@@ -53,6 +54,14 @@ export function OrderTable({
   totalPages,
   onPageChange,
 }: OrderTableProps) {
+  // 상세 정보 모달을 위한 스토어 액세스
+  const { openSheet } = useOrderDetailStore();
+  
+  // 화물 상세 정보 열기
+  const handleOrderClick = (orderId: string) => {
+    openSheet(orderId);
+  };
+  
   // 첫 페이지로 이동
   const handleFirstPage = () => {
     onPageChange(1);
@@ -106,8 +115,10 @@ export function OrderTable({
               </TableRow>
             ) : (
               orders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.id}</TableCell>
+                <TableRow key={order.id} className="cursor-pointer hover:bg-secondary/20" onClick={() => handleOrderClick(order.id)}>
+                  <TableCell className="font-medium text-primary underline">
+                    {order.id}
+                  </TableCell>
                   <TableCell>{getStatusBadge(order.status)}</TableCell>
                   <TableCell className="max-w-[200px] truncate" title={order.departureLocation}>
                     {order.departureLocation}

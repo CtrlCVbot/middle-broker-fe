@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { IOrder } from "@/types/order";
 import { formatCurrency } from "@/lib/utils";
+import { useOrderDetailStore } from "@/store/order-detail-store";
 
 // 화물 상태에 따른 배지 색상 설정
 const getStatusBadge = (status: string) => {
@@ -54,6 +55,14 @@ export function OrderCard({
   totalPages,
   onPageChange,
 }: OrderCardProps) {
+  // 상세 정보 모달을 위한 스토어 액세스
+  const { openSheet } = useOrderDetailStore();
+  
+  // 화물 상세 정보 열기
+  const handleOrderClick = (orderId: string) => {
+    openSheet(orderId);
+  };
+  
   // 첫 페이지로 이동
   const handleFirstPage = () => {
     onPageChange(1);
@@ -87,9 +96,13 @@ export function OrderCard({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {orders.map((order) => (
-            <Card key={order.id} className="overflow-hidden">
+            <Card 
+              key={order.id} 
+              className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => handleOrderClick(order.id)}
+            >
               <div className="flex items-center justify-between p-4 bg-muted/50">
-                <div className="font-medium">{order.id}</div>
+                <div className="font-medium text-primary">{order.id}</div>
                 {getStatusBadge(order.status)}
               </div>
               <CardContent className="p-4 space-y-4">
