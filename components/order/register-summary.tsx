@@ -18,7 +18,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMutation } from "@tanstack/react-query";
 import { TRANSPORT_OPTIONS } from "@/types/order";
 import { useToast } from "@/components/ui/use-toast";
-import { CalendarIcon, CheckCircleIcon, MapPinIcon, PackageIcon, TruckIcon, HandCoins } from "lucide-react";
+import { CalendarIcon, CheckCircleIcon, MapPinIcon, PackageIcon, TruckIcon, HandCoins, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface OrderRegisterSummaryProps {
@@ -126,22 +126,32 @@ export function OrderRegisterSummary({
               </h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <Label className="text-muted-foreground">주소</Label>
-                <div className="font-medium">{registerData.departure.address}</div>
-                
+                <div className="font-medium">
+                  {registerData.departure.address}
+                  {registerData.departure.detailedAddress && (
+                    <div className="text-xs text-muted-foreground mt-1">{registerData.departure.detailedAddress}</div>
+                  )}
+                </div>
+                {/*
                 {registerData.departure.detailedAddress && (
                   <>
                     <Label className="text-muted-foreground">상세 주소</Label>
                     <div className="font-medium">{registerData.departure.detailedAddress}</div>
                   </>
-                )}
+                )}*/}
                 
                 <Label className="text-muted-foreground">회사명</Label>
                 <div className="font-medium">{registerData.departure.company}</div>
                 
                 <Label className="text-muted-foreground">담당자</Label>
-                <div className="font-medium">
-                  {registerData.departure.name}/{registerData.departure.contact}
+                <div className="flex-1 font-medium flex items-center">
+                {registerData.departure.name}
+                  <Phone className="h-3 w-3 ml-3 mr-1 text-muted-foreground" />
+                  <span className="text-xs">{registerData.departure.contact}</span>
                 </div>
+                {/*<div className="font-medium">
+                  {registerData.departure.name}/{registerData.departure.contact}
+                </div>*/}
                 
                 {/*
                 <Label className="text-muted-foreground">연락처</Label>
@@ -165,21 +175,30 @@ export function OrderRegisterSummary({
               </h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <Label className="text-muted-foreground">주소</Label>
-                <div className="font-medium">{registerData.destination.address}</div>
-                
+                {/*<div className="font-medium">{registerData.destination.address}</div>*/}
+                <div className="font-medium">
+                  {registerData.destination.address}
+                  {registerData.destination.detailedAddress && (
+                    <div className="text-xs text-muted-foreground mt-1">{registerData.destination.detailedAddress}</div>
+                  )}
+                </div>
+
+                {/*
                 {registerData.destination.detailedAddress && (
                   <>
                     <Label className="text-muted-foreground">상세 주소</Label>
                     <div className="font-medium">{registerData.destination.detailedAddress}</div>
                   </>
-                )}
+                )}*/}
                 
                 <Label className="text-muted-foreground">회사명</Label>
                 <div className="font-medium">{registerData.destination.company}</div>
                 
                 <Label className="text-muted-foreground">담당자</Label>
-                <div className="font-medium">
-                  {registerData.destination.name}/{registerData.destination.contact}
+                <div className="flex-1 font-medium flex items-center">
+                {registerData.destination.name}
+                  <Phone className="h-3 w-3 ml-3 mr-1 text-muted-foreground" />
+                  <span className="text-xs">{registerData.destination.contact}</span>
                 </div>
                 
                 {/*

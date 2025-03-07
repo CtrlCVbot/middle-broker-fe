@@ -150,7 +150,7 @@ export default function AddressPage() {
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         
-            <Card className="container py-6">
+            <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                         <CardTitle>주소록 관리</CardTitle>

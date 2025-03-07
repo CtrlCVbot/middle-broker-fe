@@ -134,80 +134,92 @@ export function LocationForm({
       {/* 주소 검색 */}
       <div className="space-y-2">
         <FormLabel>주소</FormLabel>
-        <div className="flex gap-2">
-          <Input
-            value={locationInfo.address || ''}
-            onChange={(e) => onChange({ address: e.target.value })}
-            placeholder="주소를 입력하세요"
-            disabled={true}
-          />
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" type="button">
-                <SearchIcon className="h-4 w-4 mr-2" />
-                검색
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>주소 검색</DialogTitle>
-                <DialogDescription>
-                  찾으시는 주소의 동/읍/면 이름을 입력하세요
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="flex gap-2 my-4">
-                <Input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="예: 강남구 역삼동"
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                />
-                <Button 
-                  type="button" 
-                  onClick={handleSearch}
-                  disabled={searching}
-                >
-                  {searching ? '검색 중...' : '검색'}
+        <div>
+          <div className="flex gap-2">
+            <Input
+              value={locationInfo.address || ''}
+              onChange={(e) => onChange({ address: e.target.value })}
+              placeholder="주소를 입력하세요"
+              disabled={true}
+            />
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" type="button">
+                  <SearchIcon className="h-4 w-4 mr-2" />
+                  검색
                 </Button>
-              </div>
-              
-              {searchResults.length > 0 && (
-                <ScrollArea className="h-60">
-                  <div className="space-y-2">
-                    {searchResults.map((address, i) => (
-                      <div 
-                        key={i}
-                        className="p-2 cursor-pointer border rounded hover:bg-accent"
-                      >
-                        <DialogClose asChild>
-                          <Button 
-                            variant="ghost" 
-                            className="w-full justify-start text-left p-2"
-                            onClick={() => handleSelectAddress(address)}
-                          >
-                            {address}
-                          </Button>
-                        </DialogClose>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              )}
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>주소 검색</DialogTitle>
+                  <DialogDescription>
+                    찾으시는 주소의 동/읍/면 이름을 입력하세요
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="flex gap-2 my-4">
+                  <Input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="예: 강남구 역삼동"
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  />
+                  <Button 
+                    type="button" 
+                    onClick={handleSearch}
+                    disabled={searching}
+                  >
+                    {searching ? '검색 중...' : '검색'}
+                  </Button>
+                </div>
+                
+                {searchResults.length > 0 && (
+                  <ScrollArea className="h-60">
+                    <div className="space-y-2">
+                      {searchResults.map((address, i) => (
+                        <div 
+                          key={i}
+                          className="p-2 cursor-pointer border rounded hover:bg-accent"
+                        >
+                          <DialogClose asChild>
+                            <Button 
+                              variant="ghost" 
+                              className="w-full justify-start text-left p-2"
+                              onClick={() => handleSelectAddress(address)}
+                            >
+                              {address}
+                            </Button>
+                          </DialogClose>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
+              </DialogContent>
+            </Dialog>
+          </div>
+          {/* 상세 주소 */}
+          <div className="py-2">
+            {/* <FormLabel>상세 주소</FormLabel>*/}
+            <Input
+              value={locationInfo.detailedAddress || ''}
+              onChange={(e) => onChange({ detailedAddress: e.target.value })}
+              placeholder="상세 주소를 입력하세요"
+            />
+          </div>
         </div>
       </div>
       
-      {/* 상세 주소 */}
+      {/*
       <div>
-        <FormLabel>상세 주소</FormLabel>
+        {/* <FormLabel>상세 주소</FormLabel>
         <Input
           value={locationInfo.detailedAddress || ''}
           onChange={(e) => onChange({ detailedAddress: e.target.value })}
           placeholder="상세 주소를 입력하세요"
         />
       </div>
+      */}
       
       {/* 회사명 / 담당자 */}
       <div className={cn("grid gap-3", compact ? "grid-cols-2" : "grid-cols-1")}>
