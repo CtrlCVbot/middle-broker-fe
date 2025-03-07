@@ -76,6 +76,16 @@ export const data = {
       title: "화물 현황",
       url: "/order/list",
       icon: Truck,
+      items: [
+        {
+          title: "화물 목록",
+          url: "/order/list",
+        },
+        {
+          title: "화물 등록",
+          url: "/order/register",
+        },
+      ],
     },
     {
       title: "프로필",
