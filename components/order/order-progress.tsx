@@ -4,9 +4,10 @@ import React from "react";
 import { Progress } from "@/components/ui/progress";
 import { 
   OrderStatusType,
+  ORDER_STATUS,
   getProgressPercentage, 
   isStatusAtLeast 
-} from "@/utils/mockdata/mock-orders-detail";
+} from "@/types/order";
 import { cn } from "@/lib/utils";
 
 interface OrderProgressProps {
@@ -15,16 +16,6 @@ interface OrderProgressProps {
 }
 
 export function OrderProgress({ currentStatus, className }: OrderProgressProps) {
-  // 전체 배차 상태 목록
-  const statusList: OrderStatusType[] = [
-    '배차대기', 
-    '배차완료', 
-    '상차완료', 
-    '운송중', 
-    '하차완료', 
-    '정산완료'
-  ];
-  
   // 현재 배차 진행도 퍼센트 계산
   const progressValue = getProgressPercentage(currentStatus);
   
@@ -52,7 +43,7 @@ export function OrderProgress({ currentStatus, className }: OrderProgressProps) 
         </div>
       ) : (
         <div className="flex justify-between text-xs md:text-sm mt-2">
-          {statusList.map((status) => {
+          {ORDER_STATUS.map((status) => {
             const isActive = isStatusAtLeast(currentStatus, status);
             const isCurrent = currentStatus === status;
             

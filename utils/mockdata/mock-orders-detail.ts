@@ -1,21 +1,5 @@
-// 화물 상태 로그 상태값 타입
-export type OrderStatusType = 
-  | '배차대기' 
-  | '배차완료' 
-  | '상차완료' 
-  | '운송중' 
-  | '하차완료' 
-  | '정산완료';
-
-// 로그 항목 인터페이스
-export interface IOrderLog {
-  status: OrderStatusType;
-  time: string;
-  date: string;
-  handler?: string;
-  location?: string;
-  remark?: string;
-}
+// 화물 상세 정보 목업 데이터
+import { OrderStatusType, IOrderLog, ORDER_STATUS, getProgressPercentage, isStatusAtLeast } from '@/types/order';
 
 // 화물 상세 정보 인터페이스
 export interface IOrderDetail {
@@ -1034,50 +1018,20 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
   }
 };
 
-// 특정 화물 ID로 상세 정보를 불러오는 함수
+// 상세 화물 정보 조회 함수
 export const getOrderDetailById = (id: string): Promise<IOrderDetail> => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
-      const order = mockOrderDetails[id];
-      if (order) {
-        resolve(order);
+      const orderDetail = mockOrderDetails[id];
+      if (orderDetail) {
+        resolve(orderDetail);
       } else {
-        reject(new Error('화물 정보를 찾을 수 없습니다.'));
+        reject(new Error(`화물 정보(${id})를 찾을 수 없습니다.`));
       }
-    }, 300); // 실제 API 호출 시뮬레이션을 위한 지연
+    }, 500); // 서버 응답 시간 시뮬레이션
   });
 };
 
-// 배차 상태 진행도를 계산하는 함수
-export const getProgressPercentage = (currentStatus: OrderStatusType): number => {
-  const statusOrder: OrderStatusType[] = [
-    '배차대기', 
-    '배차완료', 
-    '상차완료', 
-    '운송중', 
-    '하차완료', 
-    '정산완료'
-  ];
-  
-  const currentIndex = statusOrder.indexOf(currentStatus);
-  if (currentIndex === -1) return 0;
-  
-  return (currentIndex / (statusOrder.length - 1)) * 100;
-};
-
-// 배차 상태가 특정 상태 이상인지 확인하는 함수
-export const isStatusAtLeast = (currentStatus: OrderStatusType, targetStatus: OrderStatusType): boolean => {
-  const statusOrder: OrderStatusType[] = [
-    '배차대기', 
-    '배차완료', 
-    '상차완료', 
-    '운송중', 
-    '하차완료', 
-    '정산완료'
-  ];
-  
-  const currentIndex = statusOrder.indexOf(currentStatus);
-  const targetIndex = statusOrder.indexOf(targetStatus);
-  
-  return currentIndex >= targetIndex;
-}; 
+// 이 함수들은 types/order.ts에 정의된 함수 사용으로 제거됨
+// export const getProgressPercentage...
+// export const isStatusAtLeast... 

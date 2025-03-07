@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { OrderStatusType, IOrderDetail } from '@/utils/mockdata/mock-orders-detail';
+import { OrderStatusType } from '@/types/order';
+import { IOrderDetail } from '@/utils/mockdata/mock-orders-detail';
 
 // 화물 상세 정보 스토어 인터페이스
 interface IOrderDetailState {

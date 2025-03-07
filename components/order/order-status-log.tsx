@@ -7,7 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger 
 } from "@/components/ui/accordion";
-import { IOrderLog, OrderStatusType } from "@/utils/mockdata/mock-orders-detail";
+import { IOrderLog, OrderStatusType } from "@/types/order";
 import { cn } from "@/lib/utils";
 import { 
   ClipboardList, 
