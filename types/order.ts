@@ -111,7 +111,7 @@ export interface ITransportOption {
 
 export const TRANSPORT_OPTIONS: ITransportOption[] = [
   { id: 'direct', label: '이착', description: '상하차 지점 직접 운송' },
-  { id: 'trace', label: '흔적', description: '운송 흔적 추적 가능' },
+  { id: 'trace', label: '혼적', description: '다른 짐들과 합짐' },
   { id: 'fast', label: '빠른 배차', description: '우선 배차 처리' },
   { id: 'cod', label: '착불', description: '도착 후 결제' },
   { id: 'wing', label: '윙바디', description: '윙바디 차량으로 배차' },

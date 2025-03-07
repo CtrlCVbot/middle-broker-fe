@@ -18,7 +18,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMutation } from "@tanstack/react-query";
 import { TRANSPORT_OPTIONS } from "@/types/order";
 import { useToast } from "@/components/ui/use-toast";
-import { CalendarIcon, CheckCircleIcon, MapPinIcon, PackageIcon, TruckIcon } from "lucide-react";
+import { CalendarIcon, CheckCircleIcon, MapPinIcon, PackageIcon, TruckIcon, HandCoins } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface OrderRegisterSummaryProps {
@@ -88,11 +88,14 @@ export function OrderRegisterSummary({
                 차량 및 화물 정보
               </h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
-                <Label className="text-muted-foreground">차량 종류</Label>
-                <div className="font-medium">{registerData.vehicleType}</div>
-                
+                <Label className="text-muted-foreground">차량 종류/중량</Label>
+                <div className="font-medium">
+                  {registerData.vehicleType}/{registerData.weightType}
+                </div>
+                {/*
                 <Label className="text-muted-foreground">중량</Label>
                 <div className="font-medium">{registerData.weightType}</div>
+                */}
                 
                 <Label className="text-muted-foreground">화물 품목</Label>
                 <div className="font-medium">{registerData.cargoType}</div>
@@ -136,10 +139,14 @@ export function OrderRegisterSummary({
                 <div className="font-medium">{registerData.departure.company}</div>
                 
                 <Label className="text-muted-foreground">담당자</Label>
-                <div className="font-medium">{registerData.departure.name}</div>
+                <div className="font-medium">
+                  {registerData.departure.name}/{registerData.departure.contact}
+                </div>
                 
+                {/*
                 <Label className="text-muted-foreground">연락처</Label>
-                <div className="font-medium">{registerData.departure.contact}</div>
+                <div className="font-medium"></div>
+                */}
                 
                 <Label className="text-muted-foreground">출발 일시</Label>
                 <div className="font-medium">
@@ -171,10 +178,14 @@ export function OrderRegisterSummary({
                 <div className="font-medium">{registerData.destination.company}</div>
                 
                 <Label className="text-muted-foreground">담당자</Label>
-                <div className="font-medium">{registerData.destination.name}</div>
+                <div className="font-medium">
+                  {registerData.destination.name}/{registerData.destination.contact}
+                </div>
                 
+                {/*
                 <Label className="text-muted-foreground">연락처</Label>
                 <div className="font-medium">{registerData.destination.contact}</div>
+                */}
                 
                 <Label className="text-muted-foreground">도착 일시</Label>
                 <div className="font-medium">
@@ -206,8 +217,8 @@ export function OrderRegisterSummary({
               </>
             )}
             
-            {/* 예상 정보 */}
-            <div className="space-y-2">
+            {/* 예상 정보
+            {/* <div className="space-y-2">
               <h3 className="text-lg font-medium flex items-center">
                 <CalendarIcon className="w-5 h-5 mr-2" />
                 예상 정보
@@ -221,11 +232,19 @@ export function OrderRegisterSummary({
                   {registerData.estimatedAmount?.toLocaleString() || 0} 원
                 </div>
               </div>
-            </div>
-          </div>
+            </div>*/}
+          </div> 
         </ScrollArea>
         
         <DialogFooter className="gap-2 sm:gap-0 mt-4">
+          <div className="flex items-center gap-2">
+          <HandCoins className="w-5 h-5 mr-2" />
+          <div className="font-medium">            
+            {registerData.estimatedDistance?.toLocaleString() || 0} km/
+          </div>
+          <div className="font-bold text-primary text-base">
+            {registerData.estimatedAmount?.toLocaleString() || 0} 원
+          </div>
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
@@ -256,6 +275,7 @@ export function OrderRegisterSummary({
               </span>
             )}
           </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

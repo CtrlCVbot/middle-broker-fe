@@ -21,6 +21,7 @@ import { OrderDetailSheet } from "@/components/order/order-detail-sheet";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
 export default function OrderListPage() {
@@ -84,16 +85,24 @@ export default function OrderListPage() {
 
   return (
     <>
+      
       <header className="flex h-16 shrink-0 items-center gap-2">
         <div className="flex items-center gap-2 px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator
+            orientation="vertical"
+            className="mr-2 data-[orientation=vertical]:h-4"
+          />
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="/">홈</BreadcrumbLink>
+                <BreadcrumbLink href="/">                  
+                  홈
+                </BreadcrumbLink>
               </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbSeparator className="hidden md:block" />              
               <BreadcrumbItem>
-                <BreadcrumbPage>화물 목록</BreadcrumbPage>
+                <BreadcrumbPage>화물 현황</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>

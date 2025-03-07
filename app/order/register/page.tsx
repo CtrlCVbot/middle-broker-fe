@@ -51,10 +51,7 @@ export default function OrderRegisterPage() {
                   홈
                 </BreadcrumbLink>
               </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/order/list">화물 관리</BreadcrumbLink>
-              </BreadcrumbItem>
+             
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
                 <BreadcrumbPage>화물 등록</BreadcrumbPage>
