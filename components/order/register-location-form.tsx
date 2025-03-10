@@ -21,9 +21,12 @@ import { useOrderRegisterStore } from "@/store/order-register-store";
 import { searchAddress, RECENT_LOCATIONS } from "@/utils/mockdata/mock-register";
 import { ILocationInfo } from "@/types/order";
 import { CalendarIcon, SearchIcon, ClockIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface LocationFormProps {
   type: 'departure' | 'destination';
@@ -107,8 +110,8 @@ export function LocationForm({
   }, [locationInfo.date, locationInfo.time]);
   
   return (
-    <div className="space-y-3">
-      {/* <h3 className="text-lg font-medium">{title}</h3> */} 
+    <div className="space-y-4">
+      {title && !compact && <h3 className="text-lg font-medium">{title}</h3>}
       
       {/* 최근 주소 표시 */}
       {filteredRecentLocations.length > 0 && (
@@ -133,138 +136,111 @@ export function LocationForm({
       
       {/* 주소 검색 */}
       <div className="space-y-2">
-        <FormLabel>주소</FormLabel>
-        <div>
-          <div className="flex gap-2">
-            <Input
-              value={locationInfo.address || ''}
-              onChange={(e) => onChange({ address: e.target.value })}
-              placeholder="주소를 입력하세요"
-              disabled={true}
-            />
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline" type="button">
-                  <SearchIcon className="h-4 w-4 mr-2" />
-                  검색
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>주소 검색</DialogTitle>
-                  <DialogDescription>
-                    찾으시는 주소의 동/읍/면 이름을 입력하세요
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="flex gap-2 my-4">
-                  <Input
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="예: 강남구 역삼동"
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  />
-                  <Button 
-                    type="button" 
-                    onClick={handleSearch}
-                    disabled={searching}
-                  >
-                    {searching ? '검색 중...' : '검색'}
-                  </Button>
-                </div>
-                
-                {searchResults.length > 0 && (
-                  <ScrollArea className="h-60">
-                    <div className="space-y-2">
-                      {searchResults.map((address, i) => (
-                        <div 
-                          key={i}
-                          className="p-2 cursor-pointer border rounded hover:bg-accent"
-                        >
-                          <DialogClose asChild>
-                            <Button 
-                              variant="ghost" 
-                              className="w-full justify-start text-left p-2"
-                              onClick={() => handleSelectAddress(address)}
-                            >
-                              {address}
-                            </Button>
-                          </DialogClose>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                )}
-              </DialogContent>
-            </Dialog>
-          </div>
-          {/* 상세 주소 */}
-          <div className="py-2">
-            {/* <FormLabel>상세 주소</FormLabel>*/}
-            <Input
-              value={locationInfo.detailedAddress || ''}
-              onChange={(e) => onChange({ detailedAddress: e.target.value })}
-              placeholder="상세 주소를 입력하세요"
-            />
-          </div>
+        <Label htmlFor={`${type}-address`}>주소</Label>
+        <div className="flex space-x-2">
+          <Input
+            id={`${type}-address`}
+            placeholder="주소 검색"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          />
+          <Button type="button" size="icon" onClick={handleSearch} disabled={searching}>
+            <SearchIcon className="h-4 w-4" />
+          </Button>
         </div>
+        
+        {/* 주소 검색 결과 */}
+        {searchResults.length > 0 && (
+          <Card className="mt-2">
+            <CardContent className="p-2">
+              <ScrollArea className="h-32">
+                <div className="space-y-1">
+                  {searchResults.map((address, idx) => (
+                    <Button
+                      key={idx}
+                      variant="ghost"
+                      className="w-full justify-start text-left h-auto py-2"
+                      onClick={() => handleSelectAddress(address)}
+                    >
+                      <div className="flex items-center space-x-2 w-full">
+                        <div className="flex-1 truncate">
+                          <span className="text-sm font-medium">{address}</span>
+                        </div>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        )}
+        
+        {/* 선택된 주소 표시 */}
+        {locationInfo.address && (
+          <div className="flex items-center">
+            <div className="bg-muted p-2 rounded flex-1">
+              <span className="text-sm">{locationInfo.address}</span>
+            </div>
+          </div>
+        )}
       </div>
       
-      {/*
+      {/* 상세 주소 */}
       <div>
-        {/* <FormLabel>상세 주소</FormLabel>
+        <Label htmlFor={`${type}-detailed-address`}>상세주소</Label>
         <Input
+          id={`${type}-detailed-address`}
+          placeholder="상세주소를 입력하세요"
           value={locationInfo.detailedAddress || ''}
           onChange={(e) => onChange({ detailedAddress: e.target.value })}
-          placeholder="상세 주소를 입력하세요"
         />
       </div>
-      */}
       
-      {/* 회사명 / 담당자 */}
-      <div className={cn("grid gap-3", compact ? "grid-cols-2" : "grid-cols-1")}>
+      <div className="grid grid-cols-2 gap-4">
+        {/* 담당자 */}
         <div>
-          <FormLabel>회사명</FormLabel>
+          <Label htmlFor={`${type}-name`}>담당자</Label>
           <Input
-            value={locationInfo.company || ''}
-            onChange={(e) => onChange({ company: e.target.value })}
-            placeholder="회사명을 입력하세요"
+            id={`${type}-name`}
+            placeholder="담당자명"
+            value={locationInfo.name || ''}
+            onChange={(e) => onChange({ name: e.target.value })}
           />
         </div>
         
+        {/* 연락처 */}
         <div>
-          <FormLabel>담당자</FormLabel>
+          <Label htmlFor={`${type}-contact`}>연락처</Label>
           <Input
-            value={locationInfo.name || ''}
-            onChange={(e) => onChange({ name: e.target.value })}
-            placeholder="담당자 이름을 입력하세요"
+            id={`${type}-contact`}
+            placeholder="연락처"
+            value={locationInfo.contact || ''}
+            onChange={(e) => onChange({ contact: e.target.value })}
+          />
+        </div>
+        
+        {/* 회사명 */}
+        <div className="col-span-2">
+          <Label htmlFor={`${type}-company`}>회사명</Label>
+          <Input
+            id={`${type}-company`}
+            placeholder="회사명"
+            value={locationInfo.company || ''}
+            onChange={(e) => onChange({ company: e.target.value })}
           />
         </div>
       </div>
       
-      {/* 연락처 */}
-      <div>
-        <FormLabel>연락처</FormLabel>
-        <Input
-          value={locationInfo.contact || ''}
-          onChange={(e) => onChange({ contact: e.target.value })}
-          placeholder="예: 010-1234-5678"
-        />
-      </div>
-      
-      {/* 날짜 / 시간 */}
-      <div className={cn("grid gap-3", compact ? "grid-cols-2" : "grid-cols-1")}>
+      <div className="grid grid-cols-2 gap-4">
         {/* 날짜 선택 */}
         <div>
-          <FormLabel>{type === 'departure' ? '출발일' : '도착일'}</FormLabel>
+          <Label>날짜</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !date && "text-muted-foreground"
-                )}
+                className="w-full justify-start text-left font-normal"
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {date ? (
@@ -288,15 +264,44 @@ export function LocationForm({
         
         {/* 시간 선택 */}
         <div>
-          <FormLabel>{type === 'departure' ? '출발 시간' : '도착 시간'}</FormLabel>
+          <Label htmlFor={`${type}-time`}>시간</Label>
           <Input
+            id={`${type}-time`}
             type="time"
             value={locationInfo.time || ''}
             onChange={(e) => onChange({ time: e.target.value })}
-            placeholder="시간 선택"
           />
         </div>
       </div>
+      
+      {/* 최근 사용 주소 */}
+      {!compact && (
+        <div className="mt-4">
+          <Label className="mb-2 block">최근 사용 주소</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {RECENT_LOCATIONS.slice(0, 4).map((location, idx) => (
+              <Button
+                key={idx}
+                variant="outline"
+                className="h-auto py-2 justify-start"
+                onClick={() => useRecentLocation(type, location.id)}
+              >
+                <div className="flex items-center space-x-2 w-full">
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback className="text-xs">
+                      {location.name.slice(0, 1)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 truncate">
+                    <p className="text-sm font-medium">{location.address}</p>
+                    <p className="text-xs text-muted-foreground truncate">{location.company}</p>
+                  </div>
+                </div>
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

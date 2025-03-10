@@ -136,7 +136,6 @@ export interface IOrderRegisterData {
   vehicleType: VehicleType;
   weightType: WeightType;
   cargoType: string;
-  specialRequirements?: string;
   remark?: string;
   departure: ILocationInfo;
   destination: ILocationInfo;

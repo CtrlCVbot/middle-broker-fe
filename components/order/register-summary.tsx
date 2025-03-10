@@ -100,13 +100,6 @@ export function OrderRegisterSummary({
                 <Label className="text-muted-foreground">화물 품목</Label>
                 <div className="font-medium">{registerData.cargoType}</div>
                 
-                {registerData.specialRequirements && (
-                  <>
-                    <Label className="text-muted-foreground">특이사항</Label>
-                    <div className="font-medium">{registerData.specialRequirements}</div>
-                  </>
-                )}
-                
                 {registerData.remark && (
                   <>
                     <Label className="text-muted-foreground">비고</Label>

@@ -30,7 +30,7 @@ export interface IOrderDetail {
     type: string;
     options?: string[];
     weight?: string;
-    specialRequirements?: string;
+    remark?: string;
   };
   vehicle: {
     type: string;
@@ -74,7 +74,7 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
       type: "생활용품",
       options: ["충격주의"],
       weight: "2.5톤",
-      specialRequirements: "지정장소 하차"
+      remark: "지정장소 하차"
     },
     vehicle: {
       type: "카고",
@@ -123,7 +123,7 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
       type: "전자제품",
       options: ["충격주의", "고가품"],
       weight: "5톤",
-      specialRequirements: "인수자 서명 필수"
+      remark: "인수자 서명 필수"
     },
     vehicle: {
       type: "윙바디",
@@ -179,7 +179,7 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
       type: "의류",
       options: ["습기주의", "충격주의"],
       weight: "3.5톤",
-      specialRequirements: "냉방차량 필수"
+      remark: "냉방차량 필수"
     },
     vehicle: {
       type: "탑차",
@@ -243,7 +243,7 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
       type: "냉동식품",
       options: ["냉동보관 필수", "시간엄수"],
       weight: "3.5톤",
-      specialRequirements: "온도 -18도 유지"
+      remark: "온도 -18도 유지"
     },
     vehicle: {
       type: "냉동",
@@ -315,7 +315,7 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
       type: "자동차부품",
       options: ["충격주의", "고중량"],
       weight: "2.5톤",
-      specialRequirements: "하차 시 지게차 필요"
+      remark: "하차 시 지게차 필요"
     },
     vehicle: {
       type: "탑차",
@@ -395,7 +395,7 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
       type: "전자부품",
       options: ["고가품", "충격주의"],
       weight: "5톤",
-      specialRequirements: "온도 상승 주의"
+      remark: "온도 상승 주의"
     },
     vehicle: {
       type: "윙바디",
@@ -482,7 +482,7 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
       type: "식품",
       options: ["시간엄수", "온도관리"],
       weight: "3.5톤",
-      specialRequirements: "냉장 차량 필수"
+      remark: "냉장 차량 필수"
     },
     vehicle: {
       type: "카고",
@@ -531,7 +531,7 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
       type: "가구",
       options: ["충격주의", "습기주의"],
       weight: "2.5톤",
-      specialRequirements: "하차 시 2인 필요"
+      remark: "하차 시 2인 필요"
     },
     vehicle: {
       type: "탑차",
@@ -580,7 +580,7 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
       type: "건축자재",
       options: ["중량물", "충격주의"],
       weight: "3.5톤",
-      specialRequirements: "하차장비 필요"
+      remark: "하차장비 필요"
     },
     vehicle: {
       type: "카고",
@@ -636,7 +636,7 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
       type: "농산물",
       options: ["신선도유지", "시간엄수"],
       weight: "1톤",
-      specialRequirements: "냉장 운송"
+      remark: "냉장 운송"
     },
     vehicle: {
       type: "냉장",
@@ -708,7 +708,7 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
       type: "섬유제품",
       options: ["습기주의", "충격주의"],
       weight: "2톤",
-      specialRequirements: "포장 손상 주의"
+      remark: "포장 손상 주의"
     },
     vehicle: {
       type: "탑차",
@@ -772,7 +772,7 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
       type: "의약품",
       options: ["온도관리", "충격주의", "고가품"],
       weight: "1.5톤",
-      specialRequirements: "15-25도 유지"
+      remark: "15-25도 유지"
     },
     vehicle: {
       type: "탑차",
@@ -852,7 +852,7 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
       type: "화학제품",
       options: ["위험물", "취급주의"],
       weight: "4톤",
-      specialRequirements: "안전장비 필수"
+      remark: "안전장비 필수"
     },
     vehicle: {
       type: "탑차",
@@ -939,7 +939,7 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
       type: "식료품",
       options: ["신선도유지", "온도관리"],
       weight: "2톤",
-      specialRequirements: "냉장 운송"
+      remark: "냉장 운송"
     },
     vehicle: {
       type: "냉장",
@@ -988,7 +988,7 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
       type: "사무용품",
       options: ["충격주의"],
       weight: "1.5톤",
-      specialRequirements: "포장상태 유지"
+      remark: "포장상태 유지"
     },
     vehicle: {
       type: "카고",

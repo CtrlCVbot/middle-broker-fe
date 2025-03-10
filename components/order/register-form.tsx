@@ -46,12 +46,13 @@ import {
 } from "@/utils/mockdata/mock-register";
 import { LocationForm } from "@/components/order/register-location-form";
 import { OptionSelector } from "./register-option-selector";
-import { CalendarIcon, InfoIcon, TruckIcon, MapPinIcon, Settings2 as OptionsIcon, Calculator as CalculatorIcon } from "lucide-react";
+import { CalendarIcon, InfoIcon, TruckIcon, MapPinIcon, Settings2 as OptionsIcon, Calculator as CalculatorIcon, ChevronDown, ChevronUp, PencilIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface OrderRegisterFormProps {
   onSubmit: () => void;
@@ -60,6 +61,7 @@ interface OrderRegisterFormProps {
 export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
   const [activeTab, setActiveTab] = useState<string>("vehicle");
   const [isCalculating, setIsCalculating] = useState(false);
+  const [showRemark, setShowRemark] = useState<boolean>(false);
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   
   // Zustand 스토어에서 상태와 액션 가져오기
@@ -68,13 +70,13 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
     setVehicleType,
     setWeightType,
     setCargoType,
-    setSpecialRequirements,
+    //setSpecialRequirements,
     setRemark,
     setDeparture,
     setDestination,
     toggleOption,
-    setEstimatedDistance,
-    setEstimatedAmount,
+    //setEstimatedDistance,
+    //setEstimatedAmount,
   } = useOrderRegisterStore();
   
   // React Hook Form
@@ -83,7 +85,7 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
       vehicleType: registerData.vehicleType,
       weightType: registerData.weightType,
       cargoType: registerData.cargoType || '',
-      specialRequirements: registerData.specialRequirements || '',
+      //specialRequirements: registerData.specialRequirements || '',
       remark: registerData.remark || '',
       departure: registerData.departure,
       destination: registerData.destination,
@@ -140,11 +142,11 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
         try {
           // 거리 계산
           const distance = await calculateDistance(departure.address, destination.address);
-          setEstimatedDistance(distance);
+          //setEstimatedDistance(distance);
           
           // 금액 계산
           const amount = await calculateAmount(distance, weightType, selectedOptions);
-          setEstimatedAmount(amount);
+          //setEstimatedAmount(amount);
         } catch (error) {
           console.error("계산 중 오류 발생:", error);
         } finally {
@@ -161,6 +163,13 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
     registerData.weightType,
     registerData.selectedOptions
   ]);
+  
+  // 비고 필드가 비어있지 않으면 자동으로 표시
+  useEffect(() => {
+    if (registerData.remark && registerData.remark.trim() !== '') {
+      setShowRemark(true);
+    }
+  }, [registerData.remark]);
   
   // 모바일 환경에서는 단일 컬럼 레이아웃으로 변경
   if (isMobile) {
@@ -184,9 +193,10 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
               <CardContent>
                 <Form {...form}>
                   <form className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-12 gap-4">
+                      
                       {/* 차량 종류 */}
-                      <div>
+                      <div className="col-span-12 md:col-span-1">
                         <FormLabel>차량 종류</FormLabel>
                         <Select
                           value={registerData.vehicleType}
@@ -206,7 +216,7 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                       </div>
                       
                       {/* 차량 중량 */}
-                      <div>
+                      <div className="col-span-12 md:col-span-1">
                         <FormLabel>중량</FormLabel>
                         <Select
                           value={registerData.weightType}
@@ -224,40 +234,58 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                           </SelectContent>
                         </Select>
                       </div>
+
+                      {/* 화물 품목 */}
+                      <div className="col-span-12 md:col-span-10 flex items-end gap-2">
+                        <div className="flex-1">
+                          <FormLabel>화물 품목</FormLabel>
+                          <Input
+                            placeholder="화물 품목을 입력하세요 (최대 38자)"
+                            maxLength={38}
+                            value={registerData.cargoType}
+                            onChange={(e) => setCargoType(e.target.value)}
+                          />
+                          <p className="text-xs text-right text-muted-foreground mt-1">
+                            {registerData.cargoType.length}/38자
+                          </p>
+                        </div>
+                        
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                type="button" 
+                                variant="outline" 
+                                size="icon" 
+                                className="mb-5"
+                                onClick={() => setShowRemark(!showRemark)}
+                              >
+                                {showRemark ? <ChevronUp className="h-4 w-4" /> : <PencilIcon className="h-4 w-4" />}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>비고 입력란 {showRemark ? '숨기기' : '표시하기'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+
                     </div>
                     
-                    {/* 화물 품목 */}
-                    <div>
-                      <FormLabel>화물 품목</FormLabel>
-                      <Input
-                        placeholder="화물 품목을 입력하세요 (최대 38자)"
-                        maxLength={38}
-                        value={registerData.cargoType}
-                        onChange={(e) => setCargoType(e.target.value)}
-                      />
-                    </div>
                     
-                    {/* 추가 요청사항 */}
-                    <div>
-                      <FormLabel>추가 요청사항</FormLabel>
-                      <Textarea
-                        placeholder="추가 요청사항 (선택사항)"
-                        value={registerData.specialRequirements || ''}
-                        onChange={(e) => setSpecialRequirements(e.target.value)}
-                        className="resize-none h-20"
-                      />
-                    </div>
                     
-                    {/* 비고 */}
-                    <div>
-                      <FormLabel>비고</FormLabel>
-                      <Textarea
-                        placeholder="비고 (선택사항)"
-                        value={registerData.remark || ''}
-                        onChange={(e) => setRemark(e.target.value)}
-                        className="resize-none h-20"
-                      />
-                    </div>
+                    {/* 비고 - 조건부 렌더링 */}
+                    {showRemark && (
+                      <div className="animate-in fade-in-50 duration-200">
+                        <FormLabel>비고</FormLabel>
+                        <Textarea
+                          placeholder="비고 (선택사항)"
+                          value={registerData.remark || ''}
+                          onChange={(e) => setRemark(e.target.value)}
+                          className="resize-none h-20"
+                        />
+                      </div>
+                    )}
                     
                     <Button
                       type="button"
@@ -272,7 +300,7 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
             </Card>
           </TabsContent>
           
-          <TabsContent value="departure">
+          <TabsContent value="departure" className="pt-4">
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center">
@@ -285,7 +313,7 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                   <LocationForm
                     type="departure"
                     locationInfo={registerData.departure}
-                    onChange={setDeparture}
+                    onChange={(info) => setDeparture(info as any)}
                     title="출발지 정보"
                   />
                   
@@ -322,7 +350,7 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                   <LocationForm
                     type="destination"
                     locationInfo={registerData.destination}
-                    onChange={setDestination}
+                    onChange={(info) => setDestination(info as any)}
                     title="도착지 정보"
                   />
                   
@@ -334,9 +362,14 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                     >
                       이전
                     </Button>
-                    <Button 
+                    <Button
                       type="button"
-                      onClick={handleFormSubmit}
+                      onClick={() => {
+                        const isValid = validateForm();
+                        if (isValid) {
+                          onSubmit();
+                        }
+                      }}
                     >
                       화물 등록
                     </Button>
@@ -403,7 +436,7 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-12 gap-4">
                 {/* 차량 종류 */}
-                <div className="col-span-12 md:col-span-1">
+                <div className="col-span-12 md:col-span-2">
                   <FormLabel>차량 종류</FormLabel>
                   <Select
                     value={registerData.vehicleType}
@@ -423,7 +456,7 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                 </div>
                 
                 {/* 차량 중량 */}
-                <div className="col-span-12 md:col-span-1">
+                <div className="col-span-12 md:col-span-2">
                   <FormLabel>중량</FormLabel>
                   <Select
                     value={registerData.weightType}
@@ -443,44 +476,53 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                 </div>
 
                 {/* 화물 품목 */}
-              <div className="col-span-12 md:col-span-10">
-                <FormLabel>화물 품목</FormLabel>
-                <Input
-                  placeholder="화물 품목을 입력하세요 (최대 38자)"
-                  maxLength={38}
-                  value={registerData.cargoType}
-                  onChange={(e) => setCargoType(e.target.value)}
-                />
-                <p className="text-xs text-right text-muted-foreground mt-1">
-                  {registerData.cargoType.length}/38자
-                </p>
-              </div>
+                <div className="col-span-12 md:col-span-8 flex items-end gap-2">
+                  <div className="flex-1">
+                    <FormLabel>화물 품목</FormLabel>
+                    <Input
+                      placeholder="화물 품목을 입력하세요 (최대 38자)"
+                      maxLength={38}
+                      value={registerData.cargoType}
+                      onChange={(e) => setCargoType(e.target.value)}
+                    />
+                    <p className="text-xs text-right text-muted-foreground mt-1">
+                      {registerData.cargoType.length}/38자
+                    </p>
+                  </div>
+                  
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="icon" 
+                          className="mb-5"
+                          onClick={() => setShowRemark(!showRemark)}
+                        >
+                          {showRemark ? <ChevronUp className="h-4 w-4" /> : <PencilIcon className="h-4 w-4" />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>비고 입력란 {showRemark ? '숨기기' : '표시하기'}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
               </div>
               
-              
-              <div className="grid md:grid-cols-2 gap-4">
-              {/* 추가 요청사항 */}
-              <div>
-                <FormLabel>추가 요청사항</FormLabel>
-                <Textarea
-                  placeholder="추가 요청사항 (선택사항)"
-                  value={registerData.specialRequirements || ''}
-                  onChange={(e) => setSpecialRequirements(e.target.value)}
-                  className="resize-none h-20"
-                />
-              </div>
-              
-              {/* 비고 */}
-              <div>
-                <FormLabel>비고</FormLabel>
-                <Textarea
-                  placeholder="비고 (선택사항)"
-                  value={registerData.remark || ''}
-                  onChange={(e) => setRemark(e.target.value)}
-                  className="resize-none h-20"
-                />
-              </div>
-              </div>
+              {/* 비고 - 조건부 렌더링 */}
+              {showRemark && (
+                <div className="animate-in fade-in-50 duration-200">
+                  <FormLabel>비고</FormLabel>
+                  <Textarea
+                    placeholder="비고 (선택사항)"
+                    value={registerData.remark || ''}
+                    onChange={(e) => setRemark(e.target.value)}
+                    className="resize-none h-20"
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -498,7 +540,7 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                 <LocationForm
                   type="departure"
                   locationInfo={registerData.departure}
-                  onChange={setDeparture}
+                  onChange={(info) => setDeparture(info as ILocationInfo)}
                   compact={true}
                 />
               </CardContent>
@@ -516,7 +558,7 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                 <LocationForm
                   type="destination"
                   locationInfo={registerData.destination}
-                  onChange={setDestination}
+                  onChange={(info) => setDestination(info as ILocationInfo)}
                   compact={true}
                 />
               </CardContent>

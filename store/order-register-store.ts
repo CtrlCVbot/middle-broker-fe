@@ -22,16 +22,31 @@ const initialLocationInfo: ILocationInfo = {
 
 // 초기 화물 등록 데이터
 const initialOrderRegisterData: IOrderRegisterData = {
-  vehicleType: VEHICLE_TYPES[0],
-  weightType: WEIGHT_TYPES[2], // 기본값: 2.5톤
+  vehicleType: '카고',
+  weightType: '1톤',
   cargoType: '',
-  specialRequirements: '',
   remark: '',
-  departure: { ...initialLocationInfo },
-  destination: { ...initialLocationInfo },
+  departure: {
+    address: '',
+    detailedAddress: '',
+    name: '',
+    company: '',
+    contact: '',
+    date: '',
+    time: ''
+  },
+  destination: {
+    address: '',
+    detailedAddress: '',
+    name: '',
+    company: '',
+    contact: '',
+    date: '',
+    time: ''
+  },
   selectedOptions: [],
-  estimatedDistance: 0,
-  estimatedAmount: 0
+  estimatedDistance: undefined,
+  estimatedAmount: undefined
 };
 
 // 최근 사용 주소 저장 인터페이스
@@ -43,33 +58,33 @@ interface IRecentLocation {
 }
 
 // 스토어 상태 인터페이스
-interface IOrderRegisterState {
-  // 데이터
+export interface IOrderRegisterStore {
   registerData: IOrderRegisterData;
+  isCalculating: boolean;
   recentLocations: IRecentLocation[];
   
   // 액션
   setVehicleType: (vehicleType: VehicleType) => void;
   setWeightType: (weightType: WeightType) => void;
   setCargoType: (cargoType: string) => void;
-  setSpecialRequirements: (specialRequirements: string) => void;
   setRemark: (remark: string) => void;
-  setDeparture: (departure: Partial<ILocationInfo>) => void;
-  setDestination: (destination: Partial<ILocationInfo>) => void;
+  setDeparture: (departure: ILocationInfo) => void;
+  setDestination: (destination: ILocationInfo) => void;
   toggleOption: (optionId: string) => void;
-  setEstimatedDistance: (distance: number) => void; 
-  setEstimatedAmount: (amount: number) => void;
+  setEstimatedInfo: (distance: number, amount: number) => void;
+  setIsCalculating: (isCalculating: boolean) => void;
+  resetForm: () => void;
   addRecentLocation: (type: 'departure' | 'destination', info: ILocationInfo) => void;
   useRecentLocation: (type: 'departure' | 'destination', locationId: string) => void;
-  resetForm: () => void;
 }
 
 // 화물 등록 스토어 생성
-export const useOrderRegisterStore = create<IOrderRegisterState>()(
+export const useOrderRegisterStore = create<IOrderRegisterStore>()(
   persist(
     (set) => ({
       // 초기 상태
       registerData: { ...initialOrderRegisterData },
+      isCalculating: false,
       recentLocations: [],
       
       // 액션
@@ -88,11 +103,6 @@ export const useOrderRegisterStore = create<IOrderRegisterState>()(
           registerData: { ...state.registerData, cargoType }
         })),
         
-      setSpecialRequirements: (specialRequirements) => 
-        set((state) => ({
-          registerData: { ...state.registerData, specialRequirements }
-        })),
-        
       setRemark: (remark) => 
         set((state) => ({
           registerData: { ...state.registerData, remark }
@@ -100,18 +110,12 @@ export const useOrderRegisterStore = create<IOrderRegisterState>()(
         
       setDeparture: (departure) => 
         set((state) => ({
-          registerData: { 
-            ...state.registerData, 
-            departure: { ...state.registerData.departure, ...departure } 
-          }
+          registerData: { ...state.registerData, departure: { ...state.registerData.departure, ...departure } }
         })),
         
       setDestination: (destination) => 
         set((state) => ({
-          registerData: { 
-            ...state.registerData, 
-            destination: { ...state.registerData.destination, ...destination } 
-          }
+          registerData: { ...state.registerData, destination: { ...state.registerData.destination, ...destination } }
         })),
         
       toggleOption: (optionId) => 
@@ -130,15 +134,22 @@ export const useOrderRegisterStore = create<IOrderRegisterState>()(
           };
         }),
         
-      setEstimatedDistance: (distance) => 
+      setEstimatedInfo: (distance, amount) => 
         set((state) => ({
-          registerData: { ...state.registerData, estimatedDistance: distance }
+          registerData: { ...state.registerData, estimatedDistance: distance, estimatedAmount: amount }
         })),
         
-      setEstimatedAmount: (amount) => 
+      setIsCalculating: (isCalculating) => 
         set((state) => ({
-          registerData: { ...state.registerData, estimatedAmount: amount }
+          isCalculating
         })),
+        
+      resetForm: () => 
+        set({
+          registerData: { ...initialOrderRegisterData },
+          isCalculating: false,
+          recentLocations: []
+        }),
         
       addRecentLocation: (type, info) => 
         set((state) => {
@@ -172,11 +183,6 @@ export const useOrderRegisterStore = create<IOrderRegisterState>()(
               [type]: { ...location.info }
             }
           };
-        }),
-        
-      resetForm: () => 
-        set({
-          registerData: { ...initialOrderRegisterData }
         })
     }),
     {

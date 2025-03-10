@@ -21,6 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { CalendarClock, AlertTriangle } from "lucide-react";
+import { Label } from "@/components/ui/label";
 
 export function OrderDetailSheet() {
   const { 
@@ -164,7 +165,7 @@ export function OrderDetailSheet() {
                         </>
                       )}
                       
-                      {orderData.cargo.options && orderData.cargo.options.length > 0 && (
+                      {orderData.cargo.options && (
                         <>
                           <div className="text-muted-foreground">옵션</div>
                           <div className="col-span-2 font-medium">
@@ -173,11 +174,11 @@ export function OrderDetailSheet() {
                         </>
                       )}
                       
-                      {orderData.cargo.specialRequirements && (
+                      {orderData.cargo.remark && (
                         <>
-                          <div className="text-muted-foreground">특이사항</div>
+                          <div className="text-muted-foreground">비고</div>
                           <div className="col-span-2 font-medium text-xs">
-                            {orderData.cargo.specialRequirements}
+                            {orderData.cargo.remark}
                           </div>
                         </>
                       )}
