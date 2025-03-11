@@ -1,9 +1,9 @@
 import MainLayout from "../main-layout";
 
-export default function Layout({
+export default function DashboardLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return <MainLayout>{children}</MainLayout>;
 } 
