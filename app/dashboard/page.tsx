@@ -74,7 +74,7 @@ export default function DashboardPage() {
             {/* 운송 상태 및 트렌드 */}            
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-1">
-                <DashboardStatus />
+                <DashboardWeight />
               </div>
               <div className="lg:col-span-2">
                 <DashboardTrends />
@@ -88,23 +88,13 @@ export default function DashboardPage() {
               <div className="lg:col-span-1">
                 <DashboardGeo />
               </div>
-              <div className="lg:col-span-1">
-                <DashboardWeight />
+              <div className="lg:col-span-2">
+              <DashboardTable />
               </div>
-              <div className="lg:col-span-1">
-                <DashboardLog />
-              </div>
+             
             </section>
             
-            {/* 최근 화물 */}
-            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/*<div className="lg:col-span-1">
-                <DashboardWeight />
-              </div>*/}
-              <div className="lg:col-span-3">
-                <DashboardTable />
-              </div>
-            </section>
+            
           </div>
         </div>
       </main>

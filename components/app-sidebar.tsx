@@ -71,11 +71,7 @@ export const data = {
       url: "/order/register",
       icon: PackagePlus,
     },
-    {
-      title: "프로필",
-      url: "/profile",
-      icon: User,
-    },
+    
 
     {
       title: "주소록",
@@ -126,7 +122,14 @@ export const data = {
         },
       ],
     },
+    {
+      title: "프로필",
+      url: "/profile",
+      icon: User,
+    },
   ],
+
+
   navSecondary: [
     {
       title: "지원",
