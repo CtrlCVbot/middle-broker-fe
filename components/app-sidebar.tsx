@@ -18,7 +18,8 @@ import {
   CalendarClock,
   Layers3,
   Truck,
-  PackagePlus
+  PackagePlus,
+  Calculator
 } from "lucide-react"
 import Link from 'next/link'
 
@@ -63,7 +64,7 @@ export const data = {
         {
           title: "화물 등록",
           url: "/order/register",
-        },
+        }
       ],
     },
     {
@@ -72,6 +73,21 @@ export const data = {
       icon: PackagePlus,
     },
     
+    {
+      title: "정산 관리",
+      url: "/settlement",
+      icon: Calculator,
+      items: [
+        {
+          title: "정산 목록",
+          url: "/settlement/list",
+        },
+        {
+          title: "정산 통계",
+          url: "/settlement/stats",
+        }
+      ],
+    },
 
     {
       title: "주소록",

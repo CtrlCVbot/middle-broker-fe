@@ -74,28 +74,7 @@ export function DashboardOverview() {
         </CardContent>
       </Card>
 
-      {/* 월간 목표 진행률 카드 */}
-      <Card className="overflow-hidden border">
-        <CardContent className="p-6">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="rounded-full p-2 bg-teal-100">
-              <CalendarCheck className="h-6 w-6 text-teal-600" />
-            </div>
-            
-            {loading.kpi ? (
-              <Skeleton className="h-12 w-24" />
-            ) : (
-              <div className="text-3xl font-bold">
-                {kpi ? formatCompactNumber(kpi.monthlyTarget.current) : '0'}
-              </div>
-            )}
-            
-            <p className="text-sm text-muted-foreground">
-              완료된 운송
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      
 
       {/* 평균 운송비 카드 */}
       <Card className="overflow-hidden border">
