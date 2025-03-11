@@ -49,30 +49,8 @@ export const data = {
       icon: Home,
       isActive: true,
     },
-    {
-      title: "대시보드",
-      url: "/dashboard",
-      icon: SquareTerminal,
-      items: [
-        {
-          title: "통계",
-          url: "/dashboard/stats",
-        },
-        {
-          title: "보고서",
-          url: "/dashboard/reports",
-        },
-        {
-          title: "설정",
-          url: "/dashboard/settings",
-        },
-      ],
-    },
-    {
-      title: "주소록",
-      url: "/address",
-      icon: NotebookTabs,
-    },
+    
+    
     {
       title: "화물 현황",
       url: "/order/list",
@@ -98,48 +76,33 @@ export const data = {
       url: "/profile",
       icon: User,
     },
+
     {
-      title: "모델",
-      url: "#",
-      icon: Bot,
+      title: "주소록",
+      url: "/address",
+      icon: NotebookTabs,
+    },
+
+    {
+      title: "대시보드",
+      url: "/dashboard",
+      icon: SquareTerminal,
       items: [
         {
-          title: "Genesis",
-          url: "#",
+          title: "통계",
+          url: "/dashboard/stats",
         },
         {
-          title: "Explorer",
-          url: "#",
+          title: "보고서",
+          url: "/dashboard/reports",
         },
         {
-          title: "Quantum",
-          url: "#",
+          title: "설정",
+          url: "/dashboard/settings",
         },
       ],
     },
-    {
-      title: "문서",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "소개",
-          url: "#",
-        },
-        {
-          title: "시작하기",
-          url: "#",
-        },
-        {
-          title: "튜토리얼",
-          url: "#",
-        },
-        {
-          title: "변경 로그",
-          url: "#",
-        },
-      ],
-    },
+    
     {
       title: "설정",
       url: "#",

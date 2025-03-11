@@ -1,25 +1,47 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TrendingUp, RefreshCw } from "lucide-react";
+import { 
+  Area, 
+  AreaChart, 
+  CartesianGrid, 
+  XAxis, 
+  YAxis, 
+  ResponsiveContainer, 
+  Tooltip, 
+  TooltipProps,
+  Legend as RechartsLegend
+} from "recharts";
+import { useDashboardStore } from "@/store/dashboard-store";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { useDashboardStore, TrendPeriod } from "@/store/dashboard-store";
-import { BarChart, LineChart, RefreshCw } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+
+// 원래의 ChartJS 관련 라이브러리를 다시 불러옵니다
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
-  BarElement,
   Title,
-  Tooltip,
+  Tooltip as ChartTooltip,
   Legend,
-  ChartOptions
+  ChartOptions,
+  Filler
 } from 'chart.js';
-import { Line, Bar } from 'react-chartjs-2';
+import { Line } from 'react-chartjs-2';
 
 // Chart.js 컴포넌트 등록
 ChartJS.register(
@@ -27,192 +49,200 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
-  BarElement,
   Title,
-  Tooltip,
-  Legend
+  ChartTooltip,
+  Legend,
+  Filler
 );
 
-// 차트 타입 정의
-type ChartType = 'amount' | 'count';
+// 타입 정의
+type PeriodType = "7d" | "30d";
+
+// 커스텀 툴팁 컴포넌트
+const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-card text-card-foreground border border-border rounded-lg shadow-sm p-2">
+        <p className="font-medium text-sm">{label}</p>
+        {payload.map((entry, index) => (
+          <p key={index} className="text-xs" style={{ color: entry.color }}>
+            {entry.name === "orderAmount" 
+              ? `운송 비용: ${new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 }).format(Number(entry.value) * 10000)}` 
+              : `운송 건수: ${entry.value}건`}
+          </p>
+        ))}
+      </div>
+    );
+  }
+
+  return null;
+};
 
 export function DashboardTrends() {
   const { trendData, loading, filters, setTrendPeriod, refreshDashboard } = useDashboardStore();
-  const [activeChart, setActiveChart] = useState<ChartType>('amount');
-  
-  // 기간 변경 핸들러
+  const [period, setPeriod] = useState<PeriodType>("7d");
+  const [showRecommended, setShowRecommended] = useState(false);
+
   const handlePeriodChange = (value: string) => {
-    setTrendPeriod(value === '7' ? 7 : 30);
+    setPeriod(value as PeriodType);
+    // 기존 API 호출 방식으로 변경
+    if (value === "7d") {
+      setTrendPeriod(7);
+    } else {
+      setTrendPeriod(30);
+    }
   };
-  
-  // 차트 타입 변경 핸들러
-  const handleChartTypeChange = (value: ChartType) => {
-    setActiveChart(value);
-  };
-  
-  // 새로고침 핸들러
+
   const handleRefresh = () => {
     refreshDashboard();
   };
-  
-  // 데이터 포맷팅
-  const labels = trendData.map(item => item.displayDate);
-  
-  // 운송 비용 데이터
-  const amountData = {
-    labels,
-    datasets: [
-      {
-        label: '운송 비용',
-        data: trendData.map(item => item.orderAmount),
-        borderColor: 'rgb(53, 162, 235)',
-        backgroundColor: 'rgba(53, 162, 235, 0.5)',
-        tension: 0.3,
-      }
-    ],
+
+  // 데이터 포맷팅 - 데이터 구조에 맞게 수정
+  const chartData = trendData.map((item, index) => {
+    // trendData에 date 필드가 있다고 가정하고, 없으면 현재 날짜에서 인덱스만큼 뺀 날짜 사용
+    const date = new Date();
+    date.setDate(date.getDate() - (trendData.length - index - 1));
+    const month = date.toLocaleString('en-US', { month: 'short' });
+    
+    return {
+      date: item.date || month, // date 필드가 있으면 사용, 없으면 계산된 월 사용
+      orderAmount: item.orderAmount / 10000, // 만원 단위로 변환
+      orderCount: item.orderCount,
+    };
+  });
+
+  // 증가율 계산 (첫 데이터와 마지막 데이터 비교)
+  const calculateGrowthRate = (): string => {
+    if (trendData.length < 2) return "0.0";
+    const first = trendData[0].orderCount;
+    const last = trendData[trendData.length - 1].orderCount;
+    return ((last - first) / first * 100).toFixed(1);
   };
-  
-  // 운송 건수 데이터
-  const countData = {
-    labels,
-    datasets: [
-      {
-        label: '운송 건수',
-        data: trendData.map(item => item.orderCount),
-        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-        borderColor: 'rgb(255, 99, 132)',
-        borderWidth: 1,
-      }
-    ],
-  };
-  
-  // 차트 공통 옵션
-  const options: ChartOptions<'line' | 'bar'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-      },
-      tooltip: {
-        callbacks: {
-          label: function(context) {
-            let label = context.dataset.label || '';
-            let value = context.parsed.y;
-            
-            if (activeChart === 'amount') {
-              return `${label}: ${new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 }).format(value)}`;
-            } else {
-              return `${label}: ${value}건`;
-            }
-          }
-        }
-      }
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          callback: function(value) {
-            if (activeChart === 'amount') {
-              return new Intl.NumberFormat('ko-KR', { maximumFractionDigits: 0, notation: 'compact' }).format(value as number);
-            } else {
-              return value;
-            }
-          }
-        }
-      }
-    }
-  };
-  
+
+  const growthRate = calculateGrowthRate();
+  const isPositiveGrowth = parseFloat(growthRate) >= 0;
+
   return (
-    <Card className="h-full">
+    <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg flex items-center">
-          {activeChart === 'amount' ? (
-            <LineChart className="h-5 w-5 mr-2" />
-          ) : (
-            <BarChart className="h-5 w-5 mr-2" />
-          )}
-          {activeChart === 'amount' ? '운송 비용 트렌드' : '운송 건수 트렌드'}
-        </CardTitle>
+        <div>
+          <CardTitle>운송 추이 분석</CardTitle>
+          <CardDescription>
+            {period === "7d" ? "지난 7일간" : "지난 30일간"} 운송 건수 및 비용 추이
+          </CardDescription>
+        </div>
         <div className="flex items-center gap-2">
-          <Tabs
-            value={activeChart}
-            onValueChange={(value) => handleChartTypeChange(value as ChartType)}
-            className="hidden sm:block"
-          >
-            <TabsList className="h-8">
-              <TabsTrigger value="amount" className="text-xs">비용</TabsTrigger>
-              <TabsTrigger value="count" className="text-xs">건수</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          <Tabs
-            value={String(filters.trendPeriod)}
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="recommended-mode"
+              checked={showRecommended}
+              onCheckedChange={setShowRecommended}
+            />
+            <Label htmlFor="recommended-mode">추천만</Label>
+          </div>
+          <Select 
+            value={period} 
             onValueChange={handlePeriodChange}
           >
-            <TabsList className="h-8">
-              <TabsTrigger value="7" className="text-xs">7일</TabsTrigger>
-              <TabsTrigger value="30" className="text-xs">30일</TabsTrigger>
-            </TabsList>
-          </Tabs>
+            <SelectTrigger className="w-[130px]">
+              <SelectValue placeholder="기간 선택" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7d">최근 7일</SelectItem>
+              <SelectItem value="30d">최근 30일</SelectItem>
+            </SelectContent>
+          </Select>
           <Button 
-            variant="outline" 
+            variant="ghost" 
             size="icon" 
-            className="h-8 w-8" 
             onClick={handleRefresh}
             disabled={loading.trends}
-            title="새로고침"
           >
-            <RefreshCw className={loading.trends ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
+            <RefreshCw className={`h-4 w-4 ${loading.trends ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px] w-full">
-          {loading.trends ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="space-y-4 w-full">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-[260px] w-full" />
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* 모바일 화면에서만 보이는 선택기 */}
-              <div className="flex items-center justify-center gap-2 mb-4 sm:hidden">
-                <Button 
-                  variant={activeChart === 'amount' ? 'default' : 'outline'} 
-                  size="sm"
-                  onClick={() => handleChartTypeChange('amount')}
-                  className="text-xs"
-                >
-                  <LineChart className="h-3 w-3 mr-1" />
-                  비용
-                </Button>
-                <Button 
-                  variant={activeChart === 'count' ? 'default' : 'outline'} 
-                  size="sm"
-                  onClick={() => handleChartTypeChange('count')}
-                  className="text-xs"
-                >
-                  <BarChart className="h-3 w-3 mr-1" />
-                  건수
-                </Button>
-              </div>
-              
-              {/* 차트 표시 */}
-              <div className="h-[260px]">
-                {activeChart === 'amount' ? (
-                  <Line options={options} data={amountData} />
-                ) : (
-                  <Bar options={options} data={countData} />
-                )}
-              </div>
-            </>
-          )}
-        </div>
+        {loading.trends ? (
+          <Skeleton className="h-[300px] w-full" />
+        ) : (
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={chartData}
+                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+              >
+                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="date" 
+                  tickLine={false} 
+                  axisLine={false} 
+                  tickMargin={8}
+                />
+                <YAxis 
+                  yAxisId="left"
+                  orientation="left"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tickFormatter={(value) => `${value}`}
+                />
+                <YAxis 
+                  yAxisId="right"
+                  orientation="right"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tickFormatter={(value) => `${value}만`}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <RechartsLegend />
+                <defs>
+                  <linearGradient id="colorOrderCount" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0.1}/>
+                  </linearGradient>
+                  <linearGradient id="colorOrderAmount" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.1}/>
+                  </linearGradient>
+                </defs>
+                <Area
+                  yAxisId="left"
+                  type="monotone"
+                  name="운송 건수"
+                  dataKey="orderCount"
+                  stroke="hsl(var(--chart-2))"
+                  fill="url(#colorOrderCount)"
+                  strokeWidth={2}
+                />
+                <Area
+                  yAxisId="right"
+                  type="monotone"
+                  name="운송 비용"
+                  dataKey="orderAmount"
+                  stroke="hsl(var(--chart-1))"
+                  fill="url(#colorOrderAmount)"
+                  strokeWidth={2}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </CardContent>
+      <CardFooter>
+        <div className="flex w-full items-start gap-2 text-sm">
+          <div className="grid gap-2">
+            <div className="flex items-center gap-2 font-medium leading-none">
+              {isPositiveGrowth ? "증가" : "감소"}하는 추세: {growthRate}% 
+              <TrendingUp className={`h-4 w-4 ${isPositiveGrowth ? 'text-green-500' : 'text-red-500'}`} />
+            </div>
+            <div className="flex items-center gap-2 leading-none text-muted-foreground">
+              {period === "7d" ? "최근 7일간 데이터" : "최근 30일간 데이터"}
+            </div>
+          </div>
+        </div>
+      </CardFooter>
     </Card>
   );
 } 

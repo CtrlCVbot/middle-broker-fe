@@ -18,6 +18,9 @@ import {
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
 import { Home } from "lucide-react";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
+import { TestChart01 } from "@/components/dashboard/test-chart01";
 
 export default function DashboardPage() {
   const { initDashboard } = useDashboardStore();
@@ -30,31 +33,45 @@ export default function DashboardPage() {
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 px-4">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href="/">
-                <Home className="h-4 w-4 mr-1" />
-                홈
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator className="hidden md:block" />
-            <BreadcrumbItem>
-              <BreadcrumbPage>대시보드</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <div className="flex items-center gap-2 px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator
+            orientation="vertical"
+            className="mr-2 data-[orientation=vertical]:h-4"
+          />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink href="/">                  
+                  홈
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />              
+              <BreadcrumbItem>
+                <BreadcrumbPage>대시보드</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
       </header>
       
       <main className="flex flex-1 flex-col p-4 pt-0">
         <div className="container mx-auto">
           <div className="space-y-6">
             {/* KPI 카드 */}
-            <section>
-              <DashboardOverview />
+            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-1">
+                <DashboardOverview />
+              </div>
+              <div className="lg:col-span-1">
+                <DashboardStatus />
+              </div>
+              <div className="lg:col-span-1">
+                <DashboardLog />
+              </div>
             </section>
             
-            {/* 운송 상태 및 트렌드 */}
+            {/* 운송 상태 및 트렌드 */}            
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-1">
                 <DashboardStatus />

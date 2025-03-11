@@ -131,7 +131,7 @@ export function DashboardLog() {
         ) : (
           // 타임라인 UI
           <div className="space-y-4">
-            {logs.map((log) => {
+            {logs.slice(0, 6).map((log) => {
               // 현재 상태의 스타일 가져오기
               const { color, icon } = getStatusStyle(log.currentStatus);
               return (

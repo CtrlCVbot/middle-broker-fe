@@ -1,7 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardStore } from "@/store/dashboard-store";
 import { BarChart3, TruckIcon, Wallet, CalendarCheck } from "lucide-react";
@@ -19,97 +18,105 @@ export function DashboardOverview() {
     return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 }).format(num);
   };
   
+  // 숫자를 약식으로 표시 (예: 9.3k, 24k)
+  const formatCompactNumber = (num: number): string => {
+    if (num >= 1000) {
+      return (num / 1000).toFixed(num < 10000 ? 1 : 0) + 'k';
+    }
+    return num.toString();
+  };
+  
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-2">
       {/* 월간 운송 건수 카드 */}
-      <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center">
-            <TruckIcon className="h-4 w-4 mr-2" />
-            이번 달 누적 운송 건수
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading.kpi ? (
-            <Skeleton className="h-10 w-24 bg-white/20" />
-          ) : (
-            <div className="text-2xl font-bold">{kpi ? formatNumber(kpi.monthlyOrderCount) : 0} 건</div>
-          )}
-          {kpi && !loading.kpi && (
-            <p className="text-xs text-white/80 mt-1">
-              목표 {formatNumber(kpi.monthlyTarget.target)}건 중 
-              {kpi.monthlyTarget.percentage}% 진행
+      <Card className="overflow-hidden border">
+        <CardContent className="p-6">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="rounded-full p-2 bg-blue-100">
+              <TruckIcon className="h-6 w-6 text-blue-600" />
+            </div>
+            
+            {loading.kpi ? (
+              <Skeleton className="h-12 w-24" />
+            ) : (
+              <div className="text-3xl font-bold">
+                {kpi ? formatCompactNumber(kpi.monthlyOrderCount) : '0'}
+              </div>
+            )}
+            
+            <p className="text-sm text-muted-foreground">
+              이번 달 운송
             </p>
-          )}
+          </div>
         </CardContent>
       </Card>
 
       {/* 월간 운송 비용 카드 */}
-      <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center">
-            <Wallet className="h-4 w-4 mr-2" />
-            이번 달 총 운송 비용
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading.kpi ? (
-            <Skeleton className="h-10 w-28 bg-white/20" />
-          ) : (
-            <div className="text-2xl font-bold">{kpi ? formatCurrency(kpi.monthlyOrderAmount) : '₩0'}</div>
-          )}
-          {kpi && !loading.kpi && (
-            <p className="text-xs text-white/80 mt-1">
-              운송 건당 평균: {formatCurrency(kpi.monthlyOrderAverage)}
+      <Card className="overflow-hidden border">
+        <CardContent className="p-6">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="rounded-full p-2 bg-red-100">
+              <Wallet className="h-6 w-6 text-red-600" />
+            </div>
+            
+            {loading.kpi ? (
+              <Skeleton className="h-12 w-24" />
+            ) : (
+              <div className="text-3xl font-bold">
+                {kpi ? formatCompactNumber(kpi.monthlyOrderAmount / 10000) : '0'}만
+              </div>
+            )}
+            
+            <p className="text-sm text-muted-foreground">
+              총 운송 비용
             </p>
-          )}
+          </div>
         </CardContent>
       </Card>
 
       {/* 평균 운송비 카드 */}
-      <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            월 평균 운송 비용
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading.kpi ? (
-            <Skeleton className="h-10 w-28 bg-white/20" />
-          ) : (
-            <div className="text-2xl font-bold">{kpi ? formatCurrency(kpi.monthlyOrderAverage) : '₩0'}</div>
-          )}
-          {kpi && !loading.kpi && (
-            <p className="text-xs text-white/80 mt-1">
-              건당 평균 운송 비용
+      <Card className="overflow-hidden border">
+        <CardContent className="p-6">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="rounded-full p-2 bg-purple-100">
+              <BarChart3 className="h-6 w-6 text-purple-600" />
+            </div>
+            
+            {loading.kpi ? (
+              <Skeleton className="h-12 w-24" />
+            ) : (
+              <div className="text-3xl font-bold">
+                {kpi ? formatCompactNumber(kpi.monthlyOrderAverage / 10000) : '0'}만
+              </div>
+            )}
+            
+            <p className="text-sm text-muted-foreground">
+              건당 평균 비용
             </p>
-          )}
+          </div>
         </CardContent>
       </Card>
 
       {/* 월간 목표 진행률 카드 */}
-      <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center">
-            <CalendarCheck className="h-4 w-4 mr-2" />
-            월간 목표 진행률
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading.kpi ? (
-            <Skeleton className="h-10 w-28 bg-white/20" />
-          ) : (
-            <div className="text-2xl font-bold">{kpi ? `${kpi.monthlyTarget.percentage}%` : '0%'}</div>
-          )}
-          {kpi && !loading.kpi && (
-            <div className="mt-2">
-              <Progress value={kpi.monthlyTarget.percentage} className="h-2 bg-white/20" />
-              <p className="text-xs text-white/80 mt-1">
-                {kpi.monthlyTarget.current}/{kpi.monthlyTarget.target} 건 완료
-              </p>
+      <Card className="overflow-hidden border">
+        <CardContent className="p-6">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="rounded-full p-2 bg-teal-100">
+              <CalendarCheck className="h-6 w-6 text-teal-600" />
             </div>
-          )}
+            
+            {loading.kpi ? (
+              <Skeleton className="h-12 w-24" />
+            ) : (
+              <div className="text-3xl font-bold">
+                {kpi ? formatCompactNumber(kpi.monthlyTarget.current) : '0'}
+              </div>
+            )}
+            
+            <p className="text-sm text-muted-foreground">
+              완료된 운송
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
