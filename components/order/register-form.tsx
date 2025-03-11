@@ -29,6 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatusFlow } from "@/components/order/status-badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useForm } from "react-hook-form";
 import { useOrderRegisterStore } from "@/store/order-register-store";
@@ -60,9 +61,10 @@ import { toast } from "@/components/ui/use-toast";
 interface OrderRegisterFormProps {
   onSubmit: () => void;
   editMode?: boolean;
+  orderNumber?: string;
 }
 
-export function OrderRegisterForm({ onSubmit, editMode = false }: OrderRegisterFormProps) {
+export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: OrderRegisterFormProps) {
   const [activeTab, setActiveTab] = useState<string>("vehicle");
   const [isCalculating, setIsCalculating] = useState(false);
   const [showRemark, setShowRemark] = useState<boolean>(false);
@@ -136,9 +138,16 @@ export function OrderRegisterForm({ onSubmit, editMode = false }: OrderRegisterF
     }
   };
   
-  // React Hook Form
-  const form = useForm({
-    defaultValues: {
+  // React Hook Form 초기화 함수
+  const initForm = () => {
+    if (editMode && originalData) {
+      console.log("폼 초기화 - 수정 모드:", registerData);
+    } else {
+      console.log("폼 초기화 - 등록 모드:", registerData);
+    }
+    
+    // 폼 초기값 설정
+    return {
       vehicleType: registerData.vehicleType,
       weightType: registerData.weightType,
       cargoType: registerData.cargoType || '',
@@ -146,8 +155,31 @@ export function OrderRegisterForm({ onSubmit, editMode = false }: OrderRegisterF
       departure: registerData.departure,
       destination: registerData.destination,
       selectedOptions: registerData.selectedOptions
-    }
+    };
+  };
+  
+  // React Hook Form
+  const form = useForm({
+    defaultValues: initForm()
   });
+  
+  // 폼 데이터 업데이트 (수정 모드에서 폼 필드가 초기 데이터와 연결되도록 추가)
+  useEffect(() => {
+    if (editMode && originalData) {
+      console.log("폼 데이터 업데이트:", registerData);
+      
+      // 폼의 값을 업데이트
+      form.reset({
+        vehicleType: registerData.vehicleType,
+        weightType: registerData.weightType,
+        cargoType: registerData.cargoType || '',
+        remark: registerData.remark || '',
+        departure: registerData.departure,
+        destination: registerData.destination,
+        selectedOptions: registerData.selectedOptions
+      });
+    }
+  }, [editMode, form, originalData, registerData]);
   
   // 폼 제출 처리
   const handleFormSubmit = (data: any) => {
@@ -243,6 +275,12 @@ export function OrderRegisterForm({ onSubmit, editMode = false }: OrderRegisterF
                   <TruckIcon className="h-5 w-5 mr-2" />
                   차량 및 화물 정보
                 </CardTitle>
+                {editMode && originalData && (
+                  <div className="pt-2">
+                    <div className="text-sm font-medium text-muted-foreground mb-2">배차 진행 상태</div>
+                    <StatusFlow currentStatus={originalData.status} />
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -518,14 +556,32 @@ export function OrderRegisterForm({ onSubmit, editMode = false }: OrderRegisterF
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* 왼쪽: 화물 정보 카드 */}
           <Card className="lg:col-span-3">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center">
-                <TruckIcon className="h-5 w-5 mr-2" />
-                화물 정보
-              </CardTitle>
-              <CardDescription>
-                  운송할 화물 정보를 입력하고 등록해주세요.
+            <CardHeader className="pb-3 relative">
+              <div className="flex flex-col space-y-1">
+                <CardTitle className="text-lg flex items-center">
+                  <TruckIcon className="h-5 w-5 mr-2" />
+                  {editMode ? (
+                    <>화물 수정 - #{orderNumber}</>
+                  ) : (
+                    <>화물 정보</>
+                  )}
+                </CardTitle>
+                <CardDescription>
+                  {editMode ? (
+                    <>화물 정보를 수정하세요. 배차 상태에 따라 수정 가능한 항목이 제한될 수 있습니다.</>
+                  ) : (
+                    <>운송할 화물 정보를 입력하고 등록해주세요.</>
+                  )}
                 </CardDescription>
+              </div>
+
+              {/* 배차 상태 flow 추가 */}
+              {editMode && originalData && (
+                <div className="mt-4 pb-2">
+                  <div className="text-sm font-medium text-muted-foreground mb-2">배차 진행 상태</div>
+                  <StatusFlow currentStatus={originalData.status} />
+                </div>
+              )}
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-12 gap-4">

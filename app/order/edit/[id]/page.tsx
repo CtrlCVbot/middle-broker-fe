@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OrderRegisterForm } from "@/components/order/register-form";
 import { EditConfirmDialog } from "@/components/order/edit-confirm-dialog";
-import { StatusFlow } from "@/components/order/status-badge";
 import { useOrderEditStore } from "@/store/order-edit-store";
 import { updateOrder } from "@/utils/mockdata/mock-order-edit";
 import { useToast } from "@/components/ui/use-toast";
@@ -87,8 +86,14 @@ export default function OrderEditPage() {
         variant: "destructive",
       });
     } else if (orderData) {
+      // 먼저 원본 데이터 설정
       setOriginalData(orderData);
+      
+      // 로딩 중 상태가 완료되었음을 표시
       setError(null);
+      
+      // 콘솔에 로그 출력 (디버깅용)
+      console.log("원본 데이터 로드 완료:", orderData);
     }
   }, [orderData, isDataLoading, isError, error, setLoading, setOriginalData, setError, toast]);
   
@@ -172,46 +177,14 @@ export default function OrderEditPage() {
           </BreadcrumbList>
         </Breadcrumb>
         
-        {isLoading ? (
-          <div className="ml-2 flex items-center text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin mr-1" />
-            <span className="text-sm">로딩 중...</span>
-          </div>
-        ) : originalData ? (
-          <div className="ml-2 flex items-center gap-2">
-            <span className="text-sm font-medium">#{originalData.orderNumber}</span>
-            <StatusFlow currentStatus={originalData.status} />
-          </div>
-        ) : null}
+        {originalData && (
+          <span className="ml-2 text-sm font-medium">#{originalData.orderNumber}</span>
+        )}
       </header>
 
       <main className="flex flex-1 flex-col p-4 pt-0">
         <div className="container">
           <div className="flex flex-col space-y-4">
-            {/* 화물 수정 상단 카드 */}
-            <Card className="w-full">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <div>
-                  <CardTitle>화물 수정</CardTitle>
-                  <CardDescription>
-                    화물 정보를 수정하세요. 배차 상태에 따라 수정 가능한 항목이 제한될 수 있습니다.
-                  </CardDescription>
-                </div>
-                {originalData && (
-                  <div className="hidden md:block">
-                    <StatusFlow currentStatus={originalData.status} />
-                  </div>
-                )}
-              </CardHeader>
-              
-              {/* 모바일에서는 아래에 상태 표시 */}
-              {originalData && (
-                <CardContent className="md:hidden pt-0">
-                  <StatusFlow currentStatus={originalData.status} />
-                </CardContent>
-              )}
-            </Card>
-            
             {/* 로딩 상태 표시 */}
             {isLoading ? (
               <Card>
@@ -234,6 +207,7 @@ export default function OrderEditPage() {
               <OrderRegisterForm 
                 onSubmit={handleEditComplete} 
                 editMode={true}
+                orderNumber={originalData?.orderNumber}
               />
             )}
             
