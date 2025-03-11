@@ -1,32 +1,26 @@
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { FormLabel } from "@/components/ui/form";
+import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { FormLabel } from "@/components/ui/form";
 import { Calendar } from "@/components/ui/calendar";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { 
   Dialog, 
   DialogContent, 
-  DialogDescription, 
   DialogHeader, 
   DialogTitle, 
-  DialogTrigger,
-  DialogClose
+  DialogDescription, 
+  DialogClose,
+  DialogTrigger 
 } from "@/components/ui/dialog";
-import { useOrderRegisterStore } from "@/store/order-register-store";
-import { searchAddress, RECENT_LOCATIONS } from "@/utils/mockdata/mock-register";
-import { ILocationInfo } from "@/types/order";
-import { CalendarIcon, SearchIcon, ClockIcon } from "lucide-react";
-import { format, parse } from "date-fns";
-import { ko } from "date-fns/locale";
-import { cn } from "@/lib/utils";
-import { Card, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ILocationInfo } from '@/types/order';
+import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
+import { CalendarIcon, Search as SearchIcon } from 'lucide-react';
+import { useOrderRegisterStore } from '@/store/order-register-store';
+import { cn } from '@/lib/utils';
+import { RECENT_LOCATIONS } from '@/utils/mockdata/mock-register';
 
 interface LocationFormProps {
   type: 'departure' | 'destination';
@@ -34,223 +28,260 @@ interface LocationFormProps {
   onChange: (info: Partial<ILocationInfo>) => void;
   title?: string;
   compact?: boolean;
+  disabled?: boolean;
+  onDisabledClick?: () => void;
 }
 
-export function LocationForm({ 
+export const LocationForm: React.FC<LocationFormProps> = ({ 
   type, 
   locationInfo, 
   onChange, 
   title = type === 'departure' ? '출발지 정보' : '도착지 정보',
-  compact = false 
-}: LocationFormProps) {
+  compact = false,
+  disabled = false,
+  onDisabledClick
+}) => {
+  const { useRecentLocation } = useOrderRegisterStore();
+  
+  // 날짜 상태 관리
+  const [date, setDate] = useState<Date | undefined>(() => {
+    if (!locationInfo.date) return undefined;
+    
+    try {
+      const [year, month, day] = locationInfo.date.split('-').map(Number);
+      if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+        return new Date(year, month - 1, day);
+      }
+    } catch (e) {
+      console.error('날짜 변환 오류:', e);
+    }
+    return undefined;
+  });
+  
+  // 주소 검색 관련 상태
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<string[]>([]);
   const [searching, setSearching] = useState(false);
-  const [date, setDate] = useState<Date | undefined>(
-    locationInfo.date ? new Date(locationInfo.date) : undefined
-  );
   
-  const { recentLocations, addRecentLocation, useRecentLocation } = useOrderRegisterStore();
-  
-  // 해당 타입(출발/도착)에 맞는 최근 위치 필터링
-  const filteredRecentLocations = recentLocations
-    .filter(loc => loc.type === type)
-    .slice(0, 3); // 최근 3개만 표시
-  
-  // 주소 검색 처리
-  const handleSearch = async () => {
+  // 주소 검색 함수
+  const handleSearch = () => {
     if (!searchQuery.trim()) return;
     
     setSearching(true);
-    try {
-      const results = await searchAddress(searchQuery);
+    // 검색 시뮬레이션
+    setTimeout(() => {
+      const results = [
+        `${searchQuery} 1번지`,
+        `${searchQuery} 중앙로 123`,
+        `${searchQuery} 산업단지 A블록`,
+        `${searchQuery} 주택단지 101동`,
+        `${searchQuery} 상가 지하 1층`
+      ];
       setSearchResults(results);
-    } catch (error) {
-      console.error('주소 검색 오류:', error);
-    } finally {
       setSearching(false);
-    }
+    }, 500);
   };
   
-  // 검색 결과 선택 처리
+  // 주소 선택 함수
   const handleSelectAddress = (address: string) => {
     onChange({ address });
-    setSearchResults([]);
-    setSearchQuery('');
   };
   
-  // 날짜 변경 처리
+  // 날짜 변경 함수
   const handleDateChange = (newDate: Date | undefined) => {
     setDate(newDate);
     if (newDate) {
-      onChange({ date: format(newDate, 'yyyy-MM-dd') });
+      const formattedDate = format(newDate, 'yyyy-MM-dd');
+      onChange({ date: formattedDate });
     }
   };
   
-  // 전체 데이터 저장 처리
-  const handleSaveAll = () => {
-    // 모든 필드가 입력되었을 때만 최근 위치에 추가
-    if (
-      locationInfo.address && 
-      locationInfo.company && 
-      locationInfo.name && 
-      locationInfo.contact && 
-      locationInfo.date && 
-      locationInfo.time
-    ) {
-      addRecentLocation(type, locationInfo);
+  // 비활성화된 필드 클릭 시 콜백 호출
+  const handleDisabledClick = () => {
+    if (disabled && onDisabledClick) {
+      onDisabledClick();
     }
   };
   
-  // 날짜, 시간이 입력된 후 저장
+  // 날짜 정보가 변경될 때 state 업데이트
   useEffect(() => {
-    if (locationInfo.date && locationInfo.time) {
-      handleSaveAll();
+    if (locationInfo.date && !date) {
+      try {
+        const [year, month, day] = locationInfo.date.split('-').map(Number);
+        if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+          setDate(new Date(year, month - 1, day));
+        }
+      } catch (e) {
+        console.error('날짜 변환 오류:', e);
+      }
     }
-  }, [locationInfo.date, locationInfo.time]);
+  }, [locationInfo.date, date]);
+  
+  // 최근 주소 항목 클릭 핸들러
+  const handleRecentLocationClick = (location: ILocationInfo) => {
+    onChange({
+      address: location.address,
+      detailedAddress: location.detailedAddress,
+      name: location.name,
+      company: location.company,
+      contact: location.contact,
+      date: location.date,
+      time: location.time
+    });
+  };
   
   return (
-    <div className="space-y-4">
-      {title && !compact && <h3 className="text-lg font-medium">{title}</h3>}
-      
-      {/* 최근 주소 표시 */}
-      {filteredRecentLocations.length > 0 && (
-        <div className="mb-3">
-          <div className="text-sm text-muted-foreground mb-2">최근 사용 주소</div>
-          <div className="flex flex-wrap gap-2">
-            {filteredRecentLocations.map((loc) => (
-              <Badge 
-                key={loc.id} 
-                variant="outline"
-                className="cursor-pointer hover:bg-accent"
-                onClick={() => useRecentLocation(type, loc.id)}
-              >
-                {loc.info.address.length > 15 
-                  ? loc.info.address.substring(0, 15) + '...' 
-                  : loc.info.address}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
-      
+    <div className="space-y-3">
       {/* 주소 검색 */}
       <div className="space-y-2">
-        <Label htmlFor={`${type}-address`}>주소</Label>
-        <div className="flex space-x-2">
-          <Input
-            id={`${type}-address`}
-            placeholder="주소 검색"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          />
-          <Button type="button" size="icon" onClick={handleSearch} disabled={searching}>
-            <SearchIcon className="h-4 w-4" />
-          </Button>
-        </div>
-        
-        {/* 주소 검색 결과 */}
-        {searchResults.length > 0 && (
-          <Card className="mt-2">
-            <CardContent className="p-2">
-              <ScrollArea className="h-32">
-                <div className="space-y-1">
-                  {searchResults.map((address, idx) => (
-                    <Button
-                      key={idx}
-                      variant="ghost"
-                      className="w-full justify-start text-left h-auto py-2"
-                      onClick={() => handleSelectAddress(address)}
-                    >
-                      <div className="flex items-center space-x-2 w-full">
-                        <div className="flex-1 truncate">
-                          <span className="text-sm font-medium">{address}</span>
-                        </div>
-                      </div>
-                    </Button>
-                  ))}
+        <FormLabel>주소</FormLabel>
+        <div>
+          <div className="flex gap-2">
+            <Input
+              value={locationInfo.address || ''}
+              onChange={(e) => onChange({ address: e.target.value })}
+              placeholder="주소를 입력하세요"
+              disabled={true}
+              className={disabled ? 'bg-gray-100' : ''}
+              onClick={handleDisabledClick}
+            />
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  type="button"
+                  disabled={disabled}
+                  onClick={disabled ? handleDisabledClick : undefined}
+                >
+                  <SearchIcon className="h-4 w-4 mr-2" />
+                  검색
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>주소 검색</DialogTitle>
+                  <DialogDescription>
+                    찾으시는 주소의 동/읍/면 이름을 입력하세요
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="flex gap-2 my-4">
+                  <Input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="예: 강남구 역삼동"
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  />
+                  <Button 
+                    type="button" 
+                    onClick={handleSearch}
+                    disabled={searching}
+                  >
+                    {searching ? '검색 중...' : '검색'}
+                  </Button>
                 </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        )}
-        
-        {/* 선택된 주소 표시 */}
-        {locationInfo.address && (
-          <div className="flex items-center">
-            <div className="bg-muted p-2 rounded flex-1">
-              <span className="text-sm">{locationInfo.address}</span>
-            </div>
+                
+                {searchResults.length > 0 && (
+                  <ScrollArea className="h-60">
+                    <div className="space-y-2">
+                      {searchResults.map((address, i) => (
+                        <div 
+                          key={i}
+                          className="p-2 cursor-pointer border rounded hover:bg-accent"
+                        >
+                          <DialogClose asChild>
+                            <Button
+                              variant="ghost"
+                              className="w-full justify-start text-left p-2"
+                              onClick={() => handleSelectAddress(address)}
+                            >
+                              {address}
+                            </Button>
+                          </DialogClose>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
-        )}
+          {/* 상세 주소 */}
+          <div className="py-2">
+            <Input
+              value={locationInfo.detailedAddress || ''}
+              onChange={(e) => onChange({ detailedAddress: e.target.value })}
+              placeholder="상세 주소를 입력하세요"
+              disabled={disabled}
+              className={disabled ? 'bg-gray-100' : ''}
+              onClick={handleDisabledClick}
+            />
+          </div>
+        </div>
       </div>
       
-      {/* 상세 주소 */}
+      {/* 회사명 / 담당자 */}
+      <div className={cn("grid gap-3", compact ? "grid-cols-2" : "grid-cols-1")}>
+        <div>
+          <FormLabel>회사명</FormLabel>
+          <Input
+            value={locationInfo.company || ''}
+            onChange={(e) => onChange({ company: e.target.value })}
+            placeholder="회사명을 입력하세요"
+            disabled={disabled}
+            className={disabled ? 'bg-gray-100' : ''}
+            onClick={handleDisabledClick}
+          />
+        </div>
+        
+        <div>
+          <FormLabel>담당자</FormLabel>
+          <Input
+            value={locationInfo.name || ''}
+            onChange={(e) => onChange({ name: e.target.value })}
+            placeholder="담당자 이름을 입력하세요"
+            disabled={disabled}
+            className={disabled ? 'bg-gray-100' : ''}
+            onClick={handleDisabledClick}
+          />
+        </div>
+      </div>
+      
+      {/* 연락처 */}
       <div>
-        <Label htmlFor={`${type}-detailed-address`}>상세주소</Label>
+        <FormLabel>연락처</FormLabel>
         <Input
-          id={`${type}-detailed-address`}
-          placeholder="상세주소를 입력하세요"
-          value={locationInfo.detailedAddress || ''}
-          onChange={(e) => onChange({ detailedAddress: e.target.value })}
+          value={locationInfo.contact || ''}
+          onChange={(e) => onChange({ contact: e.target.value })}
+          placeholder="예: 010-1234-5678"
+          disabled={disabled}
+          className={disabled ? 'bg-gray-100' : ''}
+          onClick={handleDisabledClick}
         />
       </div>
       
-      <div className="grid grid-cols-2 gap-4">
-        {/* 담당자 */}
-        <div>
-          <Label htmlFor={`${type}-name`}>담당자</Label>
-          <Input
-            id={`${type}-name`}
-            placeholder="담당자명"
-            value={locationInfo.name || ''}
-            onChange={(e) => onChange({ name: e.target.value })}
-          />
-        </div>
-        
-        {/* 연락처 */}
-        <div>
-          <Label htmlFor={`${type}-contact`}>연락처</Label>
-          <Input
-            id={`${type}-contact`}
-            placeholder="연락처"
-            value={locationInfo.contact || ''}
-            onChange={(e) => onChange({ contact: e.target.value })}
-          />
-        </div>
-        
-        {/* 회사명 */}
-        <div className="col-span-2">
-          <Label htmlFor={`${type}-company`}>회사명</Label>
-          <Input
-            id={`${type}-company`}
-            placeholder="회사명"
-            value={locationInfo.company || ''}
-            onChange={(e) => onChange({ company: e.target.value })}
-          />
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-2 gap-4">
+      {/* 날짜 / 시간 */}
+      <div className={cn("grid gap-3", compact ? "grid-cols-2" : "grid-cols-1")}>
         {/* 날짜 선택 */}
         <div>
-          <Label>날짜</Label>
+          <FormLabel>{type === 'departure' ? '출발일' : '도착일'}</FormLabel>
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="w-full justify-start text-left font-normal"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !date && "text-muted-foreground",
+                  disabled && "bg-gray-100 cursor-not-allowed"
+                )}
+                disabled={disabled}
+                onClick={disabled ? handleDisabledClick : undefined}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? (
-                  format(date, 'PPP', { locale: ko })
-                ) : (
-                  <span>날짜 선택</span>
-                )}
+                {date ? format(date, 'PPP', { locale: ko }) : <span>날짜 선택</span>}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto p-0">
               <Calendar
                 mode="single"
                 selected={date}
@@ -264,38 +295,35 @@ export function LocationForm({
         
         {/* 시간 선택 */}
         <div>
-          <Label htmlFor={`${type}-time`}>시간</Label>
+          <FormLabel>{type === 'departure' ? '출발 시간' : '도착 시간'}</FormLabel>
           <Input
-            id={`${type}-time`}
             type="time"
             value={locationInfo.time || ''}
             onChange={(e) => onChange({ time: e.target.value })}
+            placeholder="시간 선택"
+            disabled={disabled}
+            className={disabled ? 'bg-gray-100' : ''}
+            onClick={handleDisabledClick}
           />
         </div>
       </div>
       
       {/* 최근 사용 주소 */}
-      {!compact && (
+      {!compact && RECENT_LOCATIONS && RECENT_LOCATIONS.length > 0 && (
         <div className="mt-4">
-          <Label className="mb-2 block">최근 사용 주소</Label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <FormLabel className="mb-2 block">최근 사용 주소</FormLabel>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {RECENT_LOCATIONS.slice(0, 4).map((location, idx) => (
               <Button
                 key={idx}
                 variant="outline"
-                className="h-auto py-2 justify-start"
-                onClick={() => useRecentLocation(type, location.id)}
+                className="h-auto py-2 justify-start text-left"
+                onClick={() => handleRecentLocationClick(location)}
+                disabled={disabled}
               >
-                <div className="flex items-center space-x-2 w-full">
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback className="text-xs">
-                      {location.name.slice(0, 1)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 truncate">
-                    <p className="text-sm font-medium">{location.address}</p>
-                    <p className="text-xs text-muted-foreground truncate">{location.company}</p>
-                  </div>
+                <div className="flex-1 truncate">
+                  <p className="text-sm font-medium">{location.address}</p>
+                  <p className="text-xs text-muted-foreground truncate">{location.company}</p>
                 </div>
               </Button>
             ))}
@@ -304,4 +332,4 @@ export function LocationForm({
       )}
     </div>
   );
-} 
+}; 

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { 
@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useOrderDetailStore } from "@/store/order-detail-store";
 import { toast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
+import { EditConfirmDialog } from "./edit-confirm-dialog";
 
 interface OrderActionButtonsProps {
   orderNumber: string;
@@ -29,15 +31,20 @@ interface OrderActionButtonsProps {
 }
 
 export function OrderActionButtons({ orderNumber, className }: OrderActionButtonsProps) {
-  const [cancelDialogOpen, setCancelDialogOpen] = React.useState(false);
+  const router = useRouter();
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { isActionAvailable, closeSheet } = useOrderDetailStore();
   
-  // 화물 정보 수정 핸들러 (실제로는 추후 구현)
+  // 화물 정보 수정 핸들러
   const handleEdit = () => {
-    toast({
-      title: "수정 기능",
-      description: `화물 ${orderNumber}에 대한 수정 기능은 아직 구현되지 않았습니다.`,
-    });
+    setEditDialogOpen(true);
+  };
+  
+  // 수정 페이지로 이동
+  const handleEditConfirm = () => {
+    closeSheet(); // 상세 시트 닫기
+    router.push(`/order/edit/${orderNumber}`); // 수정 페이지로 이동
   };
   
   // 배차 취소 핸들러 (실제로는 추후 구현)
@@ -135,6 +142,15 @@ export function OrderActionButtons({ orderNumber, className }: OrderActionButton
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* 화물 수정 확인 다이얼로그 */}
+      <EditConfirmDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onConfirm={handleEditConfirm}
+        mode="edit"
+        orderNumber={orderNumber}
+      />
     </>
   );
 } 

@@ -32,12 +32,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useForm } from "react-hook-form";
 import { useOrderRegisterStore } from "@/store/order-register-store";
+import { useOrderEditStore } from "@/store/order-edit-store";
 import { useQuery } from "@tanstack/react-query";
 import { 
   VEHICLE_TYPES, 
   WEIGHT_TYPES, 
   TRANSPORT_OPTIONS, 
-  ILocationInfo 
+  ILocationInfo,
+  IOrderRegisterData
 } from "@/types/order";
 import { 
   calculateAmount, 
@@ -46,38 +48,93 @@ import {
 } from "@/utils/mockdata/mock-register";
 import { LocationForm } from "@/components/order/register-location-form";
 import { OptionSelector } from "./register-option-selector";
-import { CalendarIcon, InfoIcon, TruckIcon, MapPinIcon, Settings2 as OptionsIcon, Calculator as CalculatorIcon, ChevronDown, ChevronUp, PencilIcon } from "lucide-react";
+import { CalendarIcon, InfoIcon, TruckIcon, MapPinIcon, Settings2 as OptionsIcon, Calculator as CalculatorIcon, ChevronDown, ChevronUp, PencilIcon, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { toast } from "@/components/ui/use-toast";
 
 interface OrderRegisterFormProps {
   onSubmit: () => void;
+  editMode?: boolean;
 }
 
-export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
+export function OrderRegisterForm({ onSubmit, editMode = false }: OrderRegisterFormProps) {
   const [activeTab, setActiveTab] = useState<string>("vehicle");
   const [isCalculating, setIsCalculating] = useState(false);
   const [showRemark, setShowRemark] = useState<boolean>(false);
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   
   // Zustand 스토어에서 상태와 액션 가져오기
+  const registerStore = useOrderRegisterStore();
+  const editStore = useOrderEditStore();
+  
+  // editMode에 따라 적절한 스토어 사용
+  const store = editMode ? editStore : registerStore;
   const { 
     registerData,
-    setVehicleType,
-    setWeightType,
-    setCargoType,
-    //setSpecialRequirements,
-    setRemark,
-    setDeparture,
-    setDestination,
-    toggleOption,
-    //setEstimatedDistance,
-    //setEstimatedAmount,
-  } = useOrderRegisterStore();
+  } = store;
+  
+  // 필요한 액션 함수들 (타입 단언 사용)
+  const setVehicleType = editMode 
+    ? (value: any) => editStore.setRegisterData({ vehicleType: value }) 
+    : registerStore.setVehicleType;
+    
+  const setWeightType = editMode 
+    ? (value: any) => editStore.setRegisterData({ weightType: value }) 
+    : registerStore.setWeightType;
+    
+  const setCargoType = editMode 
+    ? (value: string) => editStore.setRegisterData({ cargoType: value }) 
+    : registerStore.setCargoType;
+    
+  const setRemark = editMode 
+    ? (value: string) => editStore.setRegisterData({ remark: value }) 
+    : registerStore.setRemark;
+    
+  const setDeparture = editMode 
+    ? (value: any) => editStore.setRegisterData({ departure: value }) 
+    : registerStore.setDeparture;
+    
+  const setDestination = editMode 
+    ? (value: any) => editStore.setRegisterData({ destination: value }) 
+    : registerStore.setDestination;
+    
+  const toggleOption = editMode 
+    ? (optionId: string) => {
+        const currentOptions = [...registerData.selectedOptions];
+        const index = currentOptions.indexOf(optionId);
+        if (index === -1) {
+          currentOptions.push(optionId);
+        } else {
+          currentOptions.splice(index, 1);
+        }
+        editStore.setRegisterData({ selectedOptions: currentOptions });
+      } 
+    : registerStore.toggleOption;
+  
+  // editMode일 때 필드 상태 제어를 위한 추가 state
+  const { isFieldEditable, originalData } = editStore;
+  
+  // 필드 수정 가능 여부 확인 함수
+  const isEditable = (fieldName: string): boolean => {
+    if (!editMode) return true; // 등록 모드에서는 모든 필드 수정 가능
+    return isFieldEditable(fieldName); // 수정 모드에서는 배차 상태에 따라 다름
+  };
+  
+  // 비활성화된 필드 클릭 시 안내 메시지 표시
+  const handleDisabledFieldClick = (fieldName: string) => {
+    if (editMode && !isEditable(fieldName)) {
+      toast({
+        title: "수정 불가",
+        description: "현재 배차 상태에서는 이 항목을 수정할 수 없습니다.",
+        variant: "default",
+      });
+    }
+  };
   
   // React Hook Form
   const form = useForm({
@@ -85,7 +142,6 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
       vehicleType: registerData.vehicleType,
       weightType: registerData.weightType,
       cargoType: registerData.cargoType || '',
-      //specialRequirements: registerData.specialRequirements || '',
       remark: registerData.remark || '',
       departure: registerData.departure,
       destination: registerData.destination,
@@ -142,11 +198,9 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
         try {
           // 거리 계산
           const distance = await calculateDistance(departure.address, destination.address);
-          //setEstimatedDistance(distance);
           
           // 금액 계산
           const amount = await calculateAmount(distance, weightType, selectedOptions);
-          //setEstimatedAmount(amount);
         } catch (error) {
           console.error("계산 중 오류 발생:", error);
         } finally {
@@ -201,8 +255,12 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                         <Select
                           value={registerData.vehicleType}
                           onValueChange={(value) => setVehicleType(value as any)}
+                          disabled={editMode && !isEditable('vehicleType')}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger 
+                            onClick={() => handleDisabledFieldClick('vehicleType')}
+                            className={editMode && !isEditable('vehicleType') ? 'bg-gray-100' : ''}
+                          >
                             <SelectValue placeholder="차량 종류 선택" />
                           </SelectTrigger>
                           <SelectContent>
@@ -221,8 +279,12 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                         <Select
                           value={registerData.weightType}
                           onValueChange={(value) => setWeightType(value as any)}
+                          disabled={editMode && !isEditable('weightType')}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger 
+                            onClick={() => handleDisabledFieldClick('weightType')}
+                            className={editMode && !isEditable('weightType') ? 'bg-gray-100' : ''}
+                          >
                             <SelectValue placeholder="중량 선택" />
                           </SelectTrigger>
                           <SelectContent>
@@ -244,6 +306,9 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                             maxLength={38}
                             value={registerData.cargoType}
                             onChange={(e) => setCargoType(e.target.value)}
+                            disabled={editMode && !isEditable('cargoType')}
+                            className={editMode && !isEditable('cargoType') ? 'bg-gray-100' : ''}
+                            onClick={() => handleDisabledFieldClick('cargoType')}
                           />
                           <p className="text-xs text-right text-muted-foreground mt-1">
                             {registerData.cargoType.length}/38자
@@ -259,6 +324,7 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                                 size="icon" 
                                 className="mb-5"
                                 onClick={() => setShowRemark(!showRemark)}
+                                disabled={editMode && !isEditable('remark')}
                               >
                                 {showRemark ? <ChevronUp className="h-4 w-4" /> : <PencilIcon className="h-4 w-4" />}
                               </Button>
@@ -275,14 +341,24 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                     
                     
                     {/* 비고 - 조건부 렌더링 */}
-                    {showRemark && (
+                    {(showRemark || (editMode && registerData.remark)) && (
                       <div className="animate-in fade-in-50 duration-200">
-                        <FormLabel>비고</FormLabel>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>비고</FormLabel>
+                          {editMode && isEditable('remark') && (
+                            <div className="flex items-center text-xs text-green-600">
+                              <Info className="h-3 w-3 mr-1" />
+                              편집 가능
+                            </div>
+                          )}
+                        </div>
                         <Textarea
                           placeholder="비고 (선택사항)"
                           value={registerData.remark || ''}
                           onChange={(e) => setRemark(e.target.value)}
-                          className="resize-none h-20"
+                          className={cn("resize-none h-20", editMode && !isEditable('remark') ? 'bg-gray-100' : '')}
+                          disabled={editMode && !isEditable('remark')}
+                          onClick={() => handleDisabledFieldClick('remark')}
                         />
                       </div>
                     )}
@@ -315,6 +391,8 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                     locationInfo={registerData.departure}
                     onChange={(info) => setDeparture(info as any)}
                     title="출발지 정보"
+                    disabled={editMode && !isEditable('departure')}
+                    onDisabledClick={() => handleDisabledFieldClick('departure')}
                   />
                   
                   <div className="flex justify-between mt-6">
@@ -352,6 +430,8 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                     locationInfo={registerData.destination}
                     onChange={(info) => setDestination(info as any)}
                     title="도착지 정보"
+                    disabled={editMode && !isEditable('destination')}
+                    onDisabledClick={() => handleDisabledFieldClick('destination')}
                   />
                   
                   <div className="flex justify-between mt-6">
@@ -396,7 +476,14 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                   {isCalculating ? (
                     <span className="animate-pulse">계산 중...</span>
                   ) : (
-                    <span>{typeof registerData.estimatedDistance === 'number' ? registerData.estimatedDistance.toLocaleString() : '0'}km</span>
+                    <span>
+                      {typeof registerData.estimatedDistance === 'number' ? 
+                        `${registerData.estimatedDistance.toLocaleString()}km` : 
+                        editMode && originalData ? 
+                          `${0}km` : 
+                          '0km'
+                      }
+                    </span>
                   )}
                 </span>
               </div>
@@ -406,7 +493,14 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                   {isCalculating ? (
                     <span className="animate-pulse">계산 중...</span>
                   ) : (
-                    <span>{typeof registerData.estimatedAmount === 'number' ? registerData.estimatedAmount.toLocaleString() : '0'}원</span>
+                    <span>
+                      {typeof registerData.estimatedAmount === 'number' ? 
+                        `${registerData.estimatedAmount.toLocaleString()}원` : 
+                        editMode && originalData ? 
+                          originalData.amount : 
+                          '0원'
+                      }
+                    </span>
                   )}
                 </span>
               </div>
@@ -441,8 +535,12 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                   <Select
                     value={registerData.vehicleType}
                     onValueChange={(value) => setVehicleType(value as any)}
+                    disabled={editMode && !isEditable('vehicleType')}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger 
+                      onClick={() => handleDisabledFieldClick('vehicleType')}
+                      className={editMode && !isEditable('vehicleType') ? 'bg-gray-100' : ''}
+                    >
                       <SelectValue placeholder="차량 종류 선택" />
                     </SelectTrigger>
                     <SelectContent>
@@ -461,8 +559,12 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                   <Select
                     value={registerData.weightType}
                     onValueChange={(value) => setWeightType(value as any)}
+                    disabled={editMode && !isEditable('weightType')}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger 
+                      onClick={() => handleDisabledFieldClick('weightType')}
+                      className={editMode && !isEditable('weightType') ? 'bg-gray-100' : ''}
+                    >
                       <SelectValue placeholder="중량 선택" />
                     </SelectTrigger>
                     <SelectContent>
@@ -484,6 +586,9 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                       maxLength={38}
                       value={registerData.cargoType}
                       onChange={(e) => setCargoType(e.target.value)}
+                      disabled={editMode && !isEditable('cargoType')}
+                      className={editMode && !isEditable('cargoType') ? 'bg-gray-100' : ''}
+                      onClick={() => handleDisabledFieldClick('cargoType')}
                     />
                     <p className="text-xs text-right text-muted-foreground mt-1">
                       {registerData.cargoType.length}/38자
@@ -499,6 +604,7 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                           size="icon" 
                           className="mb-5"
                           onClick={() => setShowRemark(!showRemark)}
+                          disabled={editMode && !isEditable('remark')}
                         >
                           {showRemark ? <ChevronUp className="h-4 w-4" /> : <PencilIcon className="h-4 w-4" />}
                         </Button>
@@ -512,14 +618,24 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
               </div>
               
               {/* 비고 - 조건부 렌더링 */}
-              {showRemark && (
+              {(showRemark || (editMode && registerData.remark)) && (
                 <div className="animate-in fade-in-50 duration-200">
-                  <FormLabel>비고</FormLabel>
+                  <div className="flex items-center justify-between">
+                    <FormLabel>비고</FormLabel>
+                    {editMode && isEditable('remark') && (
+                      <div className="flex items-center text-xs text-green-600">
+                        <Info className="h-3 w-3 mr-1" />
+                        편집 가능
+                      </div>
+                    )}
+                  </div>
                   <Textarea
                     placeholder="비고 (선택사항)"
                     value={registerData.remark || ''}
                     onChange={(e) => setRemark(e.target.value)}
-                    className="resize-none h-20"
+                    className={cn("resize-none h-20", editMode && !isEditable('remark') ? 'bg-gray-100' : '')}
+                    disabled={editMode && !isEditable('remark')}
+                    onClick={() => handleDisabledFieldClick('remark')}
                   />
                 </div>
               )}
@@ -540,8 +656,10 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                 <LocationForm
                   type="departure"
                   locationInfo={registerData.departure}
-                  onChange={(info) => setDeparture(info as ILocationInfo)}
+                  onChange={(info) => setDeparture(info as any)}
                   compact={true}
+                  disabled={editMode && !isEditable('departure')}
+                  onDisabledClick={() => handleDisabledFieldClick('departure')}
                 />
               </CardContent>
             </Card>
@@ -558,8 +676,10 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                 <LocationForm
                   type="destination"
                   locationInfo={registerData.destination}
-                  onChange={(info) => setDestination(info as ILocationInfo)}
+                  onChange={(info) => setDestination(info as any)}
                   compact={true}
+                  disabled={editMode && !isEditable('destination')}
+                  onDisabledClick={() => handleDisabledFieldClick('destination')}
                 />
               </CardContent>
             </Card>
@@ -567,7 +687,57 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
           
           {/* 오른쪽: 예상 정보 및 옵션 카드 */}
           <div className="lg:col-span-1 space-y-4">
-                        
+            {/* 예상 정보 카드 */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center">
+                  <CalculatorIcon className="h-5 w-5 mr-2" />
+                  {editMode ? '운송 정보' : '예상 정보'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">예상 거리</span>
+                    <span className="font-medium">
+                      {isCalculating ? (
+                        <span className="animate-pulse">계산 중...</span>
+                      ) : (
+                        <span>
+                          {typeof registerData.estimatedDistance === 'number' ? 
+                            `${registerData.estimatedDistance.toLocaleString()}km` : 
+                            editMode && originalData ? 
+                              `${0}km` : 
+                              '0km'
+                          }
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">
+                      {editMode ? '운송 금액' : '예상 금액'}
+                    </span>
+                    <span className="text-xl font-bold text-primary">
+                      {isCalculating ? (
+                        <span className="animate-pulse">계산 중...</span>
+                      ) : (
+                        <span>
+                          {typeof registerData.estimatedAmount === 'number' ? 
+                            `${registerData.estimatedAmount.toLocaleString()}원` : 
+                            editMode && originalData ? 
+                              originalData.amount : 
+                              '0원'
+                          }
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
             {/* 운송 옵션 카드 */}
             <Card>
               <CardHeader className="pb-3">
@@ -581,49 +751,18 @@ export function OrderRegisterForm({ onSubmit }: OrderRegisterFormProps) {
                   options={TRANSPORT_OPTIONS}
                   selectedOptions={registerData.selectedOptions}
                   onToggle={toggleOption}
+                  disabled={editMode && !isEditable('selectedOptions')}
+                  onDisabledClick={() => handleDisabledFieldClick('selectedOptions')}
                 />
               </CardContent>
             </Card>
-
-            {/* 예상 정보 카드 */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <CalculatorIcon className="h-5 w-5 mr-2" />
-                  예상 정보
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">예상 거리</span>
-                    <span className="font-medium">
-                      {isCalculating ? (
-                        <span className="animate-pulse">계산 중...</span>
-                      ) : (
-                        <span>{typeof registerData.estimatedDistance === 'number' ? `${registerData.estimatedDistance.toLocaleString()}km` : '0km'}</span>
-                      )}
-                    </span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">예상 금액</span>
-                    <span className="text-xl font-bold text-primary">
-                      {isCalculating ? (
-                        <span className="animate-pulse">계산 중...</span>
-                      ) : (
-                        <span>{typeof registerData.estimatedAmount === 'number' ? `${registerData.estimatedAmount.toLocaleString()}원` : '0원'}</span>
-                      )}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
             
-            {/* 등록 버튼 */}
-            <Button type="submit" size="lg" className="w-full">
-              화물 등록
-            </Button>
+            {/* 등록 버튼 - 수정 모드에서는 표시하지 않음 */}
+            {!editMode && (
+              <Button type="submit" size="lg" className="w-full">
+                화물 등록
+              </Button>
+            )}
           </div>
         </div>
       </form>
