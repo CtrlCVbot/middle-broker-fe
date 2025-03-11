@@ -560,10 +560,15 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
               <div className="flex flex-col space-y-1">
                 <CardTitle className="text-lg flex items-center">
                   <TruckIcon className="h-5 w-5 mr-2" />
-                  {editMode ? (
-                    <>화물 수정 - #{orderNumber}</>
+                  {editMode  ? (
+                    <>화물 수정 - #{orderNumber}  </> 
                   ) : (
-                    <>화물 정보</>
+                    <>화물 등록</>
+                  )}
+                  {editMode && originalData && (
+                      <>  
+                      <StatusFlow currentStatus={originalData.status} />
+                      </>               
                   )}
                 </CardTitle>
                 <CardDescription>
@@ -573,15 +578,13 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                     <>운송할 화물 정보를 입력하고 등록해주세요.</>
                   )}
                 </CardDescription>
-              </div>
-
-              {/* 배차 상태 flow 추가 */}
-              {editMode && originalData && (
+                {/*{editMode && originalData && (
                 <div className="mt-4 pb-2">
                   <div className="text-sm font-medium text-muted-foreground mb-2">배차 진행 상태</div>
                   <StatusFlow currentStatus={originalData.status} />
                 </div>
-              )}
+              )}*/}
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-12 gap-4">
@@ -743,6 +746,25 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
           
           {/* 오른쪽: 예상 정보 및 옵션 카드 */}
           <div className="lg:col-span-1 space-y-4">
+            {/* 운송 옵션 카드 */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center">
+                  <OptionsIcon className="h-5 w-5 mr-2" />
+                  운송 옵션
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <OptionSelector
+                  options={TRANSPORT_OPTIONS}
+                  selectedOptions={registerData.selectedOptions}
+                  onToggle={toggleOption}
+                  disabled={editMode && !isEditable('selectedOptions')}
+                  onDisabledClick={() => handleDisabledFieldClick('selectedOptions')}
+                />
+              </CardContent>
+            </Card>
+            
             {/* 예상 정보 카드 */}
             <Card>
               <CardHeader className="pb-3">
@@ -791,25 +813,6 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                     </span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-            
-            {/* 운송 옵션 카드 */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <OptionsIcon className="h-5 w-5 mr-2" />
-                  운송 옵션
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <OptionSelector
-                  options={TRANSPORT_OPTIONS}
-                  selectedOptions={registerData.selectedOptions}
-                  onToggle={toggleOption}
-                  disabled={editMode && !isEditable('selectedOptions')}
-                  onDisabledClick={() => handleDisabledFieldClick('selectedOptions')}
-                />
               </CardContent>
             </Card>
             
