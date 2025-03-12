@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
   Breadcrumb, 
@@ -10,8 +10,8 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
-import { Home, ListFilter, Grid3x3 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
+import { Home, ListFilter, Grid3x3, CreditCard, TrendingUp } from "lucide-react";
+import { Card, CardContent, CardHeader, CardDescription, CardTitle, CardFooter } from "@/components/ui/card";
 import { useSettlementStore } from "@/store/settlement-store";
 import { getSettlementsByPage } from "@/utils/mockdata/mock-settlements";
 import { SettlementSearch } from "@/components/settlement/settlement-search";
@@ -22,7 +22,65 @@ import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
+
+// 총 정산액 요약 카드 컴포넌트
+function SettlementSummaryCard({ data, isLoading }: { data: any, isLoading: boolean }) {
+  // 총 정산액 계산
+  const totalAmount = useMemo(() => {
+    if (!data || !data.data || data.data.length === 0) return 0;
+    return data.data.reduce((sum: number, settlement: any) => sum + settlement.finalAmount, 0);
+  }, [data]);
+
+  // 총 건수
+  const totalCount = data?.pagination?.total || 0;
+
+  return (
+    <Card className="mb-6 bg-primary/5">
+      <CardContent className="pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex flex-col">
+            <span className="text-sm text-muted-foreground mb-1 flex items-center">
+              <CreditCard className="mr-1 h-4 w-4" />
+              검색된 정산 총액
+            </span>
+            <span className="text-2xl font-bold">
+              {isLoading ? (
+                <div className="h-8 w-32 animate-pulse rounded bg-muted"></div>
+              ) : (
+                `${formatCurrency(totalAmount)}원`
+              )}
+            </span>
+          </div>
+          
+          <div className="flex flex-col">
+            <span className="text-sm text-muted-foreground mb-1">조회된 정산 건수</span>
+            <span className="text-2xl font-bold">
+              {isLoading ? (
+                <div className="h-8 w-16 animate-pulse rounded bg-muted"></div>
+              ) : (
+                `${totalCount}건`
+              )}
+            </span>
+          </div>
+          
+          <div className="flex flex-col">
+            <span className="text-sm text-muted-foreground mb-1">평균 정산액</span>
+            <span className="text-2xl font-bold">
+              {isLoading ? (
+                <div className="h-8 w-24 animate-pulse rounded bg-muted"></div>
+              ) : totalCount > 0 ? (
+                `${formatCurrency(Math.round(totalAmount / totalCount))}원`
+              ) : (
+                "0원"
+              )}
+            </span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function SettlementListPage() {
   // Zustand 스토어에서 상태 및 액션 가져오기
@@ -136,6 +194,9 @@ export default function SettlementListPage() {
           <CardContent>
             {/* 검색 필터 */}
             <SettlementSearch />
+
+            {/* 정산 요약 카드 */}
+            <SettlementSummaryCard data={data} isLoading={isLoading} />
 
             {/* 로딩 상태 */}
             {isLoading && (
