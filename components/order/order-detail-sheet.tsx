@@ -110,7 +110,7 @@ export function OrderDetailSheet() {
                   화물 번호: {orderData.orderNumber}
                 </SheetTitle>
                 <Badge 
-                  variant={orderData.status === "정산완료" ? "default" : "secondary"}
+                  variant={orderData.status === "운송마감" ? "default" : "secondary"}
                   className="text-sm px-3 py-1"
                 >
                   {orderData.status}

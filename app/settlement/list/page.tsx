@@ -12,82 +12,89 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Home, ListFilter, Grid3x3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
-import { useOrderStore } from "@/store/order-store";
-import { getOrdersByPage } from "@/utils/mockdata/mock-orders";
-import { OrderSearch } from "@/components/order/order-search";
-import { OrderTable } from "@/components/order/order-table";
-import { OrderCard } from "@/components/order/order-card";
-import { OrderDetailSheet } from "@/components/order/order-detail-sheet";
+import { useSettlementStore } from "@/store/settlement-store";
+import { getSettlementsByPage } from "@/utils/mockdata/mock-settlements";
+import { SettlementSearch } from "@/components/settlement/settlement-search";
+import { SettlementTable } from "@/components/settlement/settlement-table";
+import { SettlementCard } from "@/components/settlement/settlement-card";
+import { SettlementDetailSheet } from "@/components/settlement/settlement-detail-sheet";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
-
 export default function SettlementListPage() {
-    // Zustand 스토어에서 상태 및 액션 가져오기
-    const {
-      viewMode,
-      setViewMode,
-      filter,
-      currentPage,
-      pageSize,
-      setCurrentPage,
-    } = useOrderStore();
-  
-    // 디버깅을 위한 로그 추가
-    useEffect(() => {
-      console.log('Filter in OrderListPage:', filter);
-    }, [filter]);
-  
-    // 화물 목록 데이터 조회
-    const { data, isLoading, isError, refetch } = useQuery({
-      queryKey: ["orders", currentPage, pageSize, filter],
-      queryFn: () => {
-        console.log('Query function called with:', {
-          currentPage,
-          pageSize,
-          departureCity: filter.departureCity,
-          arrivalCity: filter.arrivalCity,
-          vehicleType: filter.vehicleType,
-          weight: filter.weight,
-          searchTerm: filter.searchTerm
-        });
-        
-        return getOrdersByPage(
-          currentPage,
-          pageSize,
-          filter.departureCity,
-          filter.arrivalCity,
-          filter.vehicleType,
-          filter.weight,
-          filter.searchTerm
-        );
-      },
-      staleTime: 1000 * 60, // 1분
-    });
-  
-    // 필터 변경 시 데이터 다시 조회
-    useEffect(() => {
-      refetch();
-    }, [currentPage, pageSize, filter, refetch]);
-  
-    // 페이지 변경 핸들러
-    const handlePageChange = useCallback(
-      (page: number) => {
-        setCurrentPage(page);
-      },
-      [setCurrentPage]
-    );
-  
-    // 총 페이지 수 계산
-    const totalPages = Math.ceil((data?.pagination.total || 0) / pageSize);
-  
+  // Zustand 스토어에서 상태 및 액션 가져오기
+  const {
+    viewMode,
+    setViewMode,
+    filter,
+    currentPage,
+    pageSize,
+    setCurrentPage,
+  } = useSettlementStore();
+
+  // 디버깅을 위한 로그 추가
+  useEffect(() => {
+    console.log('Filter in SettlementListPage:', filter);
+  }, [filter]);
+
+  // 정산 목록 데이터 조회
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ["settlements", currentPage, pageSize, filter],
+    queryFn: () => {
+      console.log('Query function called with:', {
+        currentPage,
+        pageSize,
+        departureCity: filter.departureCity,
+        arrivalCity: filter.arrivalCity,
+        driverName: filter.driverName,
+        searchTerm: filter.searchTerm,
+        status: filter.status,
+        startDate: filter.startDate,
+        endDate: filter.endDate,
+        minAmount: filter.minAmount,
+        maxAmount: filter.maxAmount,
+        orderId: filter.orderId
+      });
+      
+      return getSettlementsByPage(
+        currentPage,
+        pageSize,
+        filter.departureCity,
+        filter.arrivalCity,
+        filter.driverName,
+        filter.searchTerm,
+        filter.status,
+        filter.startDate,
+        filter.endDate,
+        filter.minAmount,
+        filter.maxAmount,
+        filter.orderId
+      );
+    },
+    staleTime: 1000 * 60, // 1분
+  });
+
+  // 필터 변경 시 데이터 다시 조회
+  useEffect(() => {
+    refetch();
+  }, [currentPage, pageSize, filter, refetch]);
+
+  // 페이지 변경 핸들러
+  const handlePageChange = useCallback(
+    (page: number) => {
+      setCurrentPage(page);
+    },
+    [setCurrentPage]
+  );
+
+  // 총 페이지 수 계산
+  const totalPages = Math.ceil((data?.pagination.total || 0) / pageSize);
+
   return (
     <>
-      
-
       <header className="flex h-16 shrink-0 items-center gap-2">
         <div className="flex items-center gap-2 px-4">
           <SidebarTrigger className="-ml-1" />
@@ -104,19 +111,18 @@ export default function SettlementListPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />              
               <BreadcrumbItem>
-                <BreadcrumbPage>정산 관리</BreadcrumbPage>
+                <BreadcrumbPage>정산 현황</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </div>
       </header>
-            
       <main className="flex flex-1 flex-col p-4 pt-0">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div> 
-              <CardTitle>정산 내역 목록</CardTitle>
-              <CardDescription>정산 내역을 조회하고 관리할 수 있습니다.</CardDescription>
+              <CardTitle>정산 현황</CardTitle>
+              <CardDescription>정산 목록을 확인할 수 있습니다.</CardDescription>
             </div>
             <ToggleGroup type="single" value={viewMode} onValueChange={(value: string) => value && setViewMode(value as 'table' | 'card')}>
               <ToggleGroupItem value="table" aria-label="테이블 보기">
@@ -129,7 +135,7 @@ export default function SettlementListPage() {
           </CardHeader>
           <CardContent>
             {/* 검색 필터 */}
-            <OrderSearch />
+            <SettlementSearch />
 
             {/* 로딩 상태 */}
             {isLoading && (
@@ -157,15 +163,15 @@ export default function SettlementListPage() {
               <>
                 {/* 뷰 모드에 따라 테이블 또는 카드 형태로 표시 */}
                 {viewMode === "table" ? (
-                  <OrderTable
-                    orders={data.data}
+                  <SettlementTable
+                    settlements={data.data}
                     currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={handlePageChange}
                   />
                 ) : (
-                  <OrderCard
-                    orders={data.data}
+                  <SettlementCard
+                    settlements={data.data}
                     currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={handlePageChange}
@@ -176,8 +182,8 @@ export default function SettlementListPage() {
           </CardContent>
         </Card>
         
-        {/* 화물 상세 정보 모달 */}
-        <OrderDetailSheet />
+        {/* 정산 상세 정보 모달 */}
+        <SettlementDetailSheet />
       </main>
     </>
   );

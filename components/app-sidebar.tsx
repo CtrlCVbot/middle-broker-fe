@@ -19,7 +19,8 @@ import {
   Layers3,
   Truck,
   PackagePlus,
-  Calculator
+  Calculator,
+  CreditCard
 } from "lucide-react"
 import Link from 'next/link'
 
@@ -74,19 +75,9 @@ export const data = {
     },
     
     {
-      title: "정산 관리",
-      url: "/settlement",
-      icon: Calculator,
-      items: [
-        {
-          title: "정산 목록",
-          url: "/settlement/list",
-        },
-        {
-          title: "정산 통계",
-          url: "/settlement/stats",
-        }
-      ],
+      title: "정산 현황",
+      url: "/settlement/list",
+      icon: CreditCard,
     },
 
     {

@@ -64,16 +64,16 @@ export const useOrderDetailStore = create<IOrderDetailState>((set, get) => ({
     
     switch (action) {
       case 'edit':
-        // 정산완료 상태가 아니면 수정 가능
-        return currentStatus !== '정산완료';
+        // 운송마감 상태가 아니면 수정 가능
+        return currentStatus !== '운송마감';
       
       case 'cancel':
         // 상차완료 이전 상태에서만 취소 가능
         return currentStatus === '배차대기' || currentStatus === '배차완료';
       
       case 'receipt':
-        // 하차완료 또는 정산완료 상태에서만 인수증 발급 가능
-        return currentStatus === '하차완료' || currentStatus === '정산완료';
+        // 하차완료 또는 운송마감 상태에서만 인수증 발급 가능
+        return currentStatus === '하차완료' || currentStatus === '운송마감';
       
       default:
         return false;

@@ -1,5 +1,8 @@
 // 화물 관리 시스템 타입 정의
 
+// Settlement 관련 타입 임포트
+import { SettlementStatus } from "./settlement";
+
 // 화물 상태 타입 정의
 export type OrderStatusType = 
   | '배차대기' 
@@ -7,7 +10,7 @@ export type OrderStatusType =
   | '상차완료' 
   | '운송중' 
   | '하차완료' 
-  | '정산완료';
+  | '운송마감';
 
 // 화물 상태 배열 - 상태 순서대로 정의
 export const ORDER_STATUS: OrderStatusType[] = [
@@ -16,7 +19,7 @@ export const ORDER_STATUS: OrderStatusType[] = [
   '상차완료', 
   '운송중', 
   '하차완료', 
-  '정산완료'
+  '운송마감'
 ];
 
 // 화물 로그 항목 인터페이스
@@ -50,6 +53,8 @@ export interface IOrder {
     contact: string;           // 연락처
   };
   createdAt: string;           // 등록일
+  settlementStatus?: SettlementStatus; // 정산 상태
+  settlementId?: string;       // 정산 ID
 }
 
 // 응답 페이징 정보 인터페이스

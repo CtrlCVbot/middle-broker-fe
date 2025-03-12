@@ -31,7 +31,7 @@ const statusIcons: Record<OrderStatusType, React.ReactNode> = {
   '상차완료': <Package className="h-4 w-4" />,
   '운송중': <Navigation className="h-4 w-4" />,
   '하차완료': <Package2 className="h-4 w-4" />,
-  '정산완료': <CreditCard className="h-4 w-4" />
+  '운송마감': <CreditCard className="h-4 w-4" />
 };
 
 // 상태별 색상 맵핑
@@ -41,7 +41,7 @@ const statusColors: Record<OrderStatusType, string> = {
   '상차완료': 'bg-green-100 text-green-600',
   '운송중': 'bg-amber-100 text-amber-600',
   '하차완료': 'bg-violet-100 text-violet-600',
-  '정산완료': 'bg-emerald-100 text-emerald-600'
+  '운송마감': 'bg-emerald-100 text-emerald-600'
 };
 
 export function OrderStatusLog({ logs, className }: OrderStatusLogProps) {

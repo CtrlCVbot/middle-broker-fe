@@ -1,365 +1,258 @@
-import { ISettlement, ISettlementChartData, SettlementStatus } from "@/types/settlement";
+import { faker } from '@faker-js/faker/locale/ko';
+import { 
+  ISettlement, 
+  ISettlementResponse, 
+  SettlementStatus, 
+  SETTLEMENT_STATUS 
+} from '@/types/settlement';
 
-// 정산 목업 데이터
-export const mockSettlements: ISettlement[] = [
-  {
-    id: "S001",
-    companyName: "현대물류",
-    startDate: "2023-01-01",
-    endDate: "2023-01-31",
-    status: "COMPLETED",
-    totalAmount: 12500000,
-    requestDate: "2023-02-01",
-    completedDate: "2023-02-05",
-    items: [
-      {
-        id: "SI001",
-        orderId: "ORD001",
-        orderDate: "2023-01-05",
-        transportFee: 2300000,
-        additionalFee: 200000,
-        discount: 100000,
-        tax: 230000,
-        totalAmount: 2630000,
-        driverName: "김운송",
-        vehicleNumber: "서울 12가 3456"
-      },
-      {
-        id: "SI002",
-        orderId: "ORD002",
-        orderDate: "2023-01-12",
-        transportFee: 3500000,
-        additionalFee: 350000,
-        discount: 0,
-        tax: 350000,
-        totalAmount: 4200000,
-        driverName: "이화물",
-        vehicleNumber: "경기 34나 5678"
-      },
-      {
-        id: "SI003",
-        orderId: "ORD005",
-        orderDate: "2023-01-20",
-        transportFee: 4800000,
-        additionalFee: 400000,
-        discount: 200000,
-        tax: 480000,
-        totalAmount: 5480000,
-        driverName: "박배송",
-        vehicleNumber: "인천 56다 7890"
-      }
-    ]
-  },
-  {
-    id: "S002",
-    companyName: "삼성물류",
-    startDate: "2023-02-01",
-    endDate: "2023-02-28",
-    status: "COMPLETED",
-    totalAmount: 18750000,
-    requestDate: "2023-03-01",
-    completedDate: "2023-03-07",
-    items: [
-      {
-        id: "SI004",
-        orderId: "ORD008",
-        orderDate: "2023-02-03",
-        transportFee: 5200000,
-        additionalFee: 500000,
-        discount: 300000,
-        tax: 520000,
-        totalAmount: 5920000,
-        driverName: "최속도",
-        vehicleNumber: "서울 78라 1234"
-      },
-      {
-        id: "SI005",
-        orderId: "ORD010",
-        orderDate: "2023-02-11",
-        transportFee: 6500000,
-        additionalFee: 600000,
-        discount: 0,
-        tax: 650000,
-        totalAmount: 7750000,
-        driverName: "정빠름",
-        vehicleNumber: "경기 90마 2345"
-      },
-      {
-        id: "SI006",
-        orderId: "ORD015",
-        orderDate: "2023-02-22",
-        transportFee: 4300000,
-        additionalFee: 350000,
-        discount: 200000,
-        tax: 430000,
-        totalAmount: 4880000,
-        driverName: "김운송",
-        vehicleNumber: "서울 12가 3456"
-      }
-    ]
-  },
-  {
-    id: "S003",
-    companyName: "LG 로지스틱스",
-    startDate: "2023-03-01",
-    endDate: "2023-03-31",
-    status: "COMPLETED",
-    totalAmount: 16350000,
-    requestDate: "2023-04-01",
-    completedDate: "2023-04-05",
-    items: [
-      {
-        id: "SI007",
-        orderId: "ORD018",
-        orderDate: "2023-03-08",
-        transportFee: 3800000,
-        additionalFee: 300000,
-        discount: 100000,
-        tax: 380000,
-        totalAmount: 4380000,
-        driverName: "이화물",
-        vehicleNumber: "경기 34나 5678"
-      },
-      {
-        id: "SI008",
-        orderId: "ORD020",
-        orderDate: "2023-03-17",
-        transportFee: 5100000,
-        additionalFee: 450000,
-        discount: 0,
-        tax: 510000,
-        totalAmount: 6060000,
-        driverName: "박배송",
-        vehicleNumber: "인천 56다 7890"
-      },
-      {
-        id: "SI009",
-        orderId: "ORD023",
-        orderDate: "2023-03-25",
-        transportFee: 5100000,
-        additionalFee: 300000,
-        discount: 150000,
-        tax: 510000,
-        totalAmount: 5760000,
-        driverName: "최속도",
-        vehicleNumber: "서울 78라 1234"
-      }
-    ]
-  },
-  {
-    id: "S004",
-    companyName: "포스코 물류",
-    startDate: "2023-04-01",
-    endDate: "2023-04-30",
-    status: "COMPLETED",
-    totalAmount: 21500000,
-    requestDate: "2023-05-02",
-    completedDate: "2023-05-10",
-    items: [
-      {
-        id: "SI010",
-        orderId: "ORD028",
-        orderDate: "2023-04-05",
-        transportFee: 7200000,
-        additionalFee: 700000,
-        discount: 200000,
-        tax: 720000,
-        totalAmount: 8420000,
-        driverName: "정빠름",
-        vehicleNumber: "경기 90마 2345"
-      },
-      {
-        id: "SI011",
-        orderId: "ORD030",
-        orderDate: "2023-04-15",
-        transportFee: 6500000,
-        additionalFee: 500000,
-        discount: 0,
-        tax: 650000,
-        totalAmount: 7650000,
-        driverName: "김운송",
-        vehicleNumber: "서울 12가 3456"
-      },
-      {
-        id: "SI012",
-        orderId: "ORD032",
-        orderDate: "2023-04-25",
-        transportFee: 4800000,
-        additionalFee: 300000,
-        discount: 250000,
-        tax: 480000,
-        totalAmount: 5330000,
-        driverName: "이화물",
-        vehicleNumber: "경기 34나 5678"
-      }
-    ]
-  },
-  {
-    id: "S005",
-    companyName: "CJ 대한통운",
-    startDate: "2023-05-01",
-    endDate: "2023-05-31",
-    status: "PENDING",
-    totalAmount: 19800000,
-    requestDate: "2023-06-01",
-    items: [
-      {
-        id: "SI013",
-        orderId: "ORD035",
-        orderDate: "2023-05-03",
-        transportFee: 5500000,
-        additionalFee: 400000,
-        discount: 300000,
-        tax: 550000,
-        totalAmount: 6150000,
-        driverName: "박배송",
-        vehicleNumber: "인천 56다 7890"
-      },
-      {
-        id: "SI014",
-        orderId: "ORD038",
-        orderDate: "2023-05-12",
-        transportFee: 7300000,
-        additionalFee: 650000,
-        discount: 0,
-        tax: 730000,
-        totalAmount: 8680000,
-        driverName: "최속도",
-        vehicleNumber: "서울 78라 1234"
-      },
-      {
-        id: "SI015",
-        orderId: "ORD042",
-        orderDate: "2023-05-22",
-        transportFee: 4200000,
-        additionalFee: 300000,
-        discount: 150000,
-        tax: 420000,
-        totalAmount: 4770000,
-        driverName: "정빠름",
-        vehicleNumber: "경기 90마 2345"
-      }
-    ]
-  },
-  {
-    id: "S006",
-    companyName: "한진",
-    startDate: "2023-06-01",
-    endDate: "2023-06-30",
-    status: "PENDING",
-    totalAmount: 23500000,
-    requestDate: "2023-07-02",
-    items: [
-      {
-        id: "SI016",
-        orderId: "ORD045",
-        orderDate: "2023-06-08",
-        transportFee: 8200000,
-        additionalFee: 750000,
-        discount: 400000,
-        tax: 820000,
-        totalAmount: 9370000,
-        driverName: "김운송",
-        vehicleNumber: "서울 12가 3456"
-      },
-      {
-        id: "SI017",
-        orderId: "ORD048",
-        orderDate: "2023-06-18",
-        transportFee: 7200000,
-        additionalFee: 600000,
-        discount: 0,
-        tax: 720000,
-        totalAmount: 8520000,
-        driverName: "이화물",
-        vehicleNumber: "경기 34나 5678"
-      },
-      {
-        id: "SI018",
-        orderId: "ORD052",
-        orderDate: "2023-06-28",
-        transportFee: 4800000,
-        additionalFee: 350000,
-        discount: 200000,
-        tax: 480000,
-        totalAmount: 5430000,
-        driverName: "박배송",
-        vehicleNumber: "인천 56다 7890"
-      }
-    ]
-  }
+// 은행 목록
+const BANKS = [
+  '국민은행',
+  '신한은행',
+  '우리은행',
+  '하나은행',
+  '기업은행',
+  '농협은행',
+  '새마을금고',
+  '카카오뱅크',
+  '토스뱅크'
 ];
 
-// 정산 차트 목업 데이터
-export const mockSettlementChartData: ISettlementChartData = {
-  monthlyTrend: [
-    { month: "1월", completed: 12500000, pending: 0 },
-    { month: "2월", completed: 18750000, pending: 0 },
-    { month: "3월", completed: 16350000, pending: 0 },
-    { month: "4월", completed: 21500000, pending: 0 },
-    { month: "5월", completed: 0, pending: 19800000 },
-    { month: "6월", completed: 0, pending: 23500000 }
-  ],
-  companyDistribution: [
-    { companyName: "현대물류", amount: 12500000 },
-    { companyName: "삼성물류", amount: 18750000 },
-    { companyName: "LG 로지스틱스", amount: 16350000 },
-    { companyName: "포스코 물류", amount: 21500000 },
-    { companyName: "CJ 대한통운", amount: 19800000 },
-    { companyName: "한진", amount: 23500000 }
-  ],
-  driverContribution: [
-    { driverName: "김운송", amount: 24350000 },
-    { driverName: "이화물", amount: 22290000 },
-    { driverName: "박배송", amount: 16590000 },
-    { driverName: "최속도", amount: 18760000 },
-    { driverName: "정빠름", amount: 22400000 }
-  ],
-  statusDistribution: [
-    { status: "완료", count: 4 },
-    { status: "미완료", count: 2 }
-  ]
+// 지불 방법 목록
+const PAYMENT_METHODS = [
+  '계좌이체',
+  '카드결제',
+  '세금계산서',
+  '현금'
+];
+
+// 도시 목록
+const CITIES = [
+  '서울',
+  '인천',
+  '부산',
+  '대구',
+  '광주',
+  '대전',
+  '울산',
+  '세종',
+  '경기',
+  '강원',
+  '충북',
+  '충남',
+  '전북',
+  '전남',
+  '경북',
+  '경남',
+  '제주'
+];
+
+// 화물 번호 형식 생성
+const generateOrderId = (): string => {
+  const year = new Date().getFullYear().toString().slice(2);
+  const month = (new Date().getMonth() + 1).toString().padStart(2, '0');
+  const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  return `OR${year}${month}-${randomNum}`;
 };
 
-// 목업 데이터 조회 함수
-export const fetchMockSettlements = async (): Promise<ISettlement[]> => {
-  // 실제 API 요청을 시뮬레이션하기 위한 지연
-  await new Promise(resolve => setTimeout(resolve, 800));
-  return mockSettlements;
+// 정산 번호 형식 생성
+const generateSettlementId = (): string => {
+  const year = new Date().getFullYear().toString().slice(2);
+  const month = (new Date().getMonth() + 1).toString().padStart(2, '0');
+  const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  return `ST${year}${month}-${randomNum}`;
 };
 
-// 특정 정산 데이터 조회 함수
-export const fetchMockSettlementById = async (id: string): Promise<ISettlement | null> => {
-  // 실제 API 요청을 시뮬레이션하기 위한 지연
-  await new Promise(resolve => setTimeout(resolve, 500));
-  const settlement = mockSettlements.find(s => s.id === id);
-  return settlement || null;
-};
-
-// 목업 차트 데이터 조회 함수
-export const fetchMockSettlementChartData = async (): Promise<ISettlementChartData> => {
-  // 실제 API 요청을 시뮬레이션하기 위한 지연
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  return mockSettlementChartData;
-};
-
-// 정산 상태 업데이트 함수
-export const updateMockSettlementStatus = async (id: string, status: SettlementStatus): Promise<ISettlement | null> => {
-  // 실제 API 요청을 시뮬레이션하기 위한 지연
-  await new Promise(resolve => setTimeout(resolve, 700));
+// 정산 목업 데이터 생성 함수
+export const generateMockSettlement = (): ISettlement => {
+  // 출발/도착 도시 랜덤 선택
+  const departureCity = faker.helpers.arrayElement(CITIES);
+  const arrivalCity = faker.helpers.arrayElement(CITIES.filter(city => city !== departureCity));
   
-  const settlementIndex = mockSettlements.findIndex(s => s.id === id);
-  if (settlementIndex === -1) return null;
+  // 운송비 금액 (100만원~300만원 사이)
+  const amount = faker.number.int({ min: 1000000, max: 3000000 });
   
-  // 상태 업데이트
-  const updatedSettlement = {
-    ...mockSettlements[settlementIndex],
+  // 수수료 (10% 기본)
+  const fee = Math.round(amount * 0.1);
+  
+  // 최종 정산액 (운송비 - 수수료)
+  const finalAmount = amount - fee;
+  
+  // 랜덤 상태 설정
+  const status: SettlementStatus = faker.helpers.arrayElement(SETTLEMENT_STATUS);
+  
+  // 정산 상태에 따라 요청일, 완료일 설정
+  let requestDate: string | undefined;
+  let completedDate: string | undefined;
+  let paymentMethod: string | undefined;
+  
+  if (status === '정산요청' || status === '정산진행중' || status === '정산완료') {
+    requestDate = faker.date.recent({ days: 30 }).toISOString().split('T')[0];
+    
+    if (status === '정산완료') {
+      completedDate = faker.date.recent({ days: 7 }).toISOString().split('T')[0];
+      paymentMethod = faker.helpers.arrayElement(PAYMENT_METHODS);
+    }
+  }
+  
+  // 은행 정보 생성
+  const bank = faker.helpers.arrayElement(BANKS);
+  const accountNumber = `${faker.string.numeric(3)}-${faker.string.numeric(2)}-${faker.string.numeric(6)}`;
+  const bankInfo = `${bank} ${accountNumber}`;
+  
+  // 세금 정보 (정산완료 상태인 경우만 설정)
+  const tax = status === '정산완료' ? Math.round(amount * 0.033) : undefined;
+  
+  return {
+    id: generateSettlementId(),
     status,
-    completedDate: status === "COMPLETED" ? new Date().toISOString().split('T')[0] : undefined
+    orderId: generateOrderId(),
+    departureDateTime: faker.date.recent({ days: 60 }).toISOString(),
+    departureCity,
+    departureLocation: `${departureCity} ${faker.location.streetAddress()}`,
+    arrivalDateTime: faker.date.recent({ days: 30 }).toISOString(),
+    arrivalCity,
+    arrivalLocation: `${arrivalCity} ${faker.location.streetAddress()}`,
+    amount,
+    fee,
+    finalAmount,
+    driver: {
+      name: faker.person.fullName(),
+      contact: faker.phone.number(),
+      bankInfo
+    },
+    requestDate,
+    completedDate,
+    paymentMethod,
+    tax,
+    createdAt: faker.date.recent({ days: 90 }).toISOString()
   };
+};
+
+// 대량의 정산 데이터 생성
+export const generateMockSettlements = (count: number): ISettlement[] => {
+  return Array.from({ length: count }, () => generateMockSettlement());
+};
+
+// 페이징된 정산 데이터 조회 함수
+export const getSettlementsByPage = (
+  page: number = 1,
+  limit: number = 10,
+  departureCity?: string,
+  arrivalCity?: string,
+  driverName?: string,
+  searchTerm?: string,
+  status?: SettlementStatus,
+  startDate?: string,
+  endDate?: string,
+  minAmount?: number,
+  maxAmount?: number,
+  orderId?: string
+): ISettlementResponse => {
+  // 100개의 목업 데이터 생성
+  let data = generateMockSettlements(100);
   
-  // 목업 데이터 업데이트 (실제로는 수정되지 않음, 실제 API에서는 DB 업데이트 필요)
-  // mockSettlements[settlementIndex] = updatedSettlement;
+  // 필터링 적용
+  if (departureCity) {
+    data = data.filter(item => item.departureCity === departureCity);
+  }
   
-  return updatedSettlement;
+  if (arrivalCity) {
+    data = data.filter(item => item.arrivalCity === arrivalCity);
+  }
+  
+  if (driverName) {
+    data = data.filter(item => item.driver.name.includes(driverName));
+  }
+  
+  if (searchTerm) {
+    data = data.filter(item => 
+      item.id.includes(searchTerm) ||
+      item.orderId.includes(searchTerm) ||
+      item.departureLocation.includes(searchTerm) ||
+      item.arrivalLocation.includes(searchTerm) ||
+      item.driver.name.includes(searchTerm) ||
+      item.driver.contact.includes(searchTerm)
+    );
+  }
+  
+  if (status) {
+    data = data.filter(item => item.status === status);
+  }
+  
+  if (startDate) {
+    const start = new Date(startDate);
+    data = data.filter(item => new Date(item.createdAt) >= start);
+  }
+  
+  if (endDate) {
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+    data = data.filter(item => new Date(item.createdAt) <= end);
+  }
+  
+  if (minAmount !== undefined) {
+    data = data.filter(item => item.amount >= minAmount);
+  }
+  
+  if (maxAmount !== undefined) {
+    data = data.filter(item => item.amount <= maxAmount);
+  }
+  
+  if (orderId) {
+    data = data.filter(item => item.orderId === orderId);
+  }
+  
+  // 총 데이터 수
+  const total = data.length;
+  
+  // 현재 페이지의 데이터 추출
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+  const paginatedData = data.slice(startIndex, endIndex);
+  
+  return {
+    data: paginatedData,
+    pagination: {
+      total,
+      page,
+      limit
+    }
+  };
+};
+
+// 단일 정산 데이터 조회 함수
+export const getSettlementById = (id: string): ISettlement | null => {
+  // 5개의 정산 데이터 생성
+  const settlements = generateMockSettlements(5);
+  
+  // id가 일치하는 데이터를 반환하거나, 없으면 첫 번째 항목 반환
+  return settlements.find(item => item.id === id) || settlements[0];
+};
+
+// 정산 로그 데이터 생성
+export const getSettlementLogs = (settlementId: string) => {
+  const settlement = getSettlementById(settlementId);
+  
+  if (!settlement) return [];
+  
+  const logs = [];
+  const status = SETTLEMENT_STATUS.indexOf(settlement.status);
+  
+  // 상태에 따라 로그 생성
+  for (let i = 0; i <= status; i++) {
+    const logDate = new Date(settlement.createdAt);
+    logDate.setDate(logDate.getDate() + i * 2);
+    
+    logs.push({
+      status: SETTLEMENT_STATUS[i],
+      date: logDate.toISOString().split('T')[0],
+      time: logDate.toTimeString().split(' ')[0].substring(0, 5),
+      handler: faker.person.fullName(),
+      remark: i === status ? '현재 상태' : undefined
+    });
+  }
+  
+  return logs;
 }; 

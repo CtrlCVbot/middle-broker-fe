@@ -1,204 +1,123 @@
 import { create } from 'zustand';
-import { toast } from 'sonner';
-import { 
-  ISettlement, 
-  ISettlementChartData, 
-  ISettlementFilters, 
-  ISettlementState, 
-  SettlementStatus
-} from '@/types/settlement';
-import { 
-  fetchMockSettlements, 
-  fetchMockSettlementById, 
-  fetchMockSettlementChartData, 
-  updateMockSettlementStatus 
-} from '@/utils/mockdata/mock-settlements';
+import { SettlementStatus, ISettlementFilter } from '@/types/settlement';
 
-// 초기 필터 상태
-const initialFilters: ISettlementFilters = {
-  startDate: null,
-  endDate: null,
-  companyName: null,
-  driverName: null,
-  status: null
-};
+interface SettlementState {
+  // 뷰 모드 (테이블 또는 카드)
+  viewMode: 'table' | 'card';
+  
+  // 현재 페이지와 페이지 크기
+  currentPage: number;
+  pageSize: number;
+  
+  // 검색 필터
+  filter: ISettlementFilter;
+  
+  // 선택된 정산 ID
+  selectedSettlementId: string | null;
+  
+  // 상세 정보 시트 열림/닫힘 상태
+  isDetailSheetOpen: boolean;
+  
+  // 검색 패널 열림/닫힘 상태
+  isSearchPanelOpen: boolean;
+  
+  // 액션: 뷰 모드 설정
+  setViewMode: (mode: 'table' | 'card') => void;
+  
+  // 액션: 현재 페이지 설정
+  setCurrentPage: (page: number) => void;
+  
+  // 액션: 페이지 크기 설정
+  setPageSize: (size: number) => void;
+  
+  // 액션: 필터 설정
+  setFilter: (filter: Partial<ISettlementFilter>) => void;
+  
+  // 액션: 필터 초기화
+  resetFilter: () => void;
+  
+  // 액션: 정산 ID 선택
+  selectSettlement: (id: string) => void;
+  
+  // 액션: 상세 정보 시트 열기
+  openDetailSheet: () => void;
+  
+  // 액션: 상세 정보 시트 닫기
+  closeDetailSheet: () => void;
+  
+  // 액션: 검색 패널 열기
+  openSearchPanel: () => void;
+  
+  // 액션: 검색 패널 닫기
+  closeSearchPanel: () => void;
+}
 
-// 엑셀 다운로드 함수
-const downloadExcelFile = (settlements: ISettlement[]) => {
-  // 실제 구현에서는 엑셀 라이브러리를 사용하여 구현
-  // 예: xlsx 라이브러리 활용
-  console.log('엑셀 다운로드:', settlements);
-  toast.success('엑셀 다운로드가 시작되었습니다.');
-};
-
-// PDF 다운로드 함수
-const downloadPdfFile = (settlements: ISettlement[]) => {
-  // 실제 구현에서는 PDF 라이브러리를 사용하여 구현
-  // 예: jspdf 또는 PDF 생성 API 활용
-  console.log('PDF 다운로드:', settlements);
-  toast.success('PDF 다운로드가 시작되었습니다.');
-};
-
-// 정산 관리 스토어 생성
-export const useSettlementStore = create<ISettlementState>((set, get) => ({
-  // 상태
-  settlements: [],
-  loading: {
-    list: false,
-    detail: false,
-    chart: false
+export const useSettlementStore = create<SettlementState>((set) => ({
+  // 초기 상태
+  viewMode: 'table',
+  currentPage: 1,
+  pageSize: 10,
+  filter: {
+    orderId: undefined,
+    departureCity: undefined,
+    arrivalCity: undefined,
+    driverName: undefined,
+    searchTerm: undefined,
+    status: undefined,
+    startDate: undefined,
+    endDate: undefined,
+    minAmount: undefined,
+    maxAmount: undefined,
   },
-  selectedSettlement: null,
-  chartData: {
-    monthlyTrend: [],
-    companyDistribution: [],
-    driverContribution: [],
-    statusDistribution: []
-  },
-  filters: initialFilters,
+  selectedSettlementId: null,
+  isDetailSheetOpen: false,
+  isSearchPanelOpen: false,
   
-  // 액션
-  // 정산 목록 조회
-  fetchSettlements: async () => {
-    try {
-      set({ loading: { ...get().loading, list: true } });
-      const data = await fetchMockSettlements();
-      
-      // 필터 적용
-      const { filters } = get();
-      const filteredData = data.filter(settlement => {
-        // 회사명 필터
-        if (filters.companyName && !settlement.companyName.includes(filters.companyName)) {
-          return false;
-        }
-        
-        // 시작일 필터
-        if (filters.startDate && settlement.startDate < filters.startDate) {
-          return false;
-        }
-        
-        // 종료일 필터
-        if (filters.endDate && settlement.endDate > filters.endDate) {
-          return false;
-        }
-        
-        // 상태 필터
-        if (filters.status && settlement.status !== filters.status) {
-          return false;
-        }
-        
-        // 운전기사 필터 (items 내에 driverName이 포함된 항목이 있는지 확인)
-        if (filters.driverName) {
-          return settlement.items.some(item => 
-            item.driverName.includes(filters.driverName as string)
-          );
-        }
-        
-        return true;
-      });
-      
-      set({ settlements: filteredData });
-    } catch (error) {
-      console.error('정산 목록 조회 중 오류 발생:', error);
-      toast.error('정산 목록을 불러오는 중 오류가 발생했습니다.');
-    } finally {
-      set({ loading: { ...get().loading, list: false } });
-    }
-  },
+  // 액션 구현
+  setViewMode: (mode) => set({ viewMode: mode }),
   
-  // 특정 정산 데이터 조회
-  fetchSettlementById: async (id: string) => {
-    try {
-      set({ loading: { ...get().loading, detail: true } });
-      const data = await fetchMockSettlementById(id);
-      set({ selectedSettlement: data });
-    } catch (error) {
-      console.error('정산 상세 조회 중 오류 발생:', error);
-      toast.error('정산 상세 정보를 불러오는 중 오류가 발생했습니다.');
-    } finally {
-      set({ loading: { ...get().loading, detail: false } });
-    }
-  },
+  setCurrentPage: (page) => set({ currentPage: page }),
   
-  // 차트 데이터 조회
-  fetchChartData: async () => {
-    try {
-      set({ loading: { ...get().loading, chart: true } });
-      const data = await fetchMockSettlementChartData();
-      set({ chartData: data });
-    } catch (error) {
-      console.error('정산 차트 데이터 조회 중 오류 발생:', error);
-      toast.error('차트 데이터를 불러오는 중 오류가 발생했습니다.');
-    } finally {
-      set({ loading: { ...get().loading, chart: false } });
-    }
-  },
+  setPageSize: (size) => set({ pageSize: size }),
   
-  // 정산 상태 업데이트
-  updateSettlementStatus: async (id: string, status: SettlementStatus) => {
-    try {
-      const { settlements, selectedSettlement } = get();
-      
-      // API 호출
-      const updatedSettlement = await updateMockSettlementStatus(id, status);
-      
-      if (!updatedSettlement) {
-        throw new Error('정산 상태 업데이트에 실패했습니다.');
-      }
-      
-      // 목록 업데이트
-      const updatedSettlements = settlements.map(s => 
-        s.id === id ? updatedSettlement : s
-      );
-      
-      // 현재 선택된 정산 데이터 업데이트
-      const updatedSelected = selectedSettlement?.id === id 
-        ? updatedSettlement 
-        : selectedSettlement;
-      
-      set({ 
-        settlements: updatedSettlements, 
-        selectedSettlement: updatedSelected 
-      });
-      
-      toast.success(`정산이 성공적으로 ${status === 'COMPLETED' ? '완료' : '미완료'}로 변경되었습니다.`);
-    } catch (error) {
-      console.error('정산 상태 업데이트 중 오류 발생:', error);
-      toast.error('정산 상태 변경 중 오류가 발생했습니다.');
-    }
-  },
+  setFilter: (filter) => 
+    set((state) => ({ 
+      filter: { ...state.filter, ...filter },
+      // 필터 변경 시 첫 페이지로 이동
+      currentPage: 1, 
+    })),
   
-  // 필터 적용
-  applyFilters: (filters: Partial<ISettlementFilters>) => {
-    set({ filters: { ...get().filters, ...filters } });
-    get().fetchSettlements();
-  },
+  resetFilter: () => 
+    set({ 
+      filter: {
+        orderId: undefined,
+        departureCity: undefined,
+        arrivalCity: undefined,
+        driverName: undefined,
+        searchTerm: undefined,
+        status: undefined,
+        startDate: undefined,
+        endDate: undefined,
+        minAmount: undefined,
+        maxAmount: undefined,
+      },
+      currentPage: 1,
+    }),
   
-  // 필터 초기화
-  resetFilters: () => {
-    set({ filters: initialFilters });
-    get().fetchSettlements();
-  },
+  selectSettlement: (id) => 
+    set({ 
+      selectedSettlementId: id,
+      isDetailSheetOpen: true,
+    }),
   
-  // 엑셀 다운로드
-  downloadExcel: async () => {
-    const { settlements, selectedSettlement } = get();
-    const dataToDownload = selectedSettlement 
-      ? [selectedSettlement] 
-      : settlements;
-    
-    downloadExcelFile(dataToDownload);
-    return Promise.resolve();
-  },
+  openDetailSheet: () => set({ isDetailSheetOpen: true }),
   
-  // PDF 다운로드
-  downloadPdf: async () => {
-    const { settlements, selectedSettlement } = get();
-    const dataToDownload = selectedSettlement 
-      ? [selectedSettlement] 
-      : settlements;
-    
-    downloadPdfFile(dataToDownload);
-    return Promise.resolve();
-  }
+  closeDetailSheet: () => set({ 
+    isDetailSheetOpen: false,
+    selectedSettlementId: null,
+  }),
+  
+  openSearchPanel: () => set({ isSearchPanelOpen: true }),
+  
+  closeSearchPanel: () => set({ isSearchPanelOpen: false }),
 })); 

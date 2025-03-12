@@ -25,7 +25,7 @@ const getStatusBadgeStyles = (status: OrderStatusType) => {
       return { variant: 'default', className: 'text-orange-800 bg-orange-100 hover:bg-orange-200' };
     case '하차완료':
       return { variant: 'default', className: 'text-green-800 bg-green-100 hover:bg-green-200' };
-    case '정산완료':
+    case '운송마감':
       return { variant: 'outline', className: 'text-purple-800 bg-purple-100 hover:bg-purple-200' };
     default:
       return { variant: 'outline', className: 'text-gray-800 bg-gray-100 hover:bg-gray-200' };
