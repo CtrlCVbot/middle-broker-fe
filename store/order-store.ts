@@ -14,7 +14,8 @@ const DEFAULT_WEIGHT_TYPES = WEIGHT_TYPES || ["1톤", "2.5톤", "3.5톤", "5톤"
 
 // 필터 버튼에 표시할 요약 텍스트 생성 함수
 export const getFilterSummaryText = (filter: IOrderFilter): string => {
-  if (!filter.departureCity && !filter.arrivalCity && !filter.vehicleType && !filter.weight) {
+  if (!filter.departureCity && !filter.arrivalCity && !filter.vehicleType && 
+      !filter.weight && !filter.status && !filter.startDate && !filter.endDate) {
     return "모든 화물";
   }
   
@@ -30,6 +31,18 @@ export const getFilterSummaryText = (filter: IOrderFilter): string => {
   
   if (filter.vehicleType) parts.push(filter.vehicleType);
   if (filter.weight) parts.push(filter.weight);
+  
+  // 배차상태 추가
+  if (filter.status) parts.push(filter.status);
+  
+  // 검색기간 추가
+  if (filter.startDate && filter.endDate) {
+    parts.push(`${filter.startDate.slice(5)} ~ ${filter.endDate.slice(5)}`);
+  } else if (filter.startDate) {
+    parts.push(`${filter.startDate.slice(5)}부터`);
+  } else if (filter.endDate) {
+    parts.push(`${filter.endDate.slice(5)}까지`);
+  }
   
   return parts.join(", ") || "모든 화물";
 };
@@ -70,7 +83,10 @@ const initialFilter: IOrderFilter = {
   arrivalCity: undefined,
   vehicleType: undefined,
   weight: undefined,
-  searchTerm: ''
+  searchTerm: '',
+  status: undefined,
+  startDate: undefined,
+  endDate: undefined
 };
 
 // 화물 관리 스토어 생성 - 로컬 스토리지 지속성 추가

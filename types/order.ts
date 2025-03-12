@@ -72,6 +72,9 @@ export interface IOrderFilter {
   vehicleType?: string;        // 차량 종류
   weight?: string;             // 중량
   searchTerm?: string;         // 검색어
+  status?: OrderStatusType;    // 배차상태
+  startDate?: string;          // 검색 시작일
+  endDate?: string;            // 검색 종료일
 }
 
 // 배차 상태 진행도를 계산하는 함수

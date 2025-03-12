@@ -17,9 +17,13 @@ import {
   PopoverTrigger 
 } from "@/components/ui/popover";
 import { useOrderStore, getFilterSummaryText } from "@/store/order-store";
-import { Search, Filter, X } from "lucide-react";
+import { Search, Filter, X, CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { ORDER_STATUS, OrderStatusType } from "@/types/order";
 
 export function OrderSearch() {
   const {
@@ -35,6 +39,14 @@ export function OrderSearch() {
 
   // Popover 상태 관리
   const [open, setOpen] = useState(false);
+  
+  // 날짜 상태 관리
+  const [startDate, setStartDate] = useState<Date | undefined>(
+    tempFilter.startDate ? new Date(tempFilter.startDate) : undefined
+  );
+  const [endDate, setEndDate] = useState<Date | undefined>(
+    tempFilter.endDate ? new Date(tempFilter.endDate) : undefined
+  );
 
   // 검색어 입력 시 필터 업데이트
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,6 +72,31 @@ export function OrderSearch() {
   const handleWeightChange = (value: string) => {
     setTempFilter({ weight: value === "all" ? undefined : value });
   };
+  
+  // 배차상태 변경 시 임시 필터 업데이트
+  const handleStatusChange = (value: string) => {
+    setTempFilter({ status: value === "all" ? undefined : value as OrderStatusType });
+  };
+  
+  // 시작일 선택 핸들러
+  const handleStartDateSelect = (date: Date | undefined) => {
+    setStartDate(date);
+    if (date) {
+      setTempFilter({ startDate: format(date, 'yyyy-MM-dd') });
+    } else {
+      setTempFilter({ startDate: undefined });
+    }
+  };
+  
+  // 종료일 선택 핸들러
+  const handleEndDateSelect = (date: Date | undefined) => {
+    setEndDate(date);
+    if (date) {
+      setTempFilter({ endDate: format(date, 'yyyy-MM-dd') });
+    } else {
+      setTempFilter({ endDate: undefined });
+    }
+  };
 
   // 필터 적용
   const handleApplyFilter = () => {
@@ -70,12 +107,16 @@ export function OrderSearch() {
   // 필터 초기화
   const handleResetFilter = () => {
     resetFilter();
+    setStartDate(undefined);
+    setEndDate(undefined);
     setOpen(false);
   };
 
   // 변경 취소
   const handleCancelChanges = () => {
     resetTempFilter();
+    setStartDate(tempFilter.startDate ? new Date(tempFilter.startDate) : undefined);
+    setEndDate(tempFilter.endDate ? new Date(tempFilter.endDate) : undefined);
     setOpen(false);
   };
 
@@ -83,6 +124,8 @@ export function OrderSearch() {
   const handleOpenChange = (open: boolean) => {
     if (open) {
       resetTempFilter();
+      setStartDate(filter.startDate ? new Date(filter.startDate) : undefined);
+      setEndDate(filter.endDate ? new Date(filter.endDate) : undefined);
     }
     setOpen(open);
   };
@@ -92,7 +135,10 @@ export function OrderSearch() {
     filter.departureCity || 
     filter.arrivalCity || 
     filter.vehicleType || 
-    filter.weight
+    filter.weight ||
+    filter.status ||
+    filter.startDate ||
+    filter.endDate
   );
 
   // 현재 선택된 필터 요약 텍스트
@@ -128,6 +174,91 @@ export function OrderSearch() {
           <PopoverContent className="w-[300px] p-4" align="start">
             <div className="space-y-4">
               <h4 className="font-medium text-sm">화물 필터링</h4>
+              
+              {/* 시작일 필터 */}
+              <div className="space-y-2">
+                <Label>시작일</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !startDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {startDate ? (
+                        format(startDate, "yyyy-MM-dd")
+                      ) : (
+                        <span>검색 시작일</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={startDate}
+                      onSelect={handleStartDateSelect}
+                      initialFocus
+                      locale={ko}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              {/* 종료일 필터 */}
+              <div className="space-y-2">
+                <Label>종료일</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !endDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {endDate ? (
+                        format(endDate, "yyyy-MM-dd")
+                      ) : (
+                        <span>검색 종료일</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={endDate}
+                      onSelect={handleEndDateSelect}
+                      initialFocus
+                      locale={ko}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              {/* 배차상태 필터 */}
+              <div className="space-y-2">
+                <Label htmlFor="status">배차상태</Label>
+                <Select
+                  value={tempFilter.status || "all"}
+                  onValueChange={handleStatusChange}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue placeholder="모든 상태" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">모든 상태</SelectItem>
+                    {ORDER_STATUS.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               
               {/* 출발지 필터 */}
               <div className="space-y-2">

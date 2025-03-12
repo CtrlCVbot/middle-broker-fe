@@ -51,7 +51,10 @@ export default function OrderListPage() {
         arrivalCity: filter.arrivalCity,
         vehicleType: filter.vehicleType,
         weight: filter.weight,
-        searchTerm: filter.searchTerm
+        searchTerm: filter.searchTerm,
+        status: filter.status,
+        startDate: filter.startDate,
+        endDate: filter.endDate
       });
       
       return getOrdersByPage(
@@ -61,7 +64,10 @@ export default function OrderListPage() {
         filter.arrivalCity,
         filter.vehicleType,
         filter.weight,
-        filter.searchTerm
+        filter.searchTerm,
+        filter.status,
+        filter.startDate,
+        filter.endDate
       );
     },
     staleTime: 1000 * 60, // 1분

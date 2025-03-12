@@ -56,10 +56,10 @@ export const mockOrders: IOrder[] = [
   {
     id: "202103150123",
     status: "배차대기",
-    departureDateTime: "2023-03-15 11:00",
+    departureDateTime: "2025-03-15 11:00",
     departureCity: "경기",
     departureLocation: "경기도 성남시 중원구 은행동",
-    arrivalDateTime: "2023-03-15 15:00",
+    arrivalDateTime: "2025-03-15 15:00",
     arrivalCity: "경기",
     arrivalLocation: "경기도 성남시 중원구 은행동",
     amount: 114000,
@@ -72,15 +72,15 @@ export const mockOrders: IOrder[] = [
       name: "김성철",
       contact: "010-9104-1200"
     },
-    createdAt: "2023-03-14 14:30"
+    createdAt: "2025-03-14 14:30"
   },
   {
     id: "202103150124",
     status: "배차완료",
-    departureDateTime: "2023-03-16 09:00",
+    departureDateTime: "2025-03-16 09:00",
     departureCity: "서울",
     departureLocation: "서울특별시 강남구 역삼동",
-    arrivalDateTime: "2023-03-16 17:00",
+    arrivalDateTime: "2025-03-16 17:00",
     arrivalCity: "부산",
     arrivalLocation: "부산광역시 해운대구 우동",
     amount: 370000,
@@ -93,15 +93,15 @@ export const mockOrders: IOrder[] = [
       name: "이준호",
       contact: "010-2345-6789"
     },
-    createdAt: "2023-03-14 15:20"
+    createdAt: "2025-03-14 15:20"
   },
   {
     id: "202103150125",
     status: "상차완료",
-    departureDateTime: "2023-03-15 13:30",
+    departureDateTime: "2025-03-15 13:30",
     departureCity: "인천",
     departureLocation: "인천광역시 서구 청라동",
-    arrivalDateTime: "2023-03-16 10:00",
+    arrivalDateTime: "2025-03-16 10:00",
     arrivalCity: "대구",
     arrivalLocation: "대구광역시 동구 신천동",
     amount: 250000,
@@ -114,15 +114,15 @@ export const mockOrders: IOrder[] = [
       name: "박민수",
       contact: "010-9876-5432"
     },
-    createdAt: "2023-03-14 16:45"
+    createdAt: "2025-03-14 16:45"
   },
   {
     id: "202103150126",
     status: "운송중",
-    departureDateTime: "2023-03-16 07:00",
+    departureDateTime: "2025-03-16 07:00",
     departureCity: "대전",
     departureLocation: "대전광역시 유성구 궁동",
-    arrivalDateTime: "2023-03-16 14:00",
+    arrivalDateTime: "2025-03-16 14:00",
     arrivalCity: "광주",
     arrivalLocation: "광주광역시 북구 용봉동",
     amount: 200000,
@@ -135,15 +135,15 @@ export const mockOrders: IOrder[] = [
       name: "정도현",
       contact: "010-1122-3344"
     },
-    createdAt: "2023-03-15 08:10"
+    createdAt: "2025-03-15 08:10"
   },
   {
     id: "202103150127",
     status: "하차완료",
-    departureDateTime: "2023-03-15 10:00",
+    departureDateTime: "2025-03-15 10:00",
     departureCity: "울산",
     departureLocation: "울산광역시 남구 삼산동",
-    arrivalDateTime: "2023-03-15 18:00",
+    arrivalDateTime: "2025-03-15 18:00",
     arrivalCity: "경남",
     arrivalLocation: "경남 창원시 성산구 가음동",
     amount: 180000,
@@ -156,15 +156,15 @@ export const mockOrders: IOrder[] = [
       name: "강지훈",
       contact: "010-5566-7788"
     },
-    createdAt: "2023-03-14 12:30"
+    createdAt: "2025-03-14 12:30"
   },
   {
     id: "202103150128",
     status: "정산완료",
-    departureDateTime: "2023-03-14 14:00",
+    departureDateTime: "2025-03-14 14:00",
     departureCity: "경북",
     departureLocation: "경북 포항시 남구 오천읍",
-    arrivalDateTime: "2023-03-15 01:00",
+    arrivalDateTime: "2025-03-15 01:00",
     arrivalCity: "경북",
     arrivalLocation: "경북 구미시 원평동",
     amount: 220000,
@@ -177,15 +177,15 @@ export const mockOrders: IOrder[] = [
       name: "양세준",
       contact: "010-3344-5566"
     },
-    createdAt: "2023-03-13 09:50"
+    createdAt: "2025-03-13 09:50"
   },
   {
     id: "202103150129",
     status: "배차대기",
-    departureDateTime: "2023-03-17 08:00",
+    departureDateTime: "2025-03-17 08:00",
     departureCity: "전북",
     departureLocation: "전북 전주시 완산구 효자동",
-    arrivalDateTime: "2023-03-17 16:00",
+    arrivalDateTime: "2025-03-17 16:00",
     arrivalCity: "전남",
     arrivalLocation: "전남 순천시 연향동",
     amount: 240000,
@@ -198,15 +198,15 @@ export const mockOrders: IOrder[] = [
       name: "",
       contact: ""
     },
-    createdAt: "2023-03-15 14:15"
+    createdAt: "2025-03-15 14:15"
   },
   {
     id: "202103150130",
     status: "배차대기",
-    departureDateTime: "2023-03-17 09:30",
+    departureDateTime: "2025-03-17 09:30",
     departureCity: "충북",
     departureLocation: "충북 청주시 상당구 용암동",
-    arrivalDateTime: "2023-03-17 15:30",
+    arrivalDateTime: "2025-03-17 15:30",
     arrivalCity: "충남",
     arrivalLocation: "충남 천안시 서북구 두정동",
     amount: 190000,
@@ -219,15 +219,15 @@ export const mockOrders: IOrder[] = [
       name: "",
       contact: ""
     },
-    createdAt: "2023-03-15 10:25"
+    createdAt: "2025-03-15 10:25"
   },
   {
     id: "202103150131",
     status: "배차완료",
-    departureDateTime: "2023-03-16 11:00",
+    departureDateTime: "2025-03-16 11:00",
     departureCity: "강원",
     departureLocation: "강원 춘천시 후평동",
-    arrivalDateTime: "2023-03-16 19:00",
+    arrivalDateTime: "2025-03-16 19:00",
     arrivalCity: "서울",
     arrivalLocation: "서울특별시 송파구 문정동",
     amount: 230000,
@@ -240,15 +240,15 @@ export const mockOrders: IOrder[] = [
       name: "이태호",
       contact: "010-7788-9900"
     },
-    createdAt: "2023-03-15 11:30"
+    createdAt: "2025-03-15 11:30"
   },
   {
     id: "202103150132",
     status: "운송중",
-    departureDateTime: "2023-03-15 16:00",
+    departureDateTime: "2025-03-15 16:00",
     departureCity: "제주",
     departureLocation: "제주 제주시 노형동",
-    arrivalDateTime: "2023-03-16 08:00",
+    arrivalDateTime: "2025-03-16 08:00",
     arrivalCity: "제주",
     arrivalLocation: "제주 서귀포시 대정읍",
     amount: 150000,
@@ -261,15 +261,15 @@ export const mockOrders: IOrder[] = [
       name: "송민재",
       contact: "010-2233-4455"
     },
-    createdAt: "2023-03-15 09:00"
+    createdAt: "2025-03-15 09:00"
   },
   {
     id: "202103150133",
     status: "정산완료",
-    departureDateTime: "2023-03-14 08:30",
+    departureDateTime: "2025-03-14 08:30",
     departureCity: "서울",
     departureLocation: "서울특별시 서초구 서초동",
-    arrivalDateTime: "2023-03-14 14:30",
+    arrivalDateTime: "2025-03-14 14:30",
     arrivalCity: "경기",
     arrivalLocation: "경기도 화성시 동탄",
     amount: 160000,
@@ -282,15 +282,15 @@ export const mockOrders: IOrder[] = [
       name: "홍기태",
       contact: "010-6677-8899"
     },
-    createdAt: "2023-03-13 16:00"
+    createdAt: "2025-03-13 16:00"
   },
   {
     id: "202103150134",
     status: "배차대기",
-    departureDateTime: "2023-03-18 07:00",
+    departureDateTime: "2025-03-18 07:00",
     departureCity: "부산",
     departureLocation: "부산광역시 사상구 감전동",
-    arrivalDateTime: "2023-03-18 17:00",
+    arrivalDateTime: "2025-03-18 17:00",
     arrivalCity: "경남",
     arrivalLocation: "경남 진주시 충무공동",
     amount: 280000,
@@ -303,15 +303,15 @@ export const mockOrders: IOrder[] = [
       name: "",
       contact: ""
     },
-    createdAt: "2023-03-15 13:45"
+    createdAt: "2025-03-15 13:45"
   },
   {
     id: "202103150135",
     status: "상차완료",
-    departureDateTime: "2023-03-16 10:30",
+    departureDateTime: "2025-03-16 10:30",
     departureCity: "인천",
     departureLocation: "인천광역시 미추홀구 주안동",
-    arrivalDateTime: "2023-03-16 15:30",
+    arrivalDateTime: "2025-03-16 15:30",
     arrivalCity: "경기",
     arrivalLocation: "경기도 수원시 영통구",
     amount: 140000,
@@ -324,15 +324,15 @@ export const mockOrders: IOrder[] = [
       name: "김영수",
       contact: "010-1234-5678"
     },
-    createdAt: "2023-03-15 09:40"
+    createdAt: "2025-03-15 09:40"
   },
   {
     id: "202103150136",
     status: "하차완료",
-    departureDateTime: "2023-03-15 09:00",
+    departureDateTime: "2025-03-15 09:00",
     departureCity: "대구",
     departureLocation: "대구광역시 수성구 범어동",
-    arrivalDateTime: "2023-03-15 18:30",
+    arrivalDateTime: "2025-03-15 18:30",
     arrivalCity: "경북",
     arrivalLocation: "경북 경주시 황성동",
     amount: 170000,
@@ -345,15 +345,15 @@ export const mockOrders: IOrder[] = [
       name: "박지성",
       contact: "010-8877-6655"
     },
-    createdAt: "2023-03-14 17:20"
+    createdAt: "2025-03-14 17:20"
   },
   {
     id: "202103150137",
     status: "배차완료",
-    departureDateTime: "2023-03-17 13:00",
+    departureDateTime: "2025-03-17 13:00",
     departureCity: "광주",
     departureLocation: "광주광역시 서구 치평동",
-    arrivalDateTime: "2023-03-17 19:00",
+    arrivalDateTime: "2025-03-17 19:00",
     arrivalCity: "전남",
     arrivalLocation: "전남 목포시 상동",
     amount: 190000,
@@ -366,7 +366,7 @@ export const mockOrders: IOrder[] = [
       name: "권상현",
       contact: "010-9988-7766"
     },
-    createdAt: "2023-03-15 15:10"
+    createdAt: "2025-03-15 15:10"
   }
 ];
 
@@ -378,7 +378,10 @@ export const getOrdersByPage = (
   arrivalCity?: string,
   vehicleType?: string,
   weight?: string,
-  searchTerm?: string
+  searchTerm?: string,
+  status?: string,
+  startDate?: string,
+  endDate?: string
 ): IOrderResponse => {
   let filteredData = [...mockOrders];
   
@@ -408,6 +411,29 @@ export const getOrdersByPage = (
     filteredData = filteredData.filter(
       (order) => order.vehicle.weight === weight
     );
+  }
+  
+  // 배차상태 필터링
+  if (status) {
+    filteredData = filteredData.filter(
+      (order) => order.status === status
+    );
+  }
+  
+  // 검색 시작일 필터링 (상차일시 기준)
+  if (startDate) {
+    filteredData = filteredData.filter(order => {
+      const orderDate = order.departureDateTime.split(' ')[0]; // YYYY-MM-DD 형식 추출
+      return orderDate >= startDate;
+    });
+  }
+  
+  // 검색 종료일 필터링 (상차일시 기준)
+  if (endDate) {
+    filteredData = filteredData.filter(order => {
+      const orderDate = order.departureDateTime.split(' ')[0]; // YYYY-MM-DD 형식 추출
+      return orderDate <= endDate;
+    });
   }
   
   // 검색어 필터링
