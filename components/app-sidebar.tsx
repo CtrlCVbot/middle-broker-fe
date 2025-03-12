@@ -25,6 +25,7 @@ import {
 import Link from 'next/link'
 
 import { NavMain } from "@/components/nav-main"
+import { NavBroker } from "@/components/nav-broker"
 import { NavProjects } from "@/components/nav-projects"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
@@ -136,6 +137,15 @@ export const data = {
     },
   ],
 
+  navBroker: [
+    {
+      title: "실시간 화물 현황",
+      url: "/broker/order/list",
+      icon: LifeBuoy,
+    },
+    
+  ], 
+
 
   navSecondary: [
     {
@@ -190,6 +200,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
+        <NavBroker items={data.navBroker} />
         <NavProjects projects={data.projects} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
