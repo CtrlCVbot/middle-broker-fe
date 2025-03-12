@@ -23,7 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { BROKER_ORDER_STATUS, BrokerOrderStatusType } from "@/types/broker-order";
+import { BROKER_ORDER_STATUS, BrokerOrderStatusType, CallCenterType } from "@/types/broker-order";
 
 export function BrokerOrderSearch() {
   const {
@@ -76,6 +76,16 @@ export function BrokerOrderSearch() {
   // 배차상태 변경 시 임시 필터 업데이트
   const handleStatusChange = (value: string) => {
     setTempFilter({ status: value === "all" ? undefined : value as BrokerOrderStatusType });
+  };
+  
+  // 콜센터 변경 시 임시 필터 업데이트
+  const handleCallCenterChange = (value: string) => {
+    setTempFilter({ callCenter: value === "all" ? undefined : value as CallCenterType });
+  };
+  
+  // 담당자 변경 시 임시 필터 업데이트
+  const handleManagerChange = (value: string) => {
+    setTempFilter({ manager: value === "all" ? undefined : value });
   };
   
   // 시작일 선택 핸들러
@@ -138,7 +148,9 @@ export function BrokerOrderSearch() {
     filter.weight ||
     filter.status ||
     filter.startDate ||
-    filter.endDate
+    filter.endDate ||
+    filter.callCenter ||
+    filter.manager
   );
 
   // 현재 선택된 필터 요약 텍스트
@@ -260,6 +272,48 @@ export function BrokerOrderSearch() {
                 </Select>
               </div>
               
+              {/* 콜센터 필터 */}
+              <div className="space-y-2">
+                <Label htmlFor="callCenter">콜센터</Label>
+                <Select
+                  value={tempFilter.callCenter || "all"}
+                  onValueChange={handleCallCenterChange}
+                >
+                  <SelectTrigger id="callCenter">
+                    <SelectValue placeholder="모든 콜센터" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">모든 콜센터</SelectItem>
+                    {filterOptions.callCenters.map((callCenter) => (
+                      <SelectItem key={callCenter} value={callCenter}>
+                        {callCenter}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* 담당자 필터 */}
+              <div className="space-y-2">
+                <Label htmlFor="manager">담당자</Label>
+                <Select
+                  value={tempFilter.manager || "all"}
+                  onValueChange={handleManagerChange}
+                >
+                  <SelectTrigger id="manager">
+                    <SelectValue placeholder="모든 담당자" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">모든 담당자</SelectItem>
+                    {filterOptions.managers.map((manager) => (
+                      <SelectItem key={manager} value={manager}>
+                        {manager}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
               {/* 출발지 필터 */}
               <div className="space-y-2">
                 <Label htmlFor="departureCity">출발지</Label>
@@ -349,18 +403,17 @@ export function BrokerOrderSearch() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleResetFilter}
-                  className="text-destructive"
+                  onClick={handleCancelChanges}
                 >
-                  초기화
+                  취소
                 </Button>
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleCancelChanges}
+                    onClick={handleResetFilter}
                   >
-                    취소
+                    초기화
                   </Button>
                   <Button
                     size="sm"
@@ -376,19 +429,20 @@ export function BrokerOrderSearch() {
       </div>
       
       {/* 검색 입력 필드 */}
-      <div className="w-full relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div className="relative w-full">
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
+          type="search"
           placeholder="화물번호, 출발지, 도착지, 차주명 검색"
+          className="w-full pl-8"
           value={filter.searchTerm || ""}
           onChange={handleSearchChange}
-          className="pl-9 w-full"
         />
         {filter.searchTerm && (
           <Button
             variant="ghost"
-            size="icon"
-            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7"
+            size="sm"
+            className="absolute right-0 top-0 h-9 px-2"
             onClick={() => setFilter({ searchTerm: "" })}
           >
             <X className="h-4 w-4" />

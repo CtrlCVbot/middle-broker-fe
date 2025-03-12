@@ -22,6 +22,12 @@ export const BROKER_ORDER_STATUS: BrokerOrderStatusType[] = [
   '운송마감'
 ];
 
+// 콜센터 유형 정의
+export type CallCenterType = '24시' | '원콜' | '화물맨' | '직접';
+
+// 결제 방식 타입 정의
+export type PaymentMethodType = '인수증' | '선불' | '착불' | '선착불';
+
 // 중개 화물 로그 항목 인터페이스
 export interface IBrokerOrderLog {
   status: BrokerOrderStatusType;
@@ -42,7 +48,7 @@ export interface IBrokerOrder {
   arrivalDateTime: string;     // 도착 예정 일시
   arrivalCity: string;         // 도착지 도시
   arrivalLocation: string;     // 도착지
-  amount: number;              // 금액
+  amount: number;              // 금액 (견적금)
   fee: number;                 // 수수료
   vehicle: {                   // 차량 정보
     type: string;              // 차량 종류
@@ -55,6 +61,24 @@ export interface IBrokerOrder {
   createdAt: string;           // 등록일
   settlementStatus?: SettlementStatus; // 정산 상태
   settlementId?: string;       // 정산 ID
+  
+  // PRD에 따른 추가 필드
+  callCenter: CallCenterType;  // 콜센터 정보 (24시, 원콜, 화물맨, 직접)
+  company: string;             // 업체명
+  contactPerson: string;       // 업체담당자(신청자)
+  contractAmount?: number;     // 계약 금액
+  chargeAmount?: number;       // 청구 금액
+  supplyAmount?: number;       // 공급가(배차금)
+  paymentMethod: PaymentMethodType; // 결제 방식 (인수증, 선불, 착불, 선착불)
+  cargoItem: string;           // 화물 품목
+  manager: string;             // 담당자 정보
+  managerContact: string;      // 담당자 연락처
+  gpsLocation?: {              // 실시간 차주 위치 정보
+    lat: number;              // 위도
+    lng: number;              // 경도
+    lastUpdated: string;      // 마지막 업데이트 시간
+    status?: string;          // 상태 (좌표 확인, 상차 도착, 하차 도착, 상차 지각, 하차 지각)
+  }
 }
 
 // 응답 페이징 정보 인터페이스
@@ -68,6 +92,7 @@ export interface IBrokerOrderPagination {
 export interface IBrokerOrderResponse {
   data: IBrokerOrder[];              // 중개 화물 목록 데이터
   pagination: IBrokerOrderPagination; // 페이징 정보
+  summary?: IBrokerOrderSummary;      // 요약 정보
 }
 
 // 검색 필터 인터페이스
@@ -80,6 +105,17 @@ export interface IBrokerOrderFilter {
   status?: BrokerOrderStatusType;    // 배차상태
   startDate?: string;          // 검색 시작일
   endDate?: string;            // 검색 종료일
+  callCenter?: CallCenterType; // 콜센터 필터
+  manager?: string;            // 담당자 필터
+}
+
+// 정산 요약 정보 인터페이스
+export interface IBrokerOrderSummary {
+  totalOrders: number;         // 총 주문 수
+  totalChargeAmount: number;   // 총 청구 금액
+  totalContractAmount: number; // 총 계약 금액
+  totalSupplyAmount: number;   // 총 공급가(배차금)
+  totalProfit: number;         // 총 수익 (청구금-공급가)
 }
 
 // 배차 상태 진행도를 계산하는 함수

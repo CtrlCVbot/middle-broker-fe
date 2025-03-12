@@ -1,9 +1,11 @@
 import { create } from 'zustand';
-import { IBrokerOrderFilter } from '@/types/broker-order';
+import { IBrokerOrderFilter, CallCenterType } from '@/types/broker-order';
 import { 
   CITIES, 
   VEHICLE_TYPES, 
-  WEIGHT_TYPES 
+  WEIGHT_TYPES,
+  CALL_CENTERS,
+  MANAGERS
 } from '@/utils/mockdata/mock-broker-orders';
 import { persist } from 'zustand/middleware';
 
@@ -11,11 +13,14 @@ import { persist } from 'zustand/middleware';
 const DEFAULT_CITIES = CITIES || ["서울", "부산", "인천", "대구", "대전", "광주", "울산", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
 const DEFAULT_VEHICLE_TYPES = VEHICLE_TYPES || ["카고", "윙바디", "탑차", "냉장", "냉동", "트레일러"];
 const DEFAULT_WEIGHT_TYPES = WEIGHT_TYPES || ["1톤", "2.5톤", "3.5톤", "5톤", "11톤", "25톤"];
+const DEFAULT_CALL_CENTERS = CALL_CENTERS || ["24시", "원콜", "화물맨", "직접"];
+const DEFAULT_MANAGERS = MANAGERS ? MANAGERS.map(m => m.name) : ["김중개", "이주선", "박배송", "정관리", "최물류"];
 
 // 필터 버튼에 표시할 요약 텍스트 생성 함수
 export const getFilterSummaryText = (filter: IBrokerOrderFilter): string => {
   if (!filter.departureCity && !filter.arrivalCity && !filter.vehicleType && 
-      !filter.weight && !filter.status && !filter.startDate && !filter.endDate) {
+      !filter.weight && !filter.status && !filter.startDate && !filter.endDate &&
+      !filter.callCenter && !filter.manager) {
     return "모든 중개 화물";
   }
   
@@ -34,6 +39,12 @@ export const getFilterSummaryText = (filter: IBrokerOrderFilter): string => {
   
   // 배차상태 추가
   if (filter.status) parts.push(filter.status);
+  
+  // 콜센터 추가
+  if (filter.callCenter) parts.push(filter.callCenter);
+  
+  // 담당자 추가
+  if (filter.manager) parts.push(`담당: ${filter.manager}`);
   
   // 검색기간 추가
   if (filter.startDate && filter.endDate) {
@@ -74,6 +85,8 @@ interface IBrokerOrderState {
     cities: string[];
     vehicleTypes: string[];
     weightTypes: string[];
+    callCenters: CallCenterType[];
+    managers: string[];
   };
 }
 
@@ -86,7 +99,9 @@ const initialFilter: IBrokerOrderFilter = {
   searchTerm: '',
   status: undefined,
   startDate: undefined,
-  endDate: undefined
+  endDate: undefined,
+  callCenter: undefined,
+  manager: undefined
 };
 
 // 중개 화물 관리 스토어 생성 - 로컬 스토리지 지속성 추가
@@ -105,6 +120,8 @@ export const useBrokerOrderStore = create<IBrokerOrderState>()(
         cities: DEFAULT_CITIES,
         vehicleTypes: DEFAULT_VEHICLE_TYPES,
         weightTypes: DEFAULT_WEIGHT_TYPES,
+        callCenters: DEFAULT_CALL_CENTERS,
+        managers: DEFAULT_MANAGERS
       },
       
       // 액션 정의

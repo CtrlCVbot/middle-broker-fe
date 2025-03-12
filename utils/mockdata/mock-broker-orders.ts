@@ -1,4 +1,10 @@
-import { IBrokerOrder, IBrokerOrderResponse } from "@/types/broker-order";
+import { 
+  IBrokerOrder, 
+  IBrokerOrderResponse, 
+  IBrokerOrderSummary,
+  CallCenterType,
+  PaymentMethodType
+} from "@/types/broker-order";
 
 // 도시 목록 (상수로 먼저 정의)
 export const CITIES = [
@@ -51,6 +57,63 @@ export const WEIGHT_TYPES = [
   "25톤"
 ];
 
+// 콜센터 목록
+export const CALL_CENTERS: CallCenterType[] = [
+  "24시",
+  "원콜",
+  "화물맨",
+  "직접"
+];
+
+// 결제 방식 목록
+export const PAYMENT_METHODS: PaymentMethodType[] = [
+  "인수증",
+  "선불",
+  "착불",
+  "선착불"
+];
+
+// 화물 품목 목록
+export const CARGO_ITEMS = [
+  "일반화물",
+  "식품류",
+  "의류",
+  "가구",
+  "전자제품",
+  "건축자재",
+  "중장비",
+  "화학제품",
+  "농산물",
+  "냉동식품",
+  "냉장식품",
+  "위험물"
+];
+
+// 회사 목록
+export const COMPANIES = [
+  "한국물류(주)",
+  "서울택배",
+  "부산운송",
+  "대한물류",
+  "국제운송",
+  "로지스틱스",
+  "스마트물류",
+  "코리아익스프레스",
+  "퀵배송",
+  "현대물류",
+  "삼성물류",
+  "SK운송"
+];
+
+// 담당자 목록
+export const MANAGERS = [
+  { name: "김중개", contact: "010-1234-5678" },
+  { name: "이주선", contact: "010-2345-6789" },
+  { name: "박배송", contact: "010-3456-7890" },
+  { name: "정관리", contact: "010-4567-8901" },
+  { name: "최물류", contact: "010-5678-9012" }
+];
+
 // 목업 중개 화물 데이터 생성
 const generateMockBrokerOrders = (count: number): IBrokerOrder[] => {
   const orders: IBrokerOrder[] = [];
@@ -77,8 +140,17 @@ const generateMockBrokerOrders = (count: number): IBrokerOrder[] => {
     const arrivalDate = new Date(departureDate);
     arrivalDate.setDate(arrivalDate.getDate() + Math.floor(Math.random() * 3) + 1);
     
-    // 금액 (10만원 ~ 100만원)
+    // 견적 금액 (10만원 ~ 100만원)
     const amount = Math.floor(Math.random() * 900000) + 100000;
+    
+    // 계약 금액 (견적 금액의 90~110%)
+    const contractAmount = Math.round(amount * (0.9 + Math.random() * 0.2));
+    
+    // 청구 금액 (계약 금액의 100~120%)
+    const chargeAmount = Math.round(contractAmount * (1 + Math.random() * 0.2));
+    
+    // 공급가 (청구 금액의 70~90%)
+    const supplyAmount = Math.round(chargeAmount * (0.7 + Math.random() * 0.2));
     
     // 수수료 (금액의 10%)
     const fee = Math.floor(amount * 0.1);
@@ -117,6 +189,35 @@ const generateMockBrokerOrders = (count: number): IBrokerOrder[] => {
     const settlementStatus = hasSettlement ? "정산완료" : undefined;
     const settlementId = hasSettlement ? `SET-${(1000 + i).toString().padStart(6, '0')}` : undefined;
     
+    // 콜센터
+    const callCenter = CALL_CENTERS[Math.floor(Math.random() * CALL_CENTERS.length)];
+    
+    // 업체명
+    const company = COMPANIES[Math.floor(Math.random() * COMPANIES.length)];
+    
+    // 업체 담당자
+    const contactPerson = `${["김", "이", "박", "최", "정"][Math.floor(Math.random() * 5)]}${["대표", "과장", "팀장", "사원", "주임"][Math.floor(Math.random() * 5)]}`;
+    
+    // 결제 방식
+    const paymentMethod = PAYMENT_METHODS[Math.floor(Math.random() * PAYMENT_METHODS.length)];
+    
+    // 화물 품목
+    const cargoItem = CARGO_ITEMS[Math.floor(Math.random() * CARGO_ITEMS.length)];
+    
+    // 담당자 정보
+    const managerIndex = Math.floor(Math.random() * MANAGERS.length);
+    const manager = MANAGERS[managerIndex].name;
+    const managerContact = MANAGERS[managerIndex].contact;
+    
+    // GPS 위치 (70% 확률로 데이터 있음)
+    const hasGpsData = Math.random() > 0.3;
+    const gpsLocation = hasGpsData ? {
+      lat: 35.5 + Math.random() * 3, // 한국 위도 범위 내 임의 값
+      lng: 126.5 + Math.random() * 3, // 한국 경도 범위 내 임의 값
+      lastUpdated: new Date(today.getTime() - Math.floor(Math.random() * 3600000)).toISOString(), // 최근 1시간 내
+      status: ["좌표 확인", "상차 도착", "하차 도착", "상차 지각", "하차 지각"][Math.floor(Math.random() * 5)]
+    } : undefined;
+    
     orders.push({
       id,
       status: status as any,
@@ -138,7 +239,20 @@ const generateMockBrokerOrders = (count: number): IBrokerOrder[] => {
       },
       createdAt: date.toISOString().split('T')[0],
       settlementStatus: settlementStatus as any,
-      settlementId
+      settlementId,
+      
+      // 추가 필드
+      callCenter: callCenter,
+      company,
+      contactPerson,
+      contractAmount,
+      chargeAmount,
+      supplyAmount,
+      paymentMethod,
+      cargoItem,
+      manager,
+      managerContact,
+      gpsLocation
     });
   }
   
@@ -147,6 +261,17 @@ const generateMockBrokerOrders = (count: number): IBrokerOrder[] => {
 
 // 전체 목업 데이터 (500개)
 const ALL_BROKER_ORDERS = generateMockBrokerOrders(500);
+
+// 주문 목록의 요약 정보 계산
+const calculateOrdersSummary = (orders: IBrokerOrder[]): IBrokerOrderSummary => {
+  return {
+    totalOrders: orders.length,
+    totalChargeAmount: orders.reduce((sum, order) => sum + (order.chargeAmount || 0), 0),
+    totalContractAmount: orders.reduce((sum, order) => sum + (order.contractAmount || 0), 0),
+    totalSupplyAmount: orders.reduce((sum, order) => sum + (order.supplyAmount || 0), 0),
+    totalProfit: orders.reduce((sum, order) => sum + ((order.chargeAmount || 0) - (order.supplyAmount || 0)), 0),
+  };
+};
 
 // 페이지네이션 및 필터링된 중개 화물 목록 반환 함수
 export const getBrokerOrdersByPage = (
@@ -159,7 +284,9 @@ export const getBrokerOrdersByPage = (
   searchTerm?: string,
   status?: string,
   startDate?: string,
-  endDate?: string
+  endDate?: string,
+  callCenter?: string,
+  manager?: string
 ): IBrokerOrderResponse => {
   // 필터링
   let filteredOrders = [...ALL_BROKER_ORDERS];
@@ -206,7 +333,10 @@ export const getBrokerOrdersByPage = (
       order.id.toLowerCase().includes(term) ||
       order.departureLocation.toLowerCase().includes(term) ||
       order.arrivalLocation.toLowerCase().includes(term) ||
-      order.driver.name.toLowerCase().includes(term)
+      order.driver.name.toLowerCase().includes(term) ||
+      order.company.toLowerCase().includes(term) ||
+      order.contactPerson.toLowerCase().includes(term) ||
+      order.cargoItem.toLowerCase().includes(term)
     );
   }
   
@@ -223,6 +353,23 @@ export const getBrokerOrdersByPage = (
     );
   }
   
+  // 콜센터 필터
+  if (callCenter) {
+    filteredOrders = filteredOrders.filter(order => 
+      order.callCenter === callCenter
+    );
+  }
+  
+  // 담당자 필터
+  if (manager) {
+    filteredOrders = filteredOrders.filter(order => 
+      order.manager === manager
+    );
+  }
+  
+  // 요약 정보 계산
+  const summary = calculateOrdersSummary(filteredOrders);
+  
   // 페이지네이션
   const startIndex = (page - 1) * limit;
   const endIndex = startIndex + limit;
@@ -234,6 +381,7 @@ export const getBrokerOrdersByPage = (
       total: filteredOrders.length,
       page,
       limit
-    }
+    },
+    summary
   };
 }; 

@@ -16,16 +16,22 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-import { IBrokerOrder } from "@/types/broker-order";
+import { IBrokerOrder, BrokerOrderStatusType } from "@/types/broker-order";
 import { formatCurrency } from "@/lib/utils";
 import { useBrokerOrderDetailStore } from "@/store/broker-order-detail-store";
 import { BrokerStatusBadge } from "./broker-status-badge";
+import { BrokerOrderContextMenu } from "./broker-order-context-menu";
+import { Badge } from "@/components/ui/badge";
 
 interface BrokerOrderTableProps {
   orders: IBrokerOrder[];
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  onStatusChange?: (orderId: string, newStatus: BrokerOrderStatusType) => void;
+  onEditTransportFee?: (orderId: string) => void;
+  onExportExcel?: (orderId: string) => void;
+  onViewMap?: (orderId: string) => void;
 }
 
 export function BrokerOrderTable({
@@ -33,6 +39,10 @@ export function BrokerOrderTable({
   currentPage,
   totalPages,
   onPageChange,
+  onStatusChange,
+  onEditTransportFee,
+  onExportExcel,
+  onViewMap,
 }: BrokerOrderTableProps) {
   // 상세 정보 모달을 위한 스토어 액세스
   const { openSheet } = useBrokerOrderDetailStore();
@@ -80,14 +90,18 @@ export function BrokerOrderTable({
               <TableHead>도착 일시</TableHead>
               <TableHead>차량</TableHead>
               <TableHead>차주</TableHead>
-              <TableHead className="text-right">운송비</TableHead>
+              <TableHead>콜센터</TableHead>
+              <TableHead>업체명</TableHead>
+              <TableHead>운송비</TableHead>
+              <TableHead>결제방식</TableHead>
+              <TableHead>관리자</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {orders.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={9}
+                  colSpan={13}
                   className="h-24 text-center text-muted-foreground"
                 >
                   표시할 중개 화물 정보가 없습니다.
@@ -95,31 +109,74 @@ export function BrokerOrderTable({
               </TableRow>
             ) : (
               orders.map((order) => (
-                <TableRow key={order.id} className="cursor-pointer hover:bg-secondary/20" onClick={() => handleOrderClick(order.id)}>
-                  <TableCell className="font-medium text-primary underline">
-                    {order.id}
-                  </TableCell>
-                  <TableCell>
-                    <BrokerStatusBadge status={order.status} size="sm" />
-                  </TableCell>
-                  <TableCell className="max-w-[200px] truncate" title={order.departureLocation}>
-                    {order.departureLocation}
-                  </TableCell>
-                  <TableCell>{order.departureDateTime}</TableCell>
-                  <TableCell className="max-w-[200px] truncate" title={order.arrivalLocation}>
-                    {order.arrivalLocation}
-                  </TableCell>
-                  <TableCell>{order.arrivalDateTime}</TableCell>
-                  <TableCell>
-                    {order.vehicle.type} {order.vehicle.weight}
-                  </TableCell>
-                  <TableCell>
-                    {order.driver.name || "-"}
-                  </TableCell>
-                  <TableCell className="text-right font-medium">
-                    {formatCurrency(order.amount)}원
-                  </TableCell>
-                </TableRow>
+                <BrokerOrderContextMenu 
+                  key={order.id} 
+                  order={order}
+                  onStatusChange={onStatusChange}
+                  onEditTransportFee={onEditTransportFee}
+                  onExportExcel={onExportExcel}
+                  onViewMap={onViewMap}
+                >
+                  <TableRow 
+                    className="cursor-pointer hover:bg-secondary/20" 
+                    onClick={() => handleOrderClick(order.id)}
+                  >
+                    <TableCell className="font-medium text-primary underline">
+                      {order.id}
+                    </TableCell>
+                    <TableCell>
+                      <BrokerStatusBadge status={order.status} size="sm" />
+                      {order.gpsLocation?.status === "상차 지각" || order.gpsLocation?.status === "하차 지각" ? (
+                        <Badge variant="destructive" className="ml-1 text-[10px] px-1">지각</Badge>
+                      ) : null}
+                    </TableCell>
+                    <TableCell className="max-w-[150px] truncate" title={order.departureLocation}>
+                      {order.departureLocation}
+                    </TableCell>
+                    <TableCell>{order.departureDateTime}</TableCell>
+                    <TableCell className="max-w-[150px] truncate" title={order.arrivalLocation}>
+                      {order.arrivalLocation}
+                    </TableCell>
+                    <TableCell>{order.arrivalDateTime}</TableCell>
+                    <TableCell>
+                      {order.vehicle.type} {order.vehicle.weight}
+                    </TableCell>
+                    <TableCell>
+                      {order.driver.name || "-"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="font-normal">
+                        {order.callCenter}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="max-w-[100px] truncate" title={`${order.company} (${order.contactPerson})`}>
+                      {order.company}
+                      <span className="text-xs text-muted-foreground ml-1">
+                        ({order.contactPerson})
+                      </span>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-sm">
+                          {formatCurrency(order.chargeAmount || order.amount)}원
+                        </span>
+                        {order.chargeAmount !== order.amount && (
+                          <span className="text-xs text-muted-foreground">
+                            견적: {formatCurrency(order.amount)}원
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="font-normal">
+                        {order.paymentMethod}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="max-w-[100px] truncate" title={`${order.manager} (${order.managerContact})`}>
+                      {order.manager}
+                    </TableCell>
+                  </TableRow>
+                </BrokerOrderContextMenu>
               ))
             )}
           </TableBody>

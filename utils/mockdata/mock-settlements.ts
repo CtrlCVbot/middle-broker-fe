@@ -1,4 +1,5 @@
-import { faker } from '@faker-js/faker/locale/ko';
+import { faker } from '@faker-js/faker';
+
 import { 
   ISettlement, 
   ISettlementResponse, 
