@@ -37,7 +37,7 @@ function SettlementSummaryCard({ data, isLoading }: { data: any, isLoading: bool
 
   return (
     <Card className="mb-6 bg-primary/5">
-      <CardContent className="pt-6">
+      <CardContent className="pt-0">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex flex-col">
             <span className="text-sm text-muted-foreground mb-1 flex items-center">

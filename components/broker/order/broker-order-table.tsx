@@ -81,7 +81,7 @@ export function BrokerOrderTable({
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="bg-slate-50">
               <TableHead className="w-[120px]">화물 ID</TableHead>
               <TableHead>상태</TableHead>
               <TableHead>출발지</TableHead>
