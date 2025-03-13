@@ -251,48 +251,138 @@ export function BrokerOrderSearch() {
                 </Popover>
               </div>
               
-              {/* 배차상태 필터 */}
+              {/* 배차상태, 콜센터 필터 */}
               <div className="space-y-2">
-                <Label htmlFor="status">배차상태</Label>
-                <Select
-                  value={tempFilter.status || "all"}
-                  onValueChange={handleStatusChange}
-                >
-                  <SelectTrigger id="status">
-                    <SelectValue placeholder="모든 상태" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">모든 상태</SelectItem>
-                    {BROKER_ORDER_STATUS.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                  <Label htmlFor="status">배차상태</Label>
+                  <Select
+                    value={tempFilter.status || "all"}
+                    onValueChange={handleStatusChange}
+                  >
+                    <SelectTrigger id="status">
+                      <SelectValue placeholder="모든 상태" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">모든 상태</SelectItem>
+                      {BROKER_ORDER_STATUS.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="callCenter">콜센터</Label>
+                    <Select
+                      value={tempFilter.callCenter || "all"}
+                      onValueChange={handleCallCenterChange}
+                    >
+                      <SelectTrigger id="callCenter">
+                        <SelectValue placeholder="모든 콜센터" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">모든 콜센터</SelectItem>
+                        {filterOptions.callCenters.map((callCenter) => (
+                          <SelectItem key={callCenter} value={callCenter}>
+                            {callCenter}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
               
-              {/* 콜센터 필터 */}
+              {/* 출발지 필터 */}
               <div className="space-y-2">
-                <Label htmlFor="callCenter">콜센터</Label>
-                <Select
-                  value={tempFilter.callCenter || "all"}
-                  onValueChange={handleCallCenterChange}
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label htmlFor="departureCity">출발지</Label>
+                    <Select
+                      value={tempFilter.departureCity || "all"}
+                  onValueChange={handleDepartureCityChange}
                 >
-                  <SelectTrigger id="callCenter">
-                    <SelectValue placeholder="모든 콜센터" />
+                  <SelectTrigger id="departureCity">
+                    <SelectValue placeholder="모든 출발지" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">모든 콜센터</SelectItem>
-                    {filterOptions.callCenters.map((callCenter) => (
-                      <SelectItem key={callCenter} value={callCenter}>
-                        {callCenter}
+                    <SelectItem value="all">모든 출발지</SelectItem>
+                    {filterOptions.cities.map((city) => (
+                      <SelectItem key={city} value={city}>
+                        {city}
                       </SelectItem>
                     ))}
-                  </SelectContent>
-                </Select>
+                    </SelectContent>
+                  </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="arrivalCity">도착지</Label>
+                    <Select
+                      value={tempFilter.arrivalCity || "all"}
+                      onValueChange={handleArrivalCityChange}
+                    >
+                      <SelectTrigger id="arrivalCity">
+                        <SelectValue placeholder="모든 도착지" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">모든 도착지</SelectItem>
+                      {filterOptions.cities.map((city) => (
+                        <SelectItem key={city} value={city}>
+                          {city}
+                        </SelectItem>
+                      ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
               
+              {/* 차량 종류, 중량 필터 */}
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label htmlFor="weight">중량</Label>
+                    <Select
+                          value={tempFilter.weight || "all"}
+                      onValueChange={handleWeightChange}
+                    >
+                      <SelectTrigger id="weight">
+                        <SelectValue placeholder="모든 중량" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">모든 중량</SelectItem>
+                        {filterOptions.weightTypes.map((weight) => (
+                          <SelectItem key={weight} value={weight}>
+                            {weight}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="vehicleType">차량 종류</Label>
+                    <Select
+                      value={tempFilter.vehicleType || "all"}
+                      onValueChange={handleVehicleTypeChange}
+                    >
+                      <SelectTrigger id="vehicleType">
+                        <SelectValue placeholder="모든 차량" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">모든 차량</SelectItem>
+                        {filterOptions.vehicleTypes.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
               {/* 담당자 필터 */}
               <div className="space-y-2">
                 <Label htmlFor="manager">담당자</Label>
@@ -308,90 +398,6 @@ export function BrokerOrderSearch() {
                     {filterOptions.managers.map((manager) => (
                       <SelectItem key={manager} value={manager}>
                         {manager}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {/* 출발지 필터 */}
-              <div className="space-y-2">
-                <Label htmlFor="departureCity">출발지</Label>
-                <Select
-                  value={tempFilter.departureCity || "all"}
-                  onValueChange={handleDepartureCityChange}
-                >
-                  <SelectTrigger id="departureCity">
-                    <SelectValue placeholder="모든 출발지" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">모든 출발지</SelectItem>
-                    {filterOptions.cities.map((city) => (
-                      <SelectItem key={city} value={city}>
-                        {city}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {/* 도착지 필터 */}
-              <div className="space-y-2">
-                <Label htmlFor="arrivalCity">도착지</Label>
-                <Select
-                  value={tempFilter.arrivalCity || "all"}
-                  onValueChange={handleArrivalCityChange}
-                >
-                  <SelectTrigger id="arrivalCity">
-                    <SelectValue placeholder="모든 도착지" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">모든 도착지</SelectItem>
-                    {filterOptions.cities.map((city) => (
-                      <SelectItem key={city} value={city}>
-                        {city}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {/* 차량 종류 필터 */}
-              <div className="space-y-2">
-                <Label htmlFor="vehicleType">차량 종류</Label>
-                <Select
-                  value={tempFilter.vehicleType || "all"}
-                  onValueChange={handleVehicleTypeChange}
-                >
-                  <SelectTrigger id="vehicleType">
-                    <SelectValue placeholder="모든 차량" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">모든 차량</SelectItem>
-                    {filterOptions.vehicleTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {/* 중량 필터 */}
-              <div className="space-y-2">
-                <Label htmlFor="weight">중량</Label>
-                <Select
-                  value={tempFilter.weight || "all"}
-                  onValueChange={handleWeightChange}
-                >
-                  <SelectTrigger id="weight">
-                    <SelectValue placeholder="모든 중량" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">모든 중량</SelectItem>
-                    {filterOptions.weightTypes.map((weight) => (
-                      <SelectItem key={weight} value={weight}>
-                        {weight}
                       </SelectItem>
                     ))}
                   </SelectContent>

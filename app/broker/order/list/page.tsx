@@ -235,12 +235,14 @@ export default function BrokerOrderListPage() {
             <CardHeader className="flex flex-row items-center justify-between">
             <div> 
               <CardTitle>중개 화물 현황</CardTitle>
-              <CardDescription>중개 화물 목록을 확인할 수 있습니다.</CardDescription>
+              <CardDescription className="hidden md:block">중개 화물 목록을 확인할 수 있습니다.
+                <span className="text-xs text-muted-foreground px-4">
+                  마지막 업데이트: {lastRefreshed.toLocaleTimeString()}
+                </span>
+              </CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">
-                마지막 업데이트: {lastRefreshed.toLocaleTimeString()}
-              </span>
+              
             </div>
             <ToggleGroup type="single" value={viewMode} onValueChange={(value: string) => value && setViewMode(value as 'table' | 'card')}>
               <ToggleGroupItem value="table" aria-label="테이블 보기">
@@ -254,11 +256,12 @@ export default function BrokerOrderListPage() {
 
           <CardContent>          
             {/* 검색 필터 - 양끝에 배치*/}
-            <div className="flex flex-row items-center justify-between">
+            <div className="flex flex-col md:flex-row items-center justify-between">
                 <div className="w-full md:w-auto">
-                <BrokerOrderSearch />
+                  <BrokerOrderSearch />   
                 </div>
-                <div className="flex flex-col gap-4 md:flex-row items-center mb-6">
+                <div className="flex flex-col hidden md:block items-center mb-6">
+                  
                   <Button 
                     variant="outline" 
                     size="sm" 
@@ -268,7 +271,7 @@ export default function BrokerOrderListPage() {
                     <RotateCcw className={cn("h-4 w-4 mr-1", autoRefreshEnabled && "animate-spin")} />
                     자동 갱신 {autoRefreshEnabled ? "켜짐" : "꺼짐"}
                   </Button>
-                  <Button variant="outline" size="icon" onClick={handleManualRefresh}>
+                  <Button className="bg-primary/10" variant="outline" size="icon" onClick={handleManualRefresh}>
                     <RotateCcw className="h-4 w-4" />
                   </Button>
                   <Separator orientation="vertical" className="h-6" />
@@ -276,7 +279,8 @@ export default function BrokerOrderListPage() {
                 </div>
             </div>
 
-            <Card className="mb-6 bg-primary/5">
+            {/* 화물 현황 요약 카드 */}
+            <Card className="mb-6 bg-primary/5 hidden md:block">
               <CardContent  className="pt-0">
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                   <div className="flex flex-col">
@@ -301,8 +305,7 @@ export default function BrokerOrderListPage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
-            
+            </Card>            
 
             {/* 로딩 상태 */}
             {isLoading && (
