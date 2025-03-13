@@ -148,6 +148,8 @@ export function BrokerCompanyForm({
     // ID 추가 (실제 구현에서는 백엔드에서 생성된 ID를 사용)
     const newCompany: IBrokerCompany = {
       ...data,
+      email: data.email || '', // undefined인 경우 빈 문자열로 변환
+      faxNumber: data.faxNumber || '', // undefined인 경우 빈 문자열로 변환
       id: initialData.id || generateId(),
       code: initialData.code || `CM${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`,
       registeredDate: initialData.registeredDate || new Date().toISOString().split('T')[0],
@@ -171,7 +173,7 @@ export function BrokerCompanyForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <Tabs defaultValue="basic" className="w-full">
+        <Tabs defaultValue="basic" className="w-full px-6">
           <TabsList className="grid grid-cols-3 mb-4">
             <TabsTrigger value="basic">기본 정보</TabsTrigger>
             <TabsTrigger value="warning">업체 주의사항</TabsTrigger>
