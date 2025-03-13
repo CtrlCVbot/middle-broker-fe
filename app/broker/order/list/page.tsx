@@ -174,12 +174,12 @@ export default function BrokerOrderListPage() {
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem className="hidden md:block">
                 <BreadcrumbLink href="/broker">                  
-                  운송 중개
+                  주선
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />              
               <BreadcrumbItem>
-                <BreadcrumbPage>화물 현황</BreadcrumbPage>
+                <BreadcrumbPage>실시간 화물 현황</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -187,13 +187,18 @@ export default function BrokerOrderListPage() {
       </header>
       <main className="flex flex-1 flex-col p-4 pt-0">
         {/* 정산 요약 정보 카드 */}
-        {data?.summary && (
-          <Card className="mb-4 bg-secondary/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">중개 화물 정산 요약</CardTitle>
-              <CardDescription>
-                현재 필터에 해당하는 화물의 정산 정보입니다.
-              </CardDescription>
+        {/*{data?.summary && (
+          <Card className="mb-4 bg-secondary/10">            
+            <CardHeader>
+              <div>
+                <CardTitle>중개 화물 정산 요약</CardTitle>
+                <CardDescription>
+                  현재 필터에 해당하는 화물의 정산 정보입니다.
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+              
+              </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -223,9 +228,50 @@ export default function BrokerOrderListPage() {
               마지막 업데이트: {lastRefreshed.toLocaleTimeString()}
             </CardFooter>
           </Card>
+        )}*/}
+
+        {data?.summary && (
+          <Card className="mb-4 bg-secondary/10">            
+            <CardHeader className="flex flex-row items-center justify-between">
+            <div> 
+              <CardTitle>중개 화물 현황</CardTitle>
+              <CardDescription>중개 화물 목록을 확인할 수 있습니다.</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
+                마지막 업데이트: {lastRefreshed.toLocaleTimeString()}
+              </span>
+            </div>
+          </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="flex flex-col">
+                  <span className="text-sm text-muted-foreground">화물 건수</span>
+                  <span className="text-xl font-bold">{data.summary.totalOrders}건</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm text-muted-foreground">총 견적금</span>
+                  <span className="text-xl font-bold">{formatCurrency(data.summary.totalContractAmount)}원</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm text-muted-foreground">총 청구금</span>
+                  <span className="text-xl font-bold">{formatCurrency(data.summary.totalChargeAmount)}원</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm text-muted-foreground">총 공급가</span>
+                  <span className="text-xl font-bold">{formatCurrency(data.summary.totalSupplyAmount)}원</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm text-muted-foreground">예상 수익</span>
+                  <span className="text-xl font-bold text-green-600">{formatCurrency(data.summary.totalProfit)}원</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
-        <Card>
+        {/* 검색 필터 카드 - 참고용 자료! 삭제금지!*/}
+        {/* <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div> 
               <CardTitle>중개 화물 현황</CardTitle>
@@ -256,8 +302,93 @@ export default function BrokerOrderListPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {/* 검색 필터 */}
+            
             <BrokerOrderSearch />
+
+            
+            {isLoading && (
+              <div className="py-12 text-center text-lg text-muted-foreground">
+                데이터를 불러오는 중...
+              </div>
+            )}
+
+            
+            {isError && (
+              <div className="py-12 text-center text-lg text-red-500">
+                데이터 조회 중 오류가 발생했습니다.
+                <Button
+                  variant="outline"
+                  className="ml-2"
+                  onClick={() => refetch()}
+                >
+                  다시 시도
+                </Button>
+              </div>
+            )}
+
+            
+            {!isLoading && !isError && data && (
+              <>
+                
+                {viewMode === "table" ? (
+                  <BrokerOrderTable
+                    orders={data.data}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                    onStatusChange={handleStatusChange}
+                    onEditTransportFee={handleEditTransportFee}
+                    onExportExcel={handleExportExcel}
+                    onViewMap={handleViewMap}
+                  />
+                ) : (
+                  <BrokerOrderCard
+                    orders={data.data}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                    onStatusChange={handleStatusChange}
+                    onEditTransportFee={handleEditTransportFee}
+                    onExportExcel={handleExportExcel}
+                    onViewMap={handleViewMap}
+                  />
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card> */}
+
+        <Card>          
+          <CardContent>
+            {/* 검색 필터 - 양끝에 배치*/}
+            <div className="flex flex-row items-center justify-between">
+              <div className="w-full md:w-auto">
+              <BrokerOrderSearch />
+              </div>
+              <div className="flex flex-col gap-4 md:flex-row items-center mb-6">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className={cn(autoRefreshEnabled && "bg-primary/10")}
+                  onClick={toggleAutoRefresh}
+                >
+                  <RotateCcw className={cn("h-4 w-4 mr-1", autoRefreshEnabled && "animate-spin")} />
+                  자동 갱신 {autoRefreshEnabled ? "켜짐" : "꺼짐"}
+                </Button>
+                <Button variant="outline" size="icon" onClick={handleManualRefresh}>
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
+                <Separator orientation="vertical" className="h-6" />
+                <ToggleGroup type="single" value={viewMode} onValueChange={(value: string) => value && setViewMode(value as 'table' | 'card')}>
+                  <ToggleGroupItem value="table" aria-label="테이블 보기">
+                    <ListFilter className="h-4 w-4" />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="card" aria-label="카드 보기">
+                    <Grid3x3 className="h-4 w-4" />
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+            </div>
 
             {/* 로딩 상태 */}
             {isLoading && (
