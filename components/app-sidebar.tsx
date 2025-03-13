@@ -20,7 +20,8 @@ import {
   Truck,
   PackagePlus,
   Calculator,
-  CreditCard
+  CreditCard,
+  Building
 } from "lucide-react"
 import Link from 'next/link'
 
@@ -142,6 +143,11 @@ export const data = {
       title: "실시간 화물 현황",
       url: "/broker/order/list",
       icon: LifeBuoy,
+    },
+    {
+      title: "업체 관리",
+      url: "/broker/company/list",
+      icon: Building,
     },
     
   ], 
