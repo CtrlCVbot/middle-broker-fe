@@ -78,7 +78,7 @@ export function BrokerCompanyActionButtons({
           <span className="hidden sm:inline">새로고침</span>
         </Button>
         
-        <Button
+        {/* <Button
           variant={viewMode === 'table' ? 'default' : 'outline'}
           size="icon"
           onClick={() => onChangeViewMode('table')}
@@ -86,9 +86,9 @@ export function BrokerCompanyActionButtons({
         >
           <Grid3x3 className="h-4 w-4" />
           <span className="sr-only">테이블 뷰</span>
-        </Button>
+        </Button> */}
         
-        <Button
+        {/* <Button
           variant={viewMode === 'card' ? 'default' : 'outline'}
           size="icon"
           onClick={() => onChangeViewMode('card')}
@@ -112,7 +112,7 @@ export function BrokerCompanyActionButtons({
             <rect width="7" height="7" x="3" y="14" rx="1" />
           </svg>
           <span className="sr-only">카드 뷰</span>
-        </Button>
+        </Button> */}
       </div>
       
       {/* 선택 항목 수 표시 */}

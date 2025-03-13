@@ -21,7 +21,7 @@ import { BrokerCompanyPagination } from "@/components/broker/company/broker-comp
 import { BrokerCompanyActionButtons } from "@/components/broker/company/broker-company-action-buttons";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { IBrokerCompany } from "@/types/broker-company";
 import { toast } from "sonner";
 import { ToggleGroup } from "@/components/ui/toggle-group";
@@ -164,61 +164,59 @@ export default function BrokerCompanyPage() {
         </CardHeader>
       
       <CardContent>
-      <div className="space-y-4">       
+      <div>       
 
 
         {/* 요약 카드 */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="py-3">
-              <CardTitle className="text-base font-medium flex items-center gap-2">
-                <span className="text-primary">
-                  <Building className="h-4 w-4" />
-                </span>
-                총 업체 수
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{companySummary.total}개</div>
+        <Card className="mb-6 bg-primary/5 hidden md:block">
+            <CardContent  className="pt-0">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="flex flex-col">
+                  <span className="flex flex-row items-center gap-2 text-sm text-muted-foreground">
+                    <Building className="h-4 w-4" />
+                    총 업체 수
+                  </span>
+                  <span className="text-xl font-bold">{companySummary.total}개</span>
+                </div>   
+                <div className="flex flex-col">
+                    <span className="text-sm text-muted-foreground ">
+                    <span className="text-green-500">●</span>
+                    활성 업체
+                  </span>
+                  <span className="text-xl font-bold text-green-600">{companySummary.active}개</span>
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-sm text-muted-foreground">
+                    <span className="text-red-500">●</span>
+                    비활성 업체
+                  </span>
+                  <span className="text-xl font-bold text-red-600">{companySummary.inactive}개</span>
+                </div>               
+            </div>
+              
             </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="py-3">
-              <CardTitle className="text-base font-medium flex items-center gap-2">
-                <span className="text-green-500">●</span>
-                활성 업체
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">{companySummary.active}개</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="py-3">
-              <CardTitle className="text-base font-medium flex items-center gap-2">
-                <span className="text-red-500">●</span>
-                비활성 업체
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">{companySummary.inactive}개</div>
-            </CardContent>
-          </Card>
+        </Card> 
+
+        {/* <Separator /> */}
+
+        <div className="flex flex-col md:flex-row items-center justify-between">
+
+          {/* 검색 및 필터 */}
+          <div className="w-full md:w-auto">
+            <BrokerCompanySearch />
+          </div>
+
+          {/* 액션 버튼 */}
+          <div className="flex flex-col hidden md:block items-center">
+            <BrokerCompanyActionButtons
+              viewMode={viewMode}
+              onChangeViewMode={setViewMode}
+              onRefresh={handleManualRefresh}
+              selectedIds={selectedCompanyIds}
+              onClearSelection={clearSelectedCompanyIds}
+            />
+          </div>
         </div>
-
-        <Separator />
-
-        {/* 검색 및 필터 */}
-        <BrokerCompanySearch />
-
-        {/* 액션 버튼 */}
-        <BrokerCompanyActionButtons
-          viewMode={viewMode}
-          onChangeViewMode={setViewMode}
-          onRefresh={handleManualRefresh}
-          selectedIds={selectedCompanyIds}
-          onClearSelection={clearSelectedCompanyIds}
-        />
 
         {/* 로딩 상태 */}
         {isLoading && (

@@ -99,26 +99,8 @@ export function BrokerCompanySearch() {
 
   return (
     <div className="flex flex-col gap-4 mb-4">
-      {/* 검색 인풋 */}
+      
       <div className="flex flex-col sm:flex-row gap-2 w-full">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="업체명, 대표자, 전화번호, 사업자번호로 검색"
-            value={searchValue}
-            onChange={handleSearchChange}
-            className="pl-9 pr-9"
-          />
-          {searchValue && (
-            <button
-              onClick={handleClearSearch}
-              className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
 
         {/* 필터 팝오버 */}
         <Popover open={openPopover} onOpenChange={setOpenPopover}>
@@ -262,6 +244,28 @@ export function BrokerCompanySearch() {
             </div>
           </PopoverContent>
         </Popover>
+
+        {/* 검색 인풋 */}
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="업체명, 대표자, 전화번호, 사업자번호로 검색"
+            value={searchValue}
+            onChange={handleSearchChange}
+            className="pl-9 pr-9"
+          />
+          {searchValue && (
+            <button
+              onClick={handleClearSearch}
+              className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
+        
       </div>
     </div>
   );
