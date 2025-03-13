@@ -16,13 +16,15 @@ export interface IBrokerCompany {
   businessNumber: string;
   name: string;
   representative: string;
-  email: string;
+  email: string | '';
   phoneNumber: string;
   faxNumber: string;
   managerName: string;
   managerPhoneNumber: string;
   registeredDate: string;
   status: CompanyStatus;
+  warnings?: { id: string; text: string }[];
+  files?: { id: string; name: string; url: string; type: string }[];
 }
 
 // 업체 필터 인터페이스

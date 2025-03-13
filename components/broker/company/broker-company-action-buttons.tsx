@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { BrokerCompanyRegisterSheet } from './broker-company-register-sheet';
 
 interface BrokerCompanyActionButtonsProps {
   viewMode: 'table' | 'card';
@@ -36,11 +37,6 @@ export function BrokerCompanyActionButtons({
   // 엑셀 업로드 핸들러
   const handleExcelUpload = () => {
     toast.info('업체 목록 엑셀 업로드 기능 (추후 구현 예정)');
-  };
-
-  // 신규 업체 등록 핸들러
-  const handleAddCompany = () => {
-    toast.info('신규 업체 등록 기능 (추후 구현 예정)');
   };
 
   // 선택된 업체 상태 변경 핸들러
@@ -177,10 +173,17 @@ export function BrokerCompanyActionButtons({
           </DropdownMenuContent>
         </DropdownMenu>
         
-        <Button onClick={handleAddCompany} className="flex items-center gap-1">
-          <Plus className="h-4 w-4" />
-          <span className="hidden sm:inline">신규 등록</span>
-        </Button>
+        <BrokerCompanyRegisterSheet 
+          trigger={
+            <Button className="flex items-center gap-1">
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">신규 등록</span>
+            </Button>
+          }
+          onRegisterSuccess={(company) => {
+            onRefresh();
+          }}
+        />
       </div>
     </div>
   );
