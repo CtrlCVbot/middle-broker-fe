@@ -47,6 +47,7 @@ import {
   CompanyStatus 
 } from '@/types/broker-company';
 import { COMPANY_TYPES, STATEMENT_TYPES, COMPANY_STATUS } from '@/utils/mockdata/mock-broker-companies';
+import { BrokerCompanyManagerList } from './broker-company-manager-list';
 
 interface BrokerCompanyFormProps {
   isSubmitting?: boolean;
@@ -174,10 +175,11 @@ export function BrokerCompanyForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <Tabs defaultValue="basic" className="w-full px-6">
-          <TabsList className="grid grid-cols-3 mb-4">
+          <TabsList className="grid grid-cols-4 mb-4">
             <TabsTrigger value="basic">기본 정보</TabsTrigger>
             <TabsTrigger value="warning">업체 주의사항</TabsTrigger>
             <TabsTrigger value="documents">파일 등록</TabsTrigger>
+            <TabsTrigger value="managers">사용자 관리</TabsTrigger>
           </TabsList>
           
           <TabsContent value="basic" className="space-y-4">
@@ -567,6 +569,25 @@ export function BrokerCompanyForm({
                 ) : (
                   <div className="text-center py-6 text-muted-foreground">
                     업로드된 파일이 없습니다.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="managers" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>사용자 관리</CardTitle>
+                <CardDescription>업체 담당자를 등록하고 관리합니다. 각 담당자는 배차, 정산, 관리 등의 역할을 수행할 수 있습니다.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {initialData.id ? (
+                  <BrokerCompanyManagerList companyId={initialData.id} />
+                ) : (
+                  <div className="text-center py-10 text-muted-foreground">
+                    <p className="mb-4">업체 등록 후 담당자를 추가할 수 있습니다.</p>
+                    <p className="text-sm">업체 정보를 먼저 등록해 주세요.</p>
                   </div>
                 )}
               </CardContent>
