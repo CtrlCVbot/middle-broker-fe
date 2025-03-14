@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from "clsx"
+import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { format } from "date-fns"
 import { ko } from "date-fns/locale"
@@ -8,21 +8,41 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * 금액을 통화 형식으로 포맷팅합니다. (예: 1000 -> 1,000)
+ * 숫자를 통화 형식(원)으로 변환합니다.
  */
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('ko-KR').format(amount);
+  return new Intl.NumberFormat('ko-KR', {
+    style: 'currency',
+    currency: 'KRW',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
 
 /**
- * 날짜를 포맷팅합니다. (예: 2023-01-01T00:00:00Z -> 2023년 1월 1일)
+ * 날짜를 포맷팅합니다. (예: 2023-01-01T00:00:00Z -> 2023-01-01)
  */
-export function formatDate(dateString: string): string {
+export function formatDate(dateString: string | null | undefined): string {
+  if (!dateString) return '-';
+  
   try {
     const date = new Date(dateString);
-    return format(date, 'yyyy년 M월 d일', { locale: ko });
+    if (isNaN(date.getTime())) return dateString;
+    
+    return format(date, 'yyyy-MM-dd', { locale: ko });
   } catch (error) {
     console.error("날짜 형식 오류:", error);
-    return dateString;
+    return dateString || '-';
   }
+}
+
+/**
+ * 두 날짜 사이의 일 수를 계산합니다.
+ */
+export function getDaysBetween(startDate: string, endDate: string): number {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const diffTime = Math.abs(end.getTime() - start.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
 }

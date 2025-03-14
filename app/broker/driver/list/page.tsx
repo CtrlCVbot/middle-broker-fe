@@ -10,22 +10,24 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
-import { Home, Truck, Info, Grid3x3, ListFilter, Menu } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Home, Truck, Info, Grid3x3, ListFilter, Menu, BarChart2 } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useBrokerDriverStore } from "@/store/broker-driver-store";
-import { getBrokerDriversByPage } from "@/utils/mockdata/mock-broker-drivers";
+import { TONNAGE_TYPES, getBrokerDriversByPage } from "@/utils/mockdata/mock-broker-drivers";
 import { BrokerDriverSearch } from "@/components/broker/driver/broker-driver-search";
 import { BrokerDriverTable } from "@/components/broker/driver/broker-driver-table";
+import { BrokerDriverCardGrid } from "@/components/broker/driver/broker-driver-card";
 import { BrokerDriverPagination } from "@/components/broker/driver/broker-driver-pagination";
 import { BrokerDriverActionButtons } from "@/components/broker/driver/broker-driver-action-buttons";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { IBrokerDriver } from "@/types/broker-driver";
+import { IBrokerDriver, TonnageType } from "@/types/broker-driver";
 import { toast } from "sonner";
 import { ToggleGroup } from "@/components/ui/toggle-group";
 import { ToggleGroupItem } from "@/components/ui/toggle-group";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // 결과 타입 정의
 interface DriverQueryResult {
@@ -34,6 +36,15 @@ interface DriverQueryResult {
   page: number;
   pageSize: number;
   totalPages: number;
+}
+
+// 톤수별 통계 인터페이스
+interface TonnageStatItem {
+  type: string;
+  count: number;
+  label: string;
+  color: string;
+  percentage: number;
 }
 
 export default function BrokerDriverPage() {
@@ -56,6 +67,33 @@ export default function BrokerDriverPage() {
   // 선택된 차주 상태 관리
   const [selectedDriver, setSelectedDriver] = useState<IBrokerDriver | null>(null);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+
+  // 상태 통계 탭
+  const [statsTab, setStatsTab] = useState<string>("all");
+
+  // 탭 변경 시 필터 적용
+  const handleTabChange = (tab: string) => {
+    setStatsTab(tab);
+    
+    // 스토어에 필터 적용
+    if (tab === "active") {
+      useBrokerDriverStore.getState().setFilter({
+        status: "활성"
+      });
+    } else if (tab === "inactive") {
+      useBrokerDriverStore.getState().setFilter({
+        status: "비활성"
+      });
+    } else {
+      // "all"인 경우 상태 필터 제거
+      useBrokerDriverStore.getState().setFilter({
+        status: ""
+      });
+    }
+    
+    // 페이지 초기화
+    setCurrentPage(1);
+  };
 
   // 차주 목록 데이터 조회
   const { data, isLoading, isError, refetch } = useQuery<DriverQueryResult>({
@@ -130,6 +168,78 @@ export default function BrokerDriverPage() {
     // 나중에 사이드바 상태를 전역 상태로 관리하면 여기서 토글할 수 있습니다
   };
 
+  // 톤수별 통계 계산
+  const calculateTonnageStats = (): TonnageStatItem[] => {
+    if (!data?.data || data.data.length === 0) return [];
+    
+    const allDrivers = data.data;
+    const total = allDrivers.length;
+    
+    const tonnageCount: Record<string, number> = {};
+    
+    // 각 톤수별 카운트
+    TONNAGE_TYPES.forEach((type) => {
+      tonnageCount[type] = allDrivers.filter(d => d.tonnage === type).length;
+    });
+    
+    // 색상 맵핑
+    const getColorByIndex = (index: number): string => {
+      const colors = [
+        "bg-blue-100 text-blue-800",
+        "bg-green-100 text-green-800",
+        "bg-purple-100 text-purple-800",
+        "bg-orange-100 text-orange-800",
+        "bg-teal-100 text-teal-800",
+        "bg-rose-100 text-rose-800",
+        "bg-amber-100 text-amber-800",
+        "bg-indigo-100 text-indigo-800",
+        "bg-emerald-100 text-emerald-800",
+        "bg-sky-100 text-sky-800",
+      ];
+      return colors[index % colors.length];
+    };
+    
+    // 결과 생성
+    return TONNAGE_TYPES.map((type, index) => ({
+      type,
+      count: tonnageCount[type],
+      label: `${type} (${tonnageCount[type]}명)`,
+      color: getColorByIndex(index),
+      percentage: Math.round((tonnageCount[type] / total) * 100) || 0
+    })).filter(item => item.count > 0);
+  };
+  
+  // 활성/비활성 차주 통계 계산
+  const calculateStatusStats = () => {
+    if (!data?.data || data.data.length === 0) 
+      return { active: 0, inactive: 0, total: 0, activePercentage: 0, inactivePercentage: 0 };
+    
+    const allDrivers = data.data;
+    const total = allDrivers.length;
+    const active = allDrivers.filter(d => d.isActive).length;
+    const inactive = total - active;
+    
+    return {
+      active,
+      inactive,
+      total,
+      activePercentage: Math.round((active / total) * 100) || 0,
+      inactivePercentage: Math.round((inactive / total) * 100) || 0
+    };
+  };
+
+  // 톤수 필터 적용 핸들러
+  const handleTonnageFilter = (tonnage: TonnageType) => {
+    useBrokerDriverStore.getState().setFilter({
+      tonnage: tonnage
+    });
+    
+    // 페이지 초기화
+    setCurrentPage(1);
+    
+    toast.success(`'${tonnage}' 차량 목록을 조회합니다.`);
+  };
+
   // 데이터 및 페이지네이션 정보 가져오기
   const totalItems = data?.total || 0;
   const totalPages = data?.totalPages || 0;
@@ -137,6 +247,10 @@ export default function BrokerDriverPage() {
   const currentPageSize = data?.pageSize || pageSize;
   const driversList = data?.data || [];
   const hasDrivers = driversList.length > 0;
+  
+  // 통계 데이터
+  const tonnageStats = calculateTonnageStats();
+  const statusStats = calculateStatusStats();
 
   return (
     <>
@@ -167,8 +281,20 @@ export default function BrokerDriverPage() {
             </BreadcrumbList>
           </Breadcrumb>
         </div>
+        <div className="ml-auto flex items-center gap-2 px-4">
+          <BrokerDriverActionButtons
+            isLoading={isLoading}
+            onRefresh={handleManualRefresh}
+            onExportExcel={handleExportExcel}
+            onRegisterDriver={handleRegisterDriver}
+            onRegisterMultipleDrivers={handleRegisterMultipleDrivers}
+            disabledExportExcel={!data || totalItems === 0}
+          />
+        </div>
       </header>
       <main className="flex flex-1 flex-col p-4 pt-0">
+        
+
         <Card>
           {/* 검색 및 필터 */}          
           <CardHeader className="flex flex-row items-center justify-between">
@@ -201,12 +327,111 @@ export default function BrokerDriverPage() {
           </CardHeader>
 
           <CardContent>
+            {/* 통계 카드 */}
+            {!isLoading && !isError && hasDrivers && (
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mb-4">
+                {/* 활성/비활성 통계 */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base">차주 상태</CardTitle>
+                      <BarChart2 className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <CardDescription>활성 및 비활성 차주 비율</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-2">
+                    <div className="relative pt-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <span className="text-xs font-semibold inline-block py-1 px-2 rounded-full bg-green-100 text-green-800">
+                            활성: {statusStats.active}명 ({statusStats.activePercentage}%)
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-xs font-semibold inline-block py-1 px-2 rounded-full bg-red-100 text-red-800">
+                            비활성: {statusStats.inactive}명 ({statusStats.inactivePercentage}%)
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex h-2 mb-4 overflow-hidden rounded-full bg-gray-200">
+                        <div 
+                          style={{ width: `${statusStats.activePercentage}%` }} 
+                          className="bg-green-500 transition-all duration-300"
+                        ></div>
+                        <div 
+                          style={{ width: `${statusStats.inactivePercentage}%` }} 
+                          className="bg-red-500 transition-all duration-300"
+                        ></div>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="pt-0">
+                    <div className="flex justify-center gap-2 w-full">
+                      <Button 
+                        variant={statsTab === "all" ? "default" : "outline"} 
+                        size="sm"
+                        onClick={() => handleTabChange("all")}
+                        className="flex-1"
+                      >
+                        전체 ({statusStats.total}명)
+                      </Button>
+                      <Button 
+                        variant={statsTab === "active" ? "default" : "outline"} 
+                        size="sm"
+                        onClick={() => handleTabChange("active")}
+                        className="flex-1 bg-green-100 text-green-800 hover:bg-green-200 hover:text-green-900"
+                      >
+                        활성 ({statusStats.active}명)
+                      </Button>
+                      <Button 
+                        variant={statsTab === "inactive" ? "default" : "outline"} 
+                        size="sm"
+                        onClick={() => handleTabChange("inactive")}
+                        className="flex-1 bg-red-100 text-red-800 hover:bg-red-200 hover:text-red-900"
+                      >
+                        비활성 ({statusStats.inactive}명)
+                      </Button>
+                    </div>
+                  </CardFooter>
+                </Card>
+                
+                {/* 톤수별 통계 */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base">톤수별 차주 분포</CardTitle>
+                      <Truck className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <CardDescription>차량 톤수별 차주 분포</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-2">
+                    <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3">
+                      {tonnageStats.map((stat) => (
+                        <div 
+                          key={stat.type} 
+                          className={cn(
+                            "relative flex flex-col items-center justify-center p-2 rounded-md text-center cursor-pointer hover:opacity-80 transition-opacity",
+                            stat.color
+                          )}
+                          onClick={() => handleTonnageFilter(stat.type as TonnageType)}
+                        >
+                          <span className="font-semibold">{stat.type}</span>
+                          <span className="text-xs">{stat.count}명</span>
+                          <span className="text-xs">({stat.percentage}%)</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
             <BrokerDriverSearch />
 
           </CardContent>
 
           {/* 차주 목록 */}
-          <div className="flex-1 px-0 py-0 sm:px-6 lg:px-6">
+          <div className="py-0 sm:px-6 lg:px-6">
             {isLoading ? (
               <div className="flex items-center justify-center h-64">
                 <div className="text-center">
@@ -255,32 +480,16 @@ export default function BrokerDriverPage() {
                 onDriverClick={handleDriverClick}
               />
             ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {/* 카드 뷰는 추후 구현 */}
-                <div className="col-span-full">
-                  <div className="flex items-center justify-center h-64">
-                    <div className="text-center">
-                      <Info className="mx-auto h-10 w-10 text-muted-foreground" />
-                      <h3 className="mt-4 text-lg font-medium">카드 뷰는 아직 개발 중입니다.</h3>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        테이블 뷰를 이용해주세요.
-                      </p>
-                      <button
-                        onClick={() => setViewMode("table")}
-                        className="mt-4 inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
-                      >
-                        테이블 뷰로 전환
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <BrokerDriverCardGrid
+                drivers={driversList}
+                onDriverClick={handleDriverClick}
+              />
             )}
           </div>
 
           {/* 페이지네이션 */}
           {!isLoading && !isError && hasDrivers && (
-            <div className="px-4 py-0 sm:px-6 lg:px-8">
+            <div className="px-4 sm:px-6 lg:px-8">
               <BrokerDriverPagination
                 currentPage={currentPageData}
                 totalPages={totalPages}

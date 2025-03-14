@@ -70,7 +70,7 @@ export function BrokerDriverPagination({
   const showEllipsisEnd = getPageRange()[getPageRange().length - 1] < totalPages;
   
   return (
-    <div className="flex flex-col items-center justify-between gap-4 py-4 sm:flex-row">
+    <div className="flex flex-col items-center justify-between gap- sm:flex-row">
       <div className="text-sm text-muted-foreground">
         총 <span className="font-medium">{totalItems}</span>명의 차주 중{" "}
         <span className="font-medium">{startItem}</span>-
