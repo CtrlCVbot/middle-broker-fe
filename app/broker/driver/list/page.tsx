@@ -318,7 +318,8 @@ export default function BrokerDriverPage() {
           </CardHeader>
 
           <CardContent>
-            {/* 통계 카드 */}
+          <div>
+            {/* 요약 카드 */}
             {!isLoading && !isError && hasDrivers && (
               <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mb-4">
                 {/* 활성/비활성 통계 */}
@@ -355,35 +356,7 @@ export default function BrokerDriverPage() {
                         ></div>
                       </div>
                     </div>
-                  </CardContent>
-                  <CardFooter className="pt-0">
-                    <div className="flex justify-center gap-2 w-full">
-                      <Button 
-                        variant={statsTab === "all" ? "default" : "outline"} 
-                        size="sm"
-                        onClick={() => handleTabChange("all")}
-                        className="flex-1"
-                      >
-                        전체 ({statusStats.total}명)
-                      </Button>
-                      <Button 
-                        variant={statsTab === "active" ? "default" : "outline"} 
-                        size="sm"
-                        onClick={() => handleTabChange("active")}
-                        className="flex-1 bg-green-100 text-green-800 hover:bg-green-200 hover:text-green-900"
-                      >
-                        활성 ({statusStats.active}명)
-                      </Button>
-                      <Button 
-                        variant={statsTab === "inactive" ? "default" : "outline"} 
-                        size="sm"
-                        onClick={() => handleTabChange("inactive")}
-                        className="flex-1 bg-red-100 text-red-800 hover:bg-red-200 hover:text-red-900"
-                      >
-                        비활성 ({statusStats.inactive}명)
-                      </Button>
-                    </div>
-                  </CardFooter>
+                  </CardContent>                  
                 </Card>
                 
                 {/* 톤수별 통계 */}
@@ -417,8 +390,10 @@ export default function BrokerDriverPage() {
               </div>
             )}
 
-            {/* 검색 및 필터 */}
+            {/* 검색 및 필터, 액션 버튼 */}
             <div className="flex flex-col md:flex-row items-center justify-between">
+
+              {/* 검색 및 필터 */}
               <div className="w-full md:w-auto">
                 <BrokerDriverSearch />
               </div>
@@ -436,9 +411,8 @@ export default function BrokerDriverPage() {
               </div>
             </div>
 
-            {/* 차주 목록 */}
-            <div className="py-0 sm:px-0 lg:px-0">
-              {!isLoading && !isError && data && (
+            {/* 차주 목록 테이블 또는 카드 */}
+            {!isLoading && !isError && data && (
                 <>
                   <div className={cn(viewMode === 'table' ? 'block' : 'hidden')}>
                     <BrokerDriverTable
@@ -465,8 +439,8 @@ export default function BrokerDriverPage() {
                     />
                   )}
                 </>
-              )}
-            </div>
+            )}
+          </div>
           </CardContent>
 
           

@@ -177,7 +177,6 @@ export default function BrokerCompanyPage() {
         </CardHeader>
       
         <CardContent>
-
         <div>
           {/* 요약 카드 */}
           <Card className="mb-6 bg-primary/5 hidden md:block">
