@@ -156,20 +156,21 @@ export function BrokerOrderDetailSheet() {
                   {orderData.status}
                 </Badge>
               </div>
-              <div className="flex flex-col md:flex-row gap-2 md:gap-4 md:items-center mt-1">
-                <div className="flex items-center text-sm text-muted-foreground">
+              {/* <div className="flex flex-col md:flex-row gap-2 md:gap-4 md:items-center mt-1"> */}
+              <div className="flex flex-col gap-4 md:flex-row items-center">
+                <div className="w-full flex items-center text-sm text-muted-foreground">
                   <CalendarClock className="h-4 w-4 mr-2" />
                   등록일시: {orderData.registeredAt}
                 </div>
-                <div className="flex-grow"></div>
+                <div className="flex"></div>
                 <BrokerOrderActionButtons orderNumber={orderData.orderNumber} />
               </div>
             </SheetHeader>
             
-            {/* 배차 진행 상태 */}
-            <div className="px-6 py-3 border-b">
+            {/* 배차 진행 상태 - 개발시 주석 풀지마세요!*/}
+            {/* <div className="px-6 py-3 border-b">
               <BrokerOrderProgress currentStatus={orderData.statusProgress} />
-            </div>
+            </div> */}
             
             {/* 메인 컨텐츠 - 그리드 레이아웃 */}
             <div className="flex-grow overflow-auto">

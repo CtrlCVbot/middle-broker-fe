@@ -55,12 +55,50 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
 
   return (
     <div className="space-y-4">
+
+
+      {/* 화주 정보 */}
+      <div>        
+            <button 
+            className="flex items-center justify-between w-full"
+            onClick={() => setIsShipperInfoOpen(!isShipperInfoOpen)}
+          >
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-primary" />
+              <h4 className="font-medium">화주 정보</h4>
+            </div>
+            {isShipperInfoOpen ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
+          
+          {isShipperInfoOpen && (
+            <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
+              <div className="text-muted-foreground">화주명</div>
+              <div className="col-span-2 font-medium">{shipper.name}</div>
+              
+              <div className="text-muted-foreground">담당자</div>
+              <div className="col-span-2 font-medium">{shipper.manager}</div>
+              
+              <div className="text-muted-foreground">연락처</div>
+              <div className="col-span-2 font-medium">{shipper.contact}</div>
+              
+              <div className="text-muted-foreground">이메일</div>
+              <div className="col-span-2 font-medium">{shipper.email}</div>
+            </div>
+          )}
+      </div>
+
+      {/* 분리선 */}
+      <Separator className="my-4" />
+
       {/* 출발지/도착지 정보 */}
-      <Card className="overflow-hidden">
-        <CardContent className="p-0">
+      <div>      
           <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x">
             {/* 출발지 정보 */}
-            <div className="p-4 space-y-3">
+            <div className=" space-y-3">
               <div className="flex items-center gap-2 text-primary">
                 <MapPin className="h-4 w-4" />
                 <h4 className="font-medium">출발지</h4>
@@ -84,7 +122,7 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
             </div>
             
             {/* 도착지 정보 */}
-            <div className="p-4 space-y-3">
+            <div className="px-4 space-y-3">
               <div className="flex items-center gap-2 text-primary">
                 <MapPin className="h-4 w-4" />
                 <h4 className="font-medium">도착지</h4>
@@ -112,12 +150,14 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
           <div className="md:hidden flex justify-center py-2 bg-muted/30">
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
           </div>
-        </CardContent>
-      </Card>
+      </div>
+
+      {/* 분리선 */}
+      <Separator className="my-4" />
 
       {/* 화물 정보 */}
-      <Card>
-        <CardContent className="p-4 space-y-3">
+      <div>
+        
           <div className="flex items-center gap-2">
             <Package className="h-4 w-4 text-primary" />
             <h4 className="font-medium">화물 상세</h4>
@@ -158,44 +198,8 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
               </>
             )}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* 화주 정보 */}
-      <Card>
-        <CardContent className="p-4">
-          <button 
-            className="flex items-center justify-between w-full"
-            onClick={() => setIsShipperInfoOpen(!isShipperInfoOpen)}
-          >
-            <div className="flex items-center gap-2">
-              <User className="h-4 w-4 text-primary" />
-              <h4 className="font-medium">화주 정보</h4>
-            </div>
-            {isShipperInfoOpen ? (
-              <ChevronUp className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            )}
-          </button>
-          
-          {isShipperInfoOpen && (
-            <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
-              <div className="text-muted-foreground">화주명</div>
-              <div className="col-span-2 font-medium">{shipper.name}</div>
-              
-              <div className="text-muted-foreground">담당자</div>
-              <div className="col-span-2 font-medium">{shipper.manager}</div>
-              
-              <div className="text-muted-foreground">연락처</div>
-              <div className="col-span-2 font-medium">{shipper.contact}</div>
-              
-              <div className="text-muted-foreground">이메일</div>
-              <div className="col-span-2 font-medium">{shipper.email}</div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      </div>
+      
     </div>
   );
 } 

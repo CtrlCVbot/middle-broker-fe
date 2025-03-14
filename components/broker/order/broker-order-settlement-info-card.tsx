@@ -41,10 +41,9 @@ export function BrokerOrderSettlementInfoCard({
     : 0;
   
   return (
-    <Card>
-      <CardContent className="p-4 space-y-4">
-        {/* 요청 견적금 vs 배차 금액 비교 */}
-        <div className="space-y-3">
+    <div className="space-y-4">
+          {/* 요청 견적금 vs 배차 금액 비교 */}
+          <div className="space-y-3">
           <div className="flex items-center gap-2">
             <CreditCard className="h-4 w-4 text-primary" />
             <h4 className="font-medium">견적 비교</h4>
@@ -84,69 +83,73 @@ export function BrokerOrderSettlementInfoCard({
               </p>
             </div>
           )}
-        </div>
-        
-        <Separator />
-        
-        {/* 정산 정보 */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4 text-primary" />
-            <h4 className="font-medium">정산 정보</h4>
           </div>
           
-          <div className="grid grid-cols-3 gap-2 text-sm">
-            {settlement?.status && (
-              <>
-                <div className="text-muted-foreground">정산 상태</div>
-                <div className="col-span-2 font-medium">
-                  <Badge 
-                    variant={settlement.status === "정산완료" ? "default" : "outline"}
-                    className={settlement.status === "정산완료" ? "bg-green-100 text-green-800 hover:bg-green-100" : ""}
-                  >
-                    {settlement.status}
-                  </Badge>
-                </div>
-              </>
-            )}
-            
-            {settlement?.id && (
-              <>
-                <div className="text-muted-foreground">정산 번호</div>
-                <div className="col-span-2 font-medium">{settlement.id}</div>
-              </>
-            )}
-            
-            <div className="text-muted-foreground">운송비</div>
-            <div className="col-span-2 font-medium">{formatCurrency(amountNumber)}원</div>
-            
-            <div className="text-muted-foreground">수수료</div>
-            <div className="col-span-2 font-medium">{formatCurrency(feeNumber)}원</div>
-            
-            <div className="text-muted-foreground">정산 금액</div>
-            <div className="col-span-2 font-medium text-primary">
-              {formatCurrency(settlementAmount)}원
-            </div>
-          </div>
-        </div>
-        
-        {/* 추가 정산 내역 (대기료, 경유비, 톨비 등) */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
+          {/* 분리선 */}
+          <Separator className="my-4" />
+          
+          {/* 정산 정보 */}
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
               <CreditCard className="h-4 w-4 text-primary" />
-              <h4 className="font-medium">추가 정산 내역</h4>
+              <h4 className="font-medium">정산 정보</h4>
             </div>
-            <Badge variant="outline" className="text-xs">
-              없음
-            </Badge>
+            
+            <div className="grid grid-cols-3 gap-2 text-sm">
+              {settlement?.status && (
+                <>
+                  <div className="text-muted-foreground">정산 상태</div>
+                  <div className="col-span-2 font-medium">
+                    <Badge 
+                      variant={settlement.status === "정산완료" ? "default" : "outline"}
+                      className={settlement.status === "정산완료" ? "bg-green-100 text-green-800 hover:bg-green-100" : ""}
+                    >
+                      {settlement.status}
+                    </Badge>
+                  </div>
+                </>
+              )}
+              
+              {settlement?.id && (
+                <>
+                  <div className="text-muted-foreground">정산 번호</div>
+                  <div className="col-span-2 font-medium">{settlement.id}</div>
+                </>
+              )}
+              
+              <div className="text-muted-foreground">운송비</div>
+              <div className="col-span-2 font-medium">{formatCurrency(amountNumber)}원</div>
+              
+              <div className="text-muted-foreground">수수료</div>
+              <div className="col-span-2 font-medium">{formatCurrency(feeNumber)}원</div>
+              
+              <div className="text-muted-foreground">정산 금액</div>
+              <div className="col-span-2 font-medium text-primary">
+                {formatCurrency(settlementAmount)}원
+              </div>
+            </div>
           </div>
           
-          <p className="text-sm text-muted-foreground">
-            현재 등록된 추가 정산 내역이 없습니다.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+          {/* 분리선 */}
+          <Separator className="my-4" />
+
+          {/* 추가 정산 내역 (대기료, 경유비, 톨비 등) */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CreditCard className="h-4 w-4 text-primary" />
+                <h4 className="font-medium">추가 정산 내역</h4>
+              </div>
+              <Badge variant="outline" className="text-xs">
+                없음
+              </Badge>
+            </div>
+            
+            <p className="text-sm text-muted-foreground">
+              현재 등록된 추가 정산 내역이 없습니다.
+            </p>
+          </div>
+        
+    </div>
   );
 } 
