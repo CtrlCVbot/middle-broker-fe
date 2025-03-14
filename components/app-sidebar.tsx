@@ -149,7 +149,11 @@ export const data = {
       url: "/broker/company/list",
       icon: Building,
     },
-    
+    {
+      title: "차주 관리",
+      url: "/broker/driver/list",
+      icon: Truck,
+    },
   ], 
 
 
