@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -13,15 +13,19 @@ import {
   SheetTitle,
   SheetDescription,
   SheetFooter,
+  SheetTrigger,
+  SheetClose
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, Plus, Edit } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Form } from "@/components/ui/form";
 import { BrokerDriverBasicInfoForm } from "./forms/broker-driver-basic-info-form";
 import { BrokerDriverVehicleInfoForm } from "./forms/broker-driver-vehicle-info-form";
 import { BrokerDriverAccountInfoForm } from "./forms/broker-driver-account-info-form";
 import { BrokerDriverNotesForm } from "./forms/broker-driver-notes-form";
+import { IBrokerDriver } from "@/types/broker-driver";
+import { useBrokerDriverStore } from "@/store/broker-driver-store";
 
 // 차주 기본 정보 스키마
 const basicInfoSchema = z.object({
@@ -72,16 +76,25 @@ const driverSchema = z.object({
 type DriverFormValues = z.infer<typeof driverSchema>;
 
 interface IBrokerDriverRegisterSheetProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
+  onRegisterSuccess?: (driver: IBrokerDriver) => void;
+  onUpdateSuccess?: (driver: IBrokerDriver) => void;
+  driver?: IBrokerDriver;
+  trigger?: React.ReactNode;
+  mode?: 'register' | 'edit';
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function BrokerDriverRegisterSheet({ 
-  open, 
-  onOpenChange,
-  onSuccess 
+  onRegisterSuccess,
+  onUpdateSuccess,
+  driver,
+  trigger,
+  mode = 'register',
+  open,
+  onOpenChange
 }: IBrokerDriverRegisterSheetProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("basic-info");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formStatus, setFormStatus] = useState<{
@@ -95,17 +108,75 @@ export function BrokerDriverRegisterSheet({
     account: false,
     notes: false,
   });
+  
+  const { updateDriver } = useBrokerDriverStore();
 
-  // 폼 초기화
-  const form = useForm<DriverFormValues>({
-    resolver: zodResolver(driverSchema),
-    defaultValues: {
+  // 외부에서 제어되는 경우 내부 상태 동기화
+  useEffect(() => {
+    if (open !== undefined) {
+      setInternalOpen(open);
+    }
+  }, [open]);
+  
+  // 내부 상태 변경 시 외부 핸들러 호출
+  const handleOpenChange = (newOpen: boolean) => {
+    setInternalOpen(newOpen);
+    if (onOpenChange) {
+      onOpenChange(newOpen);
+    }
+
+    // 시트가 닫힐 때 상태 초기화
+    if (!newOpen) {
+      setActiveTab("basic-info");
+      setFormStatus({
+        basic: false,
+        vehicle: false,
+        account: false,
+        notes: false,
+      });
+      form.reset();
+    }
+  };
+
+  // 폼 기본값 설정
+  const getFormDefaultValues = () => {
+    if (mode === 'edit' && driver) {
+      // IBrokerDriver 타입에 맞는 속성 사용
+      return {
+        basicInfo: {
+          name: driver.name || "",
+          phone: driver.phoneNumber || "",
+          businessNumber: driver.businessNumber || "",
+          address: driver.address || "",
+          status: driver.status || "활성",
+        },
+        vehicleInfo: {
+          vehicleNumber: driver.vehicleNumber || "",
+          vehicleType: driver.vehicleType || "",
+          tonnage: driver.tonnage || "",
+          cargoBoxType: driver.cargoBox?.type || "",
+          cargoBoxLength: driver.cargoBox?.length || "",
+          manufactureYear: driver.manufactureYear || "",
+        },
+        accountInfo: {
+          id: driver.account?.id || "",
+          password: "",  // 보안상 빈 값으로 설정
+          email: driver.account?.email || "",
+          permission: driver.account?.permission || "일반",
+        },
+        notes: {
+          notes: driver.notes || [],
+        },
+      };
+    }
+    
+    return {
       basicInfo: {
         name: "",
         phone: "",
         businessNumber: "",
         address: "",
-        status: "활성",
+        status: "활성" as const,
       },
       vehicleInfo: {
         vehicleNumber: "",
@@ -119,13 +190,34 @@ export function BrokerDriverRegisterSheet({
         id: "",
         password: "",
         email: "",
-        permission: "일반",
+        permission: "일반" as const,
       },
       notes: {
         notes: [],
       },
-    },
+    };
+  };
+
+  // 폼 초기화
+  const form = useForm<DriverFormValues>({
+    resolver: zodResolver(driverSchema),
+    defaultValues: getFormDefaultValues(),
   });
+
+  // 편집 모드일 때 폼 초기값 설정
+  useEffect(() => {
+    if (mode === 'edit' && driver) {
+      form.reset(getFormDefaultValues());
+      
+      // 데이터가 있는 경우 각 탭의 상태를 완료로 표시
+      setFormStatus({
+        basic: true,
+        vehicle: true,
+        account: true,
+        notes: true,
+      });
+    }
+  }, [driver, mode]);
 
   // 완료한 단계 체크
   const checkStepCompletion = (step: 'basic' | 'vehicle' | 'account' | 'notes', isValid: boolean) => {
@@ -135,45 +227,62 @@ export function BrokerDriverRegisterSheet({
     }));
   };
 
-  // 시트가 닫힐 때 초기화
-  const handleSheetClose = (open: boolean) => {
-    if (!open) {
-      form.reset();
-      setActiveTab("basic-info");
-      setFormStatus({
-        basic: false,
-        vehicle: false,
-        account: false,
-        notes: false,
-      });
-    }
-    onOpenChange(open);
-  };
-
   // 폼 제출 핸들러
   const onSubmit = async (data: DriverFormValues) => {
     setIsSubmitting(true);
     
     try {
-      // API 호출 등의 로직 (실제 개발시 추가)
-      console.log("등록할 차주 데이터:", data);
+      // API 호출 대신 목업 데이터로 처리
+      // IBrokerDriver 형식으로 변환
+      const formattedDriver: IBrokerDriver = {
+        id: driver?.id || Math.random().toString(36).substring(2, 11),
+        name: data.basicInfo.name,
+        phoneNumber: data.basicInfo.phone,
+        businessNumber: data.basicInfo.businessNumber || "",
+        address: data.basicInfo.address || "",
+        status: data.basicInfo.status,
+        vehicleNumber: data.vehicleInfo.vehicleNumber,
+        vehicleType: data.vehicleInfo.vehicleType,
+        tonnage: data.vehicleInfo.tonnage,
+        cargoBox: {
+          type: data.vehicleInfo.cargoBoxType || "",
+          length: data.vehicleInfo.cargoBoxLength || ""
+        },
+        manufactureYear: data.vehicleInfo.manufactureYear || "",
+        account: {
+          id: data.accountInfo.id,
+          email: data.accountInfo.email || "",
+          permission: data.accountInfo.permission
+        },
+        notes: data.notes.notes,
+      };
       
       // 성공 처리 (목업)
       setTimeout(() => {
-        toast.success("차주가 성공적으로 등록되었습니다", {
-          description: `${data.basicInfo.name} 차주가 등록되었습니다.`,
-        });
-        
-        handleSheetClose(false);
-        if (onSuccess) {
-          onSuccess();
+        if (mode === 'register') {
+          toast.success("차주가 성공적으로 등록되었습니다", {
+            description: `${data.basicInfo.name} 차주가 등록되었습니다.`,
+          });
+          if (onRegisterSuccess) {
+            onRegisterSuccess(formattedDriver);
+          }
+        } else {
+          toast.success("차주 정보가 성공적으로 수정되었습니다", {
+            description: `${data.basicInfo.name} 차주 정보가 수정되었습니다.`,
+          });
+          // 스토어 업데이트
+          updateDriver(formattedDriver);
+          if (onUpdateSuccess) {
+            onUpdateSuccess(formattedDriver);
+          }
         }
         
+        handleOpenChange(false);
         setIsSubmitting(false);
       }, 1000);
     } catch (error) {
-      console.error("차주 등록 오류:", error);
-      toast.error("차주 등록에 실패했습니다", {
+      console.error("차주 등록/수정 오류:", error);
+      toast.error(`차주 ${mode === 'register' ? '등록' : '수정'}에 실패했습니다`, {
         description: "잠시 후 다시 시도해주세요.",
       });
       setIsSubmitting(false);
@@ -216,15 +325,37 @@ export function BrokerDriverRegisterSheet({
     }
   };
 
+  // 제목과 설명 설정
+  const title = mode === 'register' ? '차주 등록' : '차주 정보 수정';
+  const description = mode === 'register' 
+    ? '운송 업무를 수행할 차주의 정보를 등록합니다.'
+    : '차주의 정보를 수정합니다.';
+
+  // 트리거 버튼 설정
+  const defaultTrigger = mode === 'register' ? (
+    <Button className="flex items-center gap-1">
+      <Plus className="h-4 w-4" />
+      <span>신규 등록</span>
+    </Button>
+  ) : (
+    <Button variant="outline" className="flex items-center gap-1">
+      <Edit className="h-4 w-4" />
+      <span>수정</span>
+    </Button>
+  );
+
   return (
-    <Sheet open={open} onOpenChange={handleSheetClose}>
+    <Sheet open={open !== undefined ? open : internalOpen} onOpenChange={handleOpenChange}>
+      <SheetTrigger asChild>
+        {trigger || defaultTrigger}
+      </SheetTrigger>
       <SheetContent className="w-full sm:max-w-md md:max-w-lg overflow-y-auto">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <SheetHeader>
-              <SheetTitle>차주 등록</SheetTitle>
+              <SheetTitle>{title}</SheetTitle>
               <SheetDescription>
-                운송 업무를 수행할 차주의 정보를 등록합니다.
+                {description}
               </SheetDescription>
             </SheetHeader>
             
@@ -360,7 +491,7 @@ export function BrokerDriverRegisterSheet({
                         처리중...
                       </>
                     ) : (
-                      "등록 완료"
+                      mode === 'register' ? "등록 완료" : "수정 완료"
                     )}
                   </Button>
                 )}

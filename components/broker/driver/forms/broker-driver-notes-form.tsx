@@ -24,7 +24,7 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card"
-import { Plus, Trash2 } from "lucide-react"
+import { Plus, Trash2, Edit, Save, X } from "lucide-react"
 import { format } from "date-fns"
 import { ko } from "date-fns/locale"
 
@@ -57,6 +57,8 @@ export function BrokerDriverNotesForm({
   onComplete,
 }: IBrokerDriverNotesFormProps) {
   const [newNote, setNewNote] = useState("")
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
+  const [editContent, setEditContent] = useState("")
 
   // 현재 특이사항 목록
   const notes = form.watch("notes.notes") || []
@@ -101,6 +103,37 @@ export function BrokerDriverNotesForm({
       shouldDirty: true,
     });
   };
+
+  // 특이사항 편집 모드 시작
+  const startEditingNote = (note: { id: string; content: string }) => {
+    setEditingNoteId(note.id);
+    setEditContent(note.content);
+  };
+
+  // 특이사항 편집 취소
+  const cancelEditingNote = () => {
+    setEditingNoteId(null);
+    setEditContent("");
+  };
+
+  // 특이사항 편집 저장
+  const saveEditedNote = () => {
+    if (!editContent.trim() || !editingNoteId) return;
+
+    const updatedNotes = notes.map(note => 
+      note.id === editingNoteId
+        ? { ...note, content: editContent.trim(), date: new Date() }
+        : note
+    );
+
+    form.setValue("notes.notes", updatedNotes, { 
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+
+    setEditingNoteId(null);
+    setEditContent("");
+  };
   
   return (
     <div className="space-y-4">
@@ -141,21 +174,72 @@ export function BrokerDriverNotesForm({
                 <CardHeader className="pb-2 pt-4 px-4">
                   <div className="flex justify-between items-center">
                     <CardDescription>
-                      {format(note.date, "yyyy년 MM월 dd일 HH:mm", { locale: ko })}
+                      {format(
+                        typeof note.date === 'string' 
+                          ? new Date(note.date) 
+                          : note.date, 
+                        "yyyy년 MM월 dd일 HH:mm", 
+                        { locale: ko }
+                      )}
                     </CardDescription>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeNote(note.id)}
-                      className="h-8 w-8 text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      {editingNoteId === note.id ? (
+                        <>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={saveEditedNote}
+                            className="h-8 w-8 text-primary"
+                          >
+                            <Save className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={cancelEditingNote}
+                            className="h-8 w-8 text-muted-foreground"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => startEditingNote(note)}
+                            className="h-8 w-8 text-primary"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeNote(note.id)}
+                            className="h-8 w-8 text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="px-4 pb-4 pt-0">
-                  <p className="text-sm">{note.content}</p>
+                  {editingNoteId === note.id ? (
+                    <Textarea
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                      className="resize-none"
+                      placeholder="특이사항 내용"
+                    />
+                  ) : (
+                    <p className="text-sm">{note.content}</p>
+                  )}
                 </CardContent>
               </Card>
             ))}
