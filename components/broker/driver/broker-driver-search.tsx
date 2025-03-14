@@ -241,11 +241,11 @@ export function BrokerDriverSearch() {
     <div className="space-y-4 py-2">
 
       {/* 검색 및 필터, 액션 버튼 */}
-      <div className="flex flex-col md:flex-row items-center justify-between">
+      <div>
 
         {/* 검색 및 필터  */}        
         <div className="w-full md:w-auto">
-          <div className="flex flex-col gap-4 md:flex-row items-center mb-6">
+          <div className="flex flex-col gap-4 md:flex-row items-center mb-4">
 
             {/* 검색 필터 */}
             <div className="w-full md:w-auto">
@@ -491,7 +491,7 @@ export function BrokerDriverSearch() {
             </div>
 
             {/* 검색 인풋 */}
-            <div className=" relative w-full">
+            <div className="relative w-full">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
@@ -528,23 +528,21 @@ export function BrokerDriverSearch() {
         </div>
 
         {/* 검색 버튼 */}
-        <div className="flex flex-col hidden md:block items-center">
-          <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
-            <div className="flex items-center gap-2">
-              <Button type="button" onClick={() => onSubmit(form.getValues())} disabled={isSearching}>
-              {isSearching ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  검색 중...
-                </>
-              ) : (
-                "검색"
-              )}
-              </Button>
-            </div>
-          </div>
+        <div className="w-full md:w-auto mt-4 md:mt-0">
+          <Button type="button" onClick={() => onSubmit(form.getValues())} disabled={isSearching} size="sm">
+            {isSearching ? (
+              <>
+                <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                검색 중...
+              </>
+            ) : (
+              <>
+                <Search className="mr-2 h-3 w-3" />
+                검색
+              </>
+            )}
+          </Button>
         </div>
-        
       </div>
 
       {/* 활성 필터 표시 */}

@@ -282,14 +282,7 @@ export default function BrokerDriverPage() {
           </Breadcrumb>
         </div>
         <div className="ml-auto flex items-center gap-2 px-4">
-          <BrokerDriverActionButtons
-            isLoading={isLoading}
-            onRefresh={handleManualRefresh}
-            onExportExcel={handleExportExcel}
-            onRegisterDriver={handleRegisterDriver}
-            onRegisterMultipleDrivers={handleRegisterMultipleDrivers}
-            disabledExportExcel={!data || totalItems === 0}
-          />
+          {/* 액션 버튼 제거 */}
         </div>
       </header>
       <main className="flex flex-1 flex-col p-4 pt-0">
@@ -425,10 +418,23 @@ export default function BrokerDriverPage() {
             )}
 
             {/* 검색 및 필터 */}
-            {/* <div className="flex flex-col md:flex-row items-center justify-between">
-              <BrokerDriverSearch />
-            </div> */}
-            <BrokerDriverSearch />
+            <div className="flex flex-col md:flex-row items-center justify-between">
+              <div className="w-full md:w-auto">
+                <BrokerDriverSearch />
+              </div>
+              
+              {/* 액션 버튼 */}
+              <div className="flex flex-col hidden md:block items-center">
+                <BrokerDriverActionButtons
+                  isLoading={isLoading}
+                  onRefresh={handleManualRefresh}
+                  onExportExcel={handleExportExcel}
+                  onRegisterDriver={handleRegisterDriver}
+                  onRegisterMultipleDrivers={handleRegisterMultipleDrivers}
+                  disabledExportExcel={!data || totalItems === 0}
+                />
+              </div>
+            </div>
 
             {/* 차주 목록 */}
             <div className="py-0 sm:px-0 lg:px-0">
