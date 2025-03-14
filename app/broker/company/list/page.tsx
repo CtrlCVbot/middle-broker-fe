@@ -19,6 +19,7 @@ import { BrokerCompanyTable } from "@/components/broker/company/broker-company-t
 import { BrokerCompanyCard } from "@/components/broker/company/broker-company-card";
 import { BrokerCompanyPagination } from "@/components/broker/company/broker-company-pagination";
 import { BrokerCompanyActionButtons } from "@/components/broker/company/broker-company-action-buttons";
+import { BrokerCompanyRegisterSheet } from "@/components/broker/company/broker-company-register-sheet";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { cn, formatCurrency } from "@/lib/utils";
@@ -53,6 +54,10 @@ export default function BrokerCompanyPage() {
     clearSelectedCompanyIds,
   } = useBrokerCompanyStore();
 
+  // 선택된 업체 상태 관리
+  const [selectedCompany, setSelectedCompany] = useState<IBrokerCompany | null>(null);
+  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+
   // 업체 목록 데이터 조회
   const { data, isLoading, isError, refetch } = useQuery<CompanyQueryResult>({
     queryKey: ["brokerCompanies", filter, currentPage, pageSize, lastRefreshed],
@@ -85,7 +90,15 @@ export default function BrokerCompanyPage() {
 
   // 업체 클릭 핸들러
   const handleCompanyClick = (company: IBrokerCompany) => {
-    toast.info(`${company.name} 상세 정보 (추후 구현 예정)`);
+    setSelectedCompany(company);
+    setIsEditSheetOpen(true);
+  };
+
+  // 업체 수정 완료 핸들러
+  const handleUpdateSuccess = () => {
+    setLastRefreshed(new Date());
+    refetch();
+    toast.success(`업체 정보가 수정되었습니다.`);
   };
 
   // 활성 및 비활성 업체 수 계산
@@ -209,11 +222,7 @@ export default function BrokerCompanyPage() {
           {/* 액션 버튼 */}
           <div className="flex flex-col hidden md:block items-center">
             <BrokerCompanyActionButtons
-              viewMode={viewMode}
-              onChangeViewMode={setViewMode}
-              onRefresh={handleManualRefresh}
-              selectedIds={selectedCompanyIds}
-              onClearSelection={clearSelectedCompanyIds}
+              onActionSuccess={handleManualRefresh}
             />
           </div>
         </div>
@@ -254,10 +263,15 @@ export default function BrokerCompanyPage() {
               />
             </div>
             <div className={cn(viewMode === 'card' ? 'block' : 'hidden')}>
-              <BrokerCompanyCard
-                companies={data.data}
-                onCompanyClick={handleCompanyClick}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {data?.data?.map((company) => (
+                  <BrokerCompanyCard
+                    key={company.id}
+                    company={company}
+                    onClick={() => handleCompanyClick(company)}
+                  />
+                ))}
+              </div>
             </div>
 
             {/* 페이지네이션 */}
@@ -276,6 +290,18 @@ export default function BrokerCompanyPage() {
       </div>
       </CardContent>
       </Card>
+
+      {/* 마지막 부분에 업체 수정 시트 추가 */}
+      {selectedCompany && (
+        <BrokerCompanyRegisterSheet
+          company={selectedCompany}
+          mode="edit"
+          onUpdateSuccess={handleUpdateSuccess}
+          trigger={<div className="hidden" />} // 숨겨진 트리거
+          open={isEditSheetOpen}
+          onOpenChange={setIsEditSheetOpen}
+        />
+      )}
     </main>
     
     </>

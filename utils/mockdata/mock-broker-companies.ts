@@ -1,4 +1,5 @@
 import { IBrokerCompany, CompanyType, StatementType, CompanyStatus } from '@/types/broker-company';
+import { generateAllManagersData, getManagersByCompanyId } from './mock-broker-company-managers';
 
 // 업체 구분 옵션
 export const COMPANY_TYPES: CompanyType[] = ['화주', '운송사', '주선사'];
@@ -84,8 +85,13 @@ const mockCompanies: IBrokerCompany[] = Array.from({ length: 50 }).map((_, index
     managerPhoneNumber: mobileNumber,
     registeredDate,
     status: status as CompanyStatus,
+    warnings: [],
+    files: []
   };
 });
+
+// 담당자 데이터 생성
+const mockManagersData = generateAllManagersData(mockCompanies.map(company => company.id));
 
 // 페이지네이션 처리된 업체 목록 반환 함수
 export const getBrokerCompaniesByPage = (
@@ -158,8 +164,17 @@ export const getBrokerCompaniesByPage = (
   const startIndex = (page - 1) * pageSize;
   const paginatedData = filteredData.slice(startIndex, startIndex + pageSize);
   
+  // 각 업체에 담당자 데이터 연결
+  const dataWithManagers = paginatedData.map(company => {
+    const managers = getManagersByCompanyId(company.id, mockManagersData);
+    return {
+      ...company,
+      managers
+    };
+  });
+  
   return {
-    data: paginatedData,
+    data: dataWithManagers,
     total,
     page,
     pageSize,
@@ -169,7 +184,38 @@ export const getBrokerCompaniesByPage = (
 
 // 단일 업체 정보 반환 함수
 export const getBrokerCompanyById = (id: string): IBrokerCompany | undefined => {
-  return mockCompanies.find(company => company.id === id);
+  const company = mockCompanies.find(company => company.id === id);
+  
+  if (company) {
+    // 담당자 데이터 연결
+    const managers = getManagersByCompanyId(company.id, mockManagersData);
+    return {
+      ...company,
+      managers
+    };
+  }
+  
+  return undefined;
+};
+
+// 업체 정보 업데이트 함수
+export const updateBrokerCompany = (updatedCompany: IBrokerCompany): IBrokerCompany => {
+  const index = mockCompanies.findIndex(company => company.id === updatedCompany.id);
+  
+  if (index !== -1) {
+    // 기존 담당자 데이터 유지
+    const managers = mockManagersData[updatedCompany.id] || [];
+    
+    // 업체 정보 업데이트
+    mockCompanies[index] = {
+      ...updatedCompany,
+      managers
+    };
+    
+    return mockCompanies[index];
+  }
+  
+  throw new Error(`업체 ID ${updatedCompany.id}를 찾을 수 없습니다.`);
 };
 
 export default mockCompanies; 

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { IBrokerCompanyFilter, CompanyType, StatementType, CompanyStatus } from '@/types/broker-company';
-import { COMPANY_TYPES, STATEMENT_TYPES, COMPANY_STATUS } from '@/utils/mockdata/mock-broker-companies';
+import { IBrokerCompany, IBrokerCompanyFilter, CompanyType, StatementType, CompanyStatus } from '@/types/broker-company';
+import { COMPANY_TYPES, STATEMENT_TYPES, COMPANY_STATUS, getBrokerCompanyById, updateBrokerCompany } from '@/utils/mockdata/mock-broker-companies';
 
 // 필터 요약 문구 생성 함수
 export const getFilterSummaryText = (filter: IBrokerCompanyFilter): string => {
@@ -68,6 +68,9 @@ interface IBrokerCompanyState {
   toggleCompanySelection: (id: string) => void;
   clearSelectedCompanyIds: () => void;
   
+  // 업체 데이터 관리
+  updateCompany: (company: IBrokerCompany) => void;
+  
   // 필터 옵션
   filterOptions: {
     types: CompanyType[];
@@ -76,10 +79,13 @@ interface IBrokerCompanyState {
   };
 }
 
+// 목업 데이터 저장소 (실제 구현에서는 API 호출로 대체)
+let mockCompaniesData: IBrokerCompany[] = [];
+
 // Zustand 스토어 생성
 export const useBrokerCompanyStore = create<IBrokerCompanyState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       // 기본 상태
       viewMode: 'table',
       filter: {
@@ -162,6 +168,23 @@ export const useBrokerCompanyStore = create<IBrokerCompanyState>()(
       }),
       
       clearSelectedCompanyIds: () => set({ selectedCompanyIds: [] }),
+      
+      // 업체 데이터 업데이트
+      updateCompany: (updatedCompany) => {
+        try {
+          // 목업 데이터 업데이트
+          updateBrokerCompany(updatedCompany);
+          
+          // 선택된 업체 ID 목록에서 해당 업체가 있으면 유지
+          set((state) => ({
+            selectedCompanyIds: state.selectedCompanyIds.includes(updatedCompany.id)
+              ? state.selectedCompanyIds
+              : state.selectedCompanyIds
+          }));
+        } catch (error) {
+          console.error('업체 정보 업데이트 실패:', error);
+        }
+      },
     }),
     {
       name: 'broker-company-storage',

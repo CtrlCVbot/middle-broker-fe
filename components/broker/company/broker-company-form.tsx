@@ -53,6 +53,7 @@ interface BrokerCompanyFormProps {
   isSubmitting?: boolean;
   onSubmit: (data: IBrokerCompany) => void;
   initialData?: Partial<IBrokerCompany>;
+  mode?: 'register' | 'edit';
 }
 
 // 고유 ID 생성 함수 (uuid 대신 사용)
@@ -90,14 +91,19 @@ type CompanyFormValues = z.infer<typeof companyFormSchema>;
 export function BrokerCompanyForm({ 
   isSubmitting = false, 
   onSubmit, 
-  initialData = {} 
+  initialData = {},
+  mode = 'register'
 }: BrokerCompanyFormProps) {
   // 주의사항 관리 상태
-  const [warnings, setWarnings] = useState<{ id: string; text: string }[]>([]);
+  const [warnings, setWarnings] = useState<{ id: string; text: string }[]>(
+    initialData.warnings || []
+  );
   const [newWarning, setNewWarning] = useState('');
   
   // 파일 업로드 상태
-  const [files, setFiles] = useState<{ id: string; name: string; url: string; type: string }[]>([]);
+  const [files, setFiles] = useState<{ id: string; name: string; url: string; type: string }[]>(
+    initialData.files || []
+  );
 
   // 폼 설정
   const form = useForm<CompanyFormValues>({
@@ -156,6 +162,7 @@ export function BrokerCompanyForm({
       registeredDate: initialData.registeredDate || new Date().toISOString().split('T')[0],
       warnings,
       files,
+      managers: initialData.managers || []
     };
     
     onSubmit(newCompany);
@@ -170,6 +177,9 @@ export function BrokerCompanyForm({
   const handleDeleteFile = (id: string) => {
     setFiles(files.filter(file => file.id !== id));
   };
+
+  // 버튼 텍스트 설정
+  const submitButtonText = mode === 'register' ? '업체 등록' : '업체 정보 수정';
 
   return (
     <Form {...form}>
@@ -578,16 +588,15 @@ export function BrokerCompanyForm({
           <TabsContent value="managers" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>사용자 관리</CardTitle>
-                <CardDescription>업체 담당자를 등록하고 관리합니다. 각 담당자는 배차, 정산, 관리 등의 역할을 수행할 수 있습니다.</CardDescription>
+                <CardTitle>담당자 관리</CardTitle>
+                <CardDescription>업체 담당자 정보를 관리합니다.</CardDescription>
               </CardHeader>
               <CardContent>
                 {initialData.id ? (
                   <BrokerCompanyManagerList companyId={initialData.id} />
                 ) : (
-                  <div className="text-center py-10 text-muted-foreground">
-                    <p className="mb-4">업체 등록 후 담당자를 추가할 수 있습니다.</p>
-                    <p className="text-sm">업체 정보를 먼저 등록해 주세요.</p>
+                  <div className="text-center py-8 text-muted-foreground">
+                    업체 등록 후 담당자를 추가할 수 있습니다.
                   </div>
                 )}
               </CardContent>
@@ -595,10 +604,16 @@ export function BrokerCompanyForm({
           </TabsContent>
         </Tabs>
         
-        <div className="flex items-center justify-end space-x-2">
+        <div className="flex justify-end gap-2 px-6 pb-6">
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            등록하기
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                처리 중...
+              </>
+            ) : (
+              submitButtonText
+            )}
           </Button>
         </div>
       </form>

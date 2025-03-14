@@ -12,52 +12,61 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useBrokerCompanyStore } from '@/store/broker-company-store';
 import { BrokerCompanyRegisterSheet } from './broker-company-register-sheet';
 
 interface BrokerCompanyActionButtonsProps {
-  viewMode: 'table' | 'card';
-  onChangeViewMode: (mode: 'table' | 'card') => void;
-  onRefresh: () => void;
-  selectedIds: string[];
-  onClearSelection: () => void;
+  onActionSuccess?: () => void;
 }
 
 export function BrokerCompanyActionButtons({
-  viewMode,
-  onChangeViewMode,
-  onRefresh,
-  selectedIds,
-  onClearSelection,
+  onActionSuccess
 }: BrokerCompanyActionButtonsProps) {
+  const { 
+    viewMode, 
+    setViewMode, 
+    selectedCompanyIds, 
+    clearSelectedCompanyIds 
+  } = useBrokerCompanyStore();
+
   // 엑셀 다운로드 핸들러
   const handleExcelDownload = () => {
     toast.success('업체 목록 엑셀 다운로드 완료');
+    if (onActionSuccess) onActionSuccess();
   };
 
   // 엑셀 업로드 핸들러
   const handleExcelUpload = () => {
     toast.info('업체 목록 엑셀 업로드 기능 (추후 구현 예정)');
+    if (onActionSuccess) onActionSuccess();
   };
 
   // 선택된 업체 상태 변경 핸들러
   const handleChangeStatus = (status: CompanyStatus) => {
-    if (selectedIds.length === 0) {
+    if (selectedCompanyIds.length === 0) {
       toast.error('상태를 변경할 업체를 선택해주세요.');
       return;
     }
     
-    toast.success(`${selectedIds.length}개 업체 상태를 ${status}로 변경했습니다.`);
-    onClearSelection();
+    toast.success(`${selectedCompanyIds.length}개 업체 상태를 ${status}로 변경했습니다.`);
+    clearSelectedCompanyIds();
+    if (onActionSuccess) onActionSuccess();
   };
 
   // 선택된 업체 삭제 핸들러
   const handleDeleteSelected = () => {
-    if (selectedIds.length === 0) {
+    if (selectedCompanyIds.length === 0) {
       toast.error('삭제할 업체를 선택해주세요.');
       return;
     }
     
-    toast.warning(`${selectedIds.length}개 업체 삭제 (관리자 권한 필요)`);
+    toast.warning(`${selectedCompanyIds.length}개 업체 삭제 (관리자 권한 필요)`);
+    if (onActionSuccess) onActionSuccess();
+  };
+
+  // 새로고침 핸들러
+  const handleRefresh = () => {
+    if (onActionSuccess) onActionSuccess();
   };
 
   return (
@@ -67,7 +76,7 @@ export function BrokerCompanyActionButtons({
         <Button
           variant="outline"
           size="sm"
-          onClick={onRefresh}
+          onClick={handleRefresh}
           className="flex items-center gap-1"
         >
           <RotateCcw className="h-4 w-4" />
@@ -77,7 +86,7 @@ export function BrokerCompanyActionButtons({
         {/* <Button
           variant={viewMode === 'table' ? 'default' : 'outline'}
           size="icon"
-          onClick={() => onChangeViewMode('table')}
+          onClick={() => setViewMode('table')}
           className="h-9 w-9"
         >
           <Grid3x3 className="h-4 w-4" />
@@ -87,7 +96,7 @@ export function BrokerCompanyActionButtons({
         {/* <Button
           variant={viewMode === 'card' ? 'default' : 'outline'}
           size="icon"
-          onClick={() => onChangeViewMode('card')}
+          onClick={() => setViewMode('card')}
           className="h-9 w-9"
         >
           <svg
@@ -112,13 +121,13 @@ export function BrokerCompanyActionButtons({
       </div>
       
       {/* 선택 항목 수 표시 */}
-      {selectedIds.length > 0 && (
+      {selectedCompanyIds.length > 0 && (
         <div className="text-sm font-medium ml-2 mr-auto">
-          {selectedIds.length}개 항목 선택됨
+          {selectedCompanyIds.length}개 항목 선택됨
           <Button
             variant="ghost"
             size="sm"
-            onClick={onClearSelection}
+            onClick={clearSelectedCompanyIds}
             className="text-xs h-6 ml-2"
           >
             선택 해제
@@ -151,7 +160,7 @@ export function BrokerCompanyActionButtons({
         {/* 선택 업체 상태 변경 드롭다운 */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" disabled={selectedIds.length === 0}>
+            <Button variant="outline" size="sm" disabled={selectedCompanyIds.length === 0}>
               상태 변경
             </Button>
           </DropdownMenuTrigger>
@@ -181,7 +190,7 @@ export function BrokerCompanyActionButtons({
             </Button>
           }
           onRegisterSuccess={(company) => {
-            onRefresh();
+            handleRefresh();
           }}
         />
       </div>
