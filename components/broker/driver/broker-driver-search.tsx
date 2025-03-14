@@ -239,293 +239,312 @@ export function BrokerDriverSearch() {
 
   return (
     <div className="space-y-4 py-2">
-      <div className="flex items-center space-x-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="차주명, 연락처, 차량번호, 업체명 검색..."
-            className="pl-9"
-            value={form.watch("searchTerm") || ""}
-            onChange={(e) => {
-              form.setValue("searchTerm", e.target.value);
-              // 실시간 검색 (입력 후 500ms 후에 검색 실행)
-              if (e.target.value === "" && filter.searchTerm !== "") {
-                onSubmit(form.getValues());
-              }
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                onSubmit(form.getValues());
-              }
-            }}
-          />
-          {form.watch("searchTerm") && (
-            <button
-              type="button"
-              onClick={() => {
-                form.setValue("searchTerm", "");
-                onSubmit(form.getValues());
-              }}
-              className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
+
+      {/* 검색 및 필터, 액션 버튼 */}
+      <div className="flex flex-col md:flex-row items-center justify-between">
+
+        {/* 검색 및 필터  */}        
+        <div className="w-full md:w-auto">
+          <div className="flex flex-col gap-4 md:flex-row items-center mb-6">
+
+            {/* 검색 필터 */}
+            <div className="w-full md:w-auto">
+              <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
+                  <span>필터</span>
+                  {activeFilters.length > 0 && (
+                    <Badge className="ml-1 rounded-full px-1 text-xs">{activeFilters.length}</Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[420px] p-4" align="end">
+                <Form {...form}>
+                  <div className="space-y-4">
+                    <h4 className="font-medium">상세 검색</h4>
+                    <Separator />
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      {/* 차량 종류 */}
+                      <div className="space-y-2">
+                        <FormLabel className="text-xs">차량 종류</FormLabel>
+                        <FormField
+                          control={form.control}
+                          name="vehicleType"
+                          render={({ field }) => (
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <SelectTrigger className="h-8">
+                                <SelectValue placeholder="차량 종류 선택" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {vehicleTypeOptions.map((option) => (
+                                  <SelectItem key={option.value} value={option.value}>
+                                    <div className="flex items-center">
+                                      {option.badge && <span className="mr-2">{option.badge}</span>}
+                                      <span>{option.label}</span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                      </div>
+                      
+                      {/* 톤수 */}
+                      <div className="space-y-2">
+                        <FormLabel className="text-xs">톤수</FormLabel>
+                        <FormField
+                          control={form.control}
+                          name="tonnage"
+                          render={({ field }) => (
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <SelectTrigger className="h-8">
+                                <SelectValue placeholder="톤수 선택" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {tonnageOptions.map((option) => (
+                                  <SelectItem key={option.value} value={option.value}>
+                                    <div className="flex items-center">
+                                      {option.badge && <span className="mr-2">{option.badge}</span>}
+                                      <span>{option.label}</span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                      </div>
+                      
+                      {/* 차주 상태 */}
+                      <div className="space-y-2">
+                        <FormLabel className="text-xs">차주 상태</FormLabel>
+                        <FormField
+                          control={form.control}
+                          name="status"
+                          render={({ field }) => (
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <SelectTrigger className="h-8">
+                                <SelectValue placeholder="차주 상태 선택" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {statusOptions.map((option) => (
+                                  <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                      </div>
+                      
+                      {/* 배차 횟수 */}
+                      <div className="space-y-2">
+                        <FormLabel className="text-xs">배차 횟수</FormLabel>
+                        <FormField
+                          control={form.control}
+                          name="dispatchCount"
+                          render={({ field }) => (
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <SelectTrigger className="h-8">
+                                <SelectValue placeholder="배차 횟수 선택" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {dispatchCountOptions.map((option) => (
+                                  <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* 등록 기간 */}
+                    <div className="space-y-2">
+                      <FormLabel className="text-xs">등록 기간</FormLabel>
+                      <div className="grid grid-cols-2 gap-2">
+                        <FormField
+                          control={form.control}
+                          name="startDate"
+                          render={({ field }) => (
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "h-8 w-full justify-start text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {field.value ? (
+                                    format(field.value, "yyyy-MM-dd", { locale: ko })
+                                  ) : (
+                                    <span>시작일</span>
+                                  )}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value || undefined}
+                                  onSelect={field.onChange}
+                                  locale={ko}
+                                  disabled={(date) => {
+                                    const endDate = form.getValues("endDate");
+                                    return endDate ? date > endDate : false;
+                                  }}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="endDate"
+                          render={({ field }) => (
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "h-8 w-full justify-start text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {field.value ? (
+                                    format(field.value, "yyyy-MM-dd", { locale: ko })
+                                  ) : (
+                                    <span>종료일</span>
+                                  )}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value || undefined}
+                                  onSelect={field.onChange}
+                                  locale={ko}
+                                  disabled={(date) => {
+                                    const startDate = form.getValues("startDate");
+                                    return startDate ? date < startDate : false;
+                                  }}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          )}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between pt-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={handleResetFilters}
+                        disabled={isSearching}
+                        className="h-8 px-2 text-xs"
+                      >
+                        필터 초기화
+                      </Button>
+                      <Button 
+                        type="button" 
+                        onClick={() => onSubmit(form.getValues())} 
+                        className="h-8"
+                        disabled={isSearching}
+                      >
+                        {isSearching ? (
+                          <>
+                            <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                            검색 중...
+                          </>
+                        ) : (
+                          "적용"
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </Form>
+              </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* 검색 인풋 */}
+            <div className=" relative w-full">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="차주명, 연락처, 차량번호, 업체명 검색..."
+                className="pl-9"
+                value={form.watch("searchTerm") || ""}
+                onChange={(e) => {
+                  form.setValue("searchTerm", e.target.value);
+                  // 실시간 검색 (입력 후 500ms 후에 검색 실행)
+                  if (e.target.value === "" && filter.searchTerm !== "") {
+                    onSubmit(form.getValues());
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    onSubmit(form.getValues());
+                  }
+                }}
+              />
+              {form.watch("searchTerm") && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    form.setValue("searchTerm", "");
+                    onSubmit(form.getValues());
+                  }}
+                  className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>          
+          </div>
         </div>
 
-        {/* 필터 버튼 및 팝오버 */}
-        <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="flex items-center gap-2">
-              <Filter className="h-4 w-4" />
-              <span>필터</span>
-              {activeFilters.length > 0 && (
-                <Badge className="ml-1 rounded-full px-1 text-xs">{activeFilters.length}</Badge>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[420px] p-4" align="end">
-            <Form {...form}>
-              <div className="space-y-4">
-                <h4 className="font-medium">상세 검색</h4>
-                <Separator />
-                
-                <div className="grid grid-cols-2 gap-3">
-                  {/* 차량 종류 */}
-                  <div className="space-y-2">
-                    <FormLabel className="text-xs">차량 종류</FormLabel>
-                    <FormField
-                      control={form.control}
-                      name="vehicleType"
-                      render={({ field }) => (
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <SelectTrigger className="h-8">
-                            <SelectValue placeholder="차량 종류 선택" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {vehicleTypeOptions.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                <div className="flex items-center">
-                                  {option.badge && <span className="mr-2">{option.badge}</span>}
-                                  <span>{option.label}</span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                  </div>
-                  
-                  {/* 톤수 */}
-                  <div className="space-y-2">
-                    <FormLabel className="text-xs">톤수</FormLabel>
-                    <FormField
-                      control={form.control}
-                      name="tonnage"
-                      render={({ field }) => (
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <SelectTrigger className="h-8">
-                            <SelectValue placeholder="톤수 선택" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {tonnageOptions.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                <div className="flex items-center">
-                                  {option.badge && <span className="mr-2">{option.badge}</span>}
-                                  <span>{option.label}</span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                  </div>
-                  
-                  {/* 차주 상태 */}
-                  <div className="space-y-2">
-                    <FormLabel className="text-xs">차주 상태</FormLabel>
-                    <FormField
-                      control={form.control}
-                      name="status"
-                      render={({ field }) => (
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <SelectTrigger className="h-8">
-                            <SelectValue placeholder="차주 상태 선택" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {statusOptions.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                  </div>
-                  
-                  {/* 배차 횟수 */}
-                  <div className="space-y-2">
-                    <FormLabel className="text-xs">배차 횟수</FormLabel>
-                    <FormField
-                      control={form.control}
-                      name="dispatchCount"
-                      render={({ field }) => (
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <SelectTrigger className="h-8">
-                            <SelectValue placeholder="배차 횟수 선택" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {dispatchCountOptions.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                  </div>
-                </div>
-                
-                {/* 등록 기간 */}
-                <div className="space-y-2">
-                  <FormLabel className="text-xs">등록 기간</FormLabel>
-                  <div className="grid grid-cols-2 gap-2">
-                    <FormField
-                      control={form.control}
-                      name="startDate"
-                      render={({ field }) => (
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "h-8 w-full justify-start text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? (
-                                format(field.value, "yyyy-MM-dd", { locale: ko })
-                              ) : (
-                                <span>시작일</span>
-                              )}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0">
-                            <Calendar
-                              mode="single"
-                              selected={field.value || undefined}
-                              onSelect={field.onChange}
-                              locale={ko}
-                              disabled={(date) => {
-                                const endDate = form.getValues("endDate");
-                                return endDate ? date > endDate : false;
-                              }}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="endDate"
-                      render={({ field }) => (
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "h-8 w-full justify-start text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? (
-                                format(field.value, "yyyy-MM-dd", { locale: ko })
-                              ) : (
-                                <span>종료일</span>
-                              )}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0">
-                            <Calendar
-                              mode="single"
-                              selected={field.value || undefined}
-                              onSelect={field.onChange}
-                              locale={ko}
-                              disabled={(date) => {
-                                const startDate = form.getValues("startDate");
-                                return startDate ? date < startDate : false;
-                              }}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      )}
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between pt-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={handleResetFilters}
-                    disabled={isSearching}
-                    className="h-8 px-2 text-xs"
-                  >
-                    필터 초기화
-                  </Button>
-                  <Button 
-                    type="button" 
-                    onClick={() => onSubmit(form.getValues())} 
-                    className="h-8"
-                    disabled={isSearching}
-                  >
-                    {isSearching ? (
-                      <>
-                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                        검색 중...
-                      </>
-                    ) : (
-                      "적용"
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </Form>
-          </PopoverContent>
-        </Popover>
-
         {/* 검색 버튼 */}
-        <Button type="button" onClick={() => onSubmit(form.getValues())} disabled={isSearching}>
-          {isSearching ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              검색 중...
-            </>
-          ) : (
-            "검색"
-          )}
-        </Button>
+        <div className="flex flex-col hidden md:block items-center">
+          <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
+            <div className="flex items-center gap-2">
+              <Button type="button" onClick={() => onSubmit(form.getValues())} disabled={isSearching}>
+              {isSearching ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  검색 중...
+                </>
+              ) : (
+                "검색"
+              )}
+              </Button>
+            </div>
+          </div>
+        </div>
+        
       </div>
 
       {/* 활성 필터 표시 */}

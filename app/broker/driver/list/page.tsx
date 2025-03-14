@@ -293,14 +293,12 @@ export default function BrokerDriverPage() {
         </div>
       </header>
       <main className="flex flex-1 flex-col p-4 pt-0">
-        
-
         <Card>
           {/* 검색 및 필터 */}          
           <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>차주 목록</CardTitle>
-                <CardDescription>
+                <CardDescription className="hidden md:block">
                   {isLoading
                     ? "차주 목록을 불러오는 중..."
                     : totalItems > 0
@@ -426,80 +424,86 @@ export default function BrokerDriverPage() {
               </div>
             )}
 
+            {/* 검색 및 필터 */}
+            {/* <div className="flex flex-col md:flex-row items-center justify-between">
+              <BrokerDriverSearch />
+            </div> */}
             <BrokerDriverSearch />
+
+            {/* 차주 목록 */}
+            <div className="py-0 sm:px-0 lg:px-0">
+              {isLoading ? (
+                <div className="flex items-center justify-center h-64">
+                  <div className="text-center">
+                    <Truck className="mx-auto h-10 w-10 text-muted-foreground animate-pulse" />
+                    <h3 className="mt-4 text-lg font-medium">차주 목록을 불러오는 중...</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      잠시만 기다려주세요.
+                    </p>
+                  </div>
+                </div>
+              ) : isError ? (
+                <div className="flex items-center justify-center h-64">
+                  <div className="text-center">
+                    <Info className="mx-auto h-10 w-10 text-destructive" />
+                    <h3 className="mt-4 text-lg font-medium">데이터를 불러오는 중 오류가 발생했습니다.</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      새로고침을 시도하거나 관리자에게 문의하세요.
+                    </p>
+                    <button
+                      onClick={() => refetch()}
+                      className="mt-4 inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
+                    >
+                      다시 시도
+                    </button>
+                  </div>
+                </div>
+              ) : !hasDrivers ? (
+                <div className="flex items-center justify-center h-64">
+                  <div className="text-center">
+                    <Truck className="mx-auto h-10 w-10 text-muted-foreground" />
+                    <h3 className="mt-4 text-lg font-medium">등록된 차주가 없습니다.</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      새로운 차주를 등록하거나 검색 조건을 변경해보세요.
+                    </p>
+                    <button
+                      onClick={handleRegisterDriver}
+                      className="mt-4 inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
+                    >
+                      차주 등록
+                    </button>
+                  </div>
+                </div>
+              ) : viewMode === "table" ? (
+                <BrokerDriverTable
+                  drivers={driversList}
+                  onDriverClick={handleDriverClick}
+                />
+              ) : (
+                <BrokerDriverCardGrid
+                  drivers={driversList}
+                  onDriverClick={handleDriverClick}
+                />
+              )}
+            </div>
+
+            {/* 페이지네이션 */}
+            {!isLoading && !isError && hasDrivers && (
+              <div className="px-4 sm:px-6 lg:px-8">
+                <BrokerDriverPagination
+                  currentPage={currentPageData}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  pageSize={currentPageSize}
+                  onPageChange={handlePageChange}
+                  onPageSizeChange={handlePageSizeChange}
+                />
+              </div>
+            )}
 
           </CardContent>
 
-          {/* 차주 목록 */}
-          <div className="py-0 sm:px-6 lg:px-6">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-64">
-                <div className="text-center">
-                  <Truck className="mx-auto h-10 w-10 text-muted-foreground animate-pulse" />
-                  <h3 className="mt-4 text-lg font-medium">차주 목록을 불러오는 중...</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    잠시만 기다려주세요.
-                  </p>
-                </div>
-              </div>
-            ) : isError ? (
-              <div className="flex items-center justify-center h-64">
-                <div className="text-center">
-                  <Info className="mx-auto h-10 w-10 text-destructive" />
-                  <h3 className="mt-4 text-lg font-medium">데이터를 불러오는 중 오류가 발생했습니다.</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    새로고침을 시도하거나 관리자에게 문의하세요.
-                  </p>
-                  <button
-                    onClick={() => refetch()}
-                    className="mt-4 inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
-                  >
-                    다시 시도
-                  </button>
-                </div>
-              </div>
-            ) : !hasDrivers ? (
-              <div className="flex items-center justify-center h-64">
-                <div className="text-center">
-                  <Truck className="mx-auto h-10 w-10 text-muted-foreground" />
-                  <h3 className="mt-4 text-lg font-medium">등록된 차주가 없습니다.</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    새로운 차주를 등록하거나 검색 조건을 변경해보세요.
-                  </p>
-                  <button
-                    onClick={handleRegisterDriver}
-                    className="mt-4 inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
-                  >
-                    차주 등록
-                  </button>
-                </div>
-              </div>
-            ) : viewMode === "table" ? (
-              <BrokerDriverTable
-                drivers={driversList}
-                onDriverClick={handleDriverClick}
-              />
-            ) : (
-              <BrokerDriverCardGrid
-                drivers={driversList}
-                onDriverClick={handleDriverClick}
-              />
-            )}
-          </div>
-
-          {/* 페이지네이션 */}
-          {!isLoading && !isError && hasDrivers && (
-            <div className="px-4 sm:px-6 lg:px-8">
-              <BrokerDriverPagination
-                currentPage={currentPageData}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                pageSize={currentPageSize}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}
-              />
-            </div>
-          )}
+          
           
         </Card>
 

@@ -176,119 +176,117 @@ export default function BrokerCompanyPage() {
         
         </CardHeader>
       
-      <CardContent>
-      <div>       
+        <CardContent>
 
+        <div>
+          {/* 요약 카드 */}
+          <Card className="mb-6 bg-primary/5 hidden md:block">
+              <CardContent  className="pt-0">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="flex flex-col">
+                    <span className="flex flex-row items-center gap-2 text-sm text-muted-foreground">
+                      <Building className="h-4 w-4" />
+                      총 업체 수
+                    </span>
+                    <span className="text-xl font-bold">{companySummary.total}개</span>
+                  </div>   
+                  <div className="flex flex-col">
+                      <span className="text-sm text-muted-foreground ">
+                      <span className="text-green-500">●</span>
+                      활성 업체
+                    </span>
+                    <span className="text-xl font-bold text-green-600">{companySummary.active}개</span>
+                  </div>
+                  <div className="flex flex-col">
+                      <span className="text-sm text-muted-foreground">
+                      <span className="text-red-500">●</span>
+                      비활성 업체
+                    </span>
+                    <span className="text-xl font-bold text-red-600">{companySummary.inactive}개</span>
+                  </div>               
+              </div>
+                
+              </CardContent>
+          </Card> 
 
-        {/* 요약 카드 */}
-        <Card className="mb-6 bg-primary/5 hidden md:block">
-            <CardContent  className="pt-0">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div className="flex flex-col">
-                  <span className="flex flex-row items-center gap-2 text-sm text-muted-foreground">
-                    <Building className="h-4 w-4" />
-                    총 업체 수
-                  </span>
-                  <span className="text-xl font-bold">{companySummary.total}개</span>
-                </div>   
-                <div className="flex flex-col">
-                    <span className="text-sm text-muted-foreground ">
-                    <span className="text-green-500">●</span>
-                    활성 업체
-                  </span>
-                  <span className="text-xl font-bold text-green-600">{companySummary.active}개</span>
-                </div>
-                <div className="flex flex-col">
-                    <span className="text-sm text-muted-foreground">
-                    <span className="text-red-500">●</span>
-                    비활성 업체
-                  </span>
-                  <span className="text-xl font-bold text-red-600">{companySummary.inactive}개</span>
-                </div>               
+          {/* 검색 및 필터, 액션 버튼 */}
+          <div className="flex flex-col md:flex-row items-center justify-between">
+
+            {/* 검색 및 필터 */}
+            <div className="w-full md:w-auto">
+              <BrokerCompanySearch />
             </div>
-              
-            </CardContent>
-        </Card> 
 
-        {/* <Separator /> */}
-
-        <div className="flex flex-col md:flex-row items-center justify-between">
-
-          {/* 검색 및 필터 */}
-          <div className="w-full md:w-auto">
-            <BrokerCompanySearch />
-          </div>
-
-          {/* 액션 버튼 */}
-          <div className="flex flex-col hidden md:block items-center">
-            <BrokerCompanyActionButtons
-              onActionSuccess={handleManualRefresh}
-            />
-          </div>
-        </div>
-
-        {/* 로딩 상태 */}
-        {isLoading && (
-          <div className="flex justify-center items-center h-40">
-            <div className="text-center">
-              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-              <p className="mt-2 text-muted-foreground">업체 목록을 불러오는 중입니다...</p>
-            </div>
-          </div>
-        )}
-
-        {/* 에러 상태 */}
-        {isError && (
-          <div className="flex justify-center items-center h-40">
-            <div className="text-center text-destructive">
-              <div className="mx-auto">❌</div>
-              <p className="mt-2">업체 목록을 불러오는 도중 오류가 발생했습니다.</p>
-              <button
-                onClick={() => refetch()}
-                className="mt-2 text-sm text-primary hover:underline"
-              >
-                다시 시도
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* 업체 목록 테이블 또는 카드 */}
-        {!isLoading && !isError && data && (
-          <>
-            <div className={cn(viewMode === 'table' ? 'block' : 'hidden')}>
-              <BrokerCompanyTable
-                companies={data.data}
-                onCompanyClick={handleCompanyClick}
+            {/* 액션 버튼 */}
+            <div className="flex flex-col hidden md:block items-center">
+              <BrokerCompanyActionButtons
+                onActionSuccess={handleManualRefresh}
               />
             </div>
-            <div className={cn(viewMode === 'card' ? 'block' : 'hidden')}>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {data?.data?.map((company) => (
-                  <BrokerCompanyCard
-                    key={company.id}
-                    company={company}
-                    onClick={() => handleCompanyClick(company)}
-                  />
-                ))}
+          </div>
+
+          {/* 로딩 상태 */}
+          {isLoading && (
+            <div className="flex justify-center items-center h-40">
+              <div className="text-center">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+                <p className="mt-2 text-muted-foreground">업체 목록을 불러오는 중입니다...</p>
               </div>
             </div>
+          )}
 
-            {/* 페이지네이션 */}
-            {data.totalPages > 0 && (
-              <BrokerCompanyPagination
-                currentPage={data.page}
-                totalPages={data.totalPages}
-                pageSize={data.pageSize}
-                totalItems={data.total}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}
-              />
-            )}
-          </>
-        )}
-      </div>
-      </CardContent>
+          {/* 에러 상태 */}
+          {isError && (
+            <div className="flex justify-center items-center h-40">
+              <div className="text-center text-destructive">
+                <div className="mx-auto">❌</div>
+                <p className="mt-2">업체 목록을 불러오는 도중 오류가 발생했습니다.</p>
+                <button
+                  onClick={() => refetch()}
+                  className="mt-2 text-sm text-primary hover:underline"
+                >
+                  다시 시도
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 업체 목록 테이블 또는 카드 */}
+          {!isLoading && !isError && data && (
+            <>
+              <div className={cn(viewMode === 'table' ? 'block' : 'hidden')}>
+                <BrokerCompanyTable
+                  companies={data.data}
+                  onCompanyClick={handleCompanyClick}
+                />
+              </div>
+              <div className={cn(viewMode === 'card' ? 'block' : 'hidden')}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {data?.data?.map((company) => (
+                    <BrokerCompanyCard
+                      key={company.id}
+                      company={company}
+                      onClick={() => handleCompanyClick(company)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* 페이지네이션 */}
+              {data.totalPages > 0 && (
+                <BrokerCompanyPagination
+                  currentPage={data.page}
+                  totalPages={data.totalPages}
+                  pageSize={data.pageSize}
+                  totalItems={data.total}
+                  onPageChange={handlePageChange}
+                  onPageSizeChange={handlePageSizeChange}
+                />
+              )}
+            </>
+          )}
+        </div>
+        </CardContent>
       </Card>
 
       {/* 마지막 부분에 업체 수정 시트 추가 */}
