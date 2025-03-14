@@ -54,7 +54,7 @@ export function BrokerDriverActionButtons({
 
   // 데스크톱 UI
   const DesktopActions = () => (
-    <div className="hidden sm:flex items-center gap-2">
+    <div className="hidden sm:flex items-center gap-2 mb-4">
       <Button
         variant="outline"
         size="sm"

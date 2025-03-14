@@ -528,7 +528,7 @@ export function BrokerDriverSearch() {
         </div>
 
         {/* 검색 버튼 */}
-        <div className="w-full md:w-auto mt-4 md:mt-0">
+        {/* <div className="w-full md:w-auto mt-4 md:mt-0">
           <Button type="button" onClick={() => onSubmit(form.getValues())} disabled={isSearching} size="sm">
             {isSearching ? (
               <>
@@ -542,7 +542,7 @@ export function BrokerDriverSearch() {
               </>
             )}
           </Button>
-        </div>
+        </div>*/}
       </div>
 
       {/* 활성 필터 표시 */}
