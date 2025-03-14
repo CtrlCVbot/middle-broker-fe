@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { VehicleType, TonnageType } from "@/types/broker-driver"
 
 // 차량 정보 스키마
 const vehicleInfoSchema = z.object({
@@ -44,15 +45,13 @@ interface IBrokerDriverVehicleInfoFormProps {
   onComplete?: () => void;
 }
 
-// 톤수 옵션
-const tonnageOptions = [
-  "1톤", "1.4톤", "2.5톤", "3.5톤", "5톤", "5톤 축", "8톤", "9.5톤", "11톤", "15톤", "18톤", "25톤"
-]
+// 차량 종류 옵션 - VehicleType에서 가져옴
+const vehicleTypeOptions: VehicleType[] = ['카고', '윙바디', '냉동', '탑차', '리프트', '기타'];
 
-// 차량 종류 옵션
-const vehicleTypeOptions = [
-  "카고", "윙바디", "탑차", "냉동", "냉장", "덤프", "특장", "기타"
-]
+// 톤수 옵션 - TonnageType에서 가져옴
+const tonnageOptions: TonnageType[] = [
+  "1톤", "1.4톤", "2.5톤", "3.5톤", "5톤", "8톤", "11톤", "18톤", "25톤", "기타"
+];
 
 // 화물함 종류 옵션
 const cargoBoxTypeOptions = [

@@ -81,15 +81,13 @@ export function BrokerDriverActionButtons({
           <Download className="h-4 w-4 mr-2" />
           엑셀
         </Button>
-        
-        <Button
-          size="sm"
-          onClick={() => setIsRegisterSheetOpen(true)}
-          disabled={isLoading}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          차주 등록
-        </Button>
+
+        {/* 차주 등록 시트 */}
+        <BrokerDriverRegisterSheet
+          open={isRegisterSheetOpen}
+          onOpenChange={setIsRegisterSheetOpen}
+          onRegisterSuccess={handleRegisterSuccess}
+        />
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -135,10 +133,6 @@ export function BrokerDriverActionButtons({
                 <RefreshCcw className="h-4 w-4 mr-2" />
                 새로고침
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsRegisterSheetOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                차주 등록
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={onRegisterMultipleDrivers}>
                 <Upload className="h-4 w-4 mr-2" />
                 다중 차주 등록
@@ -162,12 +156,7 @@ export function BrokerDriverActionButtons({
       <DesktopActions />
       <MobileActions />
       
-      {/* 차주 등록 시트 */}
-      <BrokerDriverRegisterSheet
-        open={isRegisterSheetOpen}
-        onOpenChange={setIsRegisterSheetOpen}
-        onSuccess={handleRegisterSuccess}
-      />
+      
     </div>
   );
 } 

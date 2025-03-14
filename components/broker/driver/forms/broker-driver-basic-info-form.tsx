@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { DriverStatus } from "@/types/broker-driver"
 
 // 차주 기본 정보 스키마
 const basicInfoSchema = z.object({
@@ -45,6 +46,9 @@ interface IBrokerDriverBasicInfoFormProps {
   form: UseFormReturn<DriverFormValues>;
   onComplete?: () => void;
 }
+
+// 상태 옵션 배열
+const statusOptions: DriverStatus[] = ['활성', '비활성'];
 
 export function BrokerDriverBasicInfoForm({
   form,
@@ -155,8 +159,11 @@ export function BrokerDriverBasicInfoForm({
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="활성">활성</SelectItem>
-                <SelectItem value="비활성">비활성</SelectItem>
+                {statusOptions.map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {status}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <FormDescription>

@@ -24,7 +24,13 @@ import { BrokerDriverBasicInfoForm } from "./forms/broker-driver-basic-info-form
 import { BrokerDriverVehicleInfoForm } from "./forms/broker-driver-vehicle-info-form";
 import { BrokerDriverAccountInfoForm } from "./forms/broker-driver-account-info-form";
 import { BrokerDriverNotesForm } from "./forms/broker-driver-notes-form";
-import { IBrokerDriver } from "@/types/broker-driver";
+import { 
+  IBrokerDriver, 
+  VehicleType, 
+  TonnageType, 
+  DriverStatus,
+  PermissionType 
+} from "@/types/broker-driver";
 import { useBrokerDriverStore } from "@/store/broker-driver-store";
 
 // 차주 기본 정보 스키마
@@ -141,7 +147,6 @@ export function BrokerDriverRegisterSheet({
   // 폼 기본값 설정
   const getFormDefaultValues = () => {
     if (mode === 'edit' && driver) {
-      // IBrokerDriver 타입에 맞는 속성 사용
       return {
         basicInfo: {
           name: driver.name || "",
@@ -176,7 +181,7 @@ export function BrokerDriverRegisterSheet({
         phone: "",
         businessNumber: "",
         address: "",
-        status: "활성" as const,
+        status: "활성" as DriverStatus,
       },
       vehicleInfo: {
         vehicleNumber: "",
@@ -190,7 +195,7 @@ export function BrokerDriverRegisterSheet({
         id: "",
         password: "",
         email: "",
-        permission: "일반" as const,
+        permission: "일반" as PermissionType,
       },
       notes: {
         notes: [],
@@ -240,10 +245,10 @@ export function BrokerDriverRegisterSheet({
         phoneNumber: data.basicInfo.phone,
         businessNumber: data.basicInfo.businessNumber || "",
         address: data.basicInfo.address || "",
-        status: data.basicInfo.status,
+        status: data.basicInfo.status as DriverStatus,
         vehicleNumber: data.vehicleInfo.vehicleNumber,
-        vehicleType: data.vehicleInfo.vehicleType,
-        tonnage: data.vehicleInfo.tonnage,
+        vehicleType: data.vehicleInfo.vehicleType as VehicleType,
+        tonnage: data.vehicleInfo.tonnage as TonnageType,
         cargoBox: {
           type: data.vehicleInfo.cargoBoxType || "",
           length: data.vehicleInfo.cargoBoxLength || ""
@@ -252,7 +257,7 @@ export function BrokerDriverRegisterSheet({
         account: {
           id: data.accountInfo.id,
           email: data.accountInfo.email || "",
-          permission: data.accountInfo.permission
+          permission: data.accountInfo.permission as PermissionType
         },
         notes: data.notes.notes,
       };
@@ -331,11 +336,11 @@ export function BrokerDriverRegisterSheet({
     ? '운송 업무를 수행할 차주의 정보를 등록합니다.'
     : '차주의 정보를 수정합니다.';
 
-  // 트리거 버튼 설정
+  // 트리거 버튼 설정 (차주 등록 버튼으로 통일)
   const defaultTrigger = mode === 'register' ? (
     <Button className="flex items-center gap-1">
       <Plus className="h-4 w-4" />
-      <span>신규 등록</span>
+      <span>차주 등록</span>
     </Button>
   ) : (
     <Button variant="outline" className="flex items-center gap-1">

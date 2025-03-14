@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { EyeIcon, EyeOffIcon } from "lucide-react"
+import { PermissionType } from "@/types/broker-driver"
 
 // 계정 정보 스키마
 const accountInfoSchema = z.object({
@@ -43,6 +44,9 @@ interface IBrokerDriverAccountInfoFormProps {
   form: UseFormReturn<DriverFormValues>;
   onComplete?: () => void;
 }
+
+// 권한 옵션 배열
+const permissionOptions: PermissionType[] = ['일반', '관리자'];
 
 export function BrokerDriverAccountInfoForm({
   form,
@@ -178,8 +182,11 @@ export function BrokerDriverAccountInfoForm({
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="일반">일반</SelectItem>
-                <SelectItem value="관리자">관리자</SelectItem>
+                {permissionOptions.map((permission) => (
+                  <SelectItem key={permission} value={permission}>
+                    {permission}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <FormDescription>
