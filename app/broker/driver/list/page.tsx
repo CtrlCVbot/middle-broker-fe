@@ -28,6 +28,7 @@ import { ToggleGroup } from "@/components/ui/toggle-group";
 import { ToggleGroupItem } from "@/components/ui/toggle-group";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BrokerDriverRegisterSheet } from "@/components/broker/driver/broker-driver-register-sheet";
 
 // 결과 타입 정의
 interface DriverQueryResult {
@@ -486,13 +487,16 @@ export default function BrokerDriverPage() {
           
         </Card>
 
-        {/* 차주 수정 시트 (추후 구현) */}
-        {/* <BrokerDriverEditSheet
-          driver={selectedDriver}
-          open={isEditSheetOpen}
-          onOpenChange={setIsEditSheetOpen}
-          onSuccess={handleUpdateSuccess}
-        /> */}
+        {/* 차주 수정 시트 */}
+        {selectedDriver && (
+          <BrokerDriverRegisterSheet
+            driver={selectedDriver}
+            mode="edit"
+            open={isEditSheetOpen}
+            onOpenChange={setIsEditSheetOpen}
+            onUpdateSuccess={handleUpdateSuccess}
+          />
+        )}
       </main>
     </>
   );

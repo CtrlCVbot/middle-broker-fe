@@ -354,23 +354,23 @@ export function BrokerDriverRegisterSheet({
       <SheetTrigger asChild>
         {trigger || defaultTrigger}
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md md:max-w-lg overflow-y-auto">
+      <SheetContent side="right" className="w-full sm:max-w-xl md:max-w-2xl lg:max-w-3xl overflow-y-auto">
+        
+        <SheetHeader className="mb-5">
+          <SheetTitle>{title}</SheetTitle>
+          <SheetDescription>
+            {description}
+          </SheetDescription>
+        </SheetHeader>
+
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <SheetHeader>
-              <SheetTitle>{title}</SheetTitle>
-              <SheetDescription>
-                {description}
-              </SheetDescription>
-            </SheetHeader>
-            
-            <div className="mt-6">
-              <Tabs
+          <form onSubmit={form.handleSubmit(onSubmit)}  className="space-y-6">
+            <Tabs
                 value={activeTab}
                 onValueChange={setActiveTab}
-                className="w-full"
+                className="w-full px-6"
               >
-                <TabsList className="grid grid-cols-4 mb-6">
+                <TabsList className="grid grid-cols-4 mb-4">
                   <TabsTrigger 
                     value="basic-info"
                     className="relative"
@@ -460,8 +460,7 @@ export function BrokerDriverRegisterSheet({
                     onComplete={() => checkStepCompletion('notes', true)}
                   />
                 </TabsContent>
-              </Tabs>
-            </div>
+            </Tabs>
 
             <SheetFooter className="flex flex-row justify-between mt-6 gap-2">
               <div className="flex gap-2">
