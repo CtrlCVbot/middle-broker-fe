@@ -25,6 +25,7 @@ import { IBrokerDriver } from "@/types/broker-driver";
 import { toast } from "sonner";
 import { ToggleGroup } from "@/components/ui/toggle-group";
 import { ToggleGroupItem } from "@/components/ui/toggle-group";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 // 결과 타입 정의
 interface DriverQueryResult {
@@ -138,53 +139,39 @@ export default function BrokerDriverPage() {
   const hasDrivers = driversList.length > 0;
 
   return (
-    <div className="flex flex-col h-full">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="icon" onClick={handleMenuClick} className="h-9 w-9">
-            <Menu className="h-5 w-5" />
-            <span className="sr-only">메뉴 열기</span>
-          </Button>
-          <div>
-            <h1 className="text-xl font-semibold">차주 관리</h1>
-            <Breadcrumb className="text-sm text-muted-foreground">
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/">
-                    <Home className="h-3 w-3" />
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/broker">주선사</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>차주 관리</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
+    <>
+    <header className="flex h-16 shrink-0 items-center gap-2">
+        <div className="flex items-center gap-2 px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator
+            orientation="vertical"
+            className="mr-2 data-[orientation=vertical]:h-4"
+          />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink href="/">                  
+                  홈
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink href="/broker">                  
+                  주선
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />              
+              <BreadcrumbItem>
+                <BreadcrumbPage>차주 관리</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
-
-        <BrokerDriverActionButtons
-          isLoading={isLoading}
-          onRefresh={handleManualRefresh}
-          onExportExcel={handleExportExcel}
-          onRegisterDriver={handleRegisterDriver}
-          onRegisterMultipleDrivers={handleRegisterMultipleDrivers}
-          disabledExportExcel={!data || totalItems === 0}
-        />
-      </div>
-
-      <Separator />
-
-      {/* 검색 및 필터 */}
-      <div className="px-4 py-4 sm:px-6 lg:px-8">
+      </header>
+      <main className="flex flex-1 flex-col p-4 pt-0">
         <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
+          {/* 검색 및 필터 */}          
+          <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>차주 목록</CardTitle>
                 <CardDescription>
@@ -194,6 +181,9 @@ export default function BrokerDriverPage() {
                     ? `총 ${totalItems}명의 차주가 있습니다.`
                     : "등록된 차주가 없습니다."}
                 </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+              
               </div>
               <ToggleGroup
                 type="single"
@@ -207,109 +197,111 @@ export default function BrokerDriverPage() {
                 <ToggleGroupItem value="card" aria-label="카드 보기">
                   <Grid3x3 className="h-4 w-4" />
                 </ToggleGroupItem>
-              </ToggleGroup>
-            </div>
+              </ToggleGroup>            
           </CardHeader>
+
           <CardContent>
             <BrokerDriverSearch />
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* 차주 목록 */}
-      <div className="flex-1 px-4 py-4 sm:px-6 lg:px-8">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <Truck className="mx-auto h-10 w-10 text-muted-foreground animate-pulse" />
-              <h3 className="mt-4 text-lg font-medium">차주 목록을 불러오는 중...</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                잠시만 기다려주세요.
-              </p>
-            </div>
-          </div>
-        ) : isError ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <Info className="mx-auto h-10 w-10 text-destructive" />
-              <h3 className="mt-4 text-lg font-medium">데이터를 불러오는 중 오류가 발생했습니다.</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                새로고침을 시도하거나 관리자에게 문의하세요.
-              </p>
-              <button
-                onClick={() => refetch()}
-                className="mt-4 inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
-              >
-                다시 시도
-              </button>
-            </div>
-          </div>
-        ) : !hasDrivers ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <Truck className="mx-auto h-10 w-10 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-medium">등록된 차주가 없습니다.</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                새로운 차주를 등록하거나 검색 조건을 변경해보세요.
-              </p>
-              <button
-                onClick={handleRegisterDriver}
-                className="mt-4 inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
-              >
-                차주 등록
-              </button>
-            </div>
-          </div>
-        ) : viewMode === "table" ? (
-          <BrokerDriverTable
-            drivers={driversList}
-            onDriverClick={handleDriverClick}
-          />
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {/* 카드 뷰는 추후 구현 */}
-            <div className="col-span-full">
+          </CardContent>
+
+          {/* 차주 목록 */}
+          <div className="flex-1 px-0 py-0 sm:px-6 lg:px-6">
+            {isLoading ? (
               <div className="flex items-center justify-center h-64">
                 <div className="text-center">
-                  <Info className="mx-auto h-10 w-10 text-muted-foreground" />
-                  <h3 className="mt-4 text-lg font-medium">카드 뷰는 아직 개발 중입니다.</h3>
+                  <Truck className="mx-auto h-10 w-10 text-muted-foreground animate-pulse" />
+                  <h3 className="mt-4 text-lg font-medium">차주 목록을 불러오는 중...</h3>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    테이블 뷰를 이용해주세요.
+                    잠시만 기다려주세요.
+                  </p>
+                </div>
+              </div>
+            ) : isError ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <Info className="mx-auto h-10 w-10 text-destructive" />
+                  <h3 className="mt-4 text-lg font-medium">데이터를 불러오는 중 오류가 발생했습니다.</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    새로고침을 시도하거나 관리자에게 문의하세요.
                   </p>
                   <button
-                    onClick={() => setViewMode("table")}
+                    onClick={() => refetch()}
                     className="mt-4 inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
                   >
-                    테이블 뷰로 전환
+                    다시 시도
                   </button>
                 </div>
               </div>
-            </div>
+            ) : !hasDrivers ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <Truck className="mx-auto h-10 w-10 text-muted-foreground" />
+                  <h3 className="mt-4 text-lg font-medium">등록된 차주가 없습니다.</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    새로운 차주를 등록하거나 검색 조건을 변경해보세요.
+                  </p>
+                  <button
+                    onClick={handleRegisterDriver}
+                    className="mt-4 inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
+                  >
+                    차주 등록
+                  </button>
+                </div>
+              </div>
+            ) : viewMode === "table" ? (
+              <BrokerDriverTable
+                drivers={driversList}
+                onDriverClick={handleDriverClick}
+              />
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {/* 카드 뷰는 추후 구현 */}
+                <div className="col-span-full">
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-center">
+                      <Info className="mx-auto h-10 w-10 text-muted-foreground" />
+                      <h3 className="mt-4 text-lg font-medium">카드 뷰는 아직 개발 중입니다.</h3>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        테이블 뷰를 이용해주세요.
+                      </p>
+                      <button
+                        onClick={() => setViewMode("table")}
+                        className="mt-4 inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
+                      >
+                        테이블 뷰로 전환
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      {/* 페이지네이션 */}
-      {!isLoading && !isError && hasDrivers && (
-        <div className="px-4 py-4 sm:px-6 lg:px-8">
-          <BrokerDriverPagination
-            currentPage={currentPageData}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            pageSize={currentPageSize}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-          />
-        </div>
-      )}
+          {/* 페이지네이션 */}
+          {!isLoading && !isError && hasDrivers && (
+            <div className="px-4 py-0 sm:px-6 lg:px-8">
+              <BrokerDriverPagination
+                currentPage={currentPageData}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                pageSize={currentPageSize}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+              />
+            </div>
+          )}
+          
+        </Card>
 
-      {/* 차주 수정 시트 (추후 구현) */}
-      {/* <BrokerDriverEditSheet
-        driver={selectedDriver}
-        open={isEditSheetOpen}
-        onOpenChange={setIsEditSheetOpen}
-        onSuccess={handleUpdateSuccess}
-      /> */}
-    </div>
+        {/* 차주 수정 시트 (추후 구현) */}
+        {/* <BrokerDriverEditSheet
+          driver={selectedDriver}
+          open={isEditSheetOpen}
+          onOpenChange={setIsEditSheetOpen}
+          onSuccess={handleUpdateSuccess}
+        /> */}
+      </main>
+    </>
   );
 } 
