@@ -15,12 +15,14 @@ import { useBrokerOrderDetailStore } from "@/store/broker-order-detail-store";
 import { getBrokerOrderDetailById } from "@/utils/mockdata/mock-broker-orders-detail";
 import { BrokerOrderProgress } from "./broker-order-progress";
 import { BrokerOrderInfoCard } from "./broker-order-info-card";
+import { BrokerOrderDriverInfoCard } from "./broker-order-driver-info-card";
+import { BrokerOrderSettlementInfoCard } from "./broker-order-settlement-info-card";
 import { BrokerOrderStatusLog } from "./broker-order-status-log";
 import { BrokerOrderActionButtons } from "./broker-order-action-buttons";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { CalendarClock, AlertTriangle } from "lucide-react";
+import { CalendarClock, AlertTriangle, Truck, CreditCard, Package } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/lib/utils";
 
@@ -62,17 +64,11 @@ export function BrokerOrderDetailSheet() {
     }
   }, [orderData, isLoading, isError, error, setLoading, setError, setOrderDetail]);
   
-  // 모바일 화면 감지
-  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
-  
   return (
     <Sheet open={isSheetOpen} onOpenChange={(open) => !open && closeSheet()}>
       <SheetContent 
-        side={isMobile ? "bottom" : "right"} 
-        className={cn(
-          "sm:max-w-xl md:max-w-2xl overflow-auto p-0",
-          isMobile ? "h-[80vh]" : "w-full"
-        )}
+        side="top" 
+        className="sm:max-w-full md:max-w-full overflow-auto p-0 h-[80vh]"
       >
         {/* 화면에 노출되지 않지만 접근성을 위한 타이틀 */}
         <SheetTitle className="sr-only">중개 화물 상세 정보</SheetTitle>
@@ -117,9 +113,6 @@ export function BrokerOrderDetailSheet() {
                   <CalendarClock className="h-4 w-4 mr-2" />
                   등록일시: {orderData.registeredAt}
                 </div>
-                <p className="text-lg font-semibold mt-1">
-                  운송비: {formatCurrency(orderData.amount)}원
-                </p>
               </div>
             </SheetHeader>
             
@@ -132,126 +125,83 @@ export function BrokerOrderDetailSheet() {
               
               <Separator />
               
-              {/* 출발지 및 도착지 정보 */}
+              {/* 화물 정보 카드 */}
               <div>
-                <h3 className="text-base font-medium mb-3">운송 정보</h3>
+                <div className="flex items-center gap-2 mb-3">
+                  <Package className="h-5 w-5 text-primary" />
+                  <h3 className="text-base font-medium">화물 정보</h3>
+                </div>
                 <BrokerOrderInfoCard 
-                  departure={orderData.departure} 
-                  destination={orderData.destination} 
+                  departure={{
+                    address: orderData.departure.address,
+                    name: orderData.departure.name,
+                    company: orderData.departure.company,
+                    contact: orderData.departure.contact,
+                    time: orderData.departure.time,
+                    date: orderData.departure.date
+                  }}
+                  destination={{
+                    address: orderData.destination.address,
+                    name: orderData.destination.name,
+                    company: orderData.destination.company,
+                    contact: orderData.destination.contact,
+                    time: orderData.destination.time,
+                    date: orderData.destination.date
+                  }}
+                  cargo={orderData.cargo}
+                  shipper={{
+                    name: orderData.departure.company,
+                    contact: orderData.departure.contact,
+                    manager: orderData.departure.name,
+                    email: "shipper@example.com" // 목업 데이터에 없어서 임시로 추가
+                  }}
                 />
               </div>
               
               <Separator />
               
-              {/* 화물 정보 및 차량 정보 */}
+              {/* 차량 정보 카드 */}
               <div>
-                <h3 className="text-base font-medium mb-3">화물 및 차량 정보</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* 화물 정보 */}
-                  <div className="space-y-2 bg-secondary/30 rounded-md p-3">
-                    <h4 className="font-medium">화물 정보</h4>
-                    <div className="grid grid-cols-3 gap-2 text-sm">
-                      <div className="text-muted-foreground">화물 종류</div>
-                      <div className="col-span-2 font-medium">{orderData.cargo.type}</div>
-                      
-                      {orderData.cargo.weight && (
-                        <>
-                          <div className="text-muted-foreground">중량</div>
-                          <div className="col-span-2 font-medium">{orderData.cargo.weight}</div>
-                        </>
-                      )}
-                      
-                      {orderData.cargo.options && (
-                        <>
-                          <div className="text-muted-foreground">옵션</div>
-                          <div className="col-span-2 font-medium">
-                            {orderData.cargo.options.join(", ")}
-                          </div>
-                        </>
-                      )}
-                      
-                      {orderData.cargo.remark && (
-                        <>
-                          <div className="text-muted-foreground">비고</div>
-                          <div className="col-span-2 font-medium text-xs">
-                            {orderData.cargo.remark}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* 차량 정보 */}
-                  <div className="space-y-2 bg-secondary/30 rounded-md p-3">
-                    <h4 className="font-medium">차량 정보</h4>
-                    <div className="grid grid-cols-3 gap-2 text-sm">
-                      <div className="text-muted-foreground">차량 종류</div>
-                      <div className="col-span-2 font-medium">{orderData.vehicle.type}</div>
-                      
-                      {orderData.vehicle.licensePlate && (
-                        <>
-                          <div className="text-muted-foreground">차량 번호</div>
-                          <div className="col-span-2 font-medium">{orderData.vehicle.licensePlate}</div>
-                        </>
-                      )}
-                      
-                      {orderData.vehicle.driver && (
-                        <>
-                          <div className="text-muted-foreground">운전자</div>
-                          <div className="col-span-2 font-medium">
-                            {orderData.vehicle.driver.name} ({orderData.vehicle.driver.contact})
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Truck className="h-5 w-5 text-primary" />
+                  <h3 className="text-base font-medium">차량 정보</h3>
                 </div>
+                <BrokerOrderDriverInfoCard 
+                  vehicle={orderData.vehicle}
+                  status={orderData.statusProgress}
+                  amount={orderData.amount}
+                />
               </div>
               
-              {/* 정산 정보 */}
-              {orderData.settlement && (
-                <>
-                  <Separator />
-                  <div>
-                    <h3 className="text-base font-medium mb-3">정산 정보</h3>
-                    <div className="space-y-2 bg-secondary/30 rounded-md p-3">
-                      <div className="grid grid-cols-3 gap-2 text-sm">
-                        <div className="text-muted-foreground">정산 상태</div>
-                        <div className="col-span-2 font-medium">
-                          <Badge variant={orderData.settlement.status === "정산완료" ? "default" : "outline"}>
-                            {orderData.settlement.status}
-                          </Badge>
-                        </div>
-                        
-                        <div className="text-muted-foreground">정산 번호</div>
-                        <div className="col-span-2 font-medium">{orderData.settlement.id}</div>
-                        
-                        <div className="text-muted-foreground">운송비</div>
-                        <div className="col-span-2 font-medium">{formatCurrency(orderData.amount)}원</div>
-                        
-                        <div className="text-muted-foreground">수수료</div>
-                        <div className="col-span-2 font-medium">{formatCurrency(orderData.fee)}원</div>
-                        
-                        <div className="text-muted-foreground">정산 금액</div>
-                        <div className="col-span-2 font-medium text-primary">
-                          {formatCurrency(orderData.amount - orderData.fee)}원
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
+              <Separator />
+              
+              {/* 정산 정보 카드 */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                  <h3 className="text-base font-medium">정산 정보</h3>
+                </div>
+                <BrokerOrderSettlementInfoCard 
+                  amount={orderData.amount}
+                  fee={orderData.fee || "0"}
+                  requestedAmount="1,200,000" // 목업 데이터에 없어서 임시로 추가
+                  settlement={orderData.settlement}
+                />
+              </div>
               
               <Separator />
               
               {/* 화물 상태 변화 로그 */}
-              <BrokerOrderStatusLog logs={orderData.logs} />
+              <div>
+                <h3 className="text-base font-medium mb-3">상태 변경 이력</h3>
+                <BrokerOrderStatusLog logs={orderData.logs} />
+              </div>
+              
+              {/* 액션 버튼 */}
+              <SheetFooter className="px-0 py-4 border-t">
+                <BrokerOrderActionButtons orderNumber={orderData.orderNumber} />
+              </SheetFooter>
             </div>
-            
-            {/* 푸터 - 액션 버튼 */}
-            <SheetFooter className="px-6 py-4 border-t mt-4">
-              <BrokerOrderActionButtons orderNumber={orderData.orderNumber} />
-            </SheetFooter>
           </ScrollArea>
         ) : null}
       </SheetContent>

@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Calendar, ArrowRight } from "lucide-react";
+import { MapPin, Calendar, ArrowRight, Package, User, ChevronDown, ChevronUp } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 interface LocationInfo {
   address: string;
@@ -9,70 +11,191 @@ interface LocationInfo {
   dateTime: string;
 }
 
-interface BrokerOrderInfoCardProps {
-  departure: LocationInfo;
-  destination: LocationInfo;
+interface CargoInfo {
+  type: string;
+  options?: string[];
+  weight?: string;
+  remark?: string;
 }
 
-export function BrokerOrderInfoCard({ departure, destination }: BrokerOrderInfoCardProps) {
+interface ShipperInfo {
+  name: string;
+  manager: string;
+  contact: string;
+  email: string;
+}
+
+interface BrokerOrderInfoCardProps {
+  departure: {
+    address: string;
+    name: string;
+    company: string;
+    contact: string;
+    time: string;
+    date: string;
+  };
+  destination: {
+    address: string;
+    name: string;
+    company: string;
+    contact: string;
+    time: string;
+    date: string;
+  };
+  cargo: CargoInfo;
+  shipper: ShipperInfo;
+}
+
+export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: BrokerOrderInfoCardProps) {
+  const [isShipperInfoOpen, setIsShipperInfoOpen] = useState(false);
+
+  // 날짜와 시간을 합쳐서 dateTime 형식으로 변환
+  const departureDateTime = `${departure.date} ${departure.time}`;
+  const destinationDateTime = `${destination.date} ${destination.time}`;
+
   return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-0">
-        <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x">
-          {/* 출발지 정보 */}
-          <div className="p-4 space-y-3">
-            <div className="flex items-center gap-2 text-primary">
-              <MapPin className="h-4 w-4" />
-              <h4 className="font-medium">출발지</h4>
+    <div className="space-y-4">
+      {/* 출발지/도착지 정보 */}
+      <Card className="overflow-hidden">
+        <CardContent className="p-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x">
+            {/* 출발지 정보 */}
+            <div className="p-4 space-y-3">
+              <div className="flex items-center gap-2 text-primary">
+                <MapPin className="h-4 w-4" />
+                <h4 className="font-medium">출발지</h4>
+              </div>
+              
+              <div className="space-y-2">
+                <p className="font-medium">{departure.address}</p>
+                
+                {departure.name && (
+                  <div className="text-sm text-muted-foreground">
+                    담당자: {departure.name}
+                    {departure.contact && ` (${departure.contact})`}
+                  </div>
+                )}
+                
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Calendar className="h-3.5 w-3.5" />
+                  <span>{departureDateTime}</span>
+                </div>
+              </div>
             </div>
             
-            <div className="space-y-2">
-              <p className="font-medium">{departure.address}</p>
+            {/* 도착지 정보 */}
+            <div className="p-4 space-y-3">
+              <div className="flex items-center gap-2 text-primary">
+                <MapPin className="h-4 w-4" />
+                <h4 className="font-medium">도착지</h4>
+              </div>
               
-              {departure.name && (
-                <div className="text-sm text-muted-foreground">
-                  담당자: {departure.name}
-                  {departure.contact && ` (${departure.contact})`}
+              <div className="space-y-2">
+                <p className="font-medium">{destination.address}</p>
+                
+                {destination.name && (
+                  <div className="text-sm text-muted-foreground">
+                    담당자: {destination.name}
+                    {destination.contact && ` (${destination.contact})`}
+                  </div>
+                )}
+                
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Calendar className="h-3.5 w-3.5" />
+                  <span>{destinationDateTime}</span>
                 </div>
-              )}
-              
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="h-3.5 w-3.5" />
-                <span>{departure.dateTime}</span>
               </div>
             </div>
           </div>
           
-          {/* 도착지 정보 */}
-          <div className="p-4 space-y-3">
-            <div className="flex items-center gap-2 text-primary">
-              <MapPin className="h-4 w-4" />
-              <h4 className="font-medium">도착지</h4>
-            </div>
-            
-            <div className="space-y-2">
-              <p className="font-medium">{destination.address}</p>
-              
-              {destination.name && (
-                <div className="text-sm text-muted-foreground">
-                  담당자: {destination.name}
-                  {destination.contact && ` (${destination.contact})`}
-                </div>
-              )}
-              
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="h-3.5 w-3.5" />
-                <span>{destination.dateTime}</span>
-              </div>
-            </div>
+          {/* 화살표 표시 (모바일에서만) */}
+          <div className="md:hidden flex justify-center py-2 bg-muted/30">
+            <ArrowRight className="h-4 w-4 text-muted-foreground" />
           </div>
-        </div>
-        
-        {/* 화살표 표시 (모바일에서만) */}
-        <div className="md:hidden flex justify-center py-2 bg-muted/30">
-          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      {/* 화물 정보 */}
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <Package className="h-4 w-4 text-primary" />
+            <h4 className="font-medium">화물 상세</h4>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-2 text-sm">
+            <div className="text-muted-foreground">화물 종류</div>
+            <div className="col-span-2 font-medium">{cargo.type}</div>
+            
+            {cargo.weight && (
+              <>
+                <div className="text-muted-foreground">중량</div>
+                <div className="col-span-2 font-medium">{cargo.weight}</div>
+              </>
+            )}
+            
+            {cargo.options && cargo.options.length > 0 && (
+              <>
+                <div className="text-muted-foreground">옵션</div>
+                <div className="col-span-2 font-medium">
+                  <div className="flex flex-wrap gap-1">
+                    {cargo.options.map((option, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {option}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+            
+            {cargo.remark && (
+              <>
+                <div className="text-muted-foreground">비고</div>
+                <div className="col-span-2 font-medium text-xs">
+                  {cargo.remark}
+                </div>
+              </>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 화주 정보 */}
+      <Card>
+        <CardContent className="p-4">
+          <button 
+            className="flex items-center justify-between w-full"
+            onClick={() => setIsShipperInfoOpen(!isShipperInfoOpen)}
+          >
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-primary" />
+              <h4 className="font-medium">화주 정보</h4>
+            </div>
+            {isShipperInfoOpen ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
+          
+          {isShipperInfoOpen && (
+            <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
+              <div className="text-muted-foreground">화주명</div>
+              <div className="col-span-2 font-medium">{shipper.name}</div>
+              
+              <div className="text-muted-foreground">담당자</div>
+              <div className="col-span-2 font-medium">{shipper.manager}</div>
+              
+              <div className="text-muted-foreground">연락처</div>
+              <div className="col-span-2 font-medium">{shipper.contact}</div>
+              
+              <div className="text-muted-foreground">이메일</div>
+              <div className="col-span-2 font-medium">{shipper.email}</div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 } 
