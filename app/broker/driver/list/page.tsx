@@ -229,15 +229,15 @@ export default function BrokerDriverPage() {
   };
 
   // 톤수 필터 적용 핸들러
-  const handleTonnageFilter = (tonnage: TonnageType) => {
+  const handleTonnageFilter = (tonnage: TonnageType | null) => {
     useBrokerDriverStore.getState().setFilter({
-      tonnage: tonnage
+      tonnage: tonnage || ""
     });
     
     // 페이지 초기화
     setCurrentPage(1);
     
-    toast.success(`'${tonnage}' 차량 목록을 조회합니다.`);
+    toast.success(tonnage ? `'${tonnage}' 차량 목록을 조회합니다.` : '모든 톤수의 차량 목록을 조회합니다.');
   };
 
   // 데이터 및 페이지네이션 정보 가져오기
@@ -321,9 +321,9 @@ export default function BrokerDriverPage() {
           <div>
             {/* 요약 카드 */}
             {!isLoading && !isError && hasDrivers && (
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mb-4">
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-12 mb-4">
                 {/* 활성/비활성 통계 */}
-                <Card>
+                <Card className="col-span-12 md:col-span-3">
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base">차주 상태</CardTitle>
@@ -356,32 +356,71 @@ export default function BrokerDriverPage() {
                         ></div>
                       </div>
                     </div>
-                  </CardContent>                  
+                  </CardContent>
+                  
                 </Card>
                 
                 {/* 톤수별 통계 */}
-                <Card>
+                <Card className="col-span-12 md:col-span-9">
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-base">톤수별 차주 분포</CardTitle>
+                      <div>
+                        <CardTitle className="text-base">톤수별 차주 분포</CardTitle>
+                        <CardDescription className="text-xs mt-1">{totalItems}명 <span className="text-green-500">▲ 2.7%</span></CardDescription>
+                      </div>
                       <Truck className="h-4 w-4 text-muted-foreground" />
                     </div>
-                    <CardDescription>차량 톤수별 차주 분포</CardDescription>
                   </CardHeader>
                   <CardContent className="pb-2">
-                    <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3">
+                    {/* 통합 바 차트 */}
+                    <div className="mb-2">
+                      <div className="flex h-4 overflow-hidden rounded-md bg-gray-100">
+                        {tonnageStats.map((stat, index) => (
+                          <div
+                            key={stat.type}
+                            className={cn(
+                              "h-full transition-all duration-300 cursor-pointer",
+                              stat.color.includes("bg-blue") ? "bg-blue-500" :
+                              stat.color.includes("bg-green") ? "bg-green-500" :
+                              stat.color.includes("bg-purple") ? "bg-purple-500" :
+                              stat.color.includes("bg-orange") ? "bg-orange-500" :
+                              stat.color.includes("bg-teal") ? "bg-teal-500" :
+                              stat.color.includes("bg-rose") ? "bg-rose-500" :
+                              stat.color.includes("bg-amber") ? "bg-amber-500" :
+                              stat.color.includes("bg-indigo") ? "bg-indigo-500" :
+                              stat.color.includes("bg-emerald") ? "bg-emerald-500" :
+                              stat.color.includes("bg-sky") ? "bg-sky-500" : "bg-gray-500"
+                            )}
+                            style={{ width: `${stat.percentage}%` }}
+                            onClick={() => handleTonnageFilter(stat.type as TonnageType)}
+                            title={`${stat.type}: ${stat.count}명 (${stat.percentage}%)`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* 범례 */}
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-3">
                       {tonnageStats.map((stat) => (
                         <div 
                           key={stat.type} 
-                          className={cn(
-                            "relative flex flex-col items-center justify-center p-2 rounded-md text-center cursor-pointer hover:opacity-80 transition-opacity",
-                            stat.color
-                          )}
+                          className="flex items-center gap-1 cursor-pointer"
                           onClick={() => handleTonnageFilter(stat.type as TonnageType)}
                         >
-                          <span className="font-semibold">{stat.type}</span>
-                          <span className="text-xs">{stat.count}명</span>
-                          <span className="text-xs">({stat.percentage}%)</span>
+                          <div className={cn(
+                            "w-2 h-2 rounded-full",
+                            stat.color.includes("bg-blue") ? "bg-blue-500" :
+                            stat.color.includes("bg-green") ? "bg-green-500" :
+                            stat.color.includes("bg-purple") ? "bg-purple-500" :
+                            stat.color.includes("bg-orange") ? "bg-orange-500" :
+                            stat.color.includes("bg-teal") ? "bg-teal-500" :
+                            stat.color.includes("bg-rose") ? "bg-rose-500" :
+                            stat.color.includes("bg-amber") ? "bg-amber-500" :
+                            stat.color.includes("bg-indigo") ? "bg-indigo-500" :
+                            stat.color.includes("bg-emerald") ? "bg-emerald-500" :
+                            stat.color.includes("bg-sky") ? "bg-sky-500" : "bg-gray-500"
+                          )} />
+                          <span className="text-xs">{stat.type}</span>
                         </div>
                       ))}
                     </div>
