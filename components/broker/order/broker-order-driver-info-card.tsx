@@ -14,7 +14,9 @@ import {
   Star, 
   Bell, 
   Clock,
-  MessageSquare
+  MessageSquare,
+  Pin,
+  Building
 } from "lucide-react";
 import { 
   Tabs, 
@@ -119,11 +121,13 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
             {vehicle.driver && (
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-primary" />
-                  <h4 className="font-medium">차주 정보</h4>
-                </div>
+                  <Truck className="h-4 w-4 text-primary" />
+                  <h4 className="font-medium">차량</h4>
+                </div>                
                 
+
                 <div className="grid grid-cols-3 gap-2 text-sm">
+
                   <div className="text-muted-foreground">차주명</div>
                   <div className="col-span-2 font-medium">{vehicle.driver.name} / {vehicle.driver.contact}</div>
 
@@ -148,8 +152,8 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
             {/* 차량 정보 */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <Truck className="h-4 w-4 text-primary" />
-                <h4 className="font-medium">차량 정보</h4>
+                <Pin className="h-4 w-4 text-primary" />
+                <h4 className="font-medium">상태</h4>
               </div>
 
               
@@ -190,14 +194,18 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
           {/* 차주 배차 이력과 특이사항 */}
           <div className="px-4">
             <Tabs defaultValue="history" value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-2 mb-4">
+              <TabsList className="grid grid-cols-3 mb-4">
                 <TabsTrigger value="history" className="flex items-center gap-2">
                   <Clock className="h-4 w-4" />
-                  차주 배차 이력
+                  이력
                 </TabsTrigger>
                 <TabsTrigger value="warnings" className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4" />
-                  차주 특이사항
+                  특이사항
+                </TabsTrigger>
+                <TabsTrigger value="company" className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  거래처
                 </TabsTrigger>
               </TabsList>
               
@@ -254,6 +262,33 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
                 ) : (
                   <p className="text-sm text-muted-foreground">특이사항이 없습니다.</p>
                 )}
+              </TabsContent>
+
+              <TabsContent value="company" className="mt-2">
+                <div className="overflow-x-auto">
+                  {/* 운송 거래처 정보*/}
+                    <div>      
+                        <div className="space-y-3">
+                          {/* 운송 거래처 정보 */}
+                          <div className="flex items-center gap-2 text-primary">
+                            <Building className="h-4 w-4" />
+                            <h4 className="font-medium">운송 거래처 정보</h4>
+                          </div>
+                          
+                          <div className="grid grid-cols-3 gap-2 text-sm">
+                            <div className="text-muted-foreground">사업자/번호</div>
+                            <div className="col-span-2 font-bold">재형운송(111-11-11111)</div>
+
+                            <div className="text-muted-foreground">유형/대표자</div>
+                            <div className="col-span-2 font-medium">일반사업자/박재형</div>
+
+                            <div className="text-muted-foreground">은행 정보</div>
+                            <div className="col-span-2 font-medium">국민/재형운송/1111111111</div>
+                          </div>
+                        </div>
+                    </div>
+                  
+                </div>
               </TabsContent>
             </Tabs>
           </div>

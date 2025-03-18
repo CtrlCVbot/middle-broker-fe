@@ -438,7 +438,7 @@ export function BrokerOrderDetailSheet() {
                     </div>
                   </CardHeader>
                   <CardContent className="p-0">
-                    <ScrollArea className="h-[500px]">
+                    <ScrollArea className="h-[700px]">
                       <div className="">
                         {isEditingDriverInfo ? (
                           <BrokerOrderDriverInfoEditForm

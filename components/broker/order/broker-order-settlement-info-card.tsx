@@ -4,7 +4,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { AlertTriangle, CheckCircle, CreditCard, DollarSign, TrendingUp, ArrowDownUp, Clock, Plus } from "lucide-react";
+import { AlertTriangle, CheckCircle, CreditCard, DollarSign, TrendingUp, ArrowDownUp, Clock, Plus, Building, Factory, ReceiptIcon, TicketCheck } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
@@ -105,7 +105,7 @@ export function BrokerOrderSettlementInfoCard({ fee, settlement, status }: Broke
   };
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* 운임 정보 */}
       <div>
         <div className="flex items-center gap-2 mb-4">
@@ -113,38 +113,28 @@ export function BrokerOrderSettlementInfoCard({ fee, settlement, status }: Broke
           <h4 className="font-medium">운임 정보</h4>
         </div>
         
-        <div className="space-y-4">
-          {/* 예상 운임 */}
+        <div className="space-y-2">
+          {/* 결제방법 */}
           <div className="grid grid-cols-3 gap-2 text-sm">
-            <div className="text-muted-foreground">예상 운임</div>
-            <div className="col-span-2 font-medium">
-              {fee?.estimated ? `${formatCurrency(parseAmount(fee.estimated))}원` : "-"}
+            <div className="text-muted-foreground">결제방법</div>
+            <div className="col-span-2 font-medium">인수증/1매</div>
+          </div>
+
+          {/* 청구 운임 */}
+          <div className="grid grid-cols-3 gap-2 text-sm">
+            <div className="text-muted-foreground">청구 운임</div>
+            <div className="col-span-2 font-bold">
+            {displayAmount(chargeTotal) } {"(= 예상금액 + 추가운임)" }
             </div>
           </div>
           
-          {/* 배차금 */}
-          <div className="grid grid-cols-3 gap-2 text-sm">
-            <div className="text-muted-foreground">배차금</div>
-            <div className="col-span-2 font-medium">
-              {fee?.baseAmount ? displayAmount(fee.baseAmount) : "-"}
-            </div>
-          </div>
-          
-          {/* 청구금 */}
-          <div className="grid grid-cols-3 gap-2 text-sm">
-            <div className="text-muted-foreground">청구금</div>
-            <div className="col-span-2 font-medium">
-              {fee?.chargeAmount ? displayAmount(fee.chargeAmount) : "-"}
-            </div>
-          </div>
-          
-          {/* 확정 운임 (배차 완료 시에만 표시) */}
+          {/* 배차(확정) 운임 (배차 완료 시에만 표시) */}
           {status !== "배차대기" && (
             <>
               <div className="grid grid-cols-3 gap-2 text-sm">
-                <div className="text-muted-foreground">확정 운임</div>
-                <div className="col-span-2 font-medium">
-                  {fee?.contracted ? `${formatCurrency(parseAmount(fee.contracted))}원` : "-"}
+                <div className="text-muted-foreground">배차 운임</div>
+                <div className="col-span-2 font-bold">
+                  {fee?.contracted ? `${formatCurrency(parseAmount(fee.contracted))}원` : "-"}{"(= 배차금 + 추가금)" }
                 </div>
               </div>
               
@@ -262,77 +252,45 @@ export function BrokerOrderSettlementInfoCard({ fee, settlement, status }: Broke
       </div>
       
       <Separator />
-      
-      {/* 정산 정보 */}
-      <div>
-        <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="h-4 w-4 text-primary" />
-          <h4 className="font-medium">정산 정보</h4>
-        </div>
-        
-        <div className="space-y-4">
-          {/* 정산 상태 */}
-          <div className="grid grid-cols-3 gap-2 text-sm">
-            <div className="text-muted-foreground">정산 상태</div>
-            <div className="col-span-2">
-              <Badge variant={settlement?.status === "정산완료" ? "default" : "outline"}>
-                {settlement?.status || "정산대기"}
-              </Badge>
+     
+
+      {/* 계산서 정보*/}
+      <div>      
+          <div className="space-y-3">
+            {/* 계산서 정보 */}
+            <div className="flex items-center gap-2 text-primary">
+              <TicketCheck className="h-4 w-4" />
+              <h4 className="font-medium">계산서 정보</h4>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-2 text-sm">
+              
+              <div className="text-muted-foreground">계산서종류</div>
+              <div className="col-span-2 font-medium">수기/전자</div>
+
+              <div className="text-muted-foreground">우편</div>
+              <div className="col-span-2 font-medium">종이</div>
+
+              <div className="text-muted-foreground">작성일</div>
+              <div className="col-span-2 font-medium">2025-01-01</div>
+
+              <div className="text-muted-foreground">증빙수신</div>
+              <div className="col-span-2 font-medium">2025-01-01</div>
+
+              <div className="text-muted-foreground">송금 예정일</div>
+              <div className="col-span-2 font-medium">2025-01-01</div>
+
+              <div className="text-muted-foreground">송금일</div>
+              <div className="col-span-2 font-medium">2025-01-01</div>
+
+              
+
+
+
             </div>
           </div>
-          
-          {/* 정산 방식 */}
-          {settlement?.method && (
-            <div className="grid grid-cols-3 gap-2 text-sm">
-              <div className="text-muted-foreground">정산 방식</div>
-              <div className="col-span-2 font-medium">
-                {settlement.method}
-              </div>
-            </div>
-          )}
-          
-          {/* 정산 예정일 */}
-          {settlement?.dueDate && (
-            <div className="grid grid-cols-3 gap-2 text-sm">
-              <div className="text-muted-foreground">정산 예정일</div>
-              <div className="col-span-2 font-medium flex items-center gap-2">
-                {!isCompleted && <Clock className="h-3 w-3 text-muted-foreground" />}
-                {settlement.dueDate}
-              </div>
-            </div>
-          )}
-          
-          {/* 정산 완료일 */}
-          {settlement?.completedDate && (
-            <div className="grid grid-cols-3 gap-2 text-sm">
-              <div className="text-muted-foreground">정산 완료일</div>
-              <div className="col-span-2 font-medium">
-                {settlement.completedDate}
-              </div>
-            </div>
-          )}
-          
-          {/* 운송 진행 상태 표시 */}
-          {!isCompleted && (
-            <div className="mt-4 space-y-2">
-              <div className="flex justify-between text-xs">
-                <span>배차대기</span>
-                <span>운송마감</span>
-              </div>
-              <Progress 
-                value={status === "배차대기" ? 0 : 
-                       status === "배차완료" ? 25 : 
-                       status === "상차완료" ? 50 : 
-                       status === "운송중" ? 75 : 90} 
-                className="h-2"
-              />
-              <div className="text-xs text-center text-muted-foreground mt-1">
-                현재: <span className="font-medium">{status}</span>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
+      
     </div>
   );
 } 

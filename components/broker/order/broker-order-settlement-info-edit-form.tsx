@@ -307,7 +307,7 @@ export function BrokerOrderSettlementInfoEditForm({
   };
   
   return (
-    <div className="p-4">
+    <div className="p-0">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {/* 운임 정보 */}
@@ -366,30 +366,7 @@ export function BrokerOrderSettlementInfoEditForm({
                   />
                 </div>
               </div>
-              {/* 청구금 입력 */}
-              <div className="grid grid-cols-3 gap-2 items-center">
-                <FormLabel className="text-muted-foreground text-sm">청구금</FormLabel>
-                <div className="col-span-2">
-                  <FormField
-                    control={form.control}
-                    name="chargeAmount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="청구금 입력"
-                            onChange={e => handleAmountChange(e, false, "chargeAmount")}
-                            disabled={isCompleted}
-                            className="text-right"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
+              
             </div>
           </div>
           

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Calendar, ArrowRight, Package, User, ChevronDown, ChevronUp } from "lucide-react";
+import { MapPin, Calendar, ArrowRight, Package, User, ChevronDown, ChevronUp, Factory } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
@@ -65,7 +65,7 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
             onClick={() => setIsShipperInfoOpen(!isShipperInfoOpen)}
           >
             <div className="flex items-center gap-2">
-              <User className="h-4 w-4 text-primary" />
+              <Factory className="h-4 w-4 text-primary" />
               <h4 className="font-medium">화주 정보</h4>
             </div>
             {isShipperInfoOpen ? (
