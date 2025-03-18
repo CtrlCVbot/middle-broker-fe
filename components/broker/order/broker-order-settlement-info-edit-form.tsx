@@ -254,7 +254,7 @@ export function BrokerOrderSettlementInfoEditForm({
   return (
     <div className="p-4">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {/* 운임 정보 */}
           <div>
             <div className="flex items-center gap-2 mb-4">
@@ -263,6 +263,31 @@ export function BrokerOrderSettlementInfoEditForm({
             </div>
             
             <div className="space-y-4">
+              {/*견적금 입력 */}
+              <div className="grid grid-cols-3 gap-2 items-center">
+                <FormLabel className="text-muted-foreground text-sm">견적금</FormLabel>
+                <div className="col-span-2">
+                  <FormField
+                    control={form.control}
+                    name="baseAmount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            readOnly
+                            placeholder="배차금 입력"
+                            onChange={e => handleAmountChange(e)}
+                            disabled={isCompleted}
+                            className="text-right bg-muted/40"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
               {/* 배차금 입력 */}
               <div className="grid grid-cols-3 gap-2 items-center">
                 <FormLabel className="text-muted-foreground text-sm">배차금</FormLabel>
