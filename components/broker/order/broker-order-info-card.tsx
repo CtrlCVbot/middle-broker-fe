@@ -91,10 +91,10 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
       {/* 분리선 */}
       <Separator className="my-4" />
 
-      {/* 출발지/도착지 정보 */}
+      {/* 상/하차지 정보*/}
       <div>      
           <div className="grid grid-rows-2">
-            {/* 출발지 정보 */}
+            {/* 상/하차지 정보 */}
             <div className=" space-y-3">
               <div className="flex items-center gap-2 text-primary">
                 <MapPin className="h-4 w-4" />

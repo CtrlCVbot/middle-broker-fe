@@ -355,19 +355,19 @@ export function BrokerOrderDetailSheet() {
                 
                 {/* 차량 및 기사 정보 카드 */}
                 <Card className="overflow-hidden">
-                  <CardHeader className="bg-muted/20 flex flex-row items-center justify-between py-2 px-4">
-                    <CardTitle className="text-lg">배차 정보</CardTitle>
-                    
-
-                    <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => handleEdit("배차 정보")}
-                        className="px-2 py-1"
-                      >
-                        <Pencil className="h-4 w-4 mr-1" />
-                        편집 모드로 전환
-                      </Button>
+                  <CardHeader className="bg-muted/20 flex flex-col md:flex-row items-center justify-between py-2 px-4">
+                    <CardTitle className="text-lg mb-2 md:mb-0">배차 정보</CardTitle>
+                    <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                      <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleEdit("배차 정보")}
+                          className="px-2 py-1"
+                        >
+                          <Pencil className="h-4 w-4 mr-1" />
+                          편집 모드로 전환
+                        </Button>
+                    </div>
                   </CardHeader>
                   <CardContent className="p-0">
                     <ScrollArea className="h-[500px]">
@@ -403,15 +403,19 @@ export function BrokerOrderDetailSheet() {
                 
                 {/* 운임/정산 정보 카드 */}
                 <Card className="overflow-hidden">
-                  <CardHeader className="bg-muted/20 flex flex-row items-center justify-between py-2 px-4">
-                    <CardTitle className="text-lg">운임/정산 정보</CardTitle>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEdit("운임/정산 정보")}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                  <CardHeader className="bg-muted/20 flex flex-col md:flex-row items-center justify-between py-2 px-4">
+                    <CardTitle className="text-lg mb-2 md:mb-0">운임/정산 정보</CardTitle>
+                    <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit("운임/정산 정보")}
+                        className="px-2 py-1"
+                      >
+                        <Pencil className="h-4 w-4 mr-1" />
+                        편집 모드로 전환
+                      </Button>
+                    </div>
                   </CardHeader>
                   <CardContent className="p-0">
                     <ScrollArea className="h-[500px]">
