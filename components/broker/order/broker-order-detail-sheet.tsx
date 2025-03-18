@@ -41,7 +41,8 @@ import {
   Pencil,
   AlertCircle,
   MailPlus,
-  MailX
+  MailX,
+  MailCheck
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/lib/utils";
@@ -358,6 +359,17 @@ export function BrokerOrderDetailSheet() {
                   <CardHeader className="bg-muted/20 flex flex-col md:flex-row items-center justify-between py-2 px-4">
                     <CardTitle className="text-lg mb-2 md:mb-0">배차 정보</CardTitle>
                     <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                      {/* 완료 문자 보내기 */}
+                      <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleCancelCargoInfo}
+                          className="px-2 py-1"
+                        >
+                          <MailCheck className="h-4 w-4 mr-1" />
+                          배차
+                      </Button>
+
                       <Button 
                           variant="outline" 
                           size="sm" 

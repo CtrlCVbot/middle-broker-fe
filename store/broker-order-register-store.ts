@@ -76,6 +76,8 @@ export interface IBrokerOrderRegisterStore {
   resetForm: () => void;
   addRecentLocation: (type: 'departure' | 'destination', info: IBrokerLocationInfo) => void;
   useRecentLocation: (type: 'departure' | 'destination', locationId: string) => void;
+  setFormData: (data: IBrokerOrderRegisterData) => void;
+  registerOrder: (data: IBrokerOrderRegisterData) => void;
 }
 
 // 중개 화물 등록 상태 스토어 구현
@@ -181,7 +183,24 @@ export const useBrokerOrderRegisterStore = create<IBrokerOrderRegisterStore>()(
             [type]: location.info
           }
         };
-      })
+      }),
+      
+      // 폼 데이터 설정
+      setFormData: (data) => set({ registerData: data }),
+      
+      // 중개 화물 등록
+      registerOrder: (data) => {
+        // 여기서는 실제 API 호출을 수행하거나, 필요한 로직을 추가할 수 있습니다.
+        // 예를 들어 API 호출 후 폼 초기화 등
+        console.log('화물 등록 데이터:', data);
+        
+        // 폼 초기화
+        set({ registerData: initialBrokerOrderRegisterData });
+        
+        // 나중에 실제 API 연동 시:
+        // const response = await api.registerOrder(data);
+        // return response;
+      }
     }),
     {
       name: 'broker-order-register-storage',
