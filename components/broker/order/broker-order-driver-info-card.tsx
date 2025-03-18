@@ -13,11 +13,15 @@ import {
   MapPin, 
   Star, 
   Bell, 
-  ChevronDown, 
-  ChevronUp,
   Clock,
   MessageSquare
 } from "lucide-react";
+import { 
+  Tabs, 
+  TabsList, 
+  TabsTrigger, 
+  TabsContent 
+} from "@/components/ui/tabs";
 import { BrokerOrderStatusType } from "@/types/broker-order";
 import { formatCurrency } from "@/lib/utils";
 
@@ -47,8 +51,7 @@ interface BrokerOrderDriverInfoCardProps {
 }
 
 export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onSendMessage }: BrokerOrderDriverInfoCardProps) {
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [isWarningOpen, setIsWarningOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("history");
   
   // 배차 전 상태인지 확인 (배차대기 상태이고 차주 정보가 없는 경우)
   const isBeforeAssignment = status === '배차대기' || !vehicle.driver;
@@ -202,25 +205,22 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
           </div>
           
           
-          {/* 차주 배차 이력 */}
+          {/* 차주 배차 이력과 특이사항 */}
           <div className="p-4">
-              <button 
-                className="flex items-center justify-between w-full"
-                onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-              >
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-primary" />
-                  <h4 className="font-medium">차주 배차 이력</h4>
-                </div>
-                {isHistoryOpen ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                )}
-              </button>
+            <Tabs defaultValue="history" value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid grid-cols-2 mb-4">
+                <TabsTrigger value="history" className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  차주 배차 이력
+                </TabsTrigger>
+                <TabsTrigger value="warnings" className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  차주 특이사항
+                </TabsTrigger>
+              </TabsList>
               
-              {isHistoryOpen && (
-                <div className="mt-3 overflow-x-auto">
+              <TabsContent value="history" className="mt-2">
+                <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b">
@@ -248,53 +248,33 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
                     </tbody>
                   </table>
                 </div>
-              )}
-            </div>
-          
-          {/* 차주 특이사항 */}
-          <div className="p-4">
-              <button 
-                className="flex items-center justify-between w-full"
-                onClick={() => setIsWarningOpen(!isWarningOpen)}
-              >
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-primary" />
-                  <h4 className="font-medium">차주 특이사항</h4>
-                </div>
-                {isWarningOpen ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                )}
-              </button>
+              </TabsContent>
               
-              {isWarningOpen && (
-                <div className="mt-3">
-                  {driverWarnings.length > 0 ? (
-                    <ul className="space-y-2">
-                      {driverWarnings.map((warning, index) => (
-                        <li key={index} className="flex items-start gap-2 text-sm">
-                          <Badge 
-                            variant="outline" 
-                            className={`
-                              ${warning.severity === 'high' ? 'bg-red-50 text-red-700' : 
-                                warning.severity === 'medium' ? 'bg-amber-50 text-amber-700' : 
-                                'bg-blue-50 text-blue-700'}
-                            `}
-                          >
-                            {warning.date}
-                          </Badge>
-                          <span>{warning.content}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">특이사항이 없습니다.</p>
-                  )}
-                </div>
-              )}
+              <TabsContent value="warnings" className="mt-2">
+                {driverWarnings.length > 0 ? (
+                  <ul className="space-y-2">
+                    {driverWarnings.map((warning, index) => (
+                      <li key={index} className="flex items-start gap-2 text-sm">
+                        <Badge 
+                          variant="outline" 
+                          className={`
+                            ${warning.severity === 'high' ? 'bg-red-50 text-red-700' : 
+                              warning.severity === 'medium' ? 'bg-amber-50 text-amber-700' : 
+                              'bg-blue-50 text-blue-700'}
+                          `}
+                        >
+                          {warning.date}
+                        </Badge>
+                        <span>{warning.content}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">특이사항이 없습니다.</p>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
-          
           
         </>
       )}
