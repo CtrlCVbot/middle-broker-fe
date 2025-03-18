@@ -42,15 +42,6 @@ import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 
-// IBrokerOrderDetail 타입에 부족한 필드를 확장하는 타입
-interface ExtendedOrderData {
-  fee?: string;
-  settlement?: {
-    id?: string;
-    status?: string;
-  };
-}
-
 export function BrokerOrderDetailSheet() {
   const { 
     isSheetOpen, 
@@ -69,9 +60,16 @@ export function BrokerOrderDetailSheet() {
     error 
   } = useQuery({
     queryKey: ["brokerOrderDetail", selectedOrderId],
-    queryFn: () => selectedOrderId ? getBrokerOrderDetailById(selectedOrderId) : Promise.reject("화물 ID가 없습니다."),
+    queryFn: () => selectedOrderId 
+      ? getBrokerOrderDetailById(selectedOrderId) 
+      : Promise.reject(new Error("화물 ID가 없습니다.")),
     enabled: !!selectedOrderId && isSheetOpen,
     staleTime: 1000 * 60 * 5, // 5분
+    retry: 1, // 오류 발생 시 1번만 재시도
+    // 오류 발생시 콘솔에 로그 남기기
+    onError: (err) => {
+      console.error("화물 상세 정보 조회 오류:", err);
+    }
   });
   
   // 상태 업데이트
@@ -440,9 +438,9 @@ export function BrokerOrderDetailSheet() {
                       <div className="p-4">
                         <BrokerOrderSettlementInfoCard 
                           amount={orderData.amount}
-                          fee={(orderData as ExtendedOrderData).fee || "0"}
+                          fee={orderData.fee || "0"}
                           requestedAmount="1,200,000" // 목업 데이터에 없어서 임시로 추가
-                          settlement={(orderData as ExtendedOrderData).settlement}
+                          settlement={orderData.settlement}
                         />
                       </div>
                     </ScrollArea>

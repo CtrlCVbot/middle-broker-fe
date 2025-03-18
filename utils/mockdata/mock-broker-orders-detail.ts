@@ -6,6 +6,7 @@ export interface IBrokerOrderDetail {
   orderNumber: string;
   status: BrokerOrderStatusType;
   amount: string;
+  fee?: string;
   registeredAt: string;
   statusProgress: BrokerOrderStatusType;
   departure: {
@@ -42,6 +43,10 @@ export interface IBrokerOrderDetail {
     };
   };
   logs: IBrokerOrderLog[];
+  settlement?: {
+    id?: string;
+    status?: string;
+  };
 }
 
 // 목업 중개 화물 상세 데이터
@@ -50,6 +55,7 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
     orderNumber: "BRO-001001",
     status: "배차대기",
     amount: "450,000",
+    fee: "45,000",
     registeredAt: "2023-03-15 14:30",
     statusProgress: "배차대기",
     departure: {
@@ -88,12 +94,16 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
         handler: "시스템",
         remark: "화물 등록 완료"
       }
-    ]
+    ],
+    settlement: {
+      status: "정산대기"
+    }
   },
   "BRO-001002": {
     orderNumber: "BRO-001002",
     status: "배차완료",
     amount: "550,000",
+    fee: "55,000",
     registeredAt: "2023-03-16 10:15",
     statusProgress: "배차완료",
     departure: {
@@ -144,12 +154,16 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
         handler: "김관리자",
         remark: "배차 완료"
       }
-    ]
+    ],
+    settlement: {
+      status: "정산대기"
+    }
   },
   "BRO-001003": {
     orderNumber: "BRO-001003",
     status: "상차완료",
     amount: "650,000",
+    fee: "65,000",
     registeredAt: "2023-03-17 09:45",
     statusProgress: "상차완료",
     departure: {
@@ -208,12 +222,16 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
         location: "경기도 성남시 분당구",
         remark: "상차 완료"
       }
-    ]
+    ],
+    settlement: {
+      status: "정산대기"
+    }
   },
   "BRO-001004": {
     orderNumber: "BRO-001004",
     status: "운송중",
     amount: "750,000",
+    fee: "75,000",
     registeredAt: "2023-03-18 11:30",
     statusProgress: "운송중",
     departure: {
@@ -266,7 +284,7 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
       },
       {
         status: "상차완료",
-        time: "09:50",
+        time: "09:40",
         date: "2023-03-23",
         handler: "박배송",
         location: "대구광역시 동구",
@@ -274,51 +292,55 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
       },
       {
         status: "운송중",
-        time: "10:15",
+        time: "10:30",
         date: "2023-03-23",
         handler: "박배송",
-        location: "경부고속도로",
+        location: "경북 경산시",
         remark: "운송 시작"
       }
-    ]
+    ],
+    settlement: {
+      status: "정산대기"
+    }
   },
   "BRO-001005": {
     orderNumber: "BRO-001005",
     status: "하차완료",
     amount: "850,000",
+    fee: "85,000",
     registeredAt: "2023-03-19 13:20",
     statusProgress: "하차완료",
     departure: {
-      address: "강원도 원주시 시청로 1",
-      detailedAddress: "원주시청 앞 물류센터",
-      name: "한동훈",
-      company: "강원물류",
+      address: "광주광역시 광산구 첨단과기로 123",
+      detailedAddress: "광주과학기술원 1층",
+      name: "윤하준",
+      company: "광주첨단산업",
       contact: "010-0123-4567",
       time: "08:00",
       date: "2023-03-24"
     },
     destination: {
-      address: "충청북도 청주시 상당구 상당로 155",
-      detailedAddress: "청주시청 옆 창고",
-      name: "윤서연",
-      company: "충북유통",
+      address: "서울특별시 강서구 공항대로 376",
+      detailedAddress: "김포공항 화물터미널 3층",
+      name: "조현우",
+      company: "서울항공물류",
       contact: "010-1234-5678",
-      time: "14:00",
+      time: "17:00",
       date: "2023-03-24"
     },
     cargo: {
-      type: "식품류",
-      options: ["직접운송", "선불", "냉장"],
-      weight: "2톤",
-      remark: "신선식품 포함"
+      type: "항공부품",
+      options: ["직접운송", "선불", "특수화물"],
+      weight: "3.5톤",
+      remark: "항공부품 취급주의"
     },
     vehicle: {
-      type: "냉장",
-      weight: "3.5톤",
+      type: "윙바디",
+      weight: "5톤",
       licensePlate: "78라 9012",
       driver: {
-        name: "최운송",
-        contact: "010-2345-6789"
+        name: "정배달",
+        contact: "010-0123-4567"
       }
     },
     logs: [
@@ -333,72 +355,76 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
         status: "배차완료",
         time: "16:30",
         date: "2023-03-19",
-        handler: "정관리자",
+        handler: "양관리자",
         remark: "배차 완료"
       },
       {
         status: "상차완료",
         time: "08:15",
         date: "2023-03-24",
-        handler: "최운송",
-        location: "강원도 원주시",
+        handler: "정배달",
+        location: "광주광역시 광산구",
         remark: "상차 완료"
       },
       {
         status: "운송중",
-        time: "08:30",
+        time: "09:00",
         date: "2023-03-24",
-        handler: "최운송",
-        location: "영동고속도로",
+        handler: "정배달",
+        location: "광주광역시 북구",
         remark: "운송 시작"
       },
       {
         status: "하차완료",
-        time: "14:20",
+        time: "17:30",
         date: "2023-03-24",
-        handler: "최운송",
-        location: "충청북도 청주시",
+        handler: "정배달",
+        location: "서울특별시 강서구",
         remark: "하차 완료"
       }
-    ]
+    ],
+    settlement: {
+      status: "정산대기"
+    }
   },
   "BRO-001006": {
     orderNumber: "BRO-001006",
     status: "운송마감",
     amount: "950,000",
+    fee: "95,000",
     registeredAt: "2023-03-20 15:10",
     statusProgress: "운송마감",
     departure: {
-      address: "충청남도 천안시 동남구 충절로 17",
-      detailedAddress: "천안물류단지 5번 창고",
-      name: "이준호",
-      company: "천안물류",
-      contact: "010-3456-7890",
-      time: "09:00",
+      address: "부산광역시 해운대구 APEC로 55",
+      detailedAddress: "부산항 국제전시컨벤션센터 2층",
+      name: "이서연",
+      company: "부산물류센터",
+      contact: "010-2345-6789",
+      time: "09:30",
       date: "2023-03-25"
     },
     destination: {
-      address: "전라북도 전주시 완산구 풍남문4길 53",
-      detailedAddress: "전주한옥마을 인근 창고",
-      name: "김민지",
-      company: "전북유통",
-      contact: "010-4567-8901",
-      time: "15:00",
+      address: "서울특별시 송파구 올림픽로 300",
+      detailedAddress: "롯데월드타워 12층",
+      name: "김준호",
+      company: "서울유통",
+      contact: "010-3456-7890",
+      time: "18:00",
       date: "2023-03-25"
     },
     cargo: {
-      type: "건축자재",
-      options: ["직접운송", "선불", "중량물"],
-      weight: "8톤",
-      remark: "철근 포함"
+      type: "의류",
+      options: ["직접운송", "선불", "빠른배송"],
+      weight: "2톤",
+      remark: "고가의류 포함"
     },
     vehicle: {
-      type: "카고",
-      weight: "11톤",
+      type: "탑차",
+      weight: "2.5톤",
       licensePlate: "90마 1234",
       driver: {
-        name: "정화물",
-        contact: "010-5678-9012"
+        name: "김택배",
+        contact: "010-4567-8901"
       }
     },
     logs: [
@@ -411,43 +437,156 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
       },
       {
         status: "배차완료",
-        time: "17:45",
+        time: "17:25",
         date: "2023-03-20",
-        handler: "강관리자",
+        handler: "이관리자",
         remark: "배차 완료"
       },
       {
         status: "상차완료",
-        time: "09:20",
+        time: "09:40",
         date: "2023-03-25",
-        handler: "정화물",
-        location: "충청남도 천안시",
+        handler: "김택배",
+        location: "부산광역시 해운대구",
         remark: "상차 완료"
       },
       {
         status: "운송중",
-        time: "09:40",
+        time: "10:15",
         date: "2023-03-25",
-        handler: "정화물",
-        location: "호남고속도로",
+        handler: "김택배",
+        location: "경남 김해시",
         remark: "운송 시작"
       },
       {
         status: "하차완료",
-        time: "15:30",
+        time: "18:20",
         date: "2023-03-25",
-        handler: "정화물",
-        location: "전라북도 전주시",
+        handler: "김택배",
+        location: "서울특별시 송파구",
         remark: "하차 완료"
       },
       {
         status: "운송마감",
-        time: "16:00",
+        time: "18:30",
         date: "2023-03-25",
-        handler: "김관리자",
-        remark: "운송 완료 확인"
+        handler: "김택배",
+        location: "서울특별시 송파구",
+        remark: "운송 마감"
       }
-    ]
+    ],
+    settlement: {
+      id: "SET-001006",
+      status: "정산완료"
+    }
+  },
+  "BRO-001007": {
+    orderNumber: "BRO-001007",
+    status: "배차대기",
+    amount: "500,000",
+    fee: "50,000",
+    registeredAt: "2023-03-21 09:30",
+    statusProgress: "배차대기",
+    departure: {
+      address: "대전광역시 유성구 대학로 99",
+      detailedAddress: "대전대학교 2층",
+      name: "박민서",
+      company: "대전과학산업",
+      contact: "010-5678-9012",
+      time: "10:00",
+      date: "2023-03-26"
+    },
+    destination: {
+      address: "강원도 춘천시 강원대학길 1",
+      detailedAddress: "강원대학교 1층",
+      name: "김지훈",
+      company: "강원유통",
+      contact: "010-6789-0123",
+      time: "16:00",
+      date: "2023-03-26"
+    },
+    cargo: {
+      type: "실험장비",
+      options: ["직접운송", "선불", "특수화물"],
+      weight: "2톤",
+      remark: "정밀실험장비 취급주의"
+    },
+    vehicle: {
+      type: "탑차",
+      weight: "2.5톤"
+    },
+    logs: [
+      {
+        status: "배차대기",
+        time: "09:30",
+        date: "2023-03-21",
+        handler: "시스템",
+        remark: "화물 등록 완료"
+      }
+    ],
+    settlement: {
+      status: "정산대기"
+    }
+  },
+  "BRO-001008": {
+    orderNumber: "BRO-001008",
+    status: "배차완료",
+    amount: "600,000",
+    fee: "60,000",
+    registeredAt: "2023-03-22 11:40",
+    statusProgress: "배차완료",
+    departure: {
+      address: "경기도 수원시 영통구 광교중앙로 145",
+      detailedAddress: "광교테크노밸리 3층",
+      name: "최예준",
+      company: "수원테크",
+      contact: "010-7890-1234",
+      time: "09:00",
+      date: "2023-03-27"
+    },
+    destination: {
+      address: "전라북도 전주시 덕진구 백제대로 567",
+      detailedAddress: "전북대학교 1층",
+      name: "손현진",
+      company: "전주물류",
+      contact: "010-8901-2345",
+      time: "17:00",
+      date: "2023-03-27"
+    },
+    cargo: {
+      type: "식품",
+      options: ["직접운송", "선불", "빠른배송"],
+      weight: "1.5톤",
+      remark: "냉장 식품"
+    },
+    vehicle: {
+      type: "냉장",
+      weight: "2.5톤",
+      licensePlate: "12바 3456",
+      driver: {
+        name: "박냉동",
+        contact: "010-9012-3456"
+      }
+    },
+    logs: [
+      {
+        status: "배차대기",
+        time: "11:40",
+        date: "2023-03-22",
+        handler: "시스템",
+        remark: "화물 등록 완료"
+      },
+      {
+        status: "배차완료",
+        time: "15:50",
+        date: "2023-03-22",
+        handler: "정관리자",
+        remark: "배차 완료"
+      }
+    ],
+    settlement: {
+      status: "정산대기"
+    }
   }
 };
 
@@ -462,7 +601,17 @@ export const getBrokerOrderDetailById = (id: string): Promise<IBrokerOrderDetail
       if (mockBrokerOrderDetails[id]) {
         resolve(mockBrokerOrderDetails[id]);
       } else {
-        reject(new Error(`ID ${id}에 해당하는 중개 화물 정보를 찾을 수 없습니다.`));
+        // 존재하지 않는 ID일 경우 기본 데이터 반환 (오류 발생 대신)
+        console.warn(`ID ${id}에 해당하는 중개 화물 정보를 찾을 수 없습니다. 기본 데이터를 반환합니다.`);
+        
+        // 목록의 첫 번째 항목을 대체 데이터로 사용 (객체의 첫 번째 키를 가져옴)
+        const firstId = Object.keys(mockBrokerOrderDetails)[0];
+        const defaultData = {...mockBrokerOrderDetails[firstId]};
+        
+        // 조회된 ID로 orderNumber 값 변경
+        defaultData.orderNumber = id;
+        
+        resolve(defaultData);
       }
     }, delay);
   });
