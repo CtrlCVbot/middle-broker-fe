@@ -45,7 +45,6 @@ import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { BrokerOrderInfoEditForm } from "./broker-order-info-edit-form";
-import { BrokerOrderVehicleInfoCard } from "./broker-order-vehicle-info-card";
 import { BrokerOrderDriverInfoCard } from "./broker-order-driver-info-card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "@/components/ui/use-toast";
@@ -272,10 +271,10 @@ export function BrokerOrderDetailSheet() {
                                 contact: orderData.destination.contact || "",
                               },
                               shipper: {
-                                name: orderData.shipper.name || "",
-                                manager: orderData.shipper.manager || "",
-                                contact: orderData.shipper.contact || "",
-                                email: orderData.shipper.email || "",
+                                name: orderData.departure.company || "",
+                                manager: orderData.departure.name || "",
+                                contact: orderData.departure.contact || "",
+                                email: "info@" + (orderData.departure.company || "example.com").toLowerCase().replace(/\s+/g, "") + ".com",
                               },
                             }}
                             onSave={handleSaveCargoInfo}
@@ -301,10 +300,10 @@ export function BrokerOrderDetailSheet() {
                             }}
                             cargo={orderData.cargo}
                             shipper={{
-                              name: orderData.shipper.name,
-                              contact: orderData.shipper.contact,
-                              manager: orderData.shipper.manager,
-                              email: orderData.shipper.email
+                              name: orderData.departure.company,
+                              contact: orderData.departure.contact,
+                              manager: orderData.departure.name,
+                              email: "info@" + orderData.departure.company.toLowerCase().replace(/\s+/g, "") + ".com"
                             }}
                           />
                         )}
@@ -334,10 +333,9 @@ export function BrokerOrderDetailSheet() {
                             <BrokerOrderDriverInfoCard 
                               driver={orderData?.vehicle?.driver || { name: "정보 없음" }}
                               onSendMessage={() => handleSendMessage("기사님")}
-                            />
-                            <Separator className="my-4" />
-                            <BrokerOrderVehicleInfoCard 
                               vehicle={orderData?.vehicle || { type: "정보 없음" }}
+                              status={orderData?.status || "배차대기"}
+                              amount={orderData?.amount || "0"}
                             />
                           </>
                         ) : (
