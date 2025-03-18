@@ -52,6 +52,7 @@ import { BrokerOrderDriverInfoCard } from "./broker-order-driver-info-card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "@/components/ui/use-toast";
 import { BrokerOrderDriverInfoEditForm } from "./broker-order-driver-info-edit-form";
+import { BrokerOrderSettlementInfoEditForm } from "./broker-order-settlement-info-edit-form";
 
 export function BrokerOrderDetailSheet() {
   const { 
@@ -66,6 +67,7 @@ export function BrokerOrderDetailSheet() {
   const [isStatusHistoryOpen, setIsStatusHistoryOpen] = useState(false);
   const [isEditingCargoInfo, setIsEditingCargoInfo] = useState(false);
   const [isEditingDriverInfo, setIsEditingDriverInfo] = useState(false);
+  const [isEditingSettlementInfo, setIsEditingSettlementInfo] = useState(false);
   
   // TanStack Query를 사용하여 화물 상세 정보 조회
   const { 
@@ -129,6 +131,8 @@ export function BrokerOrderDetailSheet() {
       setIsEditingCargoInfo(true);
     } else if (section === "배차 정보") {
       setIsEditingDriverInfo(true);
+    } else if (section === "운임/정산 정보") {
+      setIsEditingSettlementInfo(true);
     } else {
       toast({
         title: "수정 기능",
@@ -186,6 +190,24 @@ export function BrokerOrderDetailSheet() {
   // 배차 정보 수정 취소 핸들러
   const handleCancelDriverInfo = () => {
     setIsEditingDriverInfo(false);
+  };
+  
+  // 운임/정산 정보 수정 저장 핸들러
+  const handleSaveSettlementInfo = (formData: any) => {
+    // 여기서 실제로는 API 호출을 통해 데이터를 저장하겠지만, 
+    // 현재는 상태만 변경하고 수정 모드를 종료합니다.
+    console.log("저장된 운임/정산 데이터:", formData);
+    setIsEditingSettlementInfo(false);
+    
+    toast({
+      title: "운임/정산 정보 수정 완료",
+      description: "운임/정산 정보가 성공적으로 업데이트되었습니다.",
+    });
+  };
+
+  // 운임/정산 정보 수정 취소 핸들러
+  const handleCancelSettlementInfo = () => {
+    setIsEditingSettlementInfo(false);
   };
   
   return (
@@ -470,28 +492,52 @@ export function BrokerOrderDetailSheet() {
                   <CardHeader className="bg-muted/20 flex flex-col md:flex-row items-center justify-between py-2 px-4">
                     <CardTitle className="text-lg mb-2 md:mb-0">운임/정산 정보</CardTitle>
                     <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit("운임/정산 정보")}
-                        className="px-2 py-1"
-                      >
-                        <Pencil className="h-4 w-4 mr-1" />
-                        편집 모드로 전환
-                      </Button>
+                      {isEditingSettlementInfo ? (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleCancelSettlementInfo}
+                          className="px-2 py-1"
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          보기 모드로 전환
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit("운임/정산 정보")}
+                          className="px-2 py-1"
+                        >
+                          <Pencil className="h-4 w-4 mr-1" />
+                          편집 모드로 전환
+                        </Button>
+                      )}
                     </div>
                   </CardHeader>
                   <CardContent className="p-0">
                     <ScrollArea className="h-[500px]">
                       <div className="p-4">
-                        <BrokerOrderSettlementInfoCard 
-                          fee={{
-                            estimated: orderData?.amount,
-                            contracted: orderData?.amount,
-                          }}
-                          settlement={orderData?.settlement}
-                          status={orderData?.status || "배차대기"}
-                        />
+                        {isEditingSettlementInfo ? (
+                          <BrokerOrderSettlementInfoEditForm 
+                            initialData={{
+                              baseAmount: orderData?.amount || 0,
+                              additionalFees: []
+                            }}
+                            status={orderData?.status || "배차대기"}
+                            onSave={handleSaveSettlementInfo}
+                            onCancel={handleCancelSettlementInfo}
+                          />
+                        ) : (
+                          <BrokerOrderSettlementInfoCard 
+                            fee={{
+                              estimated: orderData?.amount,
+                              contracted: orderData?.amount,
+                            }}
+                            settlement={orderData?.settlement}
+                            status={orderData?.status || "배차대기"}
+                          />
+                        )}
                       </div>
                     </ScrollArea>
                   </CardContent>
