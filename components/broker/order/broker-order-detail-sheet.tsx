@@ -233,14 +233,27 @@ export function BrokerOrderDetailSheet() {
                       <Package className="h-5 w-5 text-primary" />
                       화물 정보
                     </CardTitle>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => handleEdit("화물 정보")}
-                      className="h-8 w-8"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                    {isEditingCargoInfo ? (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={handleCancelCargoInfo}
+                        className="px-2 py-1"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        보기 모드로 전환
+                      </Button>
+                    ) : (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleEdit("화물 정보")}
+                        className="px-2 py-1"
+                      >
+                        <Pencil className="h-4 w-4 mr-1" />
+                        편집 모드로 전환
+                      </Button>
+                    )}
                   </CardHeader>
                   <CardContent className="p-0">
                     <ScrollArea className="h-[calc(90vh-220px)]">
@@ -253,6 +266,7 @@ export function BrokerOrderDetailSheet() {
                                 weight: orderData.cargo.weight || "",
                                 options: orderData.cargo.options || [],
                                 remark: orderData.cargo.remark || "",
+                                vehicleType: orderData.vehicle?.type || ""
                               },
                               departure: {
                                 address: orderData.departure.address || "",
@@ -298,7 +312,10 @@ export function BrokerOrderDetailSheet() {
                               time: orderData.destination.time,
                               date: orderData.destination.date
                             }}
-                            cargo={orderData.cargo}
+                            cargo={{
+                              ...orderData.cargo,
+                              vehicleType: orderData.vehicle?.type
+                            }}
                             shipper={{
                               name: orderData.departure.company,
                               contact: orderData.departure.contact,

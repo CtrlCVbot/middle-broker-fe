@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Calendar, ArrowRight, Package, User, ChevronDown, ChevronUp, Search, X } from "lucide-react";
+import { MapPin, Calendar, ArrowRight, Package, User, ChevronDown, ChevronUp, Search, X, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { cn } from "@/lib/utils";
+import { BROKER_VEHICLE_TYPES, BROKER_WEIGHT_TYPES } from "@/types/broker-order";
 
 // 날짜 선택 컴포넌트
 import { format } from "date-fns";
@@ -57,10 +58,11 @@ import {
 // 폼 유효성 검증 스키마
 const formSchema = z.object({
   cargo: z.object({
-    type: z.string().min(1, { message: "화물 종류를 입력하세요" }),
-    weight: z.string().optional(),
+    type: z.string().min(1, "화물 종류를 입력해주세요"),
+    weight: z.string().min(1, "중량을 선택해주세요"),
     options: z.array(z.string()).optional(),
-    remark: z.string().optional()
+    remark: z.string().optional(),
+    vehicleType: z.string().min(1, "차량 종류를 선택해주세요")
   }),
   departure: z.object({
     address: z.string().min(2, { message: "출발지 주소를 입력하세요" }),
@@ -127,6 +129,7 @@ interface BrokerOrderInfoEditFormProps {
       options?: string[];
       weight?: string;
       remark?: string;
+      vehicleType: string;
     };
     shipper: {
       name: string;
@@ -152,7 +155,8 @@ export function BrokerOrderInfoEditForm({ initialData, onSave, onCancel }: Broke
         type: initialData.cargo.type || '',
         weight: initialData.cargo.weight || '',
         options: initialData.cargo.options || [],
-        remark: initialData.cargo.remark || ''
+        remark: initialData.cargo.remark || '',
+        vehicleType: initialData.cargo.vehicleType || ''
       },
       departure: {
         address: initialData.departure.address || '',
@@ -630,6 +634,36 @@ export function BrokerOrderInfoEditForm({ initialData, onSave, onCancel }: Broke
                     </FormItem>
                   )}
                 />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="cargo.vehicleType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-muted-foreground text-sm">차량 종류</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="차량 종류 선택" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {BROKER_VEHICLE_TYPES.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {type}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
                 <FormField
                   control={form.control}
@@ -637,9 +671,23 @@ export function BrokerOrderInfoEditForm({ initialData, onSave, onCancel }: Broke
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-muted-foreground text-sm">중량</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="중량 입력" />
-                      </FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="중량 선택" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {BROKER_WEIGHT_TYPES.map((weight) => (
+                            <SelectItem key={weight} value={weight}>
+                              {weight}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -684,9 +732,6 @@ export function BrokerOrderInfoEditForm({ initialData, onSave, onCancel }: Broke
           
           {/* 버튼 */}
           <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" type="button" onClick={onCancel}>
-              취소
-            </Button>
             <Button type="submit">저장</Button>
           </div>
         </div>

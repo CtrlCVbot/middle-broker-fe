@@ -16,6 +16,7 @@ interface CargoInfo {
   options?: string[];
   weight?: string;
   remark?: string;
+  vehicleType?: string;
 }
 
 interface ShipperInfo {
@@ -80,11 +81,7 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
               <div className="col-span-2 font-medium">{shipper.name}</div>
               
               <div className="text-muted-foreground">담당자</div>
-              <div className="col-span-2 font-medium">{shipper.manager}</div>
-              
-              <div className="text-muted-foreground">연락처</div>
-              <div className="col-span-2 font-medium">{shipper.contact}</div>
-              
+              <div className="col-span-2 font-medium">{shipper.manager} / {shipper.contact}</div>
               <div className="text-muted-foreground">이메일</div>
               <div className="col-span-2 font-medium">{shipper.email}</div>
             </div>
@@ -167,27 +164,26 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
             <div className="text-muted-foreground">화물 종류</div>
             <div className="col-span-2 font-medium">{cargo.type}</div>
             
-            {cargo.weight && (
-              <>
-                <div className="text-muted-foreground">중량</div>
-                <div className="col-span-2 font-medium">{cargo.weight}</div>
-              </>
-            )}
-            
-            {cargo.options && cargo.options.length > 0 && (
-              <>
-                <div className="text-muted-foreground">옵션</div>
-                <div className="col-span-2 font-medium">
-                  <div className="flex flex-wrap gap-1">
-                    {cargo.options.map((option, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {option}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
+            <div className="text-muted-foreground">차량/중량/옵션</div>
+            <div className="col-span-2 font-medium">
+              <div className="flex flex-wrap items-center gap-2">
+                {cargo.vehicleType && (
+                  <span className="inline-flex items-center bg-primary/10 px-2 py-0.5 rounded text-sm">
+                    {cargo.vehicleType}
+                  </span>
+                )}
+                {cargo.weight && (
+                  <span className="inline-flex items-center bg-primary/10 px-2 py-0.5 rounded text-sm">
+                    {cargo.weight}
+                  </span>
+                )}
+                {cargo.options && cargo.options.length > 0 && cargo.options.map((option, index) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {option}
+                  </Badge>
+                ))}
+              </div>
+            </div>
             
             {cargo.remark && (
               <>
