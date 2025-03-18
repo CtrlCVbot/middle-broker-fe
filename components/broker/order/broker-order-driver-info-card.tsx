@@ -15,7 +15,8 @@ import {
   Bell, 
   ChevronDown, 
   ChevronUp,
-  Clock
+  Clock,
+  MessageSquare
 } from "lucide-react";
 import { BrokerOrderStatusType } from "@/types/broker-order";
 import { formatCurrency } from "@/lib/utils";
@@ -30,13 +31,22 @@ interface VehicleInfo {
   };
 }
 
+interface DriverInfo {
+  name: string;
+  contact?: string;
+  company?: string;
+  carModel?: string;
+}
+
 interface BrokerOrderDriverInfoCardProps {
   vehicle: VehicleInfo;
   status: BrokerOrderStatusType;
   amount: string;
+  driver: DriverInfo;
+  onSendMessage: () => void;
 }
 
-export function BrokerOrderDriverInfoCard({ vehicle, status, amount }: BrokerOrderDriverInfoCardProps) {
+export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onSendMessage }: BrokerOrderDriverInfoCardProps) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isWarningOpen, setIsWarningOpen] = useState(false);
   
@@ -287,6 +297,53 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount }: BrokerOrd
                   )}
                 </div>
               )}
+            </CardContent>
+          </Card>
+          
+          {/* 기사 정보 */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-primary" />
+                <h4 className="font-medium">기사 정보</h4>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-2 text-sm">
+                <div className="text-muted-foreground">기사명</div>
+                <div className="col-span-2 font-medium">{driver.name || "정보 없음"}</div>
+                
+                {driver.contact && (
+                  <>
+                    <div className="text-muted-foreground">연락처</div>
+                    <div className="col-span-2 font-medium flex items-center gap-2">
+                      {driver.contact}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={onSendMessage}
+                        className="h-6 px-2 gap-1 text-xs"
+                      >
+                        <MessageSquare className="h-3 w-3" />
+                        <span>메시지</span>
+                      </Button>
+                    </div>
+                  </>
+                )}
+                
+                {driver.company && (
+                  <>
+                    <div className="text-muted-foreground">소속</div>
+                    <div className="col-span-2 font-medium">{driver.company}</div>
+                  </>
+                )}
+                
+                {driver.carModel && (
+                  <>
+                    <div className="text-muted-foreground">차량모델</div>
+                    <div className="col-span-2 font-medium">{driver.carModel}</div>
+                  </>
+                )}
+              </div>
             </CardContent>
           </Card>
         </>
