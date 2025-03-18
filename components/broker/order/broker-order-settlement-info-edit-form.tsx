@@ -54,11 +54,20 @@ interface IAdditionalFee {
   type: AdditionalFeeType;
   amount: number | string;
   memo: string;
+  target: { charge: boolean; dispatch: boolean };
 }
 
 // 폼 스키마 정의
 const formSchema = z.object({
   baseAmount: z.string().refine(
+    (val) => !isNaN(Number(val.replace(/,/g, ''))), 
+    { message: "유효한 금액을 입력해주세요" }
+  ),
+  chargeAmount: z.string().refine(
+    (val) => !isNaN(Number(val.replace(/,/g, ''))), 
+    { message: "유효한 금액을 입력해주세요" }
+  ),
+  estimatedAmount: z.string().refine(
     (val) => !isNaN(Number(val.replace(/,/g, ''))), 
     { message: "유효한 금액을 입력해주세요" }
   )
@@ -67,6 +76,8 @@ const formSchema = z.object({
 interface BrokerOrderSettlementInfoEditFormProps {
   initialData: {
     baseAmount?: string | number;
+    chargeAmount?: string | number;
+    estimatedAmount?: string | number;
     additionalFees?: IAdditionalFee[];
   };
   status: string;
@@ -88,8 +99,11 @@ export function BrokerOrderSettlementInfoEditForm({
     initialData.additionalFees || []
   );
   
-  // 총 금액 (배차금 + 추가금)
-  const [totalAmount, setTotalAmount] = useState<number>(0);
+  // 상태 변수 및 계산 함수 추가
+  // 총 금액 (배차 기본금 + 배차 추가금, 청구 기본금 + 청구 추가금)
+  const [dispatchTotal, setDispatchTotal] = useState<number>(0);
+  const [chargeTotal, setChargeTotal] = useState<number>(0);
+  const [profit, setProfit] = useState<number>(0);
   
   // 편집 중인 추가금 항목
   const [editingFee, setEditingFee] = useState<IAdditionalFee | null>(null);
@@ -98,7 +112,8 @@ export function BrokerOrderSettlementInfoEditForm({
   const [newFee, setNewFee] = useState<Omit<IAdditionalFee, 'id'>>({
     type: "대기",
     amount: "",
-    memo: ""
+    memo: "",
+    target: { charge: true, dispatch: true }
   });
   
   // React Hook Form 설정
@@ -108,23 +123,34 @@ export function BrokerOrderSettlementInfoEditForm({
       baseAmount: initialData.baseAmount ? 
         typeof initialData.baseAmount === 'number' ? 
           initialData.baseAmount.toString() : initialData.baseAmount
+        : "0",
+      chargeAmount: initialData.chargeAmount ? 
+        typeof initialData.chargeAmount === 'number' ? 
+          initialData.chargeAmount.toString() : initialData.chargeAmount
+        : initialData.baseAmount ? 
+          typeof initialData.baseAmount === 'number' ? 
+            initialData.baseAmount.toString() : initialData.baseAmount
+          : "0",
+      estimatedAmount: initialData.baseAmount ? 
+        typeof initialData.baseAmount === 'number' ? 
+          initialData.baseAmount.toString() : initialData.baseAmount
         : "0"
     }
   });
   
   // 배차금 값이 변경될 때마다 총 금액 다시 계산
   useEffect(() => {
-    calculateTotalAmount();
+    calculateTotals();
   }, [form.watch("baseAmount"), additionalFees]);
   
   // 금액 입력 핸들러 (숫자만 입력 가능하도록)
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>, isNewFee = false) => {
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>, isNewFee = false, field: "baseAmount" | "chargeAmount" | "estimatedAmount" = "baseAmount") => {
     const value = e.target.value.replace(/[^\d-]/g, '');
     
     if (isNewFee) {
       setNewFee({ ...newFee, amount: value });
     } else {
-      form.setValue("baseAmount", value);
+      form.setValue(field, value);
     }
   };
   
@@ -147,12 +173,13 @@ export function BrokerOrderSettlementInfoEditForm({
       id: Date.now().toString(),
       type: newFee.type,
       amount: newFee.amount,
-      memo: newFee.memo
+      memo: newFee.memo,
+      target: newFee.target
     };
     
     setAdditionalFees([...additionalFees, fee]);
-    setNewFee({ type: "대기", amount: "", memo: "" });
-    calculateTotalAmount();
+    setNewFee({ type: "대기", amount: "", memo: "", target: { charge: true, dispatch: true } });
+    calculateTotals();
   };
   
   // 추가금 항목 수정 시작
@@ -161,7 +188,8 @@ export function BrokerOrderSettlementInfoEditForm({
     setNewFee({
       type: fee.type,
       amount: fee.amount.toString(),
-      memo: fee.memo
+      memo: fee.memo,
+      target: fee.target
     });
   };
   
@@ -179,13 +207,13 @@ export function BrokerOrderSettlementInfoEditForm({
     
     setAdditionalFees(additionalFees.map(fee => 
       fee.id === editingFee.id ? 
-        { ...fee, type: newFee.type, amount: newFee.amount, memo: newFee.memo } : 
+        { ...fee, type: newFee.type, amount: newFee.amount, memo: newFee.memo, target: newFee.target } : 
         fee
     ));
     
     setEditingFee(null);
-    setNewFee({ type: "대기", amount: "", memo: "" });
-    calculateTotalAmount();
+    setNewFee({ type: "대기", amount: "", memo: "", target: { charge: true, dispatch: true } });
+    calculateTotals();
   };
   
   // 추가금 항목 삭제
@@ -194,42 +222,69 @@ export function BrokerOrderSettlementInfoEditForm({
     
     if (editingFee?.id === id) {
       setEditingFee(null);
-      setNewFee({ type: "대기", amount: "", memo: "" });
+      setNewFee({ type: "대기", amount: "", memo: "", target: { charge: true, dispatch: true } });
     }
     
-    calculateTotalAmount();
+    calculateTotals();
   };
   
   // 수정 취소
   const handleCancelEdit = () => {
     setEditingFee(null);
-    setNewFee({ type: "대기", amount: "", memo: "" });
+    setNewFee({ type: "대기", amount: "", memo: "", target: { charge: true, dispatch: true } });
   };
   
   // 총 금액 계산
-  const calculateTotalAmount = () => {
-    // 기본 배차금 가져오기
+  const calculateTotals = () => {
+    // 배차 기본금 가져오기
     const baseAmount = form.watch("baseAmount");
     const baseAmountValue = baseAmount ? Number(baseAmount.replace(/,/g, '')) : 0;
     
-    // 추가금 계산
-    const additionalTotal = additionalFees.reduce((sum, fee) => {
-      const feeAmount = typeof fee.amount === 'string' ? 
-        Number(fee.amount.replace(/,/g, '')) : fee.amount;
-      return sum + feeAmount;
+    // 청구 기본금 가져오기
+    const chargeAmount = form.watch("chargeAmount");
+    const chargeAmountValue = chargeAmount ? Number(chargeAmount.replace(/,/g, '')) : 0;
+    
+    // 배차 추가금 계산
+    const dispatchAdditionalTotal = additionalFees.reduce((sum, fee) => {
+      if (fee.target.dispatch) {
+        const feeAmount = typeof fee.amount === 'string' ? 
+          Number(fee.amount.replace(/,/g, '')) : fee.amount;
+        return sum + feeAmount;
+      }
+      return sum;
     }, 0);
     
-    // 총 금액 계산
-    setTotalAmount(baseAmountValue + additionalTotal);
+    // 청구 추가금 계산
+    const chargeAdditionalTotal = additionalFees.reduce((sum, fee) => {
+      if (fee.target.charge) {
+        const feeAmount = typeof fee.amount === 'string' ? 
+          Number(fee.amount.replace(/,/g, '')) : fee.amount;
+        return sum + feeAmount;
+      }
+      return sum;
+    }, 0);
+    
+    // 총액 설정
+    const dispatchTotalValue = baseAmountValue + dispatchAdditionalTotal;
+    const chargeTotalValue = chargeAmountValue + chargeAdditionalTotal;
+    const profitValue = chargeTotalValue - dispatchTotalValue;
+    
+    setDispatchTotal(dispatchTotalValue);
+    setChargeTotal(chargeTotalValue);
+    setProfit(profitValue);
   };
   
   // 폼 제출 핸들러
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    // 배차금 및 추가금 정보를 포함한 데이터 구성
+    // 배차금, 청구금 및 추가금 정보를 포함한 데이터 구성
     const formData = {
       baseAmount: values.baseAmount,
+      chargeAmount: values.chargeAmount,
+      estimatedAmount: values.estimatedAmount,
       additionalFees: additionalFees,
-      totalAmount
+      dispatchTotal,
+      chargeTotal,
+      profit
     };
     
     // 데이터 저장
@@ -269,15 +324,14 @@ export function BrokerOrderSettlementInfoEditForm({
                 <div className="col-span-2">
                   <FormField
                     control={form.control}
-                    name="baseAmount"
+                    name="estimatedAmount"
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
                           <Input
                             {...field}
                             readOnly
-                            placeholder="배차금 입력"
-                            onChange={e => handleAmountChange(e)}
+                            placeholder="견적금 입력"
                             disabled={isCompleted}
                             className="text-right bg-muted/40"
                           />
@@ -301,7 +355,31 @@ export function BrokerOrderSettlementInfoEditForm({
                           <Input
                             {...field}
                             placeholder="배차금 입력"
-                            onChange={e => handleAmountChange(e)}
+                            onChange={e => handleAmountChange(e, false, "baseAmount")}
+                            disabled={isCompleted}
+                            className="text-right"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+              {/* 청구금 입력 */}
+              <div className="grid grid-cols-3 gap-2 items-center">
+                <FormLabel className="text-muted-foreground text-sm">청구금</FormLabel>
+                <div className="col-span-2">
+                  <FormField
+                    control={form.control}
+                    name="chargeAmount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="청구금 입력"
+                            onChange={e => handleAmountChange(e, false, "chargeAmount")}
                             disabled={isCompleted}
                             className="text-right"
                           />
@@ -484,12 +562,32 @@ export function BrokerOrderSettlementInfoEditForm({
             </div>
           </div>
           
-          {/* 총 금액 */}
-          <div className="bg-muted/20 p-4 rounded-md">
+          {/* 금액 요약 */}
+          <div className="bg-muted/20 p-4 rounded-md space-y-4">
+            {/* 배차 총액 */}
             <div className="flex justify-between items-center">
-              <div className="text-sm font-medium">총 금액</div>
+              <div className="text-sm font-medium">배차 총액</div>
               <div className="text-lg font-bold">
-                {formatCurrency(totalAmount)}원
+                {formatCurrency(dispatchTotal)}원
+              </div>
+            </div>
+            
+            {/* 청구 총액 */}
+            <div className="flex justify-between items-center">
+              <div className="text-sm font-medium">청구 총액</div>
+              <div className="text-lg font-bold">
+                {formatCurrency(chargeTotal)}원
+              </div>
+            </div>
+            
+            {/* 구분선 */}
+            <Separator />
+            
+            {/* 수익 */}
+            <div className="flex justify-between items-center">
+              <div className="text-sm font-medium">수익 (청구-배차)</div>
+              <div className={`text-lg font-bold ${profit >= 0 ? "text-green-600" : "text-red-600"}`}>
+                {profit >= 0 ? "+" : ""}{formatCurrency(profit)}원
               </div>
             </div>
           </div>
