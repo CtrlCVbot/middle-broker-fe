@@ -51,6 +51,7 @@ import { BrokerOrderInfoEditForm } from "./broker-order-info-edit-form";
 import { BrokerOrderDriverInfoCard } from "./broker-order-driver-info-card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "@/components/ui/use-toast";
+import { BrokerOrderDriverInfoEditForm } from "./broker-order-driver-info-edit-form";
 
 export function BrokerOrderDetailSheet() {
   const { 
@@ -64,6 +65,7 @@ export function BrokerOrderDetailSheet() {
   
   const [isStatusHistoryOpen, setIsStatusHistoryOpen] = useState(false);
   const [isEditingCargoInfo, setIsEditingCargoInfo] = useState(false);
+  const [isEditingDriverInfo, setIsEditingDriverInfo] = useState(false);
   
   // TanStack Query를 사용하여 화물 상세 정보 조회
   const { 
@@ -125,6 +127,8 @@ export function BrokerOrderDetailSheet() {
   const handleEdit = (section: string) => {
     if (section === "화물 정보") {
       setIsEditingCargoInfo(true);
+    } else if (section === "배차 정보") {
+      setIsEditingDriverInfo(true);
     } else {
       toast({
         title: "수정 기능",
@@ -152,7 +156,7 @@ export function BrokerOrderDetailSheet() {
   const handleSaveCargoInfo = (formData: any) => {
     // 여기서 실제로는 API 호출을 통해 데이터를 저장하겠지만, 
     // 현재는 상태만 변경하고 수정 모드를 종료합니다.
-    console.log("저장된 데이터:", formData);
+    console.log("저장된 화물 데이터:", formData);
     setIsEditingCargoInfo(false);
     
     toast({
@@ -164,6 +168,24 @@ export function BrokerOrderDetailSheet() {
   // 화물 정보 수정 취소 핸들러
   const handleCancelCargoInfo = () => {
     setIsEditingCargoInfo(false);
+  };
+  
+  // 배차 정보 수정 저장 핸들러
+  const handleSaveDriverInfo = (formData: any) => {
+    // 여기서 실제로는 API 호출을 통해 데이터를 저장하겠지만, 
+    // 현재는 상태만 변경하고 수정 모드를 종료합니다.
+    console.log("저장된 배차 데이터:", formData);
+    setIsEditingDriverInfo(false);
+    
+    toast({
+      title: "배차 정보 수정 완료",
+      description: "배차 정보가 성공적으로 업데이트되었습니다.",
+    });
+  };
+
+  // 배차 정보 수정 취소 핸들러
+  const handleCancelDriverInfo = () => {
+    setIsEditingDriverInfo(false);
   };
   
   return (
@@ -370,7 +392,18 @@ export function BrokerOrderDetailSheet() {
                           배차
                       </Button>
 
-                      <Button 
+                      {isEditingDriverInfo ? (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleCancelDriverInfo}
+                          className="px-2 py-1"
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          보기 모드로 전환
+                        </Button>
+                      ) : (
+                        <Button 
                           variant="outline" 
                           size="sm" 
                           onClick={() => handleEdit("배차 정보")}
@@ -379,12 +412,31 @@ export function BrokerOrderDetailSheet() {
                           <Pencil className="h-4 w-4 mr-1" />
                           편집 모드로 전환
                         </Button>
+                      )}
                     </div>
                   </CardHeader>
                   <CardContent className="p-0">
                     <ScrollArea className="h-[500px]">
                       <div className="">
-                        {isAssigned ? (
+                        {isEditingDriverInfo ? (
+                          <BrokerOrderDriverInfoEditForm
+                            initialData={{
+                              driver: orderData?.vehicle?.driver || { 
+                                name: "", 
+                                contact: "" 
+                              },
+                              vehicle: {
+                                type: orderData?.vehicle?.type || "",
+                                weight: orderData?.vehicle?.weight || "",
+                                licensePlate: orderData?.vehicle?.licensePlate || ""
+                              },
+                              callCenter: "24시",
+                              specialNotes: []
+                            }}
+                            onSave={handleSaveDriverInfo}
+                            onCancel={handleCancelDriverInfo}
+                          />
+                        ) : isAssigned ? (
                           <>
                             <BrokerOrderDriverInfoCard 
                               driver={orderData?.vehicle?.driver || { name: "정보 없음" }}
@@ -402,9 +454,9 @@ export function BrokerOrderDetailSheet() {
                               variant="outline"
                               size="sm"
                               className="mt-4"
-                              onClick={handleSendAlert}
+                              onClick={() => handleEdit("배차 정보")}
                             >
-                              배차 알림 보내기
+                              배차 정보 입력하기
                             </Button>
                           </div>
                         )}
