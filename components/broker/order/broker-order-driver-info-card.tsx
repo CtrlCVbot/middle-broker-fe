@@ -86,8 +86,8 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
     <div className="space-y-4">
       {isBeforeAssignment ? (
         // 배차 전 상태 UI
-        <Card>
-          <CardContent className="p-4">
+        
+          <div className="p-4">
             <div className="flex items-center gap-2 text-amber-500 mb-3">
               <AlertTriangle className="h-5 w-5" />
               <h4 className="font-medium">아직 배차가 완료되지 않았습니다.</h4>
@@ -106,25 +106,14 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
                 배차 진행하기
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        
       ) : (
         // 배차 후 상태 UI
         <>
           {/* 차주 및 차량 정보 */}          
           <div className="p-4 space-y-4">
-            {/* 배차 알림 버튼 */}
-            <div className="flex justify-end">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="gap-1"
-                onClick={handleSendAlert}
-              >
-                <Bell className="h-4 w-4" />
-                배차 알림 전송
-              </Button>
-            </div>
+            
             
             {/* 차주 정보 */}
             {vehicle.driver && (
@@ -136,33 +125,20 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
                 
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <div className="text-muted-foreground">차주명</div>
-                  <div className="col-span-2 font-medium">{vehicle.driver.name}</div>
+                  <div className="col-span-2 font-medium">{vehicle.driver.name} / {vehicle.driver.contact}</div>
+
+                  {vehicle.licensePlate && (
+                  <>
+                    <div className="text-muted-foreground">차량 번호</div>
+                    <div className="col-span-2 font-medium">{vehicle.licensePlate}</div>
+                  </>
+                  )}               
                   
-                  <div className="text-muted-foreground">연락처</div>
-                  <div className="col-span-2 font-medium flex items-center gap-2">
-                    {vehicle.driver.contact}
-                    <Button variant="ghost" size="icon" className="h-6 w-6">
-                      <Phone className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
+                  <div className="text-muted-foreground">차량 종류</div>
+                  <div className="col-span-2 font-medium">{vehicle.type} / {vehicle.weight && (vehicle.weight)}</div>
+
                   
-                  <div className="text-muted-foreground">평가</div>
-                  <div className="col-span-2 font-medium flex items-center">
-                    <div className="flex text-amber-500">
-                      <Star className="h-3.5 w-3.5 fill-current" />
-                      <Star className="h-3.5 w-3.5 fill-current" />
-                      <Star className="h-3.5 w-3.5 fill-current" />
-                      <Star className="h-3.5 w-3.5 fill-current" />
-                      <Star className="h-3.5 w-3.5" />
-                    </div>
-                    <span className="ml-1 text-xs">(4.0)</span>
-                  </div>
                   
-                  <div className="text-muted-foreground">현재 위치</div>
-                  <div className="col-span-2 font-medium flex items-center gap-1">
-                    <MapPin className="h-3.5 w-3.5 text-primary" />
-                    <span>경기도 용인시 (10분 전 업데이트)</span>
-                  </div>
                 </div>
               </div>
             )}
@@ -175,38 +151,44 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
                 <Truck className="h-4 w-4 text-primary" />
                 <h4 className="font-medium">차량 정보</h4>
               </div>
+
+              
               
               <div className="grid grid-cols-3 gap-2 text-sm">
-                <div className="text-muted-foreground">차량 종류</div>
-                <div className="col-span-2 font-medium">{vehicle.type}</div>
-                
-                {vehicle.weight && (
-                  <>
-                    <div className="text-muted-foreground">중량</div>
-                    <div className="col-span-2 font-medium">{vehicle.weight}</div>
-                  </>
-                )}
-                
-                {vehicle.licensePlate && (
-                  <>
-                    <div className="text-muted-foreground">차량 번호</div>
-                    <div className="col-span-2 font-medium">{vehicle.licensePlate}</div>
-                  </>
-                )}
+
                 
                 <div className="text-muted-foreground">차량 상태</div>
-                <div className="col-span-2 font-medium">
+                  <div className="col-span-2 font-medium">
                   <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-50">
                     운행중
                   </Badge>
                 </div>
+
+                <div className="text-muted-foreground">현재 위치</div>
+                <div className="col-span-2 font-medium flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5 text-primary" />
+                  <span>경기도 용인시 (10분 전 업데이트)</span>
+                </div>
+
+                <div className="text-muted-foreground">평가</div>
+                <div className="col-span-2 font-medium flex items-center">
+                    <div className="flex text-amber-500">
+                      <Star className="h-3.5 w-3.5 fill-current" />
+                      <Star className="h-3.5 w-3.5 fill-current" />
+                      <Star className="h-3.5 w-3.5 fill-current" />
+                      <Star className="h-3.5 w-3.5 fill-current" />
+                      <Star className="h-3.5 w-3.5" />
+                    </div>
+                    <span className="ml-1 text-xs">(4.0)</span>
+                </div>
+
               </div>
             </div>
           </div>
           
           
           {/* 차주 배차 이력과 특이사항 */}
-          <div className="p-4">
+          <div className="px-4">
             <Tabs defaultValue="history" value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid grid-cols-2 mb-4">
                 <TabsTrigger value="history" className="flex items-center gap-2">

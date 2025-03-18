@@ -39,7 +39,9 @@ import {
   Clock,
   X,
   Pencil,
-  AlertCircle
+  AlertCircle,
+  MailPlus,
+  MailX
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/lib/utils";
@@ -228,11 +230,32 @@ export function BrokerOrderDetailSheet() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6">
                 {/* 화물 정보 카드 */}
                 <Card className="overflow-hidden h-full">
-                  <CardHeader className="py-3 px-4 bg-muted/30 flex flex-row items-center justify-between">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Package className="h-5 w-5 text-primary" />
+                  <CardHeader className="bg-muted/20 flex flex-col md:flex-row items-center justify-between py-2 px-4">
+                    <CardTitle className="text-lg mb-2 md:mb-0">
                       화물 정보
                     </CardTitle>
+                    <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                    {/* 완료 문자 보내기 */}
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={handleCancelCargoInfo}
+                        className="px-2 py-1"
+                      >
+                        <MailPlus className="h-4 w-4 mr-1" />
+                        완료
+                    </Button>
+
+                    {/* 취소 문자 보내기 */}
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={handleCancelCargoInfo}
+                        className="px-2 py-1"
+                      >
+                        <MailX className="h-4 w-4 mr-1" />
+                        취소
+                    </Button>
                     {isEditingCargoInfo ? (
                       <Button 
                         variant="outline" 
@@ -254,6 +277,7 @@ export function BrokerOrderDetailSheet() {
                         편집 모드로 전환
                       </Button>
                     )}
+                    </div>
                   </CardHeader>
                   <CardContent className="p-0">
                     <ScrollArea className="h-[calc(90vh-220px)]">
@@ -332,19 +356,22 @@ export function BrokerOrderDetailSheet() {
                 {/* 차량 및 기사 정보 카드 */}
                 <Card className="overflow-hidden">
                   <CardHeader className="bg-muted/20 flex flex-row items-center justify-between py-2 px-4">
-                    <CardTitle className="text-lg">차량/기사 정보</CardTitle>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEdit("차량/기사 정보")}
-                      disabled={!isAssigned}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    <CardTitle className="text-lg">배차 정보</CardTitle>
+                    
+
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleEdit("배차 정보")}
+                        className="px-2 py-1"
+                      >
+                        <Pencil className="h-4 w-4 mr-1" />
+                        편집 모드로 전환
+                      </Button>
                   </CardHeader>
                   <CardContent className="p-0">
                     <ScrollArea className="h-[500px]">
-                      <div className="p-4">
+                      <div className="">
                         {isAssigned ? (
                           <>
                             <BrokerOrderDriverInfoCard 

@@ -93,12 +93,12 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
 
       {/* 출발지/도착지 정보 */}
       <div>      
-          <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x">
+          <div className="grid grid-rows-2">
             {/* 출발지 정보 */}
             <div className=" space-y-3">
               <div className="flex items-center gap-2 text-primary">
                 <MapPin className="h-4 w-4" />
-                <h4 className="font-medium">출발지</h4>
+                <h4 className="font-medium">상/하차지 정보</h4>
               </div>
               
               <div className="space-y-2">
@@ -160,7 +160,7 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
             <h4 className="font-medium">화물 상세</h4>
           </div>
           
-          <div className="grid grid-cols-3 gap-2 text-sm">
+          <div className="grid grid-cols-3 gap-2 text-sm py-2">
             <div className="text-muted-foreground">화물 종류</div>
             <div className="col-span-2 font-medium">{cargo.type}</div>
             
