@@ -114,7 +114,7 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
         // 배차 후 상태 UI
         <>
           {/* 차주 및 차량 정보 */}          
-          <div className="p-4 space-y-4">
+          <div className="space-y-4">
             
             
             {/* 차주 정보 */}

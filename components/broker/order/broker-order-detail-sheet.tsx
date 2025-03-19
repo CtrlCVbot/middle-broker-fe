@@ -303,10 +303,15 @@ export function BrokerOrderDetailSheet() {
   }, [orderData]);
   
   return (
-    <Sheet open={isSheetOpen} onOpenChange={(open) => !open && closeSheet()}>
+    <Sheet 
+      open={isSheetOpen} 
+      modal={true}
+      onOpenChange={(open) => open ? undefined : closeSheet()}
+    >
       <SheetContent 
         side="top" 
         className="sm:max-w-full md:max-w-full overflow-auto p-0 h-[90vh]"
+        onInteractOutside={(e) => e.preventDefault()} // 외부 클릭으로 닫히는 것 방지
       >
         {/* 화면에 노출되지 않지만 접근성을 위한 타이틀 */}
         <SheetTitle className="sr-only">중개 화물 상세 정보</SheetTitle>

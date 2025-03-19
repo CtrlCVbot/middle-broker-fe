@@ -48,7 +48,7 @@ interface BrokerOrderInfoCardProps {
 }
 
 export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: BrokerOrderInfoCardProps) {
-  const [isShipperInfoOpen, setIsShipperInfoOpen] = useState(false);
+  const [isShipperInfoOpen, setIsShipperInfoOpen] = useState(true);
 
   // 날짜와 시간을 합쳐서 dateTime 형식으로 변환
   const departureDateTime = `${departure.date} ${departure.time}`;

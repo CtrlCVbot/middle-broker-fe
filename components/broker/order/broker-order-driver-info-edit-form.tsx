@@ -197,7 +197,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
   
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-4">
           {/* 차주 정보 */}
           <div>
