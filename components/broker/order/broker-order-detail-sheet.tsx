@@ -490,7 +490,7 @@ export function BrokerOrderDetailSheet() {
                 {/* 운임/정산 정보 카드 */}
                 <Card className="overflow-hidden">
                   <CardHeader className="bg-muted/20 flex flex-col md:flex-row items-center justify-between py-2 px-4">
-                    <CardTitle className="text-lg mb-2 md:mb-0">운임/정산 정보</CardTitle>
+                    <CardTitle className="text-lg">운임/정산 정보</CardTitle>
                     <div className="flex flex-wrap gap-2 w-full md:w-auto">
                       {isEditingSettlementInfo ? (
                         <Button 
@@ -516,7 +516,7 @@ export function BrokerOrderDetailSheet() {
                     </div>
                   </CardHeader>
                   <CardContent className="p-0">
-                    <ScrollArea className="h-[500px]">
+                    <ScrollArea className="h-[600px]">
                       <div className="p-4">
                         {isEditingSettlementInfo ? (
                           <BrokerOrderSettlementInfoEditForm 

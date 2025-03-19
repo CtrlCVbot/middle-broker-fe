@@ -126,9 +126,9 @@ export function BrokerOrderSettlementInfoCard({ fee, settlement, status }: Broke
   return (
     <div className="space-y-4">
       {/* 운임 요약 카드 */}
-      <div className="border rounded-lg overflow-hidden mb-4">
+      <div className="overflow-hidden mb-4">
         {/* 헤더 - 항상 표시 */}
-        <div className="bg-card p-4">
+        <div className="bg-card">
           {/* 카드 제목과 토글 버튼 */}
           <div className="flex justify-between items-center mb-4 cursor-pointer"
               onClick={() => setSummaryOpen(!summaryOpen)}>
