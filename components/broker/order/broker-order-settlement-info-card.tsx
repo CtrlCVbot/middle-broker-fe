@@ -291,31 +291,7 @@ export function BrokerOrderSettlementInfoCard({ fee, settlement, status }: Broke
         )}
       </div>
       
-      {/* 마진 비교 섹션 */}
-      <div className="bg-muted/10 p-4 rounded-md space-y-4 mb-4">
-        <div className="flex justify-between items-center">
-          <div className="text-sm font-medium">화주 청구금</div>
-          <div className="text-lg font-bold">
-            {displayAmount(chargeTotal)}
-          </div>
-        </div>
-        
-        <div className="flex justify-between items-center">
-          <div className="text-sm font-medium">차주 배차금</div>
-          <div className="text-lg font-bold">
-            {displayAmount(dispatchTotal)}
-          </div>
-        </div>
-        
-        <Separator />
-        
-        <div className="flex justify-between items-center">
-          <div className="text-sm font-medium">예상 마진</div>
-          <div className={`text-lg font-bold ${profit >= 0 ? "text-green-600" : "text-red-600"}`}>
-            {profit >= 0 ? "+" : ""}{formatCurrency(profit)}원
-          </div>
-        </div>
-      </div>
+      
 
       <Separator />
      
