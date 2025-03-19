@@ -16,15 +16,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter
-} from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
 import { PaymentMethodType, LoadingMethodType } from "@/types/broker-order-updated";
 
@@ -86,7 +77,7 @@ interface BrokerOrderInfoCardProps {
 
 export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: BrokerOrderInfoCardProps) {
   const [isShipperInfoOpen, setIsShipperInfoOpen] = useState(true);
-  const [isWarningsOpen, setIsWarningsOpen] = useState(false);
+  const [isWarningsVisible, setIsWarningsVisible] = useState(false);
 
   // 날짜와 시간을 합쳐서 dateTime 형식으로 변환
   const departureDateTime = `${departure.date} ${departure.time}${departure.loadingMethod ? ` / ${departure.loadingMethod}` : ''}`;
@@ -120,52 +111,21 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
           </button>
           <div className="flex items-center gap-2">
             {/* 주의사항 버튼 */}
-            <Dialog open={isWarningsOpen} onOpenChange={setIsWarningsOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="outline" 
-                  size="sm"
-                  className="h-7 px-2 text-xs"
-                >
-                  <AlertTriangle className="mr-1 h-3.5 w-3.5 text-amber-500" />
-                  주의사항
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>업체 주의사항</DialogTitle>
-                  <DialogDescription>
-                    {shipper.name} 업체에 대한 주의사항 목록입니다.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="py-4">
-                  {companyWarnings.length > 0 ? (
-                    <ul className="space-y-2">
-                      {companyWarnings.map((warning) => (
-                        <li key={warning.id} className="flex items-start gap-2 text-sm">
-                          <Badge 
-                            variant="outline" 
-                            className={`
-                              ${warning.severity === 'high' ? 'bg-red-50 text-red-700' : 
-                                warning.severity === 'medium' ? 'bg-amber-50 text-amber-700' : 
-                                'bg-blue-50 text-blue-700'}
-                            `}
-                          >
-                            {warning.date}
-                          </Badge>
-                          <span>{warning.content}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">주의사항이 없습니다.</p>
-                  )}
-                </div>
-                <DialogFooter>
-                  <Button size="sm" onClick={() => setIsWarningsOpen(false)}>닫기</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <Button
+              variant="outline" 
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsWarningsVisible(!isWarningsVisible);
+                if (!isShipperInfoOpen) {
+                  setIsShipperInfoOpen(true);
+                }
+              }}
+            >
+              <AlertTriangle className="mr-1 h-3.5 w-3.5 text-amber-500" />
+              주의사항 {isWarningsVisible ? '접기' : '보기'}
+            </Button>
             {isShipperInfoOpen ? (
               <ChevronUp className="h-4 w-4 text-muted-foreground" onClick={() => setIsShipperInfoOpen(false)} />
             ) : (
@@ -175,14 +135,49 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
         </div>
           
         {isShipperInfoOpen && (
-          <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
-            <div className="text-muted-foreground">화주명</div>
-            <div className="col-span-2 font-medium">{shipper.name}</div>
+          <div className="mt-3 space-y-4">
+            {/* 기본 화주 정보 */}
+            <div className="grid grid-cols-3 gap-2 text-sm">
+              <div className="text-muted-foreground">화주명</div>
+              <div className="col-span-2 font-medium">{shipper.name}</div>
+              
+              <div className="text-muted-foreground">담당자</div>
+              <div className="col-span-2 font-medium">{shipper.manager} / {shipper.contact}</div>
+              <div className="text-muted-foreground">이메일</div>
+              <div className="col-span-2 font-medium">{shipper.email}</div>
+            </div>
             
-            <div className="text-muted-foreground">담당자</div>
-            <div className="col-span-2 font-medium">{shipper.manager} / {shipper.contact}</div>
-            <div className="text-muted-foreground">이메일</div>
-            <div className="col-span-2 font-medium">{shipper.email}</div>
+            {/* 주의사항 섹션 - 확장 시 표시 */}
+            {isWarningsVisible && (
+              <div className="mt-3 space-y-2 bg-muted/10 p-3 rounded-md">
+                <h5 className="text-sm font-medium flex items-center gap-1">
+                  <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                  업체 주의사항
+                </h5>
+                
+                {companyWarnings.length > 0 ? (
+                  <ul className="space-y-2">
+                    {companyWarnings.map((warning) => (
+                      <li key={warning.id} className="flex items-start gap-2 text-sm">
+                        <Badge 
+                          variant="outline" 
+                          className={`
+                            ${warning.severity === 'high' ? 'bg-red-50 text-red-700' : 
+                              warning.severity === 'medium' ? 'bg-amber-50 text-amber-700' : 
+                              'bg-blue-50 text-blue-700'}
+                          `}
+                        >
+                          {warning.date}
+                        </Badge>
+                        <span>{warning.content}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">주의사항이 없습니다.</p>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
