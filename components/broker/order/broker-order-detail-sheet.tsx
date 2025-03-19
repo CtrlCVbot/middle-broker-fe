@@ -53,6 +53,15 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { toast } from "@/components/ui/use-toast";
 import { BrokerOrderDriverInfoEditForm } from "./broker-order-driver-info-edit-form";
 import { BrokerOrderSettlementInfoEditForm } from "./broker-order-settlement-info-edit-form";
+import { 
+  Form, 
+  FormControl, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function BrokerOrderDetailSheet() {
   const { 
@@ -68,6 +77,15 @@ export function BrokerOrderDetailSheet() {
   const [isEditingCargoInfo, setIsEditingCargoInfo] = useState(false);
   const [isEditingDriverInfo, setIsEditingDriverInfo] = useState(false);
   const [isEditingSettlementInfo, setIsEditingSettlementInfo] = useState(false);
+  
+  // 배차 상태 관련 상태와 핸들러 추가
+  const [isChangingStatus, setIsChangingStatus] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
+  
+  // 가능한 배차 상태 목록
+  const availableStatuses = [
+    "배차대기", "배차진행중", "배차완료", "상차완료", "하차완료", "운송중", "운송마감"
+  ];
   
   // TanStack Query를 사용하여 화물 상세 정보 조회
   const { 
@@ -210,6 +228,42 @@ export function BrokerOrderDetailSheet() {
     setIsEditingSettlementInfo(false);
   };
   
+  // 배차 상태 변경 핸들러
+  const handleChangeStatus = () => {
+    if (orderData && selectedStatus && selectedStatus !== orderData.status) {
+      // 실제 구현에서는 여기서 API 호출을 통해 상태를 변경할 것입니다.
+      console.log(`상태 변경: ${orderData.status} -> ${selectedStatus}`);
+      
+      // 상태 변경 성공 알림
+      toast({
+        title: "상태 변경 완료",
+        description: `배차 상태가 ${selectedStatus}(으)로 변경되었습니다.`,
+      });
+      
+      setIsChangingStatus(false);
+    }
+  };
+  
+  // 배차 상태 변경 시작
+  const startStatusChange = () => {
+    if (orderData) {
+      setSelectedStatus(orderData.status);
+      setIsChangingStatus(true);
+    }
+  };
+  
+  // 배차 상태 변경 취소
+  const cancelStatusChange = () => {
+    setIsChangingStatus(false);
+  };
+  
+  // orderData가 변경될 때마다 selectedStatus 업데이트
+  useEffect(() => {
+    if (orderData) {
+      setSelectedStatus(orderData.status);
+    }
+  }, [orderData]);
+  
   return (
     <Sheet open={isSheetOpen} onOpenChange={(open) => !open && closeSheet()}>
       <SheetContent 
@@ -247,18 +301,62 @@ export function BrokerOrderDetailSheet() {
                 <SheetTitle className="text-xl font-bold">
                   화물 번호: {orderData.orderNumber}
                 </SheetTitle>
-                <Badge 
-                  variant={orderData.status === "운송마감" ? "default" : "secondary"}
-                  className="text-sm px-3 py-1"
-                >
-                  {orderData.status}
-                </Badge>
               </div>
-              {/* <div className="flex flex-col md:flex-row gap-2 md:gap-4 md:items-center mt-1"> */}
+              {/* 배차 상태 및 액션 버튼 */}
               <div className="flex flex-col gap-4 md:flex-row items-center">
-                <div className="w-full flex items-center text-sm text-muted-foreground">
-                  <CalendarClock className="h-4 w-4 mr-2" />
-                  등록일시: {orderData.registeredAt}
+                <div className="w-full flex items-center text-sm">
+                  {/* 배차 상태 */}
+                  {isChangingStatus ? (
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={selectedStatus}
+                        onValueChange={setSelectedStatus}
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="상태 선택" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableStatuses.map(status => (
+                            <SelectItem key={status} value={status}>
+                              {status}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button 
+                        size="sm" 
+                        variant="default" 
+                        onClick={handleChangeStatus}
+                      >
+                        변경
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={cancelStatusChange}
+                      >
+                        취소
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Badge 
+                        variant={orderData.status === "운송마감" ? "default" : "secondary"}
+                        className="text-sm px-3 py-1"
+                      >
+                        {orderData.status}
+                      </Badge>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={startStatusChange}
+                        className="h-7 px-2"
+                      >
+                        <Edit className="h-3 w-3 mr-1" />
+                        변경
+                      </Button>
+                    </div>
+                  )}
                 </div>
                 <div className="flex"></div>
                 <BrokerOrderActionButtons orderNumber={orderData.orderNumber} />
@@ -551,6 +649,9 @@ export function BrokerOrderDetailSheet() {
                 <summary className="flex items-center gap-2 cursor-pointer">
                   <History className="h-5 w-5 text-primary" />
                   <h3 className="text-base font-medium">상태 변경 이력</h3>
+                  <span className="text-sm text-muted-foreground ml-2">
+                    등록일시: {orderData.registeredAt}
+                  </span>
                 </summary>
                 <div className="mt-3 pb-3">
                   <BrokerOrderStatusLog logs={orderData.logs} />
