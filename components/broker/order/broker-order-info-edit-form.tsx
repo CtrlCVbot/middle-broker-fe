@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Calendar, ArrowRight, Package, User, ChevronDown, ChevronUp, Search, X, Pencil } from "lucide-react";
+import { MapPin, Calendar, ArrowRight, Package, User, ChevronDown, ChevronUp, Search, X, Pencil, AlertTriangle, CreditCard, MessageSquare, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,15 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { cn } from "@/lib/utils";
 import { BROKER_VEHICLE_TYPES, BROKER_WEIGHT_TYPES } from "@/types/broker-order";
+import { LOADING_METHODS, PAYMENT_METHODS } from "@/utils/mockdata/constants";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog";
 
 // 날짜 선택 컴포넌트
 import { format } from "date-fns";
@@ -55,6 +64,14 @@ import {
   PopoverTrigger as DatePopoverTrigger,
 } from "@/components/ui/popover";
 
+// 업체 주의사항 인터페이스
+interface CompanyWarning {
+  id: string;
+  date: string;
+  content: string;
+  severity: 'low' | 'medium' | 'high';
+}
+
 // 폼 유효성 검증 스키마
 const formSchema = z.object({
   cargo: z.object({
@@ -62,7 +79,8 @@ const formSchema = z.object({
     weight: z.string().min(1, "중량을 선택해주세요"),
     options: z.array(z.string()).optional(),
     remark: z.string().optional(),
-    vehicleType: z.string().min(1, "차량 종류를 선택해주세요")
+    vehicleType: z.string().min(1, "차량 종류를 선택해주세요"),
+    paymentMethod: z.string().min(1, "결제 방법을 선택해주세요")
   }),
   departure: z.object({
     address: z.string().min(2, { message: "출발지 주소를 입력하세요" }),
@@ -70,7 +88,8 @@ const formSchema = z.object({
     time: z.string().min(1, { message: "출발 시간을 입력하세요" }),
     name: z.string().min(1, { message: "담당자 이름을 입력하세요" }),
     company: z.string().min(1, { message: "회사명을 입력하세요" }),
-    contact: z.string().min(1, { message: "연락처를 입력하세요" })
+    contact: z.string().min(1, { message: "연락처를 입력하세요" }),
+    loadingMethod: z.string().optional()
   }),
   destination: z.object({
     address: z.string().min(2, { message: "도착지 주소를 입력하세요" }),
@@ -78,13 +97,20 @@ const formSchema = z.object({
     time: z.string().min(1, { message: "도착 시간을 입력하세요" }),
     name: z.string().min(1, { message: "담당자 이름을 입력하세요" }),
     company: z.string().min(1, { message: "회사명을 입력하세요" }),
-    contact: z.string().min(1, { message: "연락처를 입력하세요" })
+    contact: z.string().min(1, { message: "연락처를 입력하세요" }),
+    loadingMethod: z.string().optional()
   }),
   shipper: z.object({
     name: z.string().min(1, { message: "화주명을 입력하세요" }),
     manager: z.string().min(1, { message: "담당자를 선택하세요" }),
     contact: z.string().min(1, { message: "연락처를 입력하세요" }),
-    email: z.string().email({ message: "올바른 이메일 형식이 아닙니다" })
+    email: z.string().email({ message: "올바른 이메일 형식이 아닙니다" }),
+    warnings: z.array(z.object({
+      id: z.string(),
+      date: z.string(),
+      content: z.string(),
+      severity: z.enum(['low', 'medium', 'high'])
+    })).optional()
   })
 });
 
@@ -115,6 +141,7 @@ interface BrokerOrderInfoEditFormProps {
       contact: string;
       time: string;
       date: string;
+      loadingMethod?: string;
     };
     destination: {
       address: string;
@@ -123,6 +150,7 @@ interface BrokerOrderInfoEditFormProps {
       contact: string;
       time: string;
       date: string;
+      loadingMethod?: string;
     };
     cargo: {
       type: string;
@@ -130,12 +158,14 @@ interface BrokerOrderInfoEditFormProps {
       weight?: string;
       remark?: string;
       vehicleType: string;
+      paymentMethod?: string;
     };
     shipper: {
       name: string;
       manager: string;
       contact: string;
       email: string;
+      warnings?: CompanyWarning[];
     };
   };
   onSave: (data: any) => void;
@@ -146,6 +176,17 @@ export function BrokerOrderInfoEditForm({ initialData, onSave, onCancel }: Broke
   const [isShipperInfoOpen, setIsShipperInfoOpen] = useState(true);
   const [selectedOptions, setSelectedOptions] = useState<string[]>(initialData.cargo.options || []);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [companyWarnings, setCompanyWarnings] = useState<CompanyWarning[]>(
+    initialData.shipper.warnings || [
+      { id: '1', date: '2023-05-15', content: '결제 지연 이력 있음', severity: 'medium' },
+      { id: '2', date: '2023-06-20', content: '화물 취소 이력', severity: 'low' },
+    ]
+  );
+  const [newWarning, setNewWarning] = useState({
+    content: '',
+    severity: 'medium' as 'low' | 'medium' | 'high'
+  });
+  const [isWarningsDialogOpen, setIsWarningsDialogOpen] = useState(false);
   
   // React Hook Form 설정
   const form = useForm<z.infer<typeof formSchema>>({
@@ -156,7 +197,8 @@ export function BrokerOrderInfoEditForm({ initialData, onSave, onCancel }: Broke
         weight: initialData.cargo.weight || '',
         options: initialData.cargo.options || [],
         remark: initialData.cargo.remark || '',
-        vehicleType: initialData.cargo.vehicleType || ''
+        vehicleType: initialData.cargo.vehicleType || '',
+        paymentMethod: initialData.cargo.paymentMethod || '인수증'
       },
       departure: {
         address: initialData.departure.address || '',
@@ -164,7 +206,8 @@ export function BrokerOrderInfoEditForm({ initialData, onSave, onCancel }: Broke
         time: initialData.departure.time || '',
         name: initialData.departure.name || '',
         company: initialData.departure.company || '',
-        contact: initialData.departure.contact || ''
+        contact: initialData.departure.contact || '',
+        loadingMethod: initialData.departure.loadingMethod || ''
       },
       destination: {
         address: initialData.destination.address || '',
@@ -172,7 +215,8 @@ export function BrokerOrderInfoEditForm({ initialData, onSave, onCancel }: Broke
         time: initialData.destination.time || '',
         name: initialData.destination.name || '',
         company: initialData.destination.company || '',
-        contact: initialData.destination.contact || ''
+        contact: initialData.destination.contact || '',
+        loadingMethod: initialData.destination.loadingMethod || ''
       },
       shipper: {
         name: initialData.shipper.name || '',
@@ -183,14 +227,44 @@ export function BrokerOrderInfoEditForm({ initialData, onSave, onCancel }: Broke
     }
   });
   
+  // 업체 주의사항 추가 함수
+  const addCompanyWarning = () => {
+    if (!newWarning.content.trim()) {
+      toast({
+        title: "내용을 입력해주세요",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const warning: CompanyWarning = {
+      id: Date.now().toString(),
+      date: new Date().toISOString().split('T')[0],
+      content: newWarning.content,
+      severity: newWarning.severity
+    };
+    
+    setCompanyWarnings([...companyWarnings, warning]);
+    setNewWarning({ content: '', severity: 'medium' });
+  };
+  
+  // 업체 주의사항 삭제 함수
+  const removeCompanyWarning = (id: string) => {
+    setCompanyWarnings(companyWarnings.filter(warning => warning.id !== id));
+  };
+
   // 폼 제출 핸들러
   const onSubmit = (data: z.infer<typeof formSchema>) => {
-    // 선택된 옵션을 데이터에 추가
+    // 선택된 옵션과 주의사항을 데이터에 추가
     const formData = {
       ...data,
       cargo: {
         ...data.cargo,
         options: selectedOptions
+      },
+      shipper: {
+        ...data.shipper,
+        warnings: companyWarnings
       }
     };
     
@@ -226,21 +300,108 @@ export function BrokerOrderInfoEditForm({ initialData, onSave, onCancel }: Broke
         <div className="space-y-4">
           {/* 화주 정보 */}
           <div>
-            <button 
-              type="button"
-              className="flex items-center justify-between w-full"
-              onClick={() => setIsShipperInfoOpen(!isShipperInfoOpen)}
-            >
-              <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between w-full">
+              <button 
+                type="button"
+                className="flex items-center gap-2"
+                onClick={() => setIsShipperInfoOpen(!isShipperInfoOpen)}
+              >
                 <User className="h-4 w-4 text-primary" />
                 <h4 className="font-medium">화주 정보</h4>
+              </button>
+              <div className="flex items-center gap-2">
+                {/* 주의사항 버튼 */}
+                <Dialog open={isWarningsDialogOpen} onOpenChange={setIsWarningsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline" 
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                    >
+                      <AlertTriangle className="mr-1 h-3.5 w-3.5 text-amber-500" />
+                      주의사항 관리
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>업체 주의사항 관리</DialogTitle>
+                      <DialogDescription>
+                        {initialData.shipper.name} 업체에 대한 주의사항을 관리합니다.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                      {/* 기존 주의사항 목록 */}
+                      {companyWarnings.length > 0 ? (
+                        <ul className="space-y-2 mb-4">
+                          {companyWarnings.map((warning) => (
+                            <li key={warning.id} className="flex items-start gap-2 text-sm">
+                              <Badge 
+                                variant="outline" 
+                                className={`
+                                  ${warning.severity === 'high' ? 'bg-red-50 text-red-700' : 
+                                    warning.severity === 'medium' ? 'bg-amber-50 text-amber-700' : 
+                                    'bg-blue-50 text-blue-700'}
+                                `}
+                              >
+                                {warning.date}
+                              </Badge>
+                              <span className="flex-grow">{warning.content}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => removeCompanyWarning(warning.id)}
+                                className="h-5 w-5"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-muted-foreground mb-4">주의사항이 없습니다.</p>
+                      )}
+                      
+                      {/* 새 주의사항 추가 */}
+                      <div className="flex items-center gap-2">
+                        <Select
+                          value={newWarning.severity}
+                          onValueChange={(value) => setNewWarning({...newWarning, severity: value as any})}
+                        >
+                          <SelectTrigger className="w-28">
+                            <SelectValue placeholder="중요도" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="low">낮음</SelectItem>
+                            <SelectItem value="medium">중간</SelectItem>
+                            <SelectItem value="high">높음</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Input
+                          value={newWarning.content}
+                          onChange={(e) => setNewWarning({...newWarning, content: e.target.value})}
+                          placeholder="주의사항 내용"
+                          className="flex-grow"
+                        />
+                        <Button 
+                          type="button" 
+                          size="sm"
+                          onClick={addCompanyWarning}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                {isShipperInfoOpen ? (
+                  <ChevronUp className="h-4 w-4 text-muted-foreground" onClick={() => setIsShipperInfoOpen(false)} />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" onClick={() => setIsShipperInfoOpen(true)} />
+                )}
               </div>
-              {isShipperInfoOpen ? (
-                <ChevronUp className="h-4 w-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              )}
-            </button>
+            </div>
             
             {isShipperInfoOpen && (
               <div className="mt-3 space-y-4">
@@ -255,7 +416,7 @@ export function BrokerOrderInfoEditForm({ initialData, onSave, onCancel }: Broke
                           <FormControl>
                             <Input
                               {...field}
-                              readOnly // 화주명은 읽기 전용
+                              readOnly
                               className="bg-muted/30"
                             />
                           </FormControl>
@@ -329,7 +490,7 @@ export function BrokerOrderInfoEditForm({ initialData, onSave, onCancel }: Broke
                           <FormControl>
                             <Input
                               {...field}
-                              readOnly // 담당자 선택 시 자동 입력되므로 읽기 전용
+                              readOnly
                               className="bg-muted/30"
                             />
                           </FormControl>
@@ -349,7 +510,7 @@ export function BrokerOrderInfoEditForm({ initialData, onSave, onCancel }: Broke
                           <FormControl>
                             <Input
                               {...field}
-                              readOnly // 담당자 선택 시 자동 입력되므로 읽기 전용
+                              readOnly
                               className="bg-muted/30"
                             />
                           </FormControl>
@@ -481,6 +642,35 @@ export function BrokerOrderInfoEditForm({ initialData, onSave, onCancel }: Broke
                       )}
                     />
                   </div>
+
+                  {/* 상차 방법 추가 */}
+                  <FormField
+                    control={form.control}
+                    name="departure.loadingMethod"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-muted-foreground text-sm">상차 방법</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="상차 방법 선택" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {LOADING_METHODS.map((method) => (
+                              <SelectItem key={method} value={method}>
+                                {method}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
               
@@ -599,6 +789,35 @@ export function BrokerOrderInfoEditForm({ initialData, onSave, onCancel }: Broke
                       )}
                     />
                   </div>
+
+                  {/* 하차 방법 추가 */}
+                  <FormField
+                    control={form.control}
+                    name="destination.loadingMethod"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-muted-foreground text-sm">하차 방법</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="하차 방법 선택" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {LOADING_METHODS.map((method) => (
+                              <SelectItem key={method} value={method}>
+                                {method}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
             </div>
@@ -630,6 +849,35 @@ export function BrokerOrderInfoEditForm({ initialData, onSave, onCancel }: Broke
                       <FormControl>
                         <Input {...field} placeholder="화물 종류 입력" />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* 결제 방법 추가 */}
+                <FormField
+                  control={form.control}
+                  name="cargo.paymentMethod"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-muted-foreground text-sm">결제 방법</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="결제 방법 선택" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {PAYMENT_METHODS.map((method) => (
+                            <SelectItem key={method} value={method}>
+                              {method}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -732,6 +980,7 @@ export function BrokerOrderInfoEditForm({ initialData, onSave, onCancel }: Broke
           
           {/* 버튼 */}
           <div className="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={onCancel}>취소</Button>
             <Button type="submit">저장</Button>
           </div>
         </div>

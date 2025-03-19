@@ -48,7 +48,8 @@ import {
   User,
   Truck,
   X,
-  Info
+  Info,
+  Factory
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BROKER_VEHICLE_TYPES, BROKER_WEIGHT_TYPES } from "@/types/broker-order";
@@ -91,7 +92,18 @@ const formSchema = z.object({
     weight: z.string().min(1, "중량을 선택해주세요"),
     licensePlate: z.string().min(1, "차량번호를 입력해주세요")
   }),
-  callCenter: z.string().optional()
+  callCenter: z.string().optional(),
+  carrier: z.object({
+    businessName: z.string().min(1, "사업자명을 입력해주세요"),
+    businessNumber: z.string().min(1, "사업자번호를 입력해주세요"),
+    businessType: z.string().min(1, "유형을 선택해주세요"),
+    representative: z.string().min(1, "대표자명을 입력해주세요"),
+    bankName: z.string().min(1, "은행명을 입력해주세요"),
+    accountHolder: z.string().min(1, "예금주를 입력해주세요"),
+    accountNumber: z.string().min(1, "계좌번호를 입력해주세요"),
+    taxInvoiceType: z.string().min(1, "계산서 유형을 선택해주세요"),
+    deliveryMethod: z.string().min(1, "배송 방법을 선택해주세요")
+  })
 });
 
 interface SpecialNote {
@@ -114,6 +126,17 @@ interface BrokerOrderDriverInfoEditFormProps {
     };
     callCenter?: string;
     specialNotes?: SpecialNote[];
+    carrier?: {
+      businessName: string;
+      businessNumber: string;
+      businessType: string;
+      representative: string;
+      bankName: string;
+      accountHolder: string;
+      accountNumber: string;
+      taxInvoiceType: string;
+      deliveryMethod: string;
+    };
   };
   onSave: (data: any) => void;
   onCancel: () => void;
@@ -144,7 +167,18 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
         weight: initialData.vehicle.weight || "",
         licensePlate: initialData.vehicle.licensePlate || ""
       },
-      callCenter: initialData.callCenter || "24시"
+      callCenter: initialData.callCenter || "24시",
+      carrier: {
+        businessName: initialData.carrier?.businessName || "재형운송",
+        businessNumber: initialData.carrier?.businessNumber || "111-11-11111",
+        businessType: initialData.carrier?.businessType || "일반사업자",
+        representative: initialData.carrier?.representative || "박재형",
+        bankName: initialData.carrier?.bankName || "국민",
+        accountHolder: initialData.carrier?.accountHolder || "재형운송",
+        accountNumber: initialData.carrier?.accountNumber || "1111111111",
+        taxInvoiceType: initialData.carrier?.taxInvoiceType || "수기",
+        deliveryMethod: initialData.carrier?.deliveryMethod || "종이"
+      }
     }
   });
   
@@ -378,6 +412,216 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
                               {option}
                             </SelectItem>
                           ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* 분리선 */}
+          <Separator className="my-4" />
+          
+          {/* 운송 거래처 정보 추가 */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Factory className="h-4 w-4 text-primary" />
+              <h4 className="font-medium">운송 거래처 정보</h4>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-3 items-center">
+              <FormLabel className="text-muted-foreground text-sm">사업자명</FormLabel>
+              <div className="col-span-2">
+                <FormField
+                  control={form.control}
+                  name="carrier.businessName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input {...field} placeholder="사업자명 입력" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormLabel className="text-muted-foreground text-sm">사업자번호</FormLabel>
+              <div className="col-span-2">
+                <FormField
+                  control={form.control}
+                  name="carrier.businessNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input {...field} placeholder="사업자번호 입력" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormLabel className="text-muted-foreground text-sm">유형</FormLabel>
+              <div className="col-span-2">
+                <FormField
+                  control={form.control}
+                  name="carrier.businessType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="유형 선택" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="개인사업자">개인사업자</SelectItem>
+                          <SelectItem value="일반사업자">일반사업자</SelectItem>
+                          <SelectItem value="법인사업자">법인사업자</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormLabel className="text-muted-foreground text-sm">대표자</FormLabel>
+              <div className="col-span-2">
+                <FormField
+                  control={form.control}
+                  name="carrier.representative"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input {...field} placeholder="대표자명 입력" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormLabel className="text-muted-foreground text-sm">은행명</FormLabel>
+              <div className="col-span-2">
+                <FormField
+                  control={form.control}
+                  name="carrier.bankName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="은행 선택" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="국민">국민은행</SelectItem>
+                          <SelectItem value="신한">신한은행</SelectItem>
+                          <SelectItem value="우리">우리은행</SelectItem>
+                          <SelectItem value="하나">하나은행</SelectItem>
+                          <SelectItem value="기업">기업은행</SelectItem>
+                          <SelectItem value="농협">농협은행</SelectItem>
+                          <SelectItem value="카카오">카카오뱅크</SelectItem>
+                          <SelectItem value="토스">토스뱅크</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormLabel className="text-muted-foreground text-sm">예금주</FormLabel>
+              <div className="col-span-2">
+                <FormField
+                  control={form.control}
+                  name="carrier.accountHolder"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input {...field} placeholder="예금주 입력" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormLabel className="text-muted-foreground text-sm">계좌번호</FormLabel>
+              <div className="col-span-2">
+                <FormField
+                  control={form.control}
+                  name="carrier.accountNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input {...field} placeholder="계좌번호 입력" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormLabel className="text-muted-foreground text-sm">계산서</FormLabel>
+              <div className="col-span-2">
+                <FormField
+                  control={form.control}
+                  name="carrier.taxInvoiceType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="계산서 유형 선택" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="전자">전자세금계산서</SelectItem>
+                          <SelectItem value="수기">수기세금계산서</SelectItem>
+                          <SelectItem value="면세">면세계산서</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormLabel className="text-muted-foreground text-sm">배송 방법</FormLabel>
+              <div className="col-span-2">
+                <FormField
+                  control={form.control}
+                  name="carrier.deliveryMethod"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="배송 방법 선택" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="이메일">이메일</SelectItem>
+                          <SelectItem value="종이">종이</SelectItem>
+                          <SelectItem value="팩스">팩스</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
