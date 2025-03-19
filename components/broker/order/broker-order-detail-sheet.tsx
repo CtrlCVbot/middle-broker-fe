@@ -276,7 +276,7 @@ export function BrokerOrderDetailSheet() {
                 {/* 화물 정보 카드 */}
                 <Card className="overflow-hidden h-full">
                   <CardHeader className="bg-muted/20 flex flex-col md:flex-row items-center justify-between py-2 px-4">
-                    <CardTitle className="text-lg mb-2 md:mb-0">
+                    <CardTitle className="text-lg">
                       화물 정보
                     </CardTitle>
                     <div className="flex flex-wrap gap-2 w-full md:w-auto">
