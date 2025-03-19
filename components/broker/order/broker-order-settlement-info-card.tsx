@@ -295,37 +295,7 @@ export function BrokerOrderSettlementInfoCard({ fee, settlement, status }: Broke
 
       <Separator />
      
-      {/* 계산서 정보*/}
-      <div>      
-          <div className="space-y-3">
-            {/* 계산서 정보 */}
-            <div className="flex items-center gap-2 text-primary">
-              <TicketCheck className="h-4 w-4" />
-              <h4 className="font-medium">계산서 정보</h4>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-2 text-sm">
-              
-              <div className="text-muted-foreground">계산서종류</div>
-              <div className="col-span-2 font-medium">수기/전자</div>
-
-              <div className="text-muted-foreground">우편</div>
-              <div className="col-span-2 font-medium">종이</div>
-
-              <div className="text-muted-foreground">작성일</div>
-              <div className="col-span-2 font-medium">2025-01-01</div>
-
-              <div className="text-muted-foreground">증빙수신</div>
-              <div className="col-span-2 font-medium">2025-01-01</div>
-
-              <div className="text-muted-foreground">송금 예정일</div>
-              <div className="col-span-2 font-medium">2025-01-01</div>
-
-              <div className="text-muted-foreground">송금일</div>
-              <div className="col-span-2 font-medium">2025-01-01</div>
-            </div>
-          </div>
-      </div>
+      
       
     </div>
   );

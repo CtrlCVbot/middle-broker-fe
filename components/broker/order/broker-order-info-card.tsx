@@ -150,8 +150,7 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
           </div>
           
           <div className="grid grid-cols-3 gap-2 text-sm py-2">
-            <div className="text-muted-foreground">화물 종류</div>
-            <div className="col-span-2 font-medium">{cargo.type}</div>
+            
             
             <div className="text-muted-foreground">운송 옵션</div>
             <div className="col-span-2 font-medium">
@@ -173,6 +172,9 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
                 ))}
               </div>
             </div>
+
+            <div className="text-muted-foreground">화물 종류</div>
+            <div className="col-span-2 font-medium">{cargo.type}</div>
             
             {cargo.remark && (
               <>

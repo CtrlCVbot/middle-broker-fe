@@ -149,52 +149,43 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
             
             <Separator />
             
-            {/* 차량 정보 */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Pin className="h-4 w-4 text-primary" />
-                <h4 className="font-medium">상태</h4>
-              </div>
+            {/* 운송 거래처 정보*/}
+            <div>      
+                <div className="space-y-3">
+                  {/* 운송 거래처 정보 */}
+                  <div className="flex items-center gap-2 text-primary">
+                    <Building className="h-4 w-4" />
+                    <h4 className="font-medium">운송 거래처 정보</h4>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div className="text-muted-foreground">사업자/번호</div>
+                    <div className="col-span-2 font-bold">재형운송(111-11-11111)</div>
 
-              
-              
-              <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div className="text-muted-foreground">유형/대표자</div>
+                    <div className="col-span-2 font-medium">일반사업자/박재형</div>
 
-                
-                <div className="text-muted-foreground">차량 상태</div>
-                  <div className="col-span-2 font-medium">
-                  <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-50">
-                    운행중
-                  </Badge>
+                    <div className="text-muted-foreground">은행 정보</div>
+                    <div className="col-span-2 font-medium">국민/재형운송/1111111111</div>
+
+                    <div className="text-muted-foreground">계산서/우편</div>
+                    <div className="col-span-2 font-medium">수기/종이</div>
+                  </div>
                 </div>
-
-                <div className="text-muted-foreground">현재 위치</div>
-                <div className="col-span-2 font-medium flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5 text-primary" />
-                  <span>경기도 용인시 (10분 전 업데이트)</span>
-                </div>
-
-                <div className="text-muted-foreground">평가</div>
-                <div className="col-span-2 font-medium flex items-center">
-                    <div className="flex text-amber-500">
-                      <Star className="h-3.5 w-3.5 fill-current" />
-                      <Star className="h-3.5 w-3.5 fill-current" />
-                      <Star className="h-3.5 w-3.5 fill-current" />
-                      <Star className="h-3.5 w-3.5 fill-current" />
-                      <Star className="h-3.5 w-3.5" />
-                    </div>
-                    <span className="ml-1 text-xs">(4.0)</span>
-                </div>
-
-              </div>
             </div>
+
           </div>
           
+          <Separator />
           
           {/* 차주 배차 이력과 특이사항 */}
-          <div className="px-4">
+          <div className="">
             <Tabs defaultValue="history" value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-3 mb-4">
+              <TabsList className="grid grid-cols-3">
+                <TabsTrigger value="status" className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  상태
+                </TabsTrigger>
                 <TabsTrigger value="history" className="flex items-center gap-2">
                   <Clock className="h-4 w-4" />
                   이력
@@ -203,11 +194,44 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
                   <AlertTriangle className="h-4 w-4" />
                   특이사항
                 </TabsTrigger>
-                <TabsTrigger value="company" className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4" />
-                  거래처
-                </TabsTrigger>
+                
               </TabsList>
+
+              <TabsContent value="status" className="mt-2">
+                {/* 차량 정보 */}
+                <div className="space-y-3">
+                        
+                  
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    
+                    <div className="text-muted-foreground">차량 상태</div>
+                      <div className="col-span-2 font-medium">
+                      <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-50">
+                        운행중
+                      </Badge>
+                    </div>
+
+                    <div className="text-muted-foreground">현재 위치</div>
+                    <div className="col-span-2 font-medium flex items-center gap-1">
+                      <MapPin className="h-3.5 w-3.5 text-primary" />
+                      <span>경기도 용인시 (10분 전 업데이트)</span>
+                    </div>
+
+                    <div className="text-muted-foreground">평가</div>
+                    <div className="col-span-2 font-medium flex items-center">
+                        <div className="flex text-amber-500">
+                          <Star className="h-3.5 w-3.5 fill-current" />
+                          <Star className="h-3.5 w-3.5 fill-current" />
+                          <Star className="h-3.5 w-3.5 fill-current" />
+                          <Star className="h-3.5 w-3.5 fill-current" />
+                          <Star className="h-3.5 w-3.5" />
+                        </div>
+                        <span className="ml-1 text-xs">(4.0)</span>
+                    </div>
+
+                  </div>
+                </div>
+              </TabsContent>
               
               <TabsContent value="history" className="mt-2">
                 <div className="overflow-x-auto">
@@ -264,32 +288,7 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
                 )}
               </TabsContent>
 
-              <TabsContent value="company" className="mt-2">
-                <div className="overflow-x-auto">
-                  {/* 운송 거래처 정보*/}
-                    <div>      
-                        <div className="space-y-3">
-                          {/* 운송 거래처 정보 */}
-                          <div className="flex items-center gap-2 text-primary">
-                            <Building className="h-4 w-4" />
-                            <h4 className="font-medium">운송 거래처 정보</h4>
-                          </div>
-                          
-                          <div className="grid grid-cols-3 gap-2 text-sm">
-                            <div className="text-muted-foreground">사업자/번호</div>
-                            <div className="col-span-2 font-bold">재형운송(111-11-11111)</div>
-
-                            <div className="text-muted-foreground">유형/대표자</div>
-                            <div className="col-span-2 font-medium">일반사업자/박재형</div>
-
-                            <div className="text-muted-foreground">은행 정보</div>
-                            <div className="col-span-2 font-medium">국민/재형운송/1111111111</div>
-                          </div>
-                        </div>
-                    </div>
-                  
-                </div>
-              </TabsContent>
+              
             </Tabs>
           </div>
           
