@@ -74,6 +74,70 @@ const DRIVER_LIST = [
   { id: '5', name: '정기사', contact: '010-5678-9012', vehicle: { type: '윙바디', weight: '11톤', licensePlate: '경기90마1234' } }
 ];
 
+// 운송 거래처 목록 (실제로는 API에서 가져올 데이터)
+const CARRIER_LIST = [
+  { 
+    id: '1', 
+    businessName: '화물왕운송', 
+    businessNumber: '123-45-67890', 
+    businessType: '일반사업자',
+    representative: '김대표',
+    bankName: '국민',
+    accountHolder: '화물왕운송',
+    accountNumber: '123456789012',
+    taxInvoiceType: '전자',
+    deliveryMethod: '이메일'
+  },
+  { 
+    id: '2', 
+    businessName: '신속물류', 
+    businessNumber: '234-56-78901', 
+    businessType: '법인사업자',
+    representative: '이사장',
+    bankName: '신한',
+    accountHolder: '신속물류(주)',
+    accountNumber: '234567890123',
+    taxInvoiceType: '전자',
+    deliveryMethod: '이메일'
+  },
+  { 
+    id: '3', 
+    businessName: '민트익스프레스', 
+    businessNumber: '345-67-89012', 
+    businessType: '개인사업자',
+    representative: '박사장',
+    bankName: '우리',
+    accountHolder: '민트익스프레스',
+    accountNumber: '345678901234',
+    taxInvoiceType: '수기',
+    deliveryMethod: '종이'
+  },
+  { 
+    id: '4', 
+    businessName: '한국종합물류', 
+    businessNumber: '456-78-90123', 
+    businessType: '법인사업자',
+    representative: '최회장',
+    bankName: '하나',
+    accountHolder: '한국종합물류(주)',
+    accountNumber: '456789012345',
+    taxInvoiceType: '전자',
+    deliveryMethod: '이메일'
+  },
+  { 
+    id: '5', 
+    businessName: '드림로지스', 
+    businessNumber: '567-89-01234', 
+    businessType: '개인사업자',
+    representative: '정사업',
+    bankName: '농협',
+    accountHolder: '드림로지스',
+    accountNumber: '567890123456',
+    taxInvoiceType: '면세',
+    deliveryMethod: '팩스'
+  }
+];
+
 // 중요도 옵션
 const SEVERITY_OPTIONS = [
   { value: 'low', label: '낮음', color: 'bg-blue-50 text-blue-700' },
@@ -189,6 +253,24 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
     form.setValue('vehicle.type', driver.vehicle.type);
     form.setValue('vehicle.weight', driver.vehicle.weight);
     form.setValue('vehicle.licensePlate', driver.vehicle.licensePlate);
+  };
+  
+  // 운송 거래처 선택 시 정보 채우기
+  const selectCarrier = (carrier: any) => {
+    form.setValue('carrier.businessName', carrier.businessName);
+    form.setValue('carrier.businessNumber', carrier.businessNumber);
+    form.setValue('carrier.businessType', carrier.businessType);
+    form.setValue('carrier.representative', carrier.representative);
+    form.setValue('carrier.bankName', carrier.bankName);
+    form.setValue('carrier.accountHolder', carrier.accountHolder);
+    form.setValue('carrier.accountNumber', carrier.accountNumber);
+    form.setValue('carrier.taxInvoiceType', carrier.taxInvoiceType);
+    form.setValue('carrier.deliveryMethod', carrier.deliveryMethod);
+    
+    toast({
+      title: "거래처 정보 불러오기 완료",
+      description: `${carrier.businessName} 정보가 적용되었습니다.`,
+    });
   };
   
   // 특이사항 추가
@@ -430,6 +512,46 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
             <div className="flex items-center gap-2 mb-4">
               <Factory className="h-4 w-4 text-primary" />
               <h4 className="font-medium">운송 거래처 정보</h4>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-3 items-center mb-3">
+              <Label className="text-muted-foreground text-sm">업체 조회</Label>
+              <div className="col-span-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className="w-full justify-between"
+                    >
+                      거래처 검색
+                      <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[350px] p-0">
+                    <Command>
+                      <CommandInput placeholder="거래처명 또는 사업자번호 검색..." />
+                      <CommandEmpty>거래처를 찾을 수 없습니다.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandList>
+                          {CARRIER_LIST.map(carrier => (
+                            <CommandItem
+                              key={carrier.id}
+                              value={carrier.businessName}
+                              onSelect={() => selectCarrier(carrier)}
+                            >
+                              <div className="flex flex-col">
+                                <span>{carrier.businessName}</span>
+                                <span className="text-xs text-muted-foreground">{carrier.businessNumber} ({carrier.businessType})</span>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandList>
+                      </CommandGroup>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
             
             <div className="grid grid-cols-3 gap-3 items-center">
