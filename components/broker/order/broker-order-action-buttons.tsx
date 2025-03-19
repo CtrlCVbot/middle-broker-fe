@@ -30,44 +30,35 @@ export function BrokerOrderActionButtons({ orderNumber }: BrokerOrderActionButto
   };
   
   return (
-    <div className="w-full flex flex-wrap gap-2">
+    <div className="flex gap-2 ml-auto">
       <Button
         variant="outline"
         size="sm"
-        className="flex-1"
+        className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 h-8 px-3"
         onClick={handleEditClick}
       >
-        <FileEdit className="h-4 w-4 mr-2" />
+        <FileEdit className="h-4 w-4 mr-1" />
         수정
       </Button>
       
       <Button
         variant="outline"
         size="sm"
-        className="flex-1"
+        className="bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700 h-8 px-3"
         onClick={handlePrintClick}
       >
-        <Printer className="h-4 w-4 mr-2" />
+        <Printer className="h-4 w-4 mr-1" />
         인쇄
       </Button>
       
       <Button
         variant="outline"
         size="sm"
-        className="flex-1"
+        className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700 h-8 px-3"
         onClick={handleSettlementClick}
       >
-        <FileText className="h-4 w-4 mr-2" />
+        <FileText className="h-4 w-4 mr-1" />
         정산
-      </Button>
-      
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={closeSheet}
-      >
-        <X className="h-4 w-4 mr-2" />
-        닫기
       </Button>
     </div>
   );

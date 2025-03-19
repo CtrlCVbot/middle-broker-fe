@@ -47,7 +47,8 @@ import {
   Save,
   Building,
   Factory,
-  DollarSign
+  DollarSign,
+  Check
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/lib/utils";
@@ -74,6 +75,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 // 전체적인 상태 관리를 위한 타입 정의
 type EditMode = "cargo" | "driver" | "settlement" | null;
@@ -95,6 +101,7 @@ export function BrokerOrderDetailSheet() {
   // 배차 상태 관련 상태와 핸들러 추가
   const [isChangingStatus, setIsChangingStatus] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>("");
+  const [statusPopoverOpen, setStatusPopoverOpen] = useState(false);
   
   // 모바일 뷰를 위한 현재 선택된 탭
   const [activeTab, setActiveTab] = useState<string>("cargo");
@@ -267,7 +274,7 @@ export function BrokerOrderDetailSheet() {
         variant: "default"
       });
       
-      setIsChangingStatus(false);
+      setStatusPopoverOpen(false);
       
       // 실제 구현에서는 refetch로 최신 데이터 조회
       setTimeout(() => refetch(), 300);
@@ -285,6 +292,7 @@ export function BrokerOrderDetailSheet() {
   // 배차 상태 변경 취소
   const cancelStatusChange = () => {
     setIsChangingStatus(false);
+    setStatusPopoverOpen(false);
   };
   
   // orderData가 변경될 때마다 selectedStatus 업데이트
@@ -331,73 +339,77 @@ export function BrokerOrderDetailSheet() {
                 <SheetTitle className="text-xl font-bold">
                   화물 번호: {orderData.orderNumber}
                 </SheetTitle>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={closeSheet}
+                  className="h-8 w-8"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
               </div>
               {/* 배차 상태 및 액션 버튼 */}
-              <div className="flex flex-col gap-4 md:flex-row items-center">
-                <div className="w-full flex items-center text-sm">
-                  {/* 배차 상태 */}
-                  {isChangingStatus ? (
-                    <div className="flex items-center gap-2">
-                      <Select
-                        value={selectedStatus}
-                        onValueChange={setSelectedStatus}
-                      >
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="상태 선택" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availableStatuses.map(status => (
-                            <SelectItem key={status} value={status}>
-                              {status}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+              <div className="flex items-center justify-between mt-3">
+                <div className="flex items-center">
+                  <Popover open={statusPopoverOpen} onOpenChange={setStatusPopoverOpen}>
+                    <PopoverTrigger asChild>
                       <Button 
-                        size="sm" 
-                        variant="default" 
-                        onClick={handleChangeStatus}
+                        variant="outline" 
+                        size="sm"
+                        className="flex items-center gap-2 border-dashed"
                       >
-                        변경
+                        <Badge 
+                          variant={orderData.status === "운송마감" ? "default" : "secondary"}
+                          className="font-semibold"
+                        >
+                          {orderData.status}
+                        </Badge>
+                        <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                       </Button>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        onClick={cancelStatusChange}
-                      >
-                        취소
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Badge 
-                        variant={orderData.status === "운송마감" ? "default" : "secondary"}
-                        className="text-sm px-3 py-1"
-                      >
-                        {orderData.status}
-                      </Badge>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80 p-4">
+                      <div className="space-y-4">
+                        <h4 className="font-medium">배차 상태 변경</h4>
+                        <div className="flex flex-col gap-3">
+                          <Select
+                            value={selectedStatus}
+                            onValueChange={setSelectedStatus}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="상태 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {availableStatuses.map(status => (
+                                <SelectItem key={status} value={status}>
+                                  {status}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <div className="flex items-center justify-end gap-2 mt-2">
                             <Button 
                               size="sm" 
                               variant="ghost" 
-                              onClick={startStatusChange}
-                              className="h-7 px-2"
+                              onClick={cancelStatusChange}
                             >
-                              <Edit className="h-3 w-3 mr-1" />
-                              변경
+                              취소
                             </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>배차 상태 변경</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  )}
+                            <Button 
+                              size="sm" 
+                              variant="default" 
+                              onClick={handleChangeStatus}
+                              className="gap-1"
+                            >
+                              <Check className="h-3.5 w-3.5" />
+                              변경 확인
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                  
                 </div>
-                <div className="flex"></div>
                 <BrokerOrderActionButtons orderNumber={orderData.orderNumber} />
               </div>
             </SheetHeader>
@@ -501,76 +513,74 @@ export function BrokerOrderDetailSheet() {
                     </div>
                   </CardHeader>
                   <CardContent className="p-0">
-                    <ScrollArea className="h-[calc(90vh-220px)]">
-                      <div className="p-4">
-                        {editMode === "cargo" ? (
-                          <BrokerOrderInfoEditForm
-                            initialData={{
-                              cargo: {
-                                type: orderData.cargo.type || "",
-                                weight: orderData.cargo.weight || "",
-                                options: orderData.cargo.options || [],
-                                remark: orderData.cargo.remark || "",
-                                vehicleType: orderData.vehicle?.type || ""
-                              },
-                              departure: {
-                                address: orderData.departure.address || "",
-                                date: orderData.departure.date || "",
-                                time: orderData.departure.time || "",
-                                name: orderData.departure.name || "",
-                                company: orderData.departure.company || "",
-                                contact: orderData.departure.contact || "",
-                              },
-                              destination: {
-                                address: orderData.destination.address || "",
-                                date: orderData.destination.date || "",
-                                time: orderData.destination.time || "",
-                                name: orderData.destination.name || "",
-                                company: orderData.destination.company || "",
-                                contact: orderData.destination.contact || "",
-                              },
-                              shipper: {
-                                name: orderData.departure.company || "",
-                                manager: orderData.departure.name || "",
-                                contact: orderData.departure.contact || "",
-                                email: "info@" + (orderData.departure.company || "example.com").toLowerCase().replace(/\s+/g, "") + ".com",
-                              },
-                            }}
-                            onSave={handleSaveCargoInfo}
-                            onCancel={handleCancelEdit}
-                          />
-                        ) : (
-                          <BrokerOrderInfoCard 
-                            departure={{
-                              address: orderData.departure.address,
-                              name: orderData.departure.name,
-                              company: orderData.departure.company,
-                              contact: orderData.departure.contact,
-                              time: orderData.departure.time,
-                              date: orderData.departure.date
-                            }}
-                            destination={{
-                              address: orderData.destination.address,
-                              name: orderData.destination.name,
-                              company: orderData.destination.company,
-                              contact: orderData.destination.contact,
-                              time: orderData.destination.time,
-                              date: orderData.destination.date
-                            }}
-                            cargo={{
-                              ...orderData.cargo,
-                              vehicleType: orderData.vehicle?.type
-                            }}
-                            shipper={{
-                              name: orderData.departure.company,
-                              contact: orderData.departure.contact,
-                              manager: orderData.departure.name,
-                              email: "info@" + orderData.departure.company.toLowerCase().replace(/\s+/g, "") + ".com"
-                            }}
-                          />
-                        )}
-                      </div>
-                    </ScrollArea>
+                    <div className="p-4">
+                      {editMode === "cargo" ? (
+                        <BrokerOrderInfoEditForm
+                          initialData={{
+                            cargo: {
+                              type: orderData.cargo.type || "",
+                              weight: orderData.cargo.weight || "",
+                              options: orderData.cargo.options || [],
+                              remark: orderData.cargo.remark || "",
+                              vehicleType: orderData.vehicle?.type || ""
+                            },
+                            departure: {
+                              address: orderData.departure.address || "",
+                              date: orderData.departure.date || "",
+                              time: orderData.departure.time || "",
+                              name: orderData.departure.name || "",
+                              company: orderData.departure.company || "",
+                              contact: orderData.departure.contact || "",
+                            },
+                            destination: {
+                              address: orderData.destination.address || "",
+                              date: orderData.destination.date || "",
+                              time: orderData.destination.time || "",
+                              name: orderData.destination.name || "",
+                              company: orderData.destination.company || "",
+                              contact: orderData.destination.contact || "",
+                            },
+                            shipper: {
+                              name: orderData.departure.company || "",
+                              manager: orderData.departure.name || "",
+                              contact: orderData.departure.contact || "",
+                              email: "info@" + (orderData.departure.company || "example.com").toLowerCase().replace(/\s+/g, "") + ".com",
+                            },
+                          }}
+                          onSave={handleSaveCargoInfo}
+                          onCancel={handleCancelEdit}
+                        />
+                      ) : (
+                        <BrokerOrderInfoCard 
+                          departure={{
+                            address: orderData.departure.address,
+                            name: orderData.departure.name,
+                            company: orderData.departure.company,
+                            contact: orderData.departure.contact,
+                            time: orderData.departure.time,
+                            date: orderData.departure.date
+                          }}
+                          destination={{
+                            address: orderData.destination.address,
+                            name: orderData.destination.name,
+                            company: orderData.destination.company,
+                            contact: orderData.destination.contact,
+                            time: orderData.destination.time,
+                            date: orderData.destination.date
+                          }}
+                          cargo={{
+                            ...orderData.cargo,
+                            vehicleType: orderData.vehicle?.type
+                          }}
+                          shipper={{
+                            name: orderData.departure.company,
+                            contact: orderData.departure.contact,
+                            manager: orderData.departure.name,
+                            email: "info@" + orderData.departure.company.toLowerCase().replace(/\s+/g, "") + ".com"
+                          }}
+                        />
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
                 
@@ -630,52 +640,50 @@ export function BrokerOrderDetailSheet() {
                     </div>
                   </CardHeader>
                   <CardContent className="p-0">
-                    <ScrollArea className="h-[calc(90vh-220px)]">
-                      <div className="p-4">
-                        {editMode === "driver" ? (
-                          <BrokerOrderDriverInfoEditForm
-                            initialData={{
-                              driver: orderData?.vehicle?.driver || { 
-                                name: "", 
-                                contact: "" 
-                              },
-                              vehicle: {
-                                type: orderData?.vehicle?.type || "",
-                                weight: orderData?.vehicle?.weight || "",
-                                licensePlate: orderData?.vehicle?.licensePlate || ""
-                              },
-                              callCenter: "24시",
-                              specialNotes: []
-                            }}
-                            onSave={handleSaveDriverInfo}
-                            onCancel={handleCancelEdit}
+                    <div className="p-4">
+                      {editMode === "driver" ? (
+                        <BrokerOrderDriverInfoEditForm
+                          initialData={{
+                            driver: orderData?.vehicle?.driver || { 
+                              name: "", 
+                              contact: "" 
+                            },
+                            vehicle: {
+                              type: orderData?.vehicle?.type || "",
+                              weight: orderData?.vehicle?.weight || "",
+                              licensePlate: orderData?.vehicle?.licensePlate || ""
+                            },
+                            callCenter: "24시",
+                            specialNotes: []
+                          }}
+                          onSave={handleSaveDriverInfo}
+                          onCancel={handleCancelEdit}
+                        />
+                      ) : isAssigned ? (
+                        <>
+                          <BrokerOrderDriverInfoCard 
+                            driver={orderData?.vehicle?.driver || { name: "정보 없음" }}
+                            onSendMessage={() => handleSendMessage("기사님")}
+                            vehicle={orderData?.vehicle || { type: "정보 없음" }}
+                            status={orderData?.status || "배차대기"}
+                            amount={orderData?.amount || "0"}
                           />
-                        ) : isAssigned ? (
-                          <>
-                            <BrokerOrderDriverInfoCard 
-                              driver={orderData?.vehicle?.driver || { name: "정보 없음" }}
-                              onSendMessage={() => handleSendMessage("기사님")}
-                              vehicle={orderData?.vehicle || { type: "정보 없음" }}
-                              status={orderData?.status || "배차대기"}
-                              amount={orderData?.amount || "0"}
-                            />
-                          </>
-                        ) : (
-                          <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
-                            <AlertCircle className="mb-2 h-10 w-10 opacity-20" />
-                            <p>아직 배차되지 않았습니다.</p>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="mt-4"
-                              onClick={() => handleSetEditMode("driver")}
-                            >
-                              배차 정보 입력하기
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </ScrollArea>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
+                          <AlertCircle className="mb-2 h-10 w-10 opacity-20" />
+                          <p>아직 배차되지 않았습니다.</p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-4"
+                            onClick={() => handleSetEditMode("driver")}
+                          >
+                            배차 정보 입력하기
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
                 
@@ -716,30 +724,28 @@ export function BrokerOrderDetailSheet() {
                     </div>
                   </CardHeader>
                   <CardContent className="p-0">
-                    <ScrollArea className="h-[calc(90vh-220px)]">
-                      <div className="p-4">
-                        {editMode === "settlement" ? (
-                          <BrokerOrderSettlementInfoEditForm 
-                            initialData={{
-                              baseAmount: orderData?.amount || 0,
-                              additionalFees: []
-                            }}
-                            status={orderData?.status || "배차대기"}
-                            onSave={handleSaveSettlementInfo}
-                            onCancel={handleCancelEdit}
-                          />
-                        ) : (
-                          <BrokerOrderSettlementInfoCard 
-                            fee={{
-                              estimated: orderData?.amount,
-                              contracted: orderData?.amount,
-                            }}
-                            settlement={orderData?.settlement}
-                            status={orderData?.status || "배차대기"}
-                          />
-                        )}
-                      </div>
-                    </ScrollArea>
+                    <div className="p-4">
+                      {editMode === "settlement" ? (
+                        <BrokerOrderSettlementInfoEditForm 
+                          initialData={{
+                            baseAmount: orderData?.amount || 0,
+                            additionalFees: []
+                          }}
+                          status={orderData?.status || "배차대기"}
+                          onSave={handleSaveSettlementInfo}
+                          onCancel={handleCancelEdit}
+                        />
+                      ) : (
+                        <BrokerOrderSettlementInfoCard 
+                          fee={{
+                            estimated: orderData?.amount,
+                            contracted: orderData?.amount,
+                          }}
+                          settlement={orderData?.settlement}
+                          status={orderData?.status || "배차대기"}
+                        />
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -751,7 +757,7 @@ export function BrokerOrderDetailSheet() {
                 <summary className="flex items-center gap-2 cursor-pointer">
                   <History className="h-5 w-5 text-primary" />
                   <h3 className="text-base font-medium">상태 변경 이력</h3>
-                  <span className="text-sm text-muted-foreground ml-2">
+                  <span className="text-sm text-muted-foreground ml-3">
                     등록일시: {orderData.registeredAt}
                   </span>
                 </summary>
