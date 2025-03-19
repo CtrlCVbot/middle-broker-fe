@@ -103,6 +103,7 @@ export function BrokerOrderSettlementInfoEditForm({
   // 총 금액 (배차 기본금 + 배차 추가금, 청구 기본금 + 청구 추가금)
   const [dispatchTotal, setDispatchTotal] = useState<number>(0);
   const [chargeTotal, setChargeTotal] = useState<number>(0);
+  const [additionalTotal, setAdditionalTotal] = useState<number>(0);
   const [profit, setProfit] = useState<number>(0);
   
   // 편집 중인 추가금 항목
@@ -265,12 +266,15 @@ export function BrokerOrderSettlementInfoEditForm({
     }, 0);
     
     // 총액 설정
-    const dispatchTotalValue = baseAmountValue + dispatchAdditionalTotal;
+    const dispatchTotalValue = baseAmountValue;
+    const additionalTotalValue = chargeAdditionalTotal;
     const chargeTotalValue = chargeAmountValue + chargeAdditionalTotal;
+    
     const profitValue = chargeTotalValue - dispatchTotalValue;
     
     setDispatchTotal(dispatchTotalValue);
     setChargeTotal(chargeTotalValue);
+    setAdditionalTotal(additionalTotalValue);
     setProfit(profitValue);
   };
   
@@ -376,7 +380,7 @@ export function BrokerOrderSettlementInfoEditForm({
           <div>
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp className="h-4 w-4 text-primary" />
-              <h4 className="font-medium">추가금 관리</h4>
+              <h4 className="font-medium">화주 추가금 관리</h4>
             </div>
             
             {/* 추가금 타입 버튼 */}
@@ -541,13 +545,14 @@ export function BrokerOrderSettlementInfoEditForm({
           
           {/* 금액 요약 */}
           <div className="bg-muted/20 p-4 rounded-md space-y-4">
-            {/* 배차 총액 */}
+
+            {/* 추가금 총액 */}
             <div className="flex justify-between items-center">
-              <div className="text-sm font-medium">배차 총액</div>
+              <div className="text-sm font-medium">추가금 </div>
               <div className="text-lg font-bold">
-                {formatCurrency(dispatchTotal)}원
+                {formatCurrency(additionalTotal)}원
               </div>
-            </div>
+            </div>  
             
             {/* 청구 총액 */}
             <div className="flex justify-between items-center">
