@@ -367,47 +367,10 @@ export function BrokerOrderSettlementInfoEditForm({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {/* 운임 요약 카드 - 항상 펼쳐져 있는 상태로 변경 */}
-          <div className="border rounded-lg overflow-hidden mb-4">
-            {/* 헤더 */}
-            <div className="bg-card p-4">
-              <div className="flex items-center gap-2 mb-4">
-                <DollarSign className="h-4 w-4 text-primary" />
-                <h4 className="font-medium">운임 요약</h4>
-              </div>
-              
-              {/* 기본 요약 정보 */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm text-muted-foreground">화주 청구 금액</div>
-                  <div className="text-xl font-bold text-primary">
-                    {formatCurrency(parseFloat(form.watch("chargeAmount") || "0"))}원
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">차주 배차 금액</div>
-                  <div className="text-xl font-bold text-muted-foreground">
-                    {formatCurrency(parseFloat(form.watch("baseAmount") || "0"))}원
-                    {parseFloat(form.watch("baseAmount") || "0") > 0 && parseFloat(form.watch("chargeAmount") || "0") > 0 && 
-                      parseFloat(form.watch("baseAmount") || "0") < parseFloat(form.watch("chargeAmount") || "0") && (
-                        <span className="text-sm text-muted-foreground ml-2">
-                          ({Math.round((parseFloat(form.watch("baseAmount") || "0") / parseFloat(form.watch("chargeAmount") || "0") * 100) - 100)}%)
-                        </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="mt-4 pt-4 border-t">
-                <div className="flex justify-between">
-                  <div className="text-sm text-muted-foreground">예상 마진</div>
-                  <div className={`text-xl font-bold ${profit >= 0 ? "text-green-600" : "text-red-600"}`}>
-                    {profit >= 0 ? "+" : ""}{formatCurrency(profit)}원
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="">
             
             {/* 상세 정보 - 항상 표시 */}
-            <div className="p-4 space-y-6 border-t">
+            <div className="space-y-6">
               {/* 견적금 (숨겨진 필드) */}
               <div className="hidden">
                 <FormField
@@ -561,6 +524,15 @@ export function BrokerOrderSettlementInfoEditForm({
                     <div className="col-span-2">
                       {displayAmount(dispatchTotal)}
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 pt-4 border-t">
+                <div className="flex justify-between">
+                  <div className="text-sm text-muted-foreground">예상 마진</div>
+                  <div className={`text-xl font-bold ${profit >= 0 ? "text-green-600" : "text-red-600"}`}>
+                    {profit >= 0 ? "+" : ""}{formatCurrency(profit)}원
                   </div>
                 </div>
               </div>

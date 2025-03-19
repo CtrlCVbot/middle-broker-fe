@@ -97,14 +97,14 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
             {/* 상차지 정보 */}
             <div className="flex items-center gap-2 text-primary">
               <MapPin className="h-4 w-4" />
-              <h4 className="font-medium">상/하차지 정보</h4>
+              <h4 className="font-medium">상/하차 정보</h4>
             </div>
             
             <div className="grid grid-cols-3 gap-2 text-sm">
-              <div className="text-muted-foreground">상차지 주소</div>
+              <div className="text-muted-foreground">상차 주소</div>
               <div className="col-span-2 font-bold">{departure.address}</div>
 
-              <div className="text-muted-foreground">하차지 주소</div>
+              <div className="text-muted-foreground">하차 주소</div>
               <div className="col-span-2 font-bold">{destination.address}</div>
 
               <div className="text-muted-foreground">상차 일시</div>
@@ -115,7 +115,7 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
               
               {departure.name && (
                 <>
-                  <div className="text-muted-foreground">상차지 담당자</div>
+                  <div className="text-muted-foreground">상차 담당</div>
                   <div className="col-span-2 font-medium">
                     {departure.name}
                     {departure.contact && ` / ${departure.contact}`}
@@ -125,7 +125,7 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
               
               {destination.name && (
                 <>
-                  <div className="text-muted-foreground">하차지 담당자</div>
+                  <div className="text-muted-foreground">하차 담당</div>
                   <div className="col-span-2 font-medium">
                     {destination.name}
                     {destination.contact && ` / ${destination.contact}`}
@@ -153,7 +153,7 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
             <div className="text-muted-foreground">화물 종류</div>
             <div className="col-span-2 font-medium">{cargo.type}</div>
             
-            <div className="text-muted-foreground">차량/중량/옵션</div>
+            <div className="text-muted-foreground">운송 옵션</div>
             <div className="col-span-2 font-medium">
               <div className="flex flex-wrap items-center gap-2">
                 {cargo.vehicleType && (

@@ -5,7 +5,7 @@ import {
   Sheet, 
   SheetContent, 
   SheetHeader, 
-  SheetTitle, 
+  SheetTitle,
   SheetDescription, 
   SheetFooter 
 } from "@/components/ui/sheet";
@@ -42,7 +42,12 @@ import {
   AlertCircle,
   MailPlus,
   MailX,
-  MailCheck
+  MailCheck,
+  Eye,
+  Save,
+  Building,
+  Factory,
+  DollarSign
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/lib/utils";
@@ -62,6 +67,16 @@ import {
   FormMessage 
 } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+// 전체적인 상태 관리를 위한 타입 정의
+type EditMode = "cargo" | "driver" | "settlement" | null;
 
 export function BrokerOrderDetailSheet() {
   const { 
@@ -73,14 +88,16 @@ export function BrokerOrderDetailSheet() {
     setError 
   } = useBrokerOrderDetailStore();
   
+  // 편집 모드 상태 관리 통합
+  const [editMode, setEditMode] = useState<EditMode>(null);
   const [isStatusHistoryOpen, setIsStatusHistoryOpen] = useState(false);
-  const [isEditingCargoInfo, setIsEditingCargoInfo] = useState(false);
-  const [isEditingDriverInfo, setIsEditingDriverInfo] = useState(false);
-  const [isEditingSettlementInfo, setIsEditingSettlementInfo] = useState(false);
   
   // 배차 상태 관련 상태와 핸들러 추가
   const [isChangingStatus, setIsChangingStatus] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>("");
+  
+  // 모바일 뷰를 위한 현재 선택된 탭
+  const [activeTab, setActiveTab] = useState<string>("cargo");
   
   // 가능한 배차 상태 목록
   const availableStatuses = [
@@ -92,7 +109,8 @@ export function BrokerOrderDetailSheet() {
     data: orderData, 
     isLoading, 
     isError, 
-    error 
+    error,
+    refetch 
   } = useQuery({
     queryKey: ["brokerOrderDetail", selectedOrderId],
     queryFn: async () => {
@@ -143,89 +161,97 @@ export function BrokerOrderDetailSheet() {
   // 배차완료 여부 확인
   const isAssigned = orderData?.status === "배차완료" || orderData?.status === "운송중" || orderData?.status === "상차완료" || orderData?.status === "하차완료" || orderData?.status === "운송마감";
   
-  // 수정 버튼 핸들러
-  const handleEdit = (section: string) => {
-    if (section === "화물 정보") {
-      setIsEditingCargoInfo(true);
-    } else if (section === "배차 정보") {
-      setIsEditingDriverInfo(true);
-    } else if (section === "운임/정산 정보") {
-      setIsEditingSettlementInfo(true);
-    } else {
-      toast({
-        title: "수정 기능",
-        description: `${section} 수정 기능은 아직 구현되지 않았습니다.`,
-      });
-    }
+  // 편집 모드 설정 핸들러
+  const handleSetEditMode = (mode: EditMode) => {
+    setEditMode(mode);
+  };
+  
+  // 편집 취소 핸들러
+  const handleCancelEdit = () => {
+    setEditMode(null);
   };
   
   // 문자 전송 핸들러
   const handleSendMessage = (to: string) => {
-    alert(`${to}에게 메시지를 보냅니다.`);
+    toast({
+      title: "문자 전송",
+      description: `${to}에게 메시지를 보냅니다.`,
+    });
   };
   
-  // 배차 알림 전송 핸들러
-  const handleSendAlert = () => {
-    alert("배차 알림을 보냅니다.");
+  // 배차 문자 전송 핸들러
+  const handleSendAssignMessage = () => {
+    toast({
+      title: "배차 안내 문자 전송",
+      description: "차주에게 배차 안내 문자를 발송했습니다.",
+    });
   };
   
-  // 배차 진행 함수
-  const handleAssignment = () => {
-    alert("배차 진행 페이지로 이동합니다.");
+  // 완료 문자 전송 핸들러
+  const handleSendCompleteMessage = () => {
+    toast({
+      title: "배차 완료 문자 전송",
+      description: "화주에게 배차 완료 문자를 발송했습니다.",
+    });
+  };
+  
+  // 취소 문자 전송 핸들러
+  const handleSendCancelMessage = () => {
+    toast({
+      title: "배차 취소 문자 전송",
+      description: "화주에게 배차 취소 문자를 발송했습니다.",
+    });
   };
   
   // 화물 정보 수정 저장 핸들러
   const handleSaveCargoInfo = (formData: any) => {
-    // 여기서 실제로는 API 호출을 통해 데이터를 저장하겠지만, 
-    // 현재는 상태만 변경하고 수정 모드를 종료합니다.
     console.log("저장된 화물 데이터:", formData);
-    setIsEditingCargoInfo(false);
     
     toast({
       title: "화물 정보 수정 완료",
       description: "화물 정보가 성공적으로 업데이트되었습니다.",
+      variant: "default"
     });
-  };
-
-  // 화물 정보 수정 취소 핸들러
-  const handleCancelCargoInfo = () => {
-    setIsEditingCargoInfo(false);
+    
+    // 편집 모드 종료
+    setEditMode(null);
+    
+    // 실제 구현에서는 refetch로 최신 데이터 조회
+    setTimeout(() => refetch(), 300);
   };
   
   // 배차 정보 수정 저장 핸들러
   const handleSaveDriverInfo = (formData: any) => {
-    // 여기서 실제로는 API 호출을 통해 데이터를 저장하겠지만, 
-    // 현재는 상태만 변경하고 수정 모드를 종료합니다.
     console.log("저장된 배차 데이터:", formData);
-    setIsEditingDriverInfo(false);
     
     toast({
       title: "배차 정보 수정 완료",
       description: "배차 정보가 성공적으로 업데이트되었습니다.",
+      variant: "default"
     });
-  };
-
-  // 배차 정보 수정 취소 핸들러
-  const handleCancelDriverInfo = () => {
-    setIsEditingDriverInfo(false);
+    
+    // 편집 모드 종료
+    setEditMode(null);
+    
+    // 실제 구현에서는 refetch로 최신 데이터 조회
+    setTimeout(() => refetch(), 300);
   };
   
   // 운임/정산 정보 수정 저장 핸들러
   const handleSaveSettlementInfo = (formData: any) => {
-    // 여기서 실제로는 API 호출을 통해 데이터를 저장하겠지만, 
-    // 현재는 상태만 변경하고 수정 모드를 종료합니다.
     console.log("저장된 운임/정산 데이터:", formData);
-    setIsEditingSettlementInfo(false);
     
     toast({
       title: "운임/정산 정보 수정 완료",
       description: "운임/정산 정보가 성공적으로 업데이트되었습니다.",
+      variant: "default"
     });
-  };
-
-  // 운임/정산 정보 수정 취소 핸들러
-  const handleCancelSettlementInfo = () => {
-    setIsEditingSettlementInfo(false);
+    
+    // 편집 모드 종료
+    setEditMode(null);
+    
+    // 실제 구현에서는 refetch로 최신 데이터 조회
+    setTimeout(() => refetch(), 300);
   };
   
   // 배차 상태 변경 핸들러
@@ -238,9 +264,13 @@ export function BrokerOrderDetailSheet() {
       toast({
         title: "상태 변경 완료",
         description: `배차 상태가 ${selectedStatus}(으)로 변경되었습니다.`,
+        variant: "default"
       });
       
       setIsChangingStatus(false);
+      
+      // 실제 구현에서는 refetch로 최신 데이터 조회
+      setTimeout(() => refetch(), 300);
     }
   };
   
@@ -346,15 +376,24 @@ export function BrokerOrderDetailSheet() {
                       >
                         {orderData.status}
                       </Badge>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        onClick={startStatusChange}
-                        className="h-7 px-2"
-                      >
-                        <Edit className="h-3 w-3 mr-1" />
-                        변경
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              onClick={startStatusChange}
+                              className="h-7 px-2"
+                            >
+                              <Edit className="h-3 w-3 mr-1" />
+                              변경
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>배차 상태 변경</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   )}
                 </div>
@@ -363,69 +402,108 @@ export function BrokerOrderDetailSheet() {
               </div>
             </SheetHeader>
             
-            {/* 배차 진행 상태 - 개발시 주석 풀지마세요!*/}
-            {/* <div className="px-6 py-3 border-b">
-              <BrokerOrderProgress currentStatus={orderData.statusProgress} />
-            </div> */}
+            {/* 모바일 전용 탭 메뉴 */}
+            <div className="md:hidden border-b">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid grid-cols-3 w-full">
+                  <TabsTrigger value="cargo" className="text-xs">
+                    <Package className="h-4 w-4 mr-1" />
+                    화물 정보
+                  </TabsTrigger>
+                  <TabsTrigger value="driver" className="text-xs">
+                    <Truck className="h-4 w-4 mr-1" />
+                    배차 정보
+                  </TabsTrigger>
+                  <TabsTrigger value="settlement" className="text-xs">
+                    <CreditCard className="h-4 w-4 mr-1" />
+                    운임/정산
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
             
             {/* 메인 컨텐츠 - 그리드 레이아웃 */}
             <div className="flex-grow overflow-auto">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
                 {/* 화물 정보 카드 */}
-                <Card className="overflow-hidden h-full">
-                  <CardHeader className="bg-muted/20 flex flex-col md:flex-row items-center justify-between py-2 px-4">
-                    <CardTitle className="text-lg">
-                      화물 정보
-                    </CardTitle>
-                    <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                    {/* 완료 문자 보내기 */}
-                    <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={handleCancelCargoInfo}
-                        className="px-2 py-1"
-                      >
-                        <MailPlus className="h-4 w-4 mr-1" />
-                        완료
-                    </Button>
-
-                    {/* 취소 문자 보내기 */}
-                    <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={handleCancelCargoInfo}
-                        className="px-2 py-1"
-                      >
-                        <MailX className="h-4 w-4 mr-1" />
-                        취소
-                    </Button>
-                    {isEditingCargoInfo ? (
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={handleCancelCargoInfo}
-                        className="px-2 py-1"
-                      >
-                        <X className="h-4 w-4 mr-1" />
-                        보기 모드로 전환
-                      </Button>
-                    ) : (
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => handleEdit("화물 정보")}
-                        className="px-2 py-1"
-                      >
-                        <Pencil className="h-4 w-4 mr-1" />
-                        편집 모드로 전환
-                      </Button>
-                    )}
+                <Card className={cn(
+                  "overflow-hidden", 
+                  "md:block", 
+                  activeTab !== "cargo" && "hidden"
+                )}>
+                  <CardHeader className="bg-muted/20 flex flex-row items-center justify-between py-3 px-4 border-b">
+                    <div className="flex items-center gap-2">
+                      <Package className="h-4 w-4 text-primary" />
+                      <CardTitle className="text-base font-medium">
+                        화물 정보
+                      </CardTitle>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {/* 화주 문자 발송 */}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="icon" 
+                              onClick={handleSendCompleteMessage}
+                              className="h-7 w-7"
+                            >
+                              <MailCheck className="h-3.5 w-3.5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>완료 문자 발송</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="icon" 
+                              onClick={handleSendCancelMessage}
+                              className="h-7 w-7"
+                            >
+                              <MailX className="h-3.5 w-3.5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>취소 문자 발송</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      
+                      {/* 편집 모드 전환 버튼 */}
+                      {editMode === "cargo" ? (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={handleCancelEdit}
+                          className="h-7 px-2"
+                        >
+                          <Eye className="h-3.5 w-3.5 mr-1" />
+                          보기
+                        </Button>
+                      ) : (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleSetEditMode("cargo")}
+                          className="h-7 px-2"
+                        >
+                          <Pencil className="h-3.5 w-3.5 mr-1" />
+                          편집
+                        </Button>
+                      )}
                     </div>
                   </CardHeader>
                   <CardContent className="p-0">
                     <ScrollArea className="h-[calc(90vh-220px)]">
                       <div className="p-4">
-                        {isEditingCargoInfo ? (
+                        {editMode === "cargo" ? (
                           <BrokerOrderInfoEditForm
                             initialData={{
                               cargo: {
@@ -459,7 +537,7 @@ export function BrokerOrderDetailSheet() {
                               },
                             }}
                             onSave={handleSaveCargoInfo}
-                            onCancel={handleCancelCargoInfo}
+                            onCancel={handleCancelEdit}
                           />
                         ) : (
                           <BrokerOrderInfoCard 
@@ -497,48 +575,64 @@ export function BrokerOrderDetailSheet() {
                 </Card>
                 
                 {/* 차량 및 기사 정보 카드 */}
-                <Card className="overflow-hidden">
-                  <CardHeader className="bg-muted/20 flex flex-col md:flex-row items-center justify-between py-2 px-4">
-                    <CardTitle className="text-lg mb-2 md:mb-0">배차 정보</CardTitle>
-                    <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                      {/* 완료 문자 보내기 */}
-                      <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={handleCancelCargoInfo}
-                          className="px-2 py-1"
-                        >
-                          <MailCheck className="h-4 w-4 mr-1" />
-                          배차
-                      </Button>
+                <Card className={cn(
+                  "overflow-hidden", 
+                  "md:block", 
+                  activeTab !== "driver" && "hidden"
+                )}>
+                  <CardHeader className="bg-muted/20 flex flex-row items-center justify-between py-3 px-4 border-b">
+                    <div className="flex items-center gap-2">
+                      <Truck className="h-4 w-4 text-primary" />
+                      <CardTitle className="text-base font-medium">배차 정보</CardTitle>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {/* 배차 문자 발송 */}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="icon" 
+                              onClick={handleSendAssignMessage}
+                              className="h-7 w-7"
+                            >
+                              <MailPlus className="h-3.5 w-3.5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>배차 안내 문자 발송</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
 
-                      {isEditingDriverInfo ? (
+                      {/* 편집 모드 전환 버튼 */}
+                      {editMode === "driver" ? (
                         <Button 
-                          variant="outline" 
+                          variant="ghost" 
                           size="sm" 
-                          onClick={handleCancelDriverInfo}
-                          className="px-2 py-1"
+                          onClick={handleCancelEdit}
+                          className="h-7 px-2"
                         >
-                          <X className="h-4 w-4 mr-1" />
-                          보기 모드로 전환
+                          <Eye className="h-3.5 w-3.5 mr-1" />
+                          보기
                         </Button>
                       ) : (
                         <Button 
-                          variant="outline" 
+                          variant="ghost" 
                           size="sm" 
-                          onClick={() => handleEdit("배차 정보")}
-                          className="px-2 py-1"
+                          onClick={() => handleSetEditMode("driver")}
+                          className="h-7 px-2"
                         >
-                          <Pencil className="h-4 w-4 mr-1" />
-                          편집 모드로 전환
+                          <Pencil className="h-3.5 w-3.5 mr-1" />
+                          편집
                         </Button>
                       )}
                     </div>
                   </CardHeader>
                   <CardContent className="p-0">
-                    <ScrollArea className="h-[700px]">
-                      <div className="">
-                        {isEditingDriverInfo ? (
+                    <ScrollArea className="h-[calc(90vh-220px)]">
+                      <div className="p-4">
+                        {editMode === "driver" ? (
                           <BrokerOrderDriverInfoEditForm
                             initialData={{
                               driver: orderData?.vehicle?.driver || { 
@@ -554,7 +648,7 @@ export function BrokerOrderDetailSheet() {
                               specialNotes: []
                             }}
                             onSave={handleSaveDriverInfo}
-                            onCancel={handleCancelDriverInfo}
+                            onCancel={handleCancelEdit}
                           />
                         ) : isAssigned ? (
                           <>
@@ -574,7 +668,7 @@ export function BrokerOrderDetailSheet() {
                               variant="outline"
                               size="sm"
                               className="mt-4"
-                              onClick={() => handleEdit("배차 정보")}
+                              onClick={() => handleSetEditMode("driver")}
                             >
                               배차 정보 입력하기
                             </Button>
@@ -586,37 +680,45 @@ export function BrokerOrderDetailSheet() {
                 </Card>
                 
                 {/* 운임/정산 정보 카드 */}
-                <Card className="overflow-hidden">
-                  <CardHeader className="bg-muted/20 flex flex-col md:flex-row items-center justify-between py-2 px-4">
-                    <CardTitle className="text-lg">운임/정산 정보</CardTitle>
-                    <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                      {isEditingSettlementInfo ? (
+                <Card className={cn(
+                  "overflow-hidden", 
+                  "md:block", 
+                  activeTab !== "settlement" && "hidden"
+                )}>
+                  <CardHeader className="bg-muted/20 flex flex-row items-center justify-between py-3 px-4 border-b">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-primary" />
+                      <CardTitle className="text-base font-medium">운임/정산 정보</CardTitle>
+                    </div>
+                    <div className="flex gap-2">
+                      {/* 편집 모드 전환 버튼 */}
+                      {editMode === "settlement" ? (
                         <Button 
-                          variant="outline" 
+                          variant="ghost" 
                           size="sm" 
-                          onClick={handleCancelSettlementInfo}
-                          className="px-2 py-1"
+                          onClick={handleCancelEdit}
+                          className="h-7 px-2"
                         >
-                          <X className="h-4 w-4 mr-1" />
-                          보기 모드로 전환
+                          <Eye className="h-3.5 w-3.5 mr-1" />
+                          보기
                         </Button>
                       ) : (
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
-                          onClick={() => handleEdit("운임/정산 정보")}
-                          className="px-2 py-1"
+                          onClick={() => handleSetEditMode("settlement")}
+                          className="h-7 px-2"
                         >
-                          <Pencil className="h-4 w-4 mr-1" />
-                          편집 모드로 전환
+                          <Pencil className="h-3.5 w-3.5 mr-1" />
+                          편집
                         </Button>
                       )}
                     </div>
                   </CardHeader>
                   <CardContent className="p-0">
-                    <ScrollArea className="h-[600px]">
+                    <ScrollArea className="h-[calc(90vh-220px)]">
                       <div className="p-4">
-                        {isEditingSettlementInfo ? (
+                        {editMode === "settlement" ? (
                           <BrokerOrderSettlementInfoEditForm 
                             initialData={{
                               baseAmount: orderData?.amount || 0,
@@ -624,7 +726,7 @@ export function BrokerOrderDetailSheet() {
                             }}
                             status={orderData?.status || "배차대기"}
                             onSave={handleSaveSettlementInfo}
-                            onCancel={handleCancelSettlementInfo}
+                            onCancel={handleCancelEdit}
                           />
                         ) : (
                           <BrokerOrderSettlementInfoCard 
@@ -644,7 +746,7 @@ export function BrokerOrderDetailSheet() {
             </div>
             
             {/* 상태 변경 이력 - 확장/축소 가능한 패널로 변경 */}
-            <div className="border-t">
+            <div className="border-t mt-auto">
               <details className="px-6 py-3">
                 <summary className="flex items-center gap-2 cursor-pointer">
                   <History className="h-5 w-5 text-primary" />
