@@ -1,14 +1,29 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { AlertTriangle, CheckCircle, CreditCard, DollarSign, TrendingUp, ArrowDownUp, Clock, Plus, Building, Factory, ReceiptIcon, TicketCheck } from "lucide-react";
+import { 
+  AlertTriangle, 
+  CheckCircle, 
+  CreditCard, 
+  DollarSign, 
+  TrendingUp, 
+  ArrowDownUp, 
+  Clock, 
+  Plus, 
+  Building, 
+  Factory, 
+  ReceiptIcon, 
+  TicketCheck,
+  ChevronDown
+} from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 
 // 추가금 타입 및 대상 정의
 type AdditionalFeeType = "대기" | "경유" | "수작업" | "왕복" | "톨비" | "수수료" | "현장착불";
@@ -53,6 +68,11 @@ interface BrokerOrderSettlementInfoCardProps {
 }
 
 export function BrokerOrderSettlementInfoCard({ fee, settlement, status }: BrokerOrderSettlementInfoCardProps) {
+  // 상태 변수 추가 - 접이식 UI 제어
+  const [shipperFeeOpen, setShipperFeeOpen] = useState(true); // 기본적으로 열려있게 설정
+  const [driverFeeOpen, setDriverFeeOpen] = useState(true); // 기본적으로 열려있게 설정
+  const [additionalFeesOpen, setAdditionalFeesOpen] = useState(false); // 추가금 상세 모달 상태
+  
   // 예상 금액과 계약 금액 차이 계산
   const calculateDifference = () => {
     if (!fee?.estimated || !fee?.contracted) return 0;
@@ -106,154 +126,199 @@ export function BrokerOrderSettlementInfoCard({ fee, settlement, status }: Broke
   
   return (
     <div className="space-y-4">
-      {/* 운임 정보 */}
-      <div>
-        <div className="flex items-center gap-2 mb-4">
-          <DollarSign className="h-4 w-4 text-primary" />
-          <h4 className="font-medium">운임 정보</h4>
-        </div>
-        
-        <div className="space-y-2">
-          {/* 결제방법 */}
-          <div className="grid grid-cols-3 gap-2 text-sm">
-            <div className="text-muted-foreground">결제방법</div>
-            <div className="col-span-2 font-medium">인수증/1매</div>
-          </div>
-
-          {/* 청구 운임 */}
-          <div className="grid grid-cols-3 gap-2 text-sm">
-            <div className="text-muted-foreground">청구 운임</div>
-            <div className="col-span-2 font-bold">
-            {displayAmount(chargeTotal) } {"(= 예상금액 + 추가운임)" }
+      {/* 운임 요약 카드 */}
+      <div className="bg-card rounded-lg p-4 border shadow-sm mb-2">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <div className="text-sm text-muted-foreground">화주 예상 운임</div>
+            <div className="text-xl font-bold text-primary">
+              {fee?.estimated ? formatCurrency(parseAmount(fee.estimated)) : 0}원
             </div>
           </div>
-          
-          {/* 배차(확정) 운임 (배차 완료 시에만 표시) */}
-          {status !== "배차대기" && (
-            <>
-              <div className="grid grid-cols-3 gap-2 text-sm">
-                <div className="text-muted-foreground">배차 운임</div>
-                <div className="col-span-2 font-bold">
-                  {fee?.contracted ? `${formatCurrency(parseAmount(fee.contracted))}원` : "-"}{"(= 배차금 + 추가금)" }
-                </div>
-              </div>
-              
-              {/* 차액 표시 */}
-              {difference !== 0 && (
-                <div className="flex items-center gap-2 text-sm mt-2">
-                  <ArrowDownUp className="h-3 w-3" />
-                  <span className={cn(
-                    difference > 0 ? "text-green-600" : "text-red-600"
-                  )}>
-                    {difference > 0 ? "+" : ""}{formatCurrency(difference)}원
-                  </span>
-                  <span className="text-muted-foreground">
-                    ({difference > 0 ? "증가" : "감소"})
-                  </span>
-                </div>
+          <div>
+            <div className="text-sm text-muted-foreground">차주 배차 운임</div>
+            <div className="text-xl font-bold text-muted-foreground">
+              {fee?.baseAmount ? formatCurrency(parseAmount(fee.baseAmount)) : 0}원
+              {fee?.baseAmount && fee?.estimated && parseAmount(fee.baseAmount) < parseAmount(fee.estimated) && (
+                <span className="text-sm text-muted-foreground ml-2">
+                  ({Math.round((parseAmount(fee.baseAmount) / parseAmount(fee.estimated) * 100) - 100)}%)
+                </span>
               )}
-            </>
-          )}
-          
-          {/* 할인 금액 (있는 경우만 표시) */}
-          {fee?.discount && parseInt(fee.discount.toString()) > 0 && (
-            <div className="grid grid-cols-3 gap-2 text-sm">
-              <div className="text-muted-foreground">할인 금액</div>
-              <div className="col-span-2 font-medium text-red-600">
-                -{formatCurrency(parseAmount(fee.discount))}원
-              </div>
             </div>
-          )}
+          </div>
+        </div>
+        <div className="mt-4 pt-4 border-t">
+          <div className="flex justify-between">
+            <div className="text-sm text-muted-foreground">예상 마진</div>
+            <div className={`text-xl font-bold ${profit >= 0 ? "text-green-600" : "text-red-600"}`}>
+              {profit >= 0 ? "+" : ""}{formatCurrency(profit)}원
+            </div>
+          </div>
         </div>
       </div>
-      
-      <Separator />
-      
-      {/* 추가금 정보 */}
-      {additionalFees.length > 0 && (
-        <>
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Plus className="h-4 w-4 text-primary" />
-              <h4 className="font-medium">추가금 정보</h4>
-            </div>
-            
-            <div className="border rounded-md overflow-hidden mb-4">
-              <div className="grid grid-cols-10 gap-0 bg-muted/20 p-2 text-sm font-medium border-b">
-                <div className="col-span-2">타입</div>
-                <div className="col-span-2 text-right">금액</div>
-                <div className="col-span-2">대상</div>
-                <div className="col-span-4">메모</div>
-              </div>
-              
-              <ScrollArea className="max-h-[200px]">
-                {additionalFees.map((fee) => (
-                  <div 
-                    key={fee.id} 
-                    className="grid grid-cols-10 gap-0 p-2 text-sm border-b hover:bg-muted/10"
-                  >
-                    <div className="col-span-2 flex items-center">
-                      <Badge variant="outline">{fee.type}</Badge>
-                    </div>
-                    <div className="col-span-2 text-right flex items-center justify-end">
-                      {displayAmount(fee.amount)}
-                    </div>
-                    <div className="col-span-2 flex items-center">
-                      <div className="flex gap-1">
-                        <Badge variant={fee.target.charge ? "secondary" : "outline"}>
-                          청구
-                        </Badge>
-                        <Badge variant={fee.target.dispatch ? "default" : "outline"}>
-                          배차
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="col-span-4 flex items-center truncate">
-                      {fee.memo}
-                    </div>
-                  </div>
-                ))}
-              </ScrollArea>
-            </div>
+
+      {/* 화주 청구 금액 섹션 */}
+      <div className="border rounded-lg overflow-hidden mb-4">
+        <div 
+          className="bg-muted/20 p-3 flex justify-between items-center cursor-pointer"
+          onClick={() => setShipperFeeOpen(!shipperFeeOpen)}
+        >
+          <div className="flex items-center gap-2">
+            <Building className="h-4 w-4 text-primary" />
+            <h4 className="font-medium">화주 청구 금액</h4>
           </div>
-          
-          <Separator />
-        </>
-      )}
-      
-      {/* 금액 요약 */}
-      <div className="bg-muted/10 p-4 rounded-md space-y-4">
-        {/* 배차 총액 */}
-        <div className="flex justify-between items-center">
-          <div className="text-sm font-medium">배차 총액</div>
-          <div className="text-lg font-bold">
-            {displayAmount(dispatchTotal)}
-          </div>
+          <ChevronDown className={`h-4 w-4 transition-transform ${shipperFeeOpen ? 'transform rotate-180' : ''}`} />
         </div>
         
-        {/* 청구 총액 */}
+        {shipperFeeOpen && (
+          <div className="p-4 space-y-3 border-t">
+            {/* 기본 운임 */}
+            <div className="grid grid-cols-3 gap-2 text-sm">
+              <div className="text-muted-foreground">기본 운임</div>
+              <div className="col-span-2 font-medium">
+                {fee?.estimated ? formatCurrency(parseAmount(fee.estimated)) : 0}원
+              </div>
+            </div>
+            
+            {/* 추가금 항목 - 화주 항목만 필터링 */}
+            {additionalFees.filter(fee => fee.target.charge).length > 0 && (
+              <>
+                <div className="text-sm text-muted-foreground">추가금 항목</div>
+                <div className="pl-4 space-y-2">
+                  {additionalFees.filter(fee => fee.target.charge).map(fee => (
+                    <div key={fee.id} className="grid grid-cols-3 gap-2 text-sm">
+                      <div>{fee.type}</div>
+                      <div className="col-span-2">{displayAmount(fee.amount)}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-sm font-medium border-t pt-2">
+                  <div className="text-muted-foreground">총 추가금</div>
+                  <div className="col-span-2">
+                    {formatCurrency(additionalFees.filter(fee => fee.target.charge).reduce((sum, fee) => {
+                      const feeAmount = typeof fee.amount === 'string' ? Number(fee.amount.replace(/,/g, '')) : fee.amount;
+                      return sum + feeAmount;
+                    }, 0))}원
+                  </div>
+                </div>
+              </>
+            )}
+            
+            {/* 세금 (미구현 상태) */}
+            <div className="grid grid-cols-3 gap-2 text-sm">
+              <div className="text-muted-foreground">세금(10%)</div>
+              <div className="col-span-2 font-medium text-muted-foreground">
+                <span className="italic">미적용</span>
+              </div>
+            </div>
+            
+            {/* 최종 청구 금액 */}
+            <div className="grid grid-cols-3 gap-2 text-lg font-bold border-t pt-3">
+              <div>최종 청구 금액</div>
+              <div className="col-span-2 text-primary">
+                {displayAmount(chargeTotal)}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 차주 배차 금액 섹션 */}
+      <div className="border rounded-lg overflow-hidden mb-4">
+        <div 
+          className="bg-muted/20 p-3 flex justify-between items-center cursor-pointer"
+          onClick={() => setDriverFeeOpen(!driverFeeOpen)}
+        >
+          <div className="flex items-center gap-2">
+            <Factory className="h-4 w-4 text-primary" />
+            <h4 className="font-medium">차주 배차 금액</h4>
+          </div>
+          <ChevronDown className={`h-4 w-4 transition-transform ${driverFeeOpen ? 'transform rotate-180' : ''}`} />
+        </div>
+        
+        {driverFeeOpen && (
+          <div className="p-4 space-y-3 border-t">
+            {/* 기본 배차 운임 */}
+            <div className="grid grid-cols-3 gap-2 text-sm">
+              <div className="text-muted-foreground">기본 배차 운임</div>
+              <div className="col-span-2 font-medium">
+                {fee?.baseAmount ? displayAmount(fee.baseAmount) : "-"}
+              </div>
+            </div>
+            
+            {/* 추가금 (통합) - 배차 항목만 필터링 */}
+            <div className="grid grid-cols-3 gap-2 text-sm">
+              <div className="text-muted-foreground">추가금 (통합)</div>
+              <div className="col-span-2 font-medium">
+                {formatCurrency(additionalFees.filter(fee => fee.target.dispatch).reduce((sum, fee) => {
+                  const feeAmount = typeof fee.amount === 'string' ? Number(fee.amount.replace(/,/g, '')) : fee.amount;
+                  return sum + feeAmount;
+                }, 0))}원
+                
+                {/* 추가금 상세 버튼 */}
+                {additionalFees.filter(fee => fee.target.dispatch).length > 0 && (
+                  <Button 
+                    variant="link" 
+                    size="sm" 
+                    className="p-0 h-auto ml-2 text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setAdditionalFeesOpen(true);
+                    }}
+                  >
+                    상세보기
+                  </Button>
+                )}
+              </div>
+            </div>
+            
+            {/* 세금 (미구현 상태) */}
+            <div className="grid grid-cols-3 gap-2 text-sm">
+              <div className="text-muted-foreground">세금(10%)</div>
+              <div className="col-span-2 font-medium text-muted-foreground">
+                <span className="italic">미적용</span>
+              </div>
+            </div>
+            
+            {/* 최종 배차 금액 */}
+            <div className="grid grid-cols-3 gap-2 text-lg font-bold border-t pt-3">
+              <div>최종 배차 금액</div>
+              <div className="col-span-2">
+                {displayAmount(dispatchTotal)}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      
+      {/* 마진 비교 섹션 */}
+      <div className="bg-muted/10 p-4 rounded-md space-y-4 mb-4">
         <div className="flex justify-between items-center">
-          <div className="text-sm font-medium">청구 총액</div>
+          <div className="text-sm font-medium">화주 청구금</div>
           <div className="text-lg font-bold">
             {displayAmount(chargeTotal)}
           </div>
         </div>
         
-        {/* 구분선 */}
+        <div className="flex justify-between items-center">
+          <div className="text-sm font-medium">차주 배차금</div>
+          <div className="text-lg font-bold">
+            {displayAmount(dispatchTotal)}
+          </div>
+        </div>
+        
         <Separator />
         
-        {/* 수익 */}
         <div className="flex justify-between items-center">
-          <div className="text-sm font-medium">수익 (청구-배차)</div>
+          <div className="text-sm font-medium">예상 마진</div>
           <div className={`text-lg font-bold ${profit >= 0 ? "text-green-600" : "text-red-600"}`}>
             {profit >= 0 ? "+" : ""}{formatCurrency(profit)}원
           </div>
         </div>
       </div>
-      
+
       <Separator />
      
-
       {/* 계산서 정보*/}
       <div>      
           <div className="space-y-3">
@@ -282,11 +347,6 @@ export function BrokerOrderSettlementInfoCard({ fee, settlement, status }: Broke
 
               <div className="text-muted-foreground">송금일</div>
               <div className="col-span-2 font-medium">2025-01-01</div>
-
-              
-
-
-
             </div>
           </div>
       </div>
