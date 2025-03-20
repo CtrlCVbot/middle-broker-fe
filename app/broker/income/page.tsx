@@ -9,15 +9,20 @@ import {
   Calendar, 
   DollarSign, 
   FileText, 
+  Loader2,
   Package, 
+  PlusCircle,
   TrendingUp 
 } from "lucide-react";
 import { useIncomeStore } from "@/store/income-store";
+import { useIncomeWaitingStore } from "@/store/income-waiting-store";
 import { IncomeList } from "@/components/broker/income/income-list";
 import { IncomeDetailSheet } from "@/components/broker/income/income-detail-sheet";
 import { IncomeFilter } from "@/components/broker/income/income-filter";
 import { IncomeStatusType } from "@/types/income";
 import { formatCurrency } from "@/lib/utils";
+import { IncomeWaitingTable } from "@/components/broker/income/income-waiting-table";
+import { IncomeWaitingSearch } from "@/components/broker/income/income-waiting-search";
 
 export default function IncomePage() {
   // 정산 데이터 스토어 접근
@@ -35,16 +40,33 @@ export default function IncomePage() {
     updateIncomeStatus,
     resetFilter
   } = useIncomeStore();
+  
+  // 정산 대기 화물 스토어 접근
+  const {
+    filter: waitingFilter,
+    filterOptions,
+    currentPage: waitingCurrentPage,
+    totalPages: waitingTotalPages,
+    isLoading: waitingIsLoading,
+    selectedOrderIds,
+    fetchWaitingOrders,
+    getOrdersByPage,
+    setFilter: setWaitingFilter,
+    setCurrentPage: setWaitingPage,
+    selectOrder,
+    selectAllOrders,
+    createIncome,
+  } = useIncomeWaitingStore();
 
   // 초기 데이터 로드
   useEffect(() => {
-    console.log('useEffect 실행됨 - 데이터 로드');
+    console.log('useEffect 실행됨 - 정산 데이터 로드');
     const loadData = async () => {
       try {
         await fetchIncomes(currentPage);
-        console.log('데이터 로드 완료');
+        console.log('정산 데이터 로드 완료');
       } catch (error) {
-        console.error('데이터 로드 중 오류 발생:', error);
+        console.error('정산 데이터 로드 중 오류 발생:', error);
       }
     };
     
@@ -57,10 +79,21 @@ export default function IncomePage() {
       filter.shipperName, 
       filter.invoiceStatus, 
       filter.manager]);
+      
+  // 정산 대기 화물 데이터 로드
+  useEffect(() => {
+    console.log('useEffect 실행됨 - 정산 대기 화물 데이터 로드');
+    fetchWaitingOrders();
+  }, [fetchWaitingOrders]);
 
   // 페이지 변경 처리
   const handlePageChange = (page: number) => {
     setPage(page);
+  };
+  
+  // 정산 대기 화물 페이지 변경 처리
+  const handleWaitingPageChange = (page: number) => {
+    setWaitingPage(page);
   };
 
   // 정산 상태 변경 처리
@@ -91,6 +124,9 @@ export default function IncomePage() {
       setFilter({ status: value as IncomeStatusType });
     }
   };
+  
+  // 현재 페이지의 정산 대기 화물 목록
+  const currentWaitingOrders = getOrdersByPage(waitingCurrentPage);
   
   // 요약 정보 계산 - useMemo로 캐싱하여 무한 루프 방지
   const incomeData = useIncomeStore(state => state.incomes);
@@ -192,9 +228,45 @@ export default function IncomePage() {
         </TabsList>
         
         <TabsContent value="WAITING">
-          {/* 정산대기 컨텐츠는 나중에 추가 */}
-          <div className="text-center py-8 text-muted-foreground">
-            정산대기 탭 컨텐츠가 여기에 표시됩니다
+          {/* 정산 대기 화물 기능 통합 */}
+          <div className="space-y-6">
+            <div className="flex justify-between items-start">
+              <p className="text-muted-foreground">
+                운송이 완료된 화물 중 정산 대기 상태인 화물을 선택하여 정산 항목으로 등록할 수 있습니다.
+              </p>
+              <Button
+                onClick={createIncome}
+                disabled={selectedOrderIds.length === 0}
+                className="gap-1"
+              >
+                <PlusCircle className="h-4 w-4" />
+                선택한 화물 정산하기 ({selectedOrderIds.length})
+              </Button>
+            </div>
+            
+            {/* 검색 필터 */}
+            <IncomeWaitingSearch
+              filter={waitingFilter}
+              setFilter={setWaitingFilter}
+              filterOptions={filterOptions}
+            />
+            
+            {/* 로딩 상태 */}
+            {waitingIsLoading ? (
+              <div className="flex h-[300px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary/70" />
+              </div>
+            ) : (
+              <IncomeWaitingTable
+                orders={currentWaitingOrders}
+                currentPage={waitingCurrentPage}
+                totalPages={waitingTotalPages}
+                onPageChange={handleWaitingPageChange}
+                selectedOrders={selectedOrderIds}
+                onOrderSelect={selectOrder}
+                onSelectAll={selectAllOrders}
+              />
+            )}
           </div>
         </TabsContent>
         
