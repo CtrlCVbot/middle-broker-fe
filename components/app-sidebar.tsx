@@ -22,7 +22,8 @@ import {
   Calculator,
   CreditCard,
   Building,
-  DollarSign
+  DollarSign,
+  PlusCircle
 } from "lucide-react"
 import Link from 'next/link'
 
@@ -159,6 +160,16 @@ export const data = {
       title: "매출 정산",
       url: "/broker/income",
       icon: DollarSign,
+      items: [
+        {
+          title: "정산 목록",
+          url: "/broker/income",
+        },
+        {
+          title: "정산 대기 화물",
+          url: "/broker/income/first-settlement",
+        }
+      ],
     },
   ], 
 
