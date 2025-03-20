@@ -21,7 +21,8 @@ import {
   PackagePlus,
   Calculator,
   CreditCard,
-  Building
+  Building,
+  DollarSign
 } from "lucide-react"
 import Link from 'next/link'
 
@@ -153,6 +154,11 @@ export const data = {
       title: "차주 관리",
       url: "/broker/driver/list",
       icon: Truck,
+    },
+    {
+      title: "매출 정산",
+      url: "/broker/income",
+      icon: DollarSign,
     },
   ], 
 

@@ -114,7 +114,7 @@ export const MANAGERS = [
   { name: "최물류", contact: "010-5678-9012" }
 ];
 
-// 목업 중개 화물 데이터 생성
+// 중개 화물 목업 데이터 생성
 const generateMockBrokerOrders = (count: number): IBrokerOrder[] => {
   const orders: IBrokerOrder[] = [];
   
@@ -259,10 +259,10 @@ const generateMockBrokerOrders = (count: number): IBrokerOrder[] => {
   return orders;
 };
 
-// 전체 목업 데이터 (500개)
-const ALL_BROKER_ORDERS = generateMockBrokerOrders(500);
+// 생성된 목업 데이터
+export const mockBrokerOrders = generateMockBrokerOrders(100);
 
-// 주문 목록의 요약 정보 계산
+// 주문 요약 정보 계산 함수
 const calculateOrdersSummary = (orders: IBrokerOrder[]): IBrokerOrderSummary => {
   return {
     totalOrders: orders.length,
@@ -289,7 +289,7 @@ export const getBrokerOrdersByPage = (
   manager?: string
 ): IBrokerOrderResponse => {
   // 필터링
-  let filteredOrders = [...ALL_BROKER_ORDERS];
+  let filteredOrders = [...mockBrokerOrders];
   
   // 출발지 필터
   if (departureCity) {
