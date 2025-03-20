@@ -30,11 +30,11 @@ interface IncomeFilterProps {
 
 export function IncomeFilter({ onFilterChange, onResetFilter }: IncomeFilterProps) {
   // 필터 상태
-  const [status, setStatus] = useState<string>("");
+  const [status, setStatus] = useState<string>("all");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState("");
-  const [invoiceStatus, setInvoiceStatus] = useState<string>("");
+  const [invoiceStatus, setInvoiceStatus] = useState<string>("all");
   
   // 날짜 포맷 함수
   const formatDateForFilter = (date: Date | undefined) => {
@@ -45,11 +45,11 @@ export function IncomeFilter({ onFilterChange, onResetFilter }: IncomeFilterProp
   // 필터 적용
   const handleApplyFilter = () => {
     onFilterChange({
-      status: status ? (status as IncomeStatusType) : undefined,
+      status: status === "all" ? undefined : (status as IncomeStatusType),
       startDate: formatDateForFilter(startDate),
       endDate: formatDateForFilter(endDate),
       searchTerm: searchTerm || undefined,
-      invoiceStatus: invoiceStatus || undefined
+      invoiceStatus: invoiceStatus === "all" ? undefined : invoiceStatus || undefined
     });
   };
   
@@ -62,11 +62,11 @@ export function IncomeFilter({ onFilterChange, onResetFilter }: IncomeFilterProp
   
   // 필터 초기화
   const handleResetFilter = () => {
-    setStatus("");
+    setStatus("all");
     setStartDate(undefined);
     setEndDate(undefined);
     setSearchTerm("");
-    setInvoiceStatus("");
+    setInvoiceStatus("all");
     onResetFilter();
   };
   
@@ -105,10 +105,12 @@ export function IncomeFilter({ onFilterChange, onResetFilter }: IncomeFilterProp
                 <SelectValue placeholder="모든 상태" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">모든 상태</SelectItem>
+                <SelectItem value="all">모든 상태</SelectItem>
                 {INCOME_STATUS.map((status) => (
                   <SelectItem key={status} value={status}>
-                    {status}
+                    {status === 'WAITING' ? '정산대기' : 
+                     status === 'MATCHING' ? '정산대사' : 
+                     status === 'COMPLETED' ? '정산완료' : status}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -128,7 +130,7 @@ export function IncomeFilter({ onFilterChange, onResetFilter }: IncomeFilterProp
                 <SelectValue placeholder="모든 상태" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">모든 상태</SelectItem>
+                <SelectItem value="all">모든 상태</SelectItem>
                 <SelectItem value="미발행">미발행</SelectItem>
                 <SelectItem value="발행대기">발행대기</SelectItem>
                 <SelectItem value="발행완료">발행완료</SelectItem>

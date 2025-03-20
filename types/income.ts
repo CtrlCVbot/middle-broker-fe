@@ -5,15 +5,15 @@ import { IBrokerOrder, BrokerOrderStatusType } from "./broker-order";
 
 // 매출 정산 상태 타입 정의
 export type IncomeStatusType = 
-  | '정산대기' 
-  | '정산대사' 
-  | '정산완료';
+  | 'WAITING'  // 정산대기 
+  | 'MATCHING' // 정산대사 
+  | 'COMPLETED'; // 정산완료
 
 // 매출 정산 상태 배열 - 상태 순서대로 정의
 export const INCOME_STATUS: IncomeStatusType[] = [
-  '정산대기', 
-  '정산대사', 
-  '정산완료'
+  'WAITING', 
+  'MATCHING', 
+  'COMPLETED'
 ];
 
 // 매출 정산 추가금 유형 타입 정의
@@ -51,7 +51,7 @@ export interface IIncome {
   id: string;                  // 정산번호 (고유 식별자)
   status: IncomeStatusType;    // 상태 (정산대기, 정산대사, 정산완료)
   orderIds: string[];          // 포함된 화물 ID 목록
-  orders?: IBrokerOrder[];     // 포함된 화물 목록 (채울 수 있는 경우)
+  // orders?: IBrokerOrder[]; 필드 제거 또는 주석 처리하여 불필요한 참조 제거
   orderCount: number;          // 화물 건수
   
   // 화주 정보

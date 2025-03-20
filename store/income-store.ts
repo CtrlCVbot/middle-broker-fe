@@ -89,7 +89,6 @@ export const useIncomeStore = create<IncomeStoreState>((set, get) => ({
       },
       currentPage: 1 // 필터 변경 시 첫 페이지로 이동
     });
-    get().fetchIncomes(1);
   },
   
   // 필터 초기화
@@ -98,16 +97,17 @@ export const useIncomeStore = create<IncomeStoreState>((set, get) => ({
       filter: initialFilter,
       currentPage: 1
     });
-    get().fetchIncomes(1);
   },
   
   // 정산 목록 조회
   fetchIncomes: async (page = 1, limit = 10) => {
+    console.log('fetchIncomes 호출됨:', page, limit);
     const { filter } = get();
     
     set({ isLoading: true, error: null });
     
     try {
+      console.log('목업 데이터 요청 시작...');
       const response = getIncomesByPage(
         page,
         limit,
@@ -121,6 +121,7 @@ export const useIncomeStore = create<IncomeStoreState>((set, get) => ({
         filter.maxAmount,
         filter.manager
       );
+      console.log('목업 데이터 응답 받음:', response.data.length);
       
       set({
         incomes: response.data,
@@ -140,8 +141,8 @@ export const useIncomeStore = create<IncomeStoreState>((set, get) => ({
   
   // 페이지 변경
   setPage: (page) => {
+    console.log('setPage 호출됨:', page);
     set({ currentPage: page });
-    get().fetchIncomes(page);
   },
   
   // 정산 상태 변경
@@ -172,9 +173,6 @@ export const useIncomeStore = create<IncomeStoreState>((set, get) => ({
         incomes: updatedIncomes,
         isLoading: false
       });
-      
-      // 실제 앱에서는 성공 시 데이터 갱신
-      await get().fetchIncomes(get().currentPage);
     } catch (error) {
       console.error('정산 상태 변경 오류:', error);
       set({
@@ -236,9 +234,6 @@ export const useIncomeStore = create<IncomeStoreState>((set, get) => ({
         incomes: updatedIncomes,
         isLoading: false
       });
-      
-      // 실제 앱에서는 성공 시 데이터 갱신
-      await get().fetchIncomes(get().currentPage);
     } catch (error) {
       console.error('추가금 추가 오류:', error);
       set({
@@ -292,9 +287,6 @@ export const useIncomeStore = create<IncomeStoreState>((set, get) => ({
         incomes: updatedIncomes,
         isLoading: false
       });
-      
-      // 실제 앱에서는 성공 시 데이터 갱신
-      await get().fetchIncomes(get().currentPage);
     } catch (error) {
       console.error('추가금 삭제 오류:', error);
       set({
@@ -339,9 +331,6 @@ export const useIncomeStore = create<IncomeStoreState>((set, get) => ({
         incomes: updatedIncomes,
         isLoading: false
       });
-      
-      // 실제 앱에서는 성공 시 데이터 갱신
-      await get().fetchIncomes(get().currentPage);
     } catch (error) {
       console.error('세금 면제 설정 오류:', error);
       set({

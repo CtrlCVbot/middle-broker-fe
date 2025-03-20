@@ -116,6 +116,7 @@ export const MANAGERS = [
 
 // 중개 화물 목업 데이터 생성
 const generateMockBrokerOrders = (count: number): IBrokerOrder[] => {
+  console.log('화물 목업 데이터 생성 시작:', count);
   const orders: IBrokerOrder[] = [];
   
   for (let i = 0; i < count; i++) {
@@ -256,11 +257,25 @@ const generateMockBrokerOrders = (count: number): IBrokerOrder[] => {
     });
   }
   
+  console.log('화물 목업 데이터 생성 완료:', orders.length);
   return orders;
 };
 
 // 생성된 목업 데이터
-export const mockBrokerOrders = generateMockBrokerOrders(100);
+console.log('화물 목업 데이터 초기화 중...');
+// 직접 생성하는 대신 지연 초기화를 위한 변수와 함수 정의
+let _mockBrokerOrders: IBrokerOrder[] | null = null;
+
+// 지연 초기화 함수 - 실제로 필요할 때만 데이터 생성
+export const getMockBrokerOrders = (): IBrokerOrder[] => {
+  if (_mockBrokerOrders === null) {
+    console.log('최초 화물 데이터 생성 시작...');
+    _mockBrokerOrders = generateMockBrokerOrders(30); // 데이터 수 감소
+    console.log('최초 화물 데이터 생성 완료:', _mockBrokerOrders.length);
+  }
+  return _mockBrokerOrders;
+};
+console.log('화물 목업 데이터 초기화 완료 (지연 로딩 준비)');
 
 // 주문 요약 정보 계산 함수
 const calculateOrdersSummary = (orders: IBrokerOrder[]): IBrokerOrderSummary => {
@@ -288,6 +303,9 @@ export const getBrokerOrdersByPage = (
   callCenter?: string,
   manager?: string
 ): IBrokerOrderResponse => {
+  // 지연 초기화된 데이터 사용
+  const mockBrokerOrders = getMockBrokerOrders();
+  
   // 필터링
   let filteredOrders = [...mockBrokerOrders];
   

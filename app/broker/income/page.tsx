@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -38,8 +38,25 @@ export default function IncomePage() {
 
   // 초기 데이터 로드
   useEffect(() => {
-    fetchIncomes();
-  }, []);
+    console.log('useEffect 실행됨 - 데이터 로드');
+    const loadData = async () => {
+      try {
+        await fetchIncomes(currentPage);
+        console.log('데이터 로드 완료');
+      } catch (error) {
+        console.error('데이터 로드 중 오류 발생:', error);
+      }
+    };
+    
+    loadData();
+  }, [currentPage, 
+      filter.status, 
+      filter.startDate, 
+      filter.endDate, 
+      filter.searchTerm, 
+      filter.shipperName, 
+      filter.invoiceStatus, 
+      filter.manager]);
 
   // 페이지 변경 처리
   const handlePageChange = (page: number) => {
@@ -77,16 +94,19 @@ export default function IncomePage() {
     }
   };
   
-  // 요약 정보 계산
-  const summary = useIncomeStore((state) => state.incomes.reduce(
-    (acc, income) => {
-      acc.totalAmount += income.finalAmount;
-      acc.totalCount += 1;
-      acc.totalOrderCount += income.orderCount;
-      return acc;
-    },
-    { totalAmount: 0, totalCount: 0, totalOrderCount: 0 }
-  ));
+  // 요약 정보 계산 - useMemo로 캐싱하여 무한 루프 방지
+  const incomeData = useIncomeStore(state => state.incomes);
+  const summary = useMemo(() => {
+    return incomeData.reduce(
+      (acc, income) => {
+        acc.totalAmount += income.finalAmount;
+        acc.totalCount += 1;
+        acc.totalOrderCount += income.orderCount;
+        return acc;
+      },
+      { totalAmount: 0, totalCount: 0, totalOrderCount: 0 }
+    );
+  }, [incomeData]);
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -169,9 +189,9 @@ export default function IncomePage() {
       >
         <TabsList className="grid grid-cols-4 md:w-auto">
           <TabsTrigger value="all">전체</TabsTrigger>
-          <TabsTrigger value="정산대기">정산대기</TabsTrigger>
-          <TabsTrigger value="정산대사">정산대사</TabsTrigger>
-          <TabsTrigger value="정산완료">정산완료</TabsTrigger>
+          <TabsTrigger value="WAITING">정산대기</TabsTrigger>
+          <TabsTrigger value="MATCHING">정산대사</TabsTrigger>
+          <TabsTrigger value="COMPLETED">정산완료</TabsTrigger>
         </TabsList>
       </Tabs>
       
@@ -187,7 +207,7 @@ export default function IncomePage() {
         <Card className="p-4 text-center text-red-500">
           <div className="flex flex-col items-center gap-2">
             <span className="font-medium">{error}</span>
-            <Button size="sm" onClick={() => fetchIncomes()}>
+            <Button size="sm" onClick={() => fetchIncomes(currentPage)}>
               새로고침
             </Button>
           </div>

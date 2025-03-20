@@ -12,7 +12,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { addDays, format, subDays, addHours, addMinutes } from 'date-fns';
 
 // 목업 데이터 생성을 위한 임포트
-import { mockBrokerOrders } from "./mock-broker-orders";
+import { getMockBrokerOrders } from "./mock-broker-orders";
 
 // 현재 날짜 문자열 가져오기
 const getCurrentDateString = (): string => {
@@ -93,53 +93,50 @@ const generateAdditionalFees = (orderIds: string[] = [], count: number = 0): IAd
   return result;
 };
 
-// 정산 로그 생성 함수
-const generateIncomeLogs = (status: IncomeStatusType, createdDays: number = 7): IIncomeLog[] => {
+// 정산 상태 로그 생성 함수
+function generateStatusLogs(status: IncomeStatusType, createdAt: Date): IIncomeLog[] {
   const logs: IIncomeLog[] = [];
-  const createdDate = format(subDays(new Date(), createdDays), 'yyyy-MM-dd');
-  const createdTime = format(
-    addHours(addMinutes(new Date(), -createdDays * 24 * 60), Math.random() * 12),
-    'HH:mm:ss'
-  );
+  const createdDate = new Date(createdAt);
   
-  // 초기 상태 로그 추가
+  // 항상 정산대기 로그 추가
   logs.push({
-    status: '정산대기',
-    date: createdDate,
-    time: createdTime,
+    status: 'WAITING',
+    time: createdDate.toTimeString().split(' ')[0],
+    date: createdDate.toISOString().split('T')[0],
     handler: '시스템',
-    remark: '정산 대기 전환'
+    remark: '정산 생성'
   });
   
-  // 상태에 따라 추가 로그 생성
-  if (status === '정산대사' || status === '정산완료') {
-    const processDate = format(addDays(new Date(createdDate), Math.floor(Math.random() * 3) + 1), 'yyyy-MM-dd');
-    const processTime = getRandomTimeString();
+  // 정산대사 상태인 경우
+  if (status === 'MATCHING' || status === 'COMPLETED') {
+    const matchingDate = new Date(createdDate);
+    matchingDate.setDate(matchingDate.getDate() + 1); // 하루 뒤
     
     logs.push({
-      status: '정산대사',
-      date: processDate,
-      time: processTime,
-      handler: '관리자',
-      remark: '정산 대사 진행'
+      status: 'MATCHING',
+      time: matchingDate.toTimeString().split(' ')[0],
+      date: matchingDate.toISOString().split('T')[0],
+      handler: '김담당',
+      remark: '정산 검토 완료'
     });
   }
   
-  if (status === '정산완료') {
-    const completeDate = format(new Date(), 'yyyy-MM-dd');
-    const completeTime = getRandomTimeString();
+  // 정산완료 상태인 경우
+  if (status === 'COMPLETED') {
+    const completedDate = new Date(createdDate);
+    completedDate.setDate(completedDate.getDate() + 2); // 이틀 뒤
     
     logs.push({
-      status: '정산완료',
-      date: completeDate,
-      time: completeTime,
-      handler: '관리자',
-      remark: '정산 완료 처리'
+      status: 'COMPLETED',
+      time: completedDate.toTimeString().split(' ')[0],
+      date: completedDate.toISOString().split('T')[0],
+      handler: '이승인',
+      remark: '최종 승인 완료'
     });
   }
   
   return logs;
-};
+}
 
 // 무작위 사업자번호 생성 함수
 const generateBusinessNumber = (): string => {
@@ -153,7 +150,7 @@ const generateBusinessNumber = (): string => {
 // 특정 화물 ID 목록으로 정산 데이터 생성 함수
 export const createIncomeFromOrders = (
   orders: IBrokerOrder[], 
-  status: IncomeStatusType = '정산대기',
+  status: IncomeStatusType = 'WAITING',
   additionalFeesCount: number = 0
 ): IIncome => {
   // 화주 정보 추출 (첫 번째 화물에서 가져옴)
@@ -193,18 +190,18 @@ export const createIncomeFromOrders = (
   const finalAmount = totalAmount + tax;
   
   // 로그 생성
-  const logs = generateIncomeLogs(status, Math.floor(Math.random() * 7) + 1);
+  const logs = generateStatusLogs(status, new Date());
   
   // 정산서 상태 처리
   let invoiceStatus: '미발행' | '발행대기' | '발행완료' | '발행오류' = '미발행';
   let invoiceNumber: string | undefined = undefined;
   let invoiceIssuedDate: string | undefined = undefined;
   
-  if (status === '정산완료') {
+  if (status === 'COMPLETED') {
     invoiceStatus = '발행완료';
     invoiceNumber = `INV-${Math.floor(Math.random() * 10000) + 1000}`;
     invoiceIssuedDate = getCurrentDateString();
-  } else if (status === '정산대사') {
+  } else if (status === 'MATCHING') {
     invoiceStatus = Math.random() > 0.7 ? '발행대기' : '미발행';
   }
   
@@ -212,12 +209,11 @@ export const createIncomeFromOrders = (
   const managers = ['김관리', '이담당', '박매니저', '정책임'];
   const manager = managers[Math.floor(Math.random() * managers.length)];
   
-  // 정산 데이터 생성
+  // 정산 데이터 생성 - orders 객체 전체를 포함하지 않도록 수정
   return {
     id: `INC-${Math.floor(Math.random() * 100000) + 10000}`,
     status,
     orderIds,
-    orders,
     orderCount: orders.length,
     
     shipperName,
@@ -250,88 +246,73 @@ export const createIncomeFromOrders = (
 };
 
 // 정산 목업 데이터 생성 함수
-export const generateMockIncomes = (count: number = 20): IIncome[] => {
-  // 운송 마감된 화물만 필터링
-  const completedOrders = mockBrokerOrders.filter(order => order.status === '운송마감');
+export function generateMockIncomes(): IIncome[] {
+  console.log('정산 데이터 생성 시작...');
   
-  // 화주별로 화물 그룹화
-  const groupedOrders = groupOrdersByShipper(completedOrders);
+  // getMockBrokerOrders에서 원본 배열 복사
+  const orders = [...getMockBrokerOrders()].filter(order => 
+    order.status === '운송마감' || order.status === '하차완료'
+  );
   
-  const incomes: IIncome[] = [];
-  
-  // 각 화주별로 정산 데이터 생성
-  Object.entries(groupedOrders).forEach(([shipperName, orders]) => {
-    // 화주의 화물이 많을 경우, 여러 묶음으로 나눠서 정산 생성
-    if (orders.length > 5 && Math.random() > 0.5) {
-      const batch1 = orders.slice(0, Math.floor(orders.length / 2));
-      const batch2 = orders.slice(Math.floor(orders.length / 2));
-      
-      // 첫 번째 묶음 - 정산 완료 상태
-      if (batch1.length > 0) {
-        incomes.push(createIncomeFromOrders(batch1, '정산완료', 2));
-      }
-      
-      // 두 번째 묶음 - 정산 대사 또는 정산 대기 상태
-      if (batch2.length > 0) {
-        const status: IncomeStatusType = Math.random() > 0.5 ? '정산대사' : '정산대기';
-        incomes.push(createIncomeFromOrders(batch2, status, 1));
-      }
-    } else {
-      // 단일 묶음으로 정산 생성
-      if (orders.length > 0) {
-        // 랜덤 상태 지정
-        const statusRand = Math.random();
-        let status: IncomeStatusType = '정산대기';
-        
-        if (statusRand > 0.7) {
-          status = '정산완료';
-        } else if (statusRand > 0.4) {
-          status = '정산대사';
-        }
-        
-        incomes.push(createIncomeFromOrders(orders, status));
-      }
+  // 완료된 주문을 화주별로 그룹화
+  const groupedOrders: { [key: string]: IBrokerOrder[] } = {};
+  for (const order of orders) {
+    if (!order.company) continue;
+    if (!groupedOrders[order.company]) {
+      groupedOrders[order.company] = [];
     }
-  });
-  
-  // 필요한 경우 더 많은 정산 생성
-  while (incomes.length < count) {
-    // 랜덤하게 화주 선택
-    const shippers = Object.keys(groupedOrders);
-    const randomShipper = shippers[Math.floor(Math.random() * shippers.length)];
-    const orders = groupedOrders[randomShipper];
-    
-    // 랜덤하게 화물 선택 (3~5개)
-    const orderCount = Math.floor(Math.random() * 3) + 3;
-    const selectedOrders = [];
-    for (let i = 0; i < orderCount && i < orders.length; i++) {
-      const randomIndex = Math.floor(Math.random() * orders.length);
-      selectedOrders.push(orders[randomIndex]);
-      // 중복 방지를 위해 선택된 화물 제거
-      orders.splice(randomIndex, 1);
-    }
-    
-    if (selectedOrders.length > 0) {
-      // 랜덤 상태 지정
-      const statusRand = Math.random();
-      let status: IncomeStatusType = '정산대기';
-      
-      if (statusRand > 0.7) {
-        status = '정산완료';
-      } else if (statusRand > 0.4) {
-        status = '정산대사';
-      }
-      
-      incomes.push(createIncomeFromOrders(selectedOrders, status));
-    }
+    groupedOrders[order.company].push(order);
   }
   
-  return incomes.slice(0, count);
-};
+  const shippers = Object.keys(groupedOrders);
+  let incomes: IIncome[] = [];
+  
+  // 최대 15개의 정산 데이터 생성 (최적화)
+  for (let i = 0; i < 15; i++) {
+    // 랜덤 화주 선택
+    const randomShipper = shippers[Math.floor(Math.random() * shippers.length)];
+    const shippersOrders = groupedOrders[randomShipper];
+    
+    // 화주의 주문이 없거나 모두 소진된 경우 스킵
+    if (!shippersOrders || shippersOrders.length === 0) {
+      continue;
+    }
+    
+    // 랜덤하게 화물 선택 (3~5개) - 원본 배열을 변형하지 않도록 복사본 사용
+    const orderCount = Math.min(Math.floor(Math.random() * 3) + 3, shippersOrders.length);
+    const availableOrderIndices = Array.from({ length: shippersOrders.length }, (_, i) => i);
+    const selectedOrders = [];
+    
+    for (let i = 0; i < orderCount; i++) {
+      if (availableOrderIndices.length === 0) break;
+      
+      const randomIndex = Math.floor(Math.random() * availableOrderIndices.length);
+      const orderIndex = availableOrderIndices[randomIndex];
+      selectedOrders.push(shippersOrders[orderIndex]);
+      
+      // 선택된 인덱스 제거 (중복 방지)
+      availableOrderIndices.splice(randomIndex, 1);
+    }
+    
+    // 정산 상태 랜덤 선택
+    const statusOptions: IncomeStatusType[] = ['WAITING', 'MATCHING', 'COMPLETED'];
+    const status = statusOptions[Math.floor(Math.random() * statusOptions.length)];
+    
+    // 정산 생성
+    const income = createIncomeFromOrders(selectedOrders, status);
+    incomes.push(income);
+  }
+  
+  // 생성 날짜 순으로 정렬 (최신순)
+  incomes.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  
+  console.log(`총 ${incomes.length}개의 정산 데이터 생성 완료`);
+  return incomes;
+}
 
 // 정산 요약 정보 계산 함수
 export const calculateIncomeSummary = (incomes: IIncome[]): IncomeSummary => {
-  return {
+  const summary: IncomeSummary = {
     totalIncomes: incomes.length,
     totalOrders: incomes.reduce((sum, income) => sum + income.orderCount, 0),
     totalBaseAmount: incomes.reduce((sum, income) => sum + income.totalBaseAmount, 0),
@@ -340,86 +321,109 @@ export const calculateIncomeSummary = (incomes: IIncome[]): IncomeSummary => {
     totalTax: incomes.reduce((sum, income) => sum + income.tax, 0),
     totalFinalAmount: incomes.reduce((sum, income) => sum + income.finalAmount, 0)
   };
+  
+  return summary;
 };
 
 // 정산 목업 데이터
-export const mockIncomes = generateMockIncomes(30);
+console.log('정산 목업 데이터 초기화 중...');
+// 직접 생성하는 대신 지연 초기화를 위한 함수로 변경
+let _mockIncomes: IIncome[] | null = null;
+
+// 지연 초기화 함수 - 실제로 필요할 때만 데이터 생성
+export const getMockIncomes = (): IIncome[] => {
+  if (_mockIncomes === null) {
+    console.log('최초 정산 데이터 생성 시작...');
+    _mockIncomes = generateMockIncomes();
+    console.log('최초 정산 데이터 생성 완료:', _mockIncomes.length);
+  }
+  return _mockIncomes;
+};
+console.log('정산 목업 데이터 초기화 완료 (지연 로딩 준비)');
 
 // 페이지별 정산 데이터 가져오기 함수
 export const getIncomesByPage = (
   page: number, 
   limit: number,
-  status?: IncomeStatusType,
-  shipperName?: string,
-  startDate?: string,
-  endDate?: string,
-  searchTerm?: string,
-  invoiceStatus?: string,
-  minAmount?: number,
-  maxAmount?: number,
-  manager?: string
+  filter: any = {}
 ): IIncomeResponse => {
+  console.log(`[getIncomesByPage] 페이지: ${page}, 한 페이지당 항목: ${limit}, 필터:`, filter);
+  
+  // 지연 초기화된 데이터 사용
+  const mockIncomes = getMockIncomes();
+  
   // 필터링
   let filteredIncomes = [...mockIncomes];
+  console.log('전체 정산 데이터 수:', mockIncomes.length);
   
-  if (status) {
-    filteredIncomes = filteredIncomes.filter(income => income.status === status);
-  }
-  
-  if (shipperName) {
+  // 화주명 필터
+  if (filter.shipperName) {
     filteredIncomes = filteredIncomes.filter(income => 
-      income.shipperName.toLowerCase().includes(shipperName.toLowerCase())
+      income.shipperName?.includes(filter.shipperName)
     );
   }
   
-  if (startDate) {
-    filteredIncomes = filteredIncomes.filter(income => income.endDate >= startDate);
+  // 사업자번호 필터
+  if (filter.businessNumber) {
+    filteredIncomes = filteredIncomes.filter(income => 
+      income.businessNumber?.includes(filter.businessNumber)
+    );
   }
   
-  if (endDate) {
-    filteredIncomes = filteredIncomes.filter(income => income.startDate <= endDate);
+  // 상태 필터
+  if (filter.status) {
+    filteredIncomes = filteredIncomes.filter(income => 
+      income.status === filter.status
+    );
   }
   
-  if (searchTerm) {
-    const term = searchTerm.toLowerCase();
+  // 검색어 필터 (정산번호, 화주명, 사업자번호 등)
+  if (filter.searchTerm) {
+    const term = filter.searchTerm.toLowerCase();
     filteredIncomes = filteredIncomes.filter(income => 
       income.id.toLowerCase().includes(term) ||
       income.shipperName.toLowerCase().includes(term) ||
-      income.manager.toLowerCase().includes(term) ||
-      (income.businessNumber && income.businessNumber.includes(term))
+      income.businessNumber.toLowerCase().includes(term) ||
+      income.manager.toLowerCase().includes(term)
     );
   }
   
-  if (invoiceStatus) {
-    filteredIncomes = filteredIncomes.filter(income => income.invoiceStatus === invoiceStatus);
-  }
-  
-  if (minAmount !== undefined) {
-    filteredIncomes = filteredIncomes.filter(income => income.finalAmount >= minAmount);
-  }
-  
-  if (maxAmount !== undefined) {
-    filteredIncomes = filteredIncomes.filter(income => income.finalAmount <= maxAmount);
-  }
-  
-  if (manager) {
+  // 날짜 범위 필터
+  if (filter.startDate) {
     filteredIncomes = filteredIncomes.filter(income => 
-      income.manager.toLowerCase().includes(manager.toLowerCase())
+      income.createdAt >= filter.startDate
     );
   }
   
-  // 정렬 - 최신 정산부터
-  filteredIncomes.sort((a, b) => 
-    new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-  );
+  if (filter.endDate) {
+    filteredIncomes = filteredIncomes.filter(income => 
+      income.createdAt <= filter.endDate
+    );
+  }
+  
+  // 담당자 필터
+  if (filter.manager) {
+    filteredIncomes = filteredIncomes.filter(income => 
+      income.manager === filter.manager
+    );
+  }
+  
+  // 세금계산서 상태 필터
+  if (filter.invoiceStatus) {
+    filteredIncomes = filteredIncomes.filter(income => 
+      income.invoiceStatus === filter.invoiceStatus
+    );
+  }
+  
+  // 요약 정보 계산
+  const summary = calculateIncomeSummary(filteredIncomes);
   
   // 페이징 처리
   const startIndex = (page - 1) * limit;
   const endIndex = startIndex + limit;
   const paginatedIncomes = filteredIncomes.slice(startIndex, endIndex);
   
-  // 요약 정보 계산
-  const summary = calculateIncomeSummary(filteredIncomes);
+  console.log(`[getIncomesByPage] 필터링 후 데이터 수: ${filteredIncomes.length}, 페이지 데이터 수: ${paginatedIncomes.length}`);
   
   return {
     data: paginatedIncomes,
@@ -434,10 +438,14 @@ export const getIncomesByPage = (
 
 // ID로 특정 정산 정보 조회 함수
 export const getIncomeById = (id: string): IIncome | undefined => {
+  // 지연 초기화된 데이터 사용
+  const mockIncomes = getMockIncomes();
   return mockIncomes.find(income => income.id === id);
 };
 
 // 특정 화물 ID가 포함된 정산 정보 조회 함수
 export const getIncomeByOrderId = (orderId: string): IIncome | undefined => {
+  // 지연 초기화된 데이터 사용
+  const mockIncomes = getMockIncomes();
   return mockIncomes.find(income => income.orderIds.includes(orderId));
 }; 
