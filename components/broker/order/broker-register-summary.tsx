@@ -6,17 +6,17 @@ import { IBrokerOrderRegisterData, IBrokerTransportOption, BROKER_TRANSPORT_OPTI
 import { ArrowLeft, Check, Truck, MapPin, Info, Calculator } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
-interface BrokerRegisterSummaryProps {
+interface BrokerOrderRegisterSummaryProps {
   formData: IBrokerOrderRegisterData;
   onBack: () => void;
   onSubmit: () => void;
 }
 
-export function BrokerRegisterSummary({
+export function BrokerOrderRegisterSummary({
   formData,
   onBack,
   onSubmit,
-}: BrokerRegisterSummaryProps) {
+}: BrokerOrderRegisterSummaryProps) {
   // 선택된 옵션 정보 가져오기
   const selectedOptionDetails = formData.selectedOptions
     .map((optionId) =>

@@ -27,7 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { BrokerRegisterLocationForm } from "./broker-register-location-form";
 import { BrokerRegisterOptionSelector } from "./broker-register-option-selector";
-import { BrokerRegisterSummary } from "./broker-register-summary";
+import { BrokerOrderRegisterSummary } from "./broker-register-summary";
 import { 
   BROKER_VEHICLE_TYPES, 
   BROKER_WEIGHT_TYPES, 
@@ -71,7 +71,14 @@ const formSchema = z.object({
   selectedOptions: z.array(z.string()),
 });
 
-export function BrokerRegisterForm() {
+// BrokerOrderRegisterForm의 props 인터페이스 정의
+interface BrokerOrderRegisterFormProps {
+  onSubmit?: (data: IBrokerOrderRegisterData) => void;
+  editMode?: boolean;
+  orderNumber?: string;
+}
+
+export function BrokerOrderRegisterForm({ onSubmit, editMode = false, orderNumber }: BrokerOrderRegisterFormProps) {
   const router = useRouter();
   const { registerOrder, setFormData } = useBrokerOrderRegisterStore();
   
@@ -107,24 +114,53 @@ export function BrokerRegisterForm() {
       selectedOptions: [],
     },
   });
+
+  // 수정 모드일 경우 기존 데이터 로드
+  React.useEffect(() => {
+    if (editMode && orderNumber) {
+      // 여기에 기존 주문 데이터를 가져오는 로직을 추가할 수 있습니다.
+      // 예시: API 호출 또는 스토어에서 데이터 가져오기
+      console.log(`수정 모드: 주문번호 ${orderNumber} 데이터 로드`);
+      
+      // form.reset()을 사용하여 폼 값을 초기화할 수 있습니다.
+      // 실제 구현 시 아래 주석을 해제하고 데이터를 적절히 채워주세요.
+      /*
+      form.reset({
+        vehicleType: existingData.vehicleType,
+        weightType: existingData.weightType,
+        cargoType: existingData.cargoType,
+        // ... 나머지 필드
+      });
+      */
+    }
+  }, [editMode, orderNumber, form]);
   
-  // 폼 제출 처리
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  // 요약 단계에서 뒤로가기 처리
+  const handleBack = () => {
+    setStep('info');
+  };
+  
+  // 폼 제출 핸들러
+  const onSubmitHandler = (values: z.infer<typeof formSchema>) => {
     if (step === 'info') {
-      // 정보 입력 단계에서 요약 단계로 이동
+      // 요약 단계로 이동
       setFormData(values as IBrokerOrderRegisterData);
       setStep('summary');
     } else {
-      // 요약 단계에서 최종 제출
-      registerOrder(values as IBrokerOrderRegisterData);
-      router.push('/broker/order/list');
-    }
-  };
-  
-  // 이전 단계로 이동
-  const handleBack = () => {
-    if (step === 'summary') {
-      setStep('info');
+      // 최종 제출
+      if (editMode && onSubmit) {
+        // 수정 모드에서는 전달받은 onSubmit 함수 사용
+        onSubmit(values as IBrokerOrderRegisterData);
+      } else {
+        // 신규 등록 모드
+        try {
+          registerOrder(values as IBrokerOrderRegisterData);
+          // 등록 후 이동
+          router.push('/broker/order/list');
+        } catch (error) {
+          console.error('등록 실패:', error);
+        }
+      }
     }
   };
   
@@ -132,7 +168,7 @@ export function BrokerRegisterForm() {
     <div className="space-y-6">
       {step === 'info' ? (
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmitHandler)} className="space-y-8">
             {/* 차량 및 화물 정보 */}
             <Card>
               <CardHeader>
@@ -311,10 +347,10 @@ export function BrokerRegisterForm() {
         </Form>
       ) : (
         // 요약 단계
-        <BrokerRegisterSummary
+        <BrokerOrderRegisterSummary
           formData={form.getValues() as IBrokerOrderRegisterData}
           onBack={handleBack}
-          onSubmit={() => form.handleSubmit(onSubmit)()}
+          onSubmit={() => form.handleSubmit(onSubmitHandler)()}
         />
       )}
     </div>
