@@ -260,8 +260,7 @@ export default function BrokerOrderListPage() {
                 <div className="w-full md:w-auto">
                   <BrokerOrderSearch />   
                 </div>
-                <div className="flex flex-col hidden md:block items-center mb-6">
-                  
+                <div className="flex flex-row hidden md:flex items-center mb-6 gap-2">                  
                   <Button 
                     variant="outline" 
                     size="sm" 
