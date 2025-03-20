@@ -16,7 +16,11 @@ import {
   Clock,
   MessageSquare,
   Pin,
-  Building
+  Building,
+  ChevronDown,
+  ChevronUp,
+  Navigation,
+  Circle
 } from "lucide-react";
 import { 
   Tabs, 
@@ -52,8 +56,16 @@ interface BrokerOrderDriverInfoCardProps {
   onSendMessage: () => void;
 }
 
+// 목업 데이터 - 위치 정보
+const locationData = {
+  departure: { name: "서울시 중구 을지로 123" },
+  destination: { name: "대구시 중구 동성로 456" },
+  current: { name: "경기도 용인시 처인구" }
+};
+
 export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onSendMessage }: BrokerOrderDriverInfoCardProps) {
   const [activeTab, setActiveTab] = useState("history");
+  const [isMapVisible, setIsMapVisible] = useState(false);
   
   // 배차 전 상태인지 확인 (배차대기 상태이고 차주 정보가 없는 경우)
   const isBeforeAssignment = status === '배차대기' || !vehicle.driver;
@@ -66,6 +78,11 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
   // 배차 진행 함수
   const handleAssignment = () => {
     alert("배차 진행 페이지로 이동합니다.");
+  };
+  
+  // 지도 토글 함수
+  const toggleMap = () => {
+    setIsMapVisible(!isMapVisible);
   };
   
   // 목업 데이터 - 차주 배차 이력
@@ -212,10 +229,89 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
                     </div>
 
                     <div className="text-muted-foreground">현재 위치</div>
-                    <div className="col-span-2 font-medium flex items-center gap-1">
-                      <MapPin className="h-3.5 w-3.5 text-primary" />
-                      <span>경기도 용인시 (10분 전 업데이트)</span>
+                    <div className="col-span-2 font-medium">
+                      <Badge 
+                        variant="outline" 
+                        className="cursor-pointer flex items-center gap-1 hover:bg-primary/10 transition-colors"
+                        onClick={toggleMap}
+                      >
+                        <MapPin className="h-3.5 w-3.5 text-primary" />
+                        <span>경기도 용인시 (10분 전 업데이트)</span>
+                        {isMapVisible ? 
+                          <ChevronUp className="h-3.5 w-3.5 ml-1" /> : 
+                          <ChevronDown className="h-3.5 w-3.5 ml-1" />
+                        }
+                      </Badge>
                     </div>
+                    
+                    {/* 지도 표시 영역 */}
+                    {isMapVisible && (
+                      <div className="col-span-3 mt-2 bg-slate-50 rounded-md overflow-hidden transition-all duration-300 ease-in-out">
+                        <div className="relative h-64 w-full p-2">
+                          {/* 상차지 마커 */}
+                          <div className="absolute top-6 left-6 flex flex-col items-center">
+                            <div className="flex items-center">
+                              <Pin className="h-5 w-5 text-green-600" />
+                              <div className="ml-1 text-xs font-medium bg-white p-1 rounded shadow-sm">
+                                상차지: {locationData.departure.name}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* 하차지 마커 */}
+                          <div className="absolute bottom-6 right-6 flex flex-col items-center">
+                            <div className="flex items-center">
+                              <Pin className="h-5 w-5 text-red-600" />
+                              <div className="ml-1 text-xs font-medium bg-white p-1 rounded shadow-sm">
+                                하차지: {locationData.destination.name}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* 현재 위치 마커 */}
+                          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                            <div className="flex items-center">
+                              <Navigation className="h-6 w-6 text-blue-600" />
+                              <div className="ml-1 text-xs font-medium bg-white p-1 rounded shadow-sm">
+                                현재 위치: {locationData.current.name}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* 경로 표시 (상차지 → 현재 위치) */}
+                          <div className="absolute top-12 left-12 w-[calc(50%-24px)] h-[calc(50%-24px)] border-t-2 border-l-2 border-dashed border-blue-400"></div>
+                          
+                          {/* 경로 표시 (현재 위치 → 하차지) */}
+                          <div className="absolute bottom-12 right-12 w-[calc(50%-24px)] h-[calc(50%-24px)] border-b-2 border-r-2 border-dashed border-blue-400"></div>
+                          
+                          {/* 지도 워터마크 */}
+                          <div className="absolute bottom-2 left-2 opacity-50 text-xs text-slate-500">
+                            * 실제 지도 연동 시 정확한 경로가 표시됩니다
+                          </div>
+                        </div>
+                        
+                        {/* 지도 컨트롤 */}
+                        <div className="p-2 bg-white border-t flex justify-between items-center">
+                          <div className="text-xs text-slate-500 flex items-center gap-2">
+                            <div className="flex items-center">
+                              <Circle className="h-3 w-3 text-green-600 fill-green-600" />
+                              <span className="ml-1">상차지</span>
+                            </div>
+                            <div className="flex items-center">
+                              <Circle className="h-3 w-3 text-blue-600 fill-blue-600" />
+                              <span className="ml-1">현재 위치</span>
+                            </div>
+                            <div className="flex items-center">
+                              <Circle className="h-3 w-3 text-red-600 fill-red-600" />
+                              <span className="ml-1">하차지</span>
+                            </div>
+                          </div>
+                          <Button variant="outline" size="sm" onClick={toggleMap}>
+                            닫기
+                          </Button>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="text-muted-foreground">평가</div>
                     <div className="col-span-2 font-medium flex items-center">
