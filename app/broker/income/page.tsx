@@ -24,6 +24,7 @@ import { IncomeStatusType } from "@/types/income";
 import { formatCurrency } from "@/lib/utils";
 import { IncomeWaitingTable } from "@/components/broker/income/income-waiting-table";
 import { IncomeWaitingSearch } from "@/components/broker/income/income-waiting-search";
+import { IncomeWaitingSummary } from "@/components/broker/income/income-waiting-summary";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -60,6 +61,7 @@ export default function IncomePage() {
     selectOrder,
     selectAllOrders,
     createIncome,
+    getSelectedOrders,
   } = useIncomeWaitingStore();
 
   // 초기 데이터 로드
@@ -250,13 +252,24 @@ export default function IncomePage() {
             <TabsTrigger value="COMPLETED">정산완료</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="WAITING">
-            {/* 정산 대기 화물 기능 통합 */}
-            <div className="space-y-6">
-              <div className="flex justify-between items-start mt-4">
-                <p className="text-muted-foreground">
-                  정산 대기 상태인 화물을 선택하여 정산 항목으로 등록할 수 있습니다.
-                </p>
+          {/* 필터 영역 */}
+          {filter.status !== "WAITING" && (
+            <IncomeFilter 
+              onFilterChange={handleFilterChange} 
+              onResetFilter={resetFilter}
+            />
+          )}
+          
+          {/* 정산 대기 탭 */}
+          <TabsContent value="WAITING" className="mt-6">
+            <div className="flex flex-col space-y-4">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-semibold">정산 대기 화물</h2>
+                  <p className="text-sm text-muted-foreground">
+                    운송 마감된 화물 중 정산 대기 상태인 화물을 선택하여 정산을 진행할 수 있습니다.
+                  </p>
+                </div>
                 <Button
                   onClick={createIncome}
                   disabled={selectedOrderIds.length === 0}
@@ -290,110 +303,66 @@ export default function IncomePage() {
                   onSelectAll={selectAllOrders}
                 />
               )}
+              
+              {/* 선택된 화물 요약 정보 */}
+              {selectedOrderIds.length > 0 && (
+                <IncomeWaitingSummary
+                  selectedOrders={getSelectedOrders()}
+                  onCreateIncome={createIncome}
+                />
+              )}
             </div>
           </TabsContent>
           
-          <TabsContent value="MATCHING">
-            {/* 필터 영역 */}
-            <IncomeFilter onFilterChange={handleFilterChange} onResetFilter={resetFilter} />
-            
-            {/* 정산 목록 테이블 */}
+          {/* 정산 대사 탭 */}
+          <TabsContent value="MATCHING" className="mt-6">
             {isLoading ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <div className="flex h-24 items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary/70" />
               </div>
-            ) : error ? (
-              <Card className="p-4 text-center text-red-500">
-                <div className="flex flex-col items-center gap-2">
-                  <span className="font-medium">{error}</span>
-                  <Button size="sm" onClick={() => fetchIncomes(currentPage)}>
-                    새로고침
-                  </Button>
-                </div>
-              </Card>
+            ) : incomes.length === 0 ? (
+              <div className="flex h-24 items-center justify-center flex-col">
+                <p className="text-muted-foreground mb-2">정산 데이터가 없습니다</p>
+                <Button variant="outline" onClick={resetFilter}>
+                  필터 초기화
+                </Button>
+              </div>
             ) : (
-              <>
-                <IncomeList
-                  incomes={incomes}
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                  onStatusChange={handleStatusChange}
-                  onIssueInvoice={handleIssueInvoice}
-                  onExportExcel={handleExportExcel}
-                />
-                
-                {incomes.length === 0 && !isLoading && (
-                  <Card className="p-8 text-center">
-                    <div className="flex flex-col items-center gap-2">
-                      <DollarSign className="h-8 w-8 text-muted-foreground" />
-                      <span className="text-lg font-medium">정산 내역이 없습니다.</span>
-                      <span className="text-sm text-muted-foreground">
-                        다른 검색 조건을 선택하거나 필터를 초기화해보세요.
-                      </span>
-                      <Button 
-                        size="sm" 
-                        className="mt-2"
-                        onClick={resetFilter}
-                      >
-                        필터 초기화
-                      </Button>
-                    </div>
-                  </Card>
-                )}
-              </>
+              <IncomeList
+                incomes={incomes}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                onStatusChange={handleStatusChange}
+                onIssueInvoice={handleIssueInvoice}
+                onExportExcel={handleExportExcel}
+              />
             )}
           </TabsContent>
           
-          <TabsContent value="COMPLETED">
-            {/* 필터 영역 */}
-            <IncomeFilter onFilterChange={handleFilterChange} onResetFilter={resetFilter} />
-            
-            {/* 정산 목록 테이블 */}
+          {/* 정산 완료 탭 */}
+          <TabsContent value="COMPLETED" className="mt-6">
             {isLoading ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <div className="flex h-24 items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary/70" />
               </div>
-            ) : error ? (
-              <Card className="p-4 text-center text-red-500">
-                <div className="flex flex-col items-center gap-2">
-                  <span className="font-medium">{error}</span>
-                  <Button size="sm" onClick={() => fetchIncomes(currentPage)}>
-                    새로고침
-                  </Button>
-                </div>
-              </Card>
+            ) : incomes.length === 0 ? (
+              <div className="flex h-24 items-center justify-center flex-col">
+                <p className="text-muted-foreground mb-2">정산 완료된 데이터가 없습니다</p>
+                <Button variant="outline" onClick={resetFilter}>
+                  필터 초기화
+                </Button>
+              </div>
             ) : (
-              <>
-                <IncomeList
-                  incomes={incomes}
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                  onStatusChange={handleStatusChange}
-                  onIssueInvoice={handleIssueInvoice}
-                  onExportExcel={handleExportExcel}
-                />
-                
-                {incomes.length === 0 && !isLoading && (
-                  <Card className="p-8 text-center">
-                    <div className="flex flex-col items-center gap-2">
-                      <DollarSign className="h-8 w-8 text-muted-foreground" />
-                      <span className="text-lg font-medium">정산 내역이 없습니다.</span>
-                      <span className="text-sm text-muted-foreground">
-                        다른 검색 조건을 선택하거나 필터를 초기화해보세요.
-                      </span>
-                      <Button 
-                        size="sm" 
-                        className="mt-2"
-                        onClick={resetFilter}
-                      >
-                        필터 초기화
-                      </Button>
-                    </div>
-                  </Card>
-                )}
-              </>
+              <IncomeList
+                incomes={incomes}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                onStatusChange={handleStatusChange}
+                onIssueInvoice={handleIssueInvoice}
+                onExportExcel={handleExportExcel}
+              />
             )}
           </TabsContent>
         </Tabs>

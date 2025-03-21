@@ -77,6 +77,16 @@ interface IIncomeWaitingState {
   selectAllOrders: (isSelected: boolean) => void;
   clearSelection: () => void;
   createIncome: () => void;
+  
+  // 화주별 그룹화 액션
+  getSelectedOrders: () => IBrokerOrder[];
+  getShipperGroups: () => Array<{
+    shipper: string;
+    orders: IBrokerOrder[];
+    total: number;
+    count: number;
+  }>;
+  selectOrdersByShipper: (shipper: string, isSelected: boolean) => void;
 }
 
 // 초기 필터 상태
@@ -316,6 +326,44 @@ export const useIncomeWaitingStore = create<IIncomeWaitingState>()(
           console.error('정산 생성 중 오류 발생:', error);
           toast.error('정산 생성 중 오류가 발생했습니다.');
         }
+      },
+      
+      // 화주별 그룹화 액션
+      getSelectedOrders: () => {
+        const { selectedOrderIds } = get();
+        const allOrders = getMockBrokerOrders();
+        return allOrders.filter(order => selectedOrderIds.includes(order.id));
+      },
+      
+      getShipperGroups: () => {
+        const selectedOrders = get().getSelectedOrders();
+        const shipperGroups = new Map<string, { shipper: string; orders: IBrokerOrder[]; total: number; count: number }>();
+        
+        selectedOrders.forEach(order => {
+          const shipper = order.company || "Unknown";
+          if (!shipperGroups.has(shipper)) {
+            shipperGroups.set(shipper, { shipper, orders: [], total: 0, count: 0 });
+          }
+          const group = shipperGroups.get(shipper);
+          if (group) {
+            group.orders.push(order);
+            group.total += order.amount || 0;
+            group.count++;
+          }
+        });
+        
+        return Array.from(shipperGroups.values());
+      },
+      
+      selectOrdersByShipper: (shipper: string, isSelected: boolean) => {
+        const { selectedOrderIds } = get();
+        const selectedOrders = get().getSelectedOrders();
+        
+        const newSelectedOrderIds = isSelected
+          ? [...selectedOrderIds, ...selectedOrders.filter(order => order.company === shipper).map(order => order.id)]
+          : selectedOrderIds.filter(id => !selectedOrders.some(order => order.id === id && order.company === shipper));
+        
+        set({ selectedOrderIds: newSelectedOrderIds });
       }
     }),
     {
