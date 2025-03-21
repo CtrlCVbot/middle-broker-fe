@@ -193,23 +193,7 @@ export default function IncomePage() {
             <TabsTrigger value="MATCHING">정산대사</TabsTrigger>
             <TabsTrigger value="COMPLETED">정산완료</TabsTrigger>
           </TabsList>
-          
-          {/* 필터 영역 */}          
-          {filter.status === "MATCHING" && (
-            <IncomeFilter 
-              onFilterChange={handleFilterChange}
-              onResetFilter={resetFilter}
-              tabStatus="MATCHING"
-            />
-          )}
-          
-          {filter.status === "COMPLETED" && (
-            <IncomeFilter 
-              onFilterChange={handleFilterChange}
-              onResetFilter={resetFilter}
-              tabStatus="COMPLETED"
-            />
-          )}
+                    
           
           {/* 정산 대기 탭 */}
           <TabsContent value="WAITING" className="mt-6">
@@ -274,7 +258,20 @@ export default function IncomePage() {
                 </Button>
               </div>
             ) : (
-              
+              <>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                <div>
+                  <h2 className="text-xl font-semibold">정산 대사 화물</h2>
+                  <p className="text-sm text-muted-foreground">
+                    정산 대사중인 목록을 선택하여 정산을 진행할 수 있습니다.
+                  </p>
+                </div>                
+              </div>
+              <IncomeFilter 
+                onFilterChange={handleFilterChange}
+                onResetFilter={resetFilter}
+                tabStatus="MATCHING"
+              />
               <IncomeList
                 incomes={incomes}
                 currentPage={currentPage}
@@ -285,6 +282,7 @@ export default function IncomePage() {
                 onExportExcel={handleExportExcel}
                 currentTab="MATCHING"
               />
+              </>
             )}
           </TabsContent>
           
@@ -302,6 +300,20 @@ export default function IncomePage() {
                 </Button>
               </div>
             ) : (
+              <>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                <div>
+                  <h2 className="text-xl font-semibold">정산 완료 화물</h2>
+                  <p className="text-sm text-muted-foreground">
+                    정산 완료된 목록을 선택하여 정산을 진행할 수 있습니다.
+                  </p>
+                </div>
+              </div>
+              <IncomeFilter 
+                onFilterChange={handleFilterChange}
+                onResetFilter={resetFilter}
+                tabStatus="COMPLETED"
+              />
               <IncomeList
                 incomes={incomes}
                 currentPage={currentPage}
@@ -312,6 +324,7 @@ export default function IncomePage() {
                 onExportExcel={handleExportExcel}
                 currentTab="COMPLETED"
               />
+              </>
             )}
           </TabsContent>
         </Tabs>
