@@ -234,13 +234,6 @@ export function IncomeWaitingTable({
           </div>
         </div>
       )}
-      
-      {/* 선택된 항목 요약 */}
-      {selectedOrders.length > 0 && (
-        <div className="bg-muted/20 p-3 rounded-md">
-          <span className="font-medium">{selectedOrders.length}개</span>의 화물이 선택됨
-        </div>
-      )}
     </div>
   );
 } 

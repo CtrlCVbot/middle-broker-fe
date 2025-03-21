@@ -180,64 +180,6 @@ export default function IncomePage() {
       </header>
       
       <main className="flex flex-1 flex-col p-4 pt-0">
-        {/* 요약 카드 영역 */}
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">전체 정산 수</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalItems}건</div>
-              <p className="text-xs text-muted-foreground">
-                {filter.status ? `${filter.status} 상태` : "모든 상태 포함"}
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">화물 건수</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.totalOrderCount}건</div>
-              <p className="text-xs text-muted-foreground">
-                정산별 평균 {summary.totalCount > 0 ? (summary.totalOrderCount / summary.totalCount).toFixed(1) : 0}건
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">총 정산 금액</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {formatCurrency(summary.totalAmount)}원
-              </div>
-              <p className="text-xs text-muted-foreground">
-                정산별 평균 {summary.totalCount > 0 ? formatCurrency(summary.totalAmount / summary.totalCount) : 0}원
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">정산 기간</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {filter.startDate ? filter.startDate : "전체"}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {filter.endDate ? `~ ${filter.endDate}` : "기간 제한 없음"}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
         
         {/* 상태별 탭 영역 */}
         <Tabs 
@@ -252,12 +194,12 @@ export default function IncomePage() {
             <TabsTrigger value="COMPLETED">정산완료</TabsTrigger>
           </TabsList>
           
-          {/* 필터 영역 */}
+          {/* 필터 영역 */}          
           {filter.status !== "WAITING" && (
             <IncomeFilter 
-              onFilterChange={handleFilterChange} 
-              onResetFilter={resetFilter}
-            />
+            onFilterChange={handleFilterChange} 
+            onResetFilter={resetFilter}
+          />
           )}
           
           {/* 정산 대기 탭 */}
@@ -270,14 +212,7 @@ export default function IncomePage() {
                     운송 마감된 화물 중 정산 대기 상태인 화물을 선택하여 정산을 진행할 수 있습니다.
                   </p>
                 </div>
-                <Button
-                  onClick={createIncome}
-                  disabled={selectedOrderIds.length === 0}
-                  className="gap-1"
-                >
-                  <PlusCircle className="h-4 w-4" />
-                  선택한 화물 정산하기 ({selectedOrderIds.length})
-                </Button>
+                
               </div>
               
               {/* 검색 필터 */}
@@ -330,6 +265,7 @@ export default function IncomePage() {
                 </Button>
               </div>
             ) : (
+              
               <IncomeList
                 incomes={incomes}
                 currentPage={currentPage}
