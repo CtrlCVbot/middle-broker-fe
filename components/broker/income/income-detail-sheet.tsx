@@ -97,10 +97,10 @@ export function IncomeDetailSheet() {
   const handleNextStatus = () => {
     if (!incomeDetail) return;
     
-    if (incomeDetail.status === '정산대기') {
-      handleStatusChange('정산대사');
-    } else if (incomeDetail.status === '정산대사') {
-      handleStatusChange('정산완료');
+    if (incomeDetail.status === 'WAITING') {
+      handleStatusChange('MATCHING');
+    } else if (incomeDetail.status === 'MATCHING') {
+      handleStatusChange('COMPLETED');
     }
   };
   
@@ -203,7 +203,7 @@ export function IncomeDetailSheet() {
                     id="tax-free"
                     checked={incomeDetail.isTaxFree}
                     onCheckedChange={handleTaxFreeChange}
-                    disabled={incomeDetail.status === '정산완료'}
+                    disabled={incomeDetail.status === 'COMPLETED'}
                   />
                   <Label htmlFor="tax-free" className="text-sm font-medium">
                     {incomeDetail.isTaxFree ? "면세" : "과세(10%)"}
@@ -314,7 +314,7 @@ export function IncomeDetailSheet() {
                   추가금 내역 ({incomeDetail.additionalFees.length}건)
                 </h3>
                 
-                {incomeDetail.status !== '정산완료' && (
+                {incomeDetail.status !== 'COMPLETED' && (
                   <Button 
                     size="sm" 
                     variant={isEditingAdditionalFee ? "secondary" : "outline"}
@@ -363,7 +363,7 @@ export function IncomeDetailSheet() {
                 ) : (
                   <div className="flex flex-col items-center justify-center h-32 bg-muted/20 rounded-md">
                     <p className="text-muted-foreground">추가금 내역이 없습니다.</p>
-                    {incomeDetail.status !== '정산완료' && (
+                    {incomeDetail.status !== 'COMPLETED' && (
                       <Button 
                         variant="outline" 
                         size="sm" 
@@ -422,7 +422,7 @@ export function IncomeDetailSheet() {
         <div className="flex justify-between items-center pt-4 border-t">
           <div className="space-x-2">
             {/* 좌측 버튼들 */}
-            {incomeDetail.status === '정산완료' && (
+            {incomeDetail.status === 'COMPLETED' && (
               <Button 
                 variant="outline" 
                 size="sm"
@@ -433,7 +433,7 @@ export function IncomeDetailSheet() {
               </Button>
             )}
             
-            {(incomeDetail.status === '정산대사' || incomeDetail.status === '정산완료') && (
+            {(incomeDetail.status === 'MATCHING' || incomeDetail.status === 'COMPLETED') && (
               <Button 
                 variant="outline" 
                 size="sm"
@@ -452,10 +452,10 @@ export function IncomeDetailSheet() {
               닫기
             </Button>
             
-            {incomeDetail.status !== '정산완료' && (
+            {incomeDetail.status !== '' && (
               <Button size="sm" onClick={handleNextStatus}>
                 <CheckCircle className="h-3.5 w-3.5 mr-1" />
-                {incomeDetail.status === '정산대기' ? '정산대사 전환' : '정산완료 처리'}
+                {incomeDetail.status === 'WAITING' ? '정산대사 전환' : '정산완료 처리'}
               </Button>
             )}
           </div>

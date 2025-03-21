@@ -583,38 +583,85 @@ export function IncomeFormSheet() {
               <div className="space-y-3">
                 <h3 className="text-base font-semibold mb-1">회사 정보</h3>
                 
-                {/* 화주 정보 - 선택 형식으로 변경 */}
+                {/* 선택된 업체 배지 표시 */}
+                {orders && orders.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {Object.keys(shipperGroups).map((shipper) => (
+                      <Badge 
+                        key={shipper} 
+                        variant="outline"
+                        className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
+                        onClick={() => {
+                          form.setValue("shipperName", shipper);
+                          form.setValue("businessNumber", "000-00-00000"); // 실제로는 해당 업체의 사업자번호
+                        }}
+                      >
+                        {shipper} ({shipperGroups[shipper].orders.length}건)
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                
+                {/* 화주 정보 - Popover 형식으로 변경 */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <FormField
                     control={form.control}
                     name="shipperName"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="flex flex-col">
                         <FormLabel className="text-xs font-medium">화주명</FormLabel>
-                        <Select 
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            // 여기서 선택된 화주에 해당하는 사업자번호 자동 설정
-                            const selectedCompany = companies.find(company => company === value);
-                            if (selectedCompany) {
-                              form.setValue("businessNumber", "000-00-00000"); // 실제로는 해당 기업의 사업자번호
-                            }
-                          }}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="h-9">
-                              <SelectValue placeholder="화주 선택" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {companies.map((company) => (
-                              <SelectItem key={company} value={company}>
-                                {company}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={`w-full justify-between h-9 font-normal ${
+                                  !field.value && "text-muted-foreground"
+                                }`}
+                              >
+                                {field.value || "회사 조회"}
+                                <span className="ml-2 rounded-full bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary">
+                                  조회
+                                </span>
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0" align="start">
+                            <div className="border-b p-2">
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  placeholder="회사명 검색"
+                                  className="h-8"
+                                  type="search"
+                                />
+                                <Button size="sm" className="h-8 px-2">검색</Button>
+                              </div>
+                            </div>
+                            <ScrollArea className="h-60">
+                              <div className="p-2">
+                                {companies.map((company) => (
+                                  <div
+                                    key={company}
+                                    className="flex items-center justify-between px-2 py-1.5 hover:bg-secondary/50 rounded-md cursor-pointer"
+                                    onClick={() => {
+                                      field.onChange(company);
+                                      form.setValue("businessNumber", "000-00-00000"); // 실제로는 해당 기업의 사업자번호
+                                    }}
+                                  >
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">{company}</span>
+                                      <span className="text-xs text-muted-foreground">000-00-00000</span>
+                                    </div>
+                                    {company === field.value && (
+                                      <CheckCircle className="h-4 w-4 text-primary" />
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </ScrollArea>
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -640,27 +687,84 @@ export function IncomeFormSheet() {
               <div className="space-y-3">
                 <h3 className="text-base font-semibold mb-1">담당자 정보</h3>
                 
+                {/* 선택된 업체의 담당자 배지 표시 (회사별로 담당자가 있다고 가정) */}
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {managers.map((manager) => (
+                    <Badge 
+                      key={manager} 
+                      variant="outline"
+                      className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
+                      onClick={() => {
+                        form.setValue("manager", manager);
+                        form.setValue("managerContact", "010-1234-5678"); // 실제로는 해당 담당자의 연락처
+                        form.setValue("managerEmail", `${manager.toLowerCase()}@example.com`); // 실제로는 해당 담당자의 이메일
+                      }}
+                    >
+                      {manager}
+                    </Badge>
+                  ))}
+                </div>
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <FormField
                     control={form.control}
                     name="manager"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="flex flex-col">
                         <FormLabel className="text-xs font-medium">담당자명</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="h-9">
-                              <SelectValue placeholder="담당자 선택" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {managers.map((manager) => (
-                              <SelectItem key={manager} value={manager}>
-                                {manager}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={`w-full justify-between h-9 font-normal ${
+                                  !field.value && "text-muted-foreground"
+                                }`}
+                              >
+                                {field.value || "담당자 조회"}
+                                <span className="ml-2 rounded-full bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary">
+                                  조회
+                                </span>
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0" align="start">
+                            <div className="border-b p-2">
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  placeholder="담당자명 검색"
+                                  className="h-8"
+                                  type="search"
+                                />
+                                <Button size="sm" className="h-8 px-2">검색</Button>
+                              </div>
+                            </div>
+                            <ScrollArea className="h-60">
+                              <div className="p-2">
+                                {managers.map((manager) => (
+                                  <div
+                                    key={manager}
+                                    className="flex items-center justify-between px-2 py-1.5 hover:bg-secondary/50 rounded-md cursor-pointer"
+                                    onClick={() => {
+                                      field.onChange(manager);
+                                      form.setValue("managerContact", "010-1234-5678"); // 실제로는 해당 담당자의 연락처
+                                      form.setValue("managerEmail", `${manager.toLowerCase()}@example.com`); // 실제로는 해당 담당자의 이메일
+                                    }}
+                                  >
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">{manager}</span>
+                                      <span className="text-xs text-muted-foreground">010-1234-5678</span>
+                                    </div>
+                                    {manager === field.value && (
+                                      <CheckCircle className="h-4 w-4 text-primary" />
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </ScrollArea>
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -896,46 +1000,49 @@ export function IncomeFormSheet() {
                     )}
                   />
 
-                  {/* 결제 방법 */}
-                  <FormField
-                    control={form.control}
-                    name="paymentMethod"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-medium">결제 방법</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="h-9">
-                              <SelectValue placeholder="결제 방법 선택" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="BANK_TRANSFER">계좌이체</SelectItem>
-                            <SelectItem value="CREDIT_CARD">신용카드</SelectItem>
-                            <SelectItem value="CASH">현금</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                  
+                </div>                
               </div>
 
-              {/* 메모 */}
-              <FormField
-                control={form.control}
-                name="memo"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-medium">메모 (선택사항)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="메모를 입력하세요" className="h-9" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* 메모와 결제 방법 - 같은 행에 배치 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <FormField
+                  control={form.control}
+                  name="memo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-medium">메모 (선택사항)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="메모를 입력하세요" className="h-9" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="paymentMethod"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-medium">결제 방법</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="h-9">
+                            <SelectValue placeholder="결제 방법 선택" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="BANK_TRANSFER">계좌이체</SelectItem>
+                          <SelectItem value="CREDIT_CARD">신용카드</SelectItem>
+                          <SelectItem value="CASH">현금</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               {/* 선택된 화물 목록 - 컴팩트하게 표시 */}
               <Collapsible className="border rounded-md mt-2">
