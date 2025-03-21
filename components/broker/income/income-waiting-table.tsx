@@ -94,15 +94,15 @@ export function IncomeWaitingTable({
                   aria-label="전체 선택"
                 />
               </TableHead>
+              <TableHead>업체명</TableHead>
               <TableHead className="w-[120px]">화물 ID</TableHead>
-              <TableHead>상태</TableHead>
+              <TableHead>상태</TableHead>              
               <TableHead>출발지</TableHead>
               <TableHead>출발 일시</TableHead>
               <TableHead>도착지</TableHead>
               <TableHead>도착 일시</TableHead>
               <TableHead>차량</TableHead>
-              <TableHead>차주</TableHead>
-              <TableHead>업체명</TableHead>
+              <TableHead>차주</TableHead>              
               <TableHead>운송비</TableHead>
               <TableHead>결제방식</TableHead>
               <TableHead>관리자</TableHead>
@@ -125,6 +125,7 @@ export function IncomeWaitingTable({
                   className={`cursor-pointer hover:bg-secondary/20 ${selectedOrders.includes(order.id) ? 'bg-secondary/30' : ''}`}
                   onClick={() => handleRowSelect(order.id)}
                 >
+                  
                   <TableCell className="text-center">
                     <Checkbox 
                       checked={selectedOrders.includes(order.id)}
@@ -134,6 +135,9 @@ export function IncomeWaitingTable({
                       onClick={(e) => e.stopPropagation()}
                       aria-label={`${order.id} 선택`}
                     />
+                  </TableCell>
+                  <TableCell className="max-w-[100px] truncate" title={`${order.company}`}>
+                    {order.company}
                   </TableCell>
                   <TableCell className="font-medium text-primary">
                     {order.id}
@@ -158,9 +162,7 @@ export function IncomeWaitingTable({
                   <TableCell>
                     {order.driver.name || "-"}
                   </TableCell>
-                  <TableCell className="max-w-[100px] truncate" title={`${order.company}`}>
-                    {order.company}
-                  </TableCell>
+                  
                   <TableCell className="whitespace-nowrap">
                     <div className="flex flex-col">
                       <span className="font-medium text-sm">
