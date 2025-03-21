@@ -18,6 +18,7 @@ import { useIncomeStore } from "@/store/income-store";
 import { useIncomeWaitingStore } from "@/store/income-waiting-store";
 import { IncomeList } from "@/components/broker/income/income-list";
 import { IncomeDetailSheet } from "@/components/broker/income/income-detail-sheet";
+import { IncomeFormSheet } from "@/components/broker/income/income-form-sheet";
 import { IncomeFilter } from "@/components/broker/income/income-filter";
 import { IncomeStatusType } from "@/types/income";
 import { formatCurrency } from "@/lib/utils";
@@ -399,6 +400,9 @@ export default function IncomePage() {
         
         {/* 정산 상세 정보 시트 */}
         <IncomeDetailSheet />
+        
+        {/* 정산 폼 시트 */}
+        <IncomeFormSheet />
       </main>
     </>
   );

@@ -8,6 +8,8 @@ import {
 import { IBrokerOrder, BrokerOrderStatusType } from '@/types/broker-order';
 import { getMockBrokerOrders } from '@/utils/mockdata/mock-broker-orders';
 import { persist } from 'zustand/middleware';
+import { useIncomeFormStore } from './income-form-store';
+import { toast } from 'sonner';
 
 // 필터 옵션의 기본값 정의
 const DEFAULT_CITIES = CITIES || ["서울", "부산", "인천", "대구", "대전", "광주", "울산", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
@@ -280,12 +282,40 @@ export const useIncomeWaitingStore = create<IIncomeWaitingState>()(
       
       clearSelection: () => set({ selectedOrderIds: [] }),
       
+      // 선택된 화물로 정산 생성
       createIncome: () => {
-        // 실제 구현에서는 API 호출이 필요
-        // 목업 데이터 상태에서는 로직만 구현
-        console.log("새 정산 생성:", get().selectedOrderIds);
-        alert(`${get().selectedOrderIds.length}개의 화물이 정산에 추가되었습니다.`);
-        set({ selectedOrderIds: [] });
+        const { selectedOrderIds } = get();
+        
+        if (selectedOrderIds.length === 0) {
+          toast.error('선택된 화물이 없습니다.');
+          console.error('선택된 화물 없음');
+          return;
+        }
+        
+        try {
+          // 모든 화물 데이터 가져오기
+          const allOrders = getMockBrokerOrders();
+          
+          // 선택된 화물만 필터링
+          const selectedOrders = allOrders.filter(order => selectedOrderIds.includes(order.id));
+          
+          if (selectedOrders.length === 0) {
+            toast.error('유효한 화물을 찾을 수 없습니다.');
+            console.error('유효한 화물 없음');
+            return;
+          }
+          
+          // 정산 폼 열기
+          const formStore = useIncomeFormStore.getState();
+          formStore.openForm(selectedOrders);
+          
+          // 선택된 화물 초기화
+          set({ selectedOrderIds: [] });
+          
+        } catch (error) {
+          console.error('정산 생성 중 오류 발생:', error);
+          toast.error('정산 생성 중 오류가 발생했습니다.');
+        }
       }
     }),
     {

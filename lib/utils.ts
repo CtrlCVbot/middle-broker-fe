@@ -46,3 +46,14 @@ export function getDaysBetween(startDate: string, endDate: string): number {
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays;
 }
+
+/**
+ * 고유한 ID를 생성합니다.
+ * @param prefix ID 앞에 붙일 접두사
+ * @returns 접두사-랜덤숫자 형식의 문자열
+ */
+export function generateId(prefix: string = 'ID'): string {
+  const randomPart = Math.floor(Math.random() * 100000).toString().padStart(5, '0');
+  const timestamp = new Date().getTime().toString().slice(-5);
+  return `${prefix}-${timestamp}${randomPart}`;
+}

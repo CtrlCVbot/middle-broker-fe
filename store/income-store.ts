@@ -4,12 +4,25 @@ import {
   IncomeStatusType, 
   IIncomeResponse, 
   IAdditionalFee,
-  IIncomeFilter
+  IIncomeFilter,
+  IIncomeCreateRequest
 } from '@/types/income';
 import { 
   getIncomesByPage, 
-  getIncomeById 
+  getIncomeById,
+  createIncome as createIncomeMock
 } from '@/utils/mockdata/mock-income';
+
+// 정산 생성 요청 인터페이스
+export interface IIncomeCreateRequest {
+  orderIds: string[];
+  dueDate: Date;
+  memo?: string;
+  taxFree: boolean;
+  hasTax: boolean;
+  invoiceNumber?: string;
+  paymentMethod: string;
+}
 
 // 매출 정산 목록 상태 관리 인터페이스
 interface IncomeStoreState {
@@ -33,7 +46,8 @@ interface IncomeStoreState {
   fetchIncomes: (page?: number, limit?: number) => Promise<void>;
   setPage: (page: number) => void;
   
-  // 정산 상태 관리
+  // 정산 생성 및 관리
+  addIncome: (data: IIncomeCreateRequest) => Promise<string>;
   updateIncomeStatus: (incomeId: string, newStatus: IncomeStatusType) => Promise<void>;
   
   // 추가금 관리
@@ -42,6 +56,9 @@ interface IncomeStoreState {
   
   // 세금 관리
   setTaxFree: (incomeId: string, isTaxFree: boolean) => Promise<void>;
+  
+  // 정산 생성
+  createIncome: (data: IIncomeCreateRequest) => Promise<void>;
 }
 
 // 초기 필터 상태
@@ -337,6 +354,59 @@ export const useIncomeStore = create<IncomeStoreState>((set, get) => ({
         error: '세금 면제 설정 중 오류가 발생했습니다.',
         isLoading: false
       });
+    }
+  },
+  
+  // 정산 생성
+  createIncome: async (data: IIncomeCreateRequest) => {
+    console.log('정산 생성 요청:', data);
+    
+    try {
+      // 목업 정산 생성 함수 호출
+      await createIncomeMock(data);
+      
+      // 성공 후 정산 목록 다시 불러오기
+      const page = get().currentPage;
+      await get().fetchIncomes(page);
+      
+      console.log('정산이 성공적으로 생성되었습니다.');
+      return Promise.resolve();
+    } catch (error) {
+      console.error('정산 생성 중 오류 발생:', error);
+      return Promise.reject(error);
+    }
+  },
+  
+  // 정산 생성 함수 추가
+  addIncome: async (data) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      // 백엔드 연동 시 실제 API 호출로 변경
+      // 목업 데이터에서는 createIncome 함수 사용
+      const newIncome = createIncomeMock(data);
+      
+      // 현재 목록이 정산대기 상태를 보여주고 있다면, 목록에 추가
+      if (get().filter.status === 'MATCHING') {
+        set(state => ({
+          incomes: [newIncome, ...state.incomes],
+          totalItems: state.totalItems + 1,
+          totalPages: Math.ceil((state.totalItems + 1) / state.itemsPerPage),
+          isLoading: false
+        }));
+      } else {
+        set({ isLoading: false });
+      }
+      
+      // 생성된 정산 ID 반환
+      return newIncome.id;
+    } catch (error) {
+      console.error('정산 생성 오류:', error);
+      set({
+        error: '정산을 생성하는 중 오류가 발생했습니다.',
+        isLoading: false
+      });
+      return '';
     }
   }
 }));
