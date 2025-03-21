@@ -315,9 +315,22 @@ export const useIncomeWaitingStore = create<IIncomeWaitingState>()(
             return;
           }
           
-          // 정산 폼 열기
-          const formStore = useIncomeFormStore.getState();
-          formStore.openForm(selectedOrders);
+          // 문제: formStore.openForm 호출 방식 변경
+          if (typeof window !== 'undefined') {
+            // 선택한 주문 복사본 만들기 (참조 문제 방지)
+            const ordersToSend = JSON.parse(JSON.stringify(selectedOrders));
+            
+            // 콘솔에 로그를 출력하여 디버깅 지원
+            console.log('정산 생성 시작', ordersToSend.length, '개의 화물 선택됨');
+            
+            // 직접 브라우저 이벤트를 발생시켜 정산 폼 열기
+            const event = new CustomEvent('openIncomeForm', { 
+              detail: { orders: ordersToSend } 
+            });
+            window.dispatchEvent(event);
+            
+            console.log('정산 폼 열기 이벤트 발송 완료');
+          }
           
           // 선택된 화물 초기화
           set({ selectedOrderIds: [] });

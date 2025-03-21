@@ -167,7 +167,7 @@ const useIncomeFormStore = (): MockIncomeFormStore => {
   });
 
   // 실제로 작동하는 함수들 구현
-  const setFormField = (key: string, value: any) => {
+  const setFormField = React.useCallback((key: string, value: any) => {
     setState(prev => ({
       ...prev,
       formData: {
@@ -175,33 +175,51 @@ const useIncomeFormStore = (): MockIncomeFormStore => {
         [key]: value
       }
     }));
-  };
+  }, []);
 
-  const openForm = (orders: IBrokerOrder[]) => {
+  const openForm = React.useCallback((orders: IBrokerOrder[]) => {
+    console.log("openForm 호출됨", orders.length);
     setState(prev => ({
       ...prev,
       isOpen: true,
       selectedOrders: orders
     }));
-  };
+  }, []);
 
-  const closeForm = () => {
+  const closeForm = React.useCallback(() => {
+    console.log("closeForm 호출됨");
     setState(prev => ({
       ...prev,
       isOpen: false
     }));
-  };
+  }, []);
+
+  const addAdditionalFee = React.useCallback((fee: any) => {
+    console.log('addAdditionalFee', fee);
+  }, []);
+
+  const removeAdditionalFee = React.useCallback((id: string) => {
+    console.log('removeAdditionalFee', id);
+  }, []);
+
+  const submitForm = React.useCallback((data: any) => {
+    console.log('submitForm', data);
+  }, []);
+
+  const resetForm = React.useCallback(() => {
+    console.log('resetForm');
+  }, []);
 
   return {
     ...state,
     setFormField,
     openForm,
     closeForm,
-    addAdditionalFee: (fee: any) => console.log('addAdditionalFee', fee),
-    removeAdditionalFee: (id: string) => console.log('removeAdditionalFee', id),
-    submitForm: (data: any) => console.log('submitForm', data),
+    addAdditionalFee,
+    removeAdditionalFee,
+    submitForm,
     isLoading: false,
-    resetForm: () => console.log('resetForm')
+    resetForm
   };
 };
 
@@ -261,12 +279,38 @@ export function IncomeFormSheet() {
     submitForm,
     isLoading,
     resetForm,
+    openForm,
   } = useIncomeFormStore();
   const { createIncome } = useIncomeStore();
   const [activeTab, setActiveTab] = useState("info");
   const [isEditingAdditionalFee, setIsEditingAdditionalFee] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isOrderListOpen, setIsOrderListOpen] = useState(false);
+
+  // 정산 생성 이벤트 리스너 추가
+  useEffect(() => {
+    // 이벤트 핸들러 함수
+    const handleOpenIncomeForm = (event: Event) => {
+      const customEvent = event as CustomEvent<{orders: IBrokerOrder[]}>;
+      
+      if (customEvent.detail?.orders && Array.isArray(customEvent.detail.orders)) {
+        console.log("정산 폼 열기 이벤트 수신", customEvent.detail.orders.length, "개의 화물");
+        
+        // 다음 렌더 사이클에서 상태 업데이트 (경쟁 상태 방지)
+        setTimeout(() => {
+          openForm(customEvent.detail.orders);
+        }, 0);
+      }
+    };
+    
+    // 이벤트 리스너 등록
+    window.addEventListener('openIncomeForm', handleOpenIncomeForm);
+    
+    // 컴포넌트 언마운트 시 이벤트 리스너 제거
+    return () => {
+      window.removeEventListener('openIncomeForm', handleOpenIncomeForm);
+    };
+  }, []);
 
   // 정산 기간 설정 - 가장 빠른 상차일과 가장 늦은 하차일로 자동 설정
   useEffect(() => {
@@ -511,16 +555,23 @@ export function IncomeFormSheet() {
     }
   };
 
-  // 시트 닫기 처리
-  const handleClose = () => {
-    form.reset();
-    closeForm();
-  };
-
   if (!isOpen) return null;
 
   return (
-    <Sheet open={isOpen} onOpenChange={handleClose}>
+    <Sheet 
+      open={isOpen} 
+      onOpenChange={(open) => {
+        if (!open) {
+          // 먼저 폼 초기화
+          form.reset();
+          
+          // 다음 렌더 사이클에서 상태 업데이트 (경쟁 상태 방지)
+          setTimeout(() => {
+            closeForm();
+          }, 0);
+        }
+      }}
+    >
       <SheetContent className="sm:max-w-3xl overflow-y-auto" side="right">
         <SheetHeader className="pb-4">
           <SheetTitle className="text-xl font-semibold">정산 생성</SheetTitle>
@@ -988,7 +1039,7 @@ export function IncomeFormSheet() {
                 <Button 
                   type="button" 
                   variant="outline" 
-                  onClick={handleClose}
+                  onClick={() => closeForm()}
                   disabled={loading}
                 >
                   <X className="mr-2 h-4 w-4" />
