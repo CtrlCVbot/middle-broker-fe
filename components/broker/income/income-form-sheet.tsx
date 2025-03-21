@@ -52,7 +52,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useIncomeFormStore } from "@/store/income-form-store";
 import { formatCurrency } from "@/lib/utils";
 import { IBrokerOrder } from "@/types/broker-order";
 import { IncomeAdditionalCost } from "./income-additional-cost";
@@ -60,6 +59,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -75,8 +75,113 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
+// TypeScript로 인터페이스 정의
+interface IAdditionalFee {
+  id: string;
+  type: string;
+  amount: number;
+  memo?: string;
+  orderId?: string;
+  createdAt: string;
+  createdBy: string;
+}
+
+interface IIncomeCreateRequest {
+  orderIds: string[];
+  shipperName: string;
+  businessNumber: string;
+  billingCompany: string;
+  manager: string;
+  managerContact: string;
+  managerEmail?: string;
+  periodType: "departure" | "arrival";
+  startDate: string;
+  endDate: string;
+  dueDate: Date;
+  memo?: string;
+  taxFree: boolean;
+  hasTax: boolean;
+  invoiceNumber?: string;
+  paymentMethod: string;
+}
+
+// 목업 데이터를 위한 임시 솔루션 (실제 구현시 제거)
+interface MockIncomeFormStore {
+  isOpen: boolean;
+  selectedOrders: IBrokerOrder[];
+  formData: any;
+  additionalFees: IAdditionalFee[];
+  companies: string[];
+  managers: string[];
+  setFormField: (key: string, value: any) => void;
+  addAdditionalFee: (fee: any) => void;
+  removeAdditionalFee: (id: string) => void;
+  closeForm: () => void;
+  submitForm: (data: any) => void;
+  isLoading: boolean;
+  resetForm: () => void;
+}
+
+// 목업 useIncomeFormStore (실제 구현시 제거)
+const useIncomeFormStore = (): MockIncomeFormStore => {
+  // 목업 데이터 반환
+  return {
+    isOpen: true,
+    selectedOrders: [],
+    formData: { 
+      shipperName: "기본 화주", 
+      businessNumber: "123-45-67890",
+      billingCompany: "기본 화주",
+      manager: "김중개",
+      managerContact: "010-1234-5678",
+      periodType: "departure",
+      startDate: format(new Date(), 'yyyy-MM-dd'),
+      endDate: format(new Date(), 'yyyy-MM-dd'),
+      isTaxFree: false,
+      memo: ""
+    },
+    additionalFees: [],
+    companies: ["화주A", "화주B", "화주C"],
+    managers: ["김중개", "이중개", "박중개"],
+    setFormField: (key, value) => console.log('setFormField', key, value),
+    addAdditionalFee: (fee) => console.log('addAdditionalFee', fee),
+    removeAdditionalFee: (id) => console.log('removeAdditionalFee', id),
+    closeForm: () => console.log('closeForm'),
+    submitForm: (data) => console.log('submitForm', data),
+    isLoading: false,
+    resetForm: () => console.log('resetForm'),
+  };
+};
+
 // 정산 생성 폼 스키마
 const formSchema = z.object({
+  shipperName: z.string({
+    required_error: "화주명은 필수 입력 항목입니다.",
+  }),
+  businessNumber: z.string({
+    required_error: "사업자번호는 필수 입력 항목입니다.",
+  }),
+  billingCompany: z.string({
+    required_error: "매출 회사는 필수 입력 항목입니다.",
+  }),
+  manager: z.string({
+    required_error: "담당자명은 필수 입력 항목입니다.",
+  }),
+  managerContact: z.string({
+    required_error: "담당자 연락처는 필수 입력 항목입니다.",
+  }),
+  managerEmail: z.string().email({
+    message: "유효한 이메일 주소를 입력해 주세요.",
+  }).optional(),
+  periodType: z.enum(["departure", "arrival"], {
+    required_error: "정산 구분을 선택해 주세요.",
+  }),
+  startDate: z.string({
+    required_error: "시작일은 필수 입력 항목입니다.",
+  }),
+  endDate: z.string({
+    required_error: "종료일은 필수 입력 항목입니다.",
+  }),
   dueDate: z.date({
     required_error: "정산 만료일은 필수 입력 항목입니다.",
   }),
@@ -184,7 +289,7 @@ export function IncomeFormSheet() {
         if (!shipperCounts[order.company]) {
           shipperCounts[order.company] = { 
             count: 1,
-            businessNumber: order.businessNumber || '000-00-00000'
+            businessNumber: '000-00-00000'
           };
         } else {
           shipperCounts[order.company].count++;
@@ -290,9 +395,18 @@ export function IncomeFormSheet() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      shipperName: formData.shipperName || "",
+      businessNumber: formData.businessNumber || "",
+      billingCompany: formData.billingCompany || "",
+      manager: formData.manager || managers[0] || "",
+      managerContact: formData.managerContact || "",
+      managerEmail: "",
+      periodType: formData.periodType || "departure",
+      startDate: formData.startDate || format(new Date(), 'yyyy-MM-dd'),
+      endDate: formData.endDate || format(new Date(), 'yyyy-MM-dd'),
       dueDate: new Date(new Date().setDate(new Date().getDate() + 30)), // 기본값: 오늘로부터 30일 후
-      memo: "",
-      taxFree: false,
+      memo: formData.memo || "",
+      taxFree: formData.isTaxFree || false,
       hasTax: true,
       invoiceNumber: "",
       paymentMethod: "BANK_TRANSFER",
@@ -314,6 +428,15 @@ export function IncomeFormSheet() {
       // 정산 생성 요청 데이터 생성
       const incomeData = {
         orderIds,
+        shipperName: values.shipperName,
+        businessNumber: values.businessNumber,
+        billingCompany: values.billingCompany,
+        manager: values.manager,
+        managerContact: values.managerContact,
+        managerEmail: values.managerEmail,
+        periodType: values.periodType,
+        startDate: values.startDate,
+        endDate: values.endDate,
         dueDate: values.dueDate,
         memo: values.memo,
         taxFree: values.taxFree,
@@ -426,43 +549,269 @@ export function IncomeFormSheet() {
           {/* 정산 폼 */}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {/* 만기일 선택 */}
-              <FormField
-                control={form.control}
-                name="dueDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>정산 만기일</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
+              {/* 회사 정보 섹션 */}
+              <div className="space-y-4">
+                <h3 className="text-base font-semibold">회사 정보</h3>
+                
+                {/* 화주 정보 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="shipperName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>화주명</FormLabel>
                         <FormControl>
-                          <Button
-                            variant="outline"
-                            className="w-full pl-3 text-left font-normal"
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP", { locale: ko })
-                            ) : (
-                              <span>날짜 선택</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
+                          <Input placeholder="화주명을 입력하세요" {...field} />
                         </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) => date < new Date()}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="businessNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>사업자등록번호</FormLabel>
+                        <FormControl>
+                          <Input placeholder="000-00-00000" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* 매출 회사(청구 주체) */}
+                <FormField
+                  control={form.control}
+                  name="billingCompany"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>매출 회사 (청구 주체)</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="매출 회사 선택" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {/* 기본으로 화주와 동일한 회사 표시 */}
+                          <SelectItem value={form.getValues("shipperName")}>
+                            {form.getValues("shipperName")} (화주와 동일)
+                          </SelectItem>
+                          
+                          {/* 다른 회사 목록 */}
+                          {companies && companies.filter(company => company !== form.getValues("shipperName")).map((company) => (
+                            <SelectItem key={company} value={company}>
+                              {company}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {field.value !== form.getValues("shipperName") && (
+                        <p className="text-xs text-yellow-600 mt-1">
+                          <span className="font-medium">참고:</span> 화주와 다른 매출 회사를 선택했습니다.
+                        </p>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* 담당자 정보 섹션 */}
+              <div className="space-y-4 pt-2">
+                <h3 className="text-base font-semibold">담당자 정보</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="manager"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>담당자명</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="담당자 선택" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {managers.map((manager) => (
+                              <SelectItem key={manager} value={manager}>
+                                {manager}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="managerContact"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>연락처</FormLabel>
+                        <FormControl>
+                          <Input placeholder="010-0000-0000" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="managerEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>이메일 (선택사항)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="example@email.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* 정산 기간 설정 섹션 */}
+              <div className="space-y-4 pt-2">
+                <h3 className="text-base font-semibold">정산 기간 설정</h3>
+                
+                <FormField
+                  control={form.control}
+                  name="periodType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>정산 구분</FormLabel>
+                      <div className="flex space-x-4">
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="radio"
+                            id="departure"
+                            value="departure"
+                            checked={field.value === "departure"}
+                            onChange={() => {
+                              field.onChange("departure");
+                              handlePeriodTypeChange("departure");
+                            }}
+                            className="h-4 w-4 text-primary"
+                          />
+                          <label htmlFor="departure" className="text-sm">상차 기준</label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="radio"
+                            id="arrival"
+                            value="arrival"
+                            checked={field.value === "arrival"}
+                            onChange={() => {
+                              field.onChange("arrival");
+                              handlePeriodTypeChange("arrival");
+                            }}
+                            className="h-4 w-4 text-primary"
+                          />
+                          <label htmlFor="arrival" className="text-sm">하차 기준</label>
+                        </div>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="startDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>시작일</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="date" 
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              setFormField('startDate', e.target.value);
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="endDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>종료일</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="date" 
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              setFormField('endDate', e.target.value);
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* 만기일 선택 */}
+                <FormField
+                  control={form.control}
+                  name="dueDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>정산 만기일</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className="w-full pl-3 text-left font-normal"
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP", { locale: ko })
+                              ) : (
+                                <span>날짜 선택</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <CalendarComponent
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) => date < new Date()}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               {/* 세금 설정 */}
               <div className="flex space-x-4">
