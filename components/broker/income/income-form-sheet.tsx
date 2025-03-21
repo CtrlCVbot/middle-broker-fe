@@ -44,7 +44,9 @@ import {
   CalendarIcon,
   Loader2,
   Save,
-  X
+  X,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { 
@@ -74,6 +76,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 // TypeScript로 인터페이스 정의
 interface IAdditionalFee {
@@ -106,17 +113,32 @@ interface IIncomeCreateRequest {
 }
 
 // 목업 데이터를 위한 임시 솔루션 (실제 구현시 제거)
-interface MockIncomeFormStore {
+interface IMockStoreState {
   isOpen: boolean;
   selectedOrders: IBrokerOrder[];
-  formData: any;
+  formData: {
+    shipperName: string;
+    businessNumber: string;
+    billingCompany: string;
+    manager: string;
+    managerContact: string;
+    periodType: 'departure' | 'arrival';
+    startDate: string;
+    endDate: string;
+    isTaxFree: boolean;
+    memo: string;
+  };
   additionalFees: IAdditionalFee[];
   companies: string[];
   managers: string[];
+}
+
+interface MockIncomeFormStore extends IMockStoreState {
   setFormField: (key: string, value: any) => void;
+  openForm: (orders: IBrokerOrder[]) => void;
+  closeForm: () => void;
   addAdditionalFee: (fee: any) => void;
   removeAdditionalFee: (id: string) => void;
-  closeForm: () => void;
   submitForm: (data: any) => void;
   isLoading: boolean;
   resetForm: () => void;
@@ -124,17 +146,16 @@ interface MockIncomeFormStore {
 
 // 목업 useIncomeFormStore (실제 구현시 제거)
 const useIncomeFormStore = (): MockIncomeFormStore => {
-  // 목업 데이터 반환
-  return {
-    isOpen: true,
-    selectedOrders: [],
+  const [state, setState] = React.useState<IMockStoreState>({
+    isOpen: false,
+    selectedOrders: [] as IBrokerOrder[],
     formData: { 
       shipperName: "기본 화주", 
       businessNumber: "123-45-67890",
       billingCompany: "기본 화주",
       manager: "김중개",
       managerContact: "010-1234-5678",
-      periodType: "departure",
+      periodType: "departure" as const,
       startDate: format(new Date(), 'yyyy-MM-dd'),
       endDate: format(new Date(), 'yyyy-MM-dd'),
       isTaxFree: false,
@@ -143,13 +164,44 @@ const useIncomeFormStore = (): MockIncomeFormStore => {
     additionalFees: [],
     companies: ["화주A", "화주B", "화주C"],
     managers: ["김중개", "이중개", "박중개"],
-    setFormField: (key, value) => console.log('setFormField', key, value),
-    addAdditionalFee: (fee) => console.log('addAdditionalFee', fee),
-    removeAdditionalFee: (id) => console.log('removeAdditionalFee', id),
-    closeForm: () => console.log('closeForm'),
-    submitForm: (data) => console.log('submitForm', data),
+  });
+
+  // 실제로 작동하는 함수들 구현
+  const setFormField = (key: string, value: any) => {
+    setState(prev => ({
+      ...prev,
+      formData: {
+        ...prev.formData,
+        [key]: value
+      }
+    }));
+  };
+
+  const openForm = (orders: IBrokerOrder[]) => {
+    setState(prev => ({
+      ...prev,
+      isOpen: true,
+      selectedOrders: orders
+    }));
+  };
+
+  const closeForm = () => {
+    setState(prev => ({
+      ...prev,
+      isOpen: false
+    }));
+  };
+
+  return {
+    ...state,
+    setFormField,
+    openForm,
+    closeForm,
+    addAdditionalFee: (fee: any) => console.log('addAdditionalFee', fee),
+    removeAdditionalFee: (id: string) => console.log('removeAdditionalFee', id),
+    submitForm: (data: any) => console.log('submitForm', data),
     isLoading: false,
-    resetForm: () => console.log('resetForm'),
+    resetForm: () => console.log('resetForm')
   };
 };
 
@@ -214,6 +266,7 @@ export function IncomeFormSheet() {
   const [activeTab, setActiveTab] = useState("info");
   const [isEditingAdditionalFee, setIsEditingAdditionalFee] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isOrderListOpen, setIsOrderListOpen] = useState(false);
 
   // 정산 기간 설정 - 가장 빠른 상차일과 가장 늦은 하차일로 자동 설정
   useEffect(() => {
@@ -476,69 +529,28 @@ export function IncomeFormSheet() {
           </SheetDescription>
         </SheetHeader>
 
-        <div className="space-y-6">
-          {/* 선택된 화물 목록 */}
-          <div>
-            <h3 className="text-lg font-semibold mb-2">선택된 화물 ({orders?.length || 0}개)</h3>
-            <ScrollArea className="h-64 rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[50px]">번호</TableHead>
-                    <TableHead>화물 번호</TableHead>
-                    <TableHead>출발지</TableHead>
-                    <TableHead>도착지</TableHead>
-                    <TableHead className="text-right">운송료</TableHead>
-                    <TableHead className="text-right">배차료</TableHead>
-                    <TableHead className="text-right">순수익</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {orders && orders.length > 0 ? (
-                    orders.map((order, index) => (
-                      <TableRow key={order.id}>
-                        <TableCell>{index + 1}</TableCell>
-                        <TableCell>{order.id.slice(0, 8)}</TableCell>
-                        <TableCell>{order.departureLocation.split(' ')[0]}</TableCell>
-                        <TableCell>{order.arrivalLocation.split(' ')[0]}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(order.amount || 0)}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(order.fee || 0)}</TableCell>
-                        <TableCell className="text-right">{formatCurrency((order.amount || 0) - (order.fee || 0))}</TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={7} className="h-16 text-center">
-                        선택된 화물이 없습니다.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </ScrollArea>
-          </div>
-
-          {/* 금액 요약 */}
-          <div className="bg-muted p-4 rounded-md">
-            <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-4">
+          {/* 금액 요약 - 상단으로 이동 */}
+          <div className="bg-muted p-3 rounded-md">
+            <div className="grid grid-cols-2 gap-3">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">총 운송료:</span>
+                <span className="text-muted-foreground text-sm">총 운송료:</span>
                 <span className="font-medium">{formatCurrency(calculatedTotals.totalFreight)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">총 배차료:</span>
+                <span className="text-muted-foreground text-sm">총 배차료:</span>
                 <span className="font-medium">{formatCurrency(calculatedTotals.totalDispatch)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">순 이익:</span>
+                <span className="text-muted-foreground text-sm">순 이익:</span>
                 <span className="font-medium">{formatCurrency(calculatedTotals.totalNet)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">부가세(10%):</span>
+                <span className="text-muted-foreground text-sm">부가세(10%):</span>
                 <span className="font-medium">{formatCurrency(calculatedTotals.tax)}</span>
               </div>
               <div className="col-span-2">
-                <div className="flex justify-between border-t border-border pt-2 mt-2">
+                <div className="flex justify-between border-t border-border pt-2 mt-1">
                   <span className="font-semibold">총 정산 금액:</span>
                   <span className="font-bold text-lg">{formatCurrency(calculatedTotals.totalAmount)}</span>
                 </div>
@@ -550,11 +562,11 @@ export function IncomeFormSheet() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               {/* 회사 정보 섹션 */}
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <h3 className="text-base font-semibold">회사 정보</h3>
                 
                 {/* 화주 정보 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <FormField
                     control={form.control}
                     name="shipperName"
@@ -626,10 +638,10 @@ export function IncomeFormSheet() {
               </div>
 
               {/* 담당자 정보 섹션 */}
-              <div className="space-y-4 pt-2">
+              <div className="space-y-3 pt-1">
                 <h3 className="text-base font-semibold">담당자 정보</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <FormField
                     control={form.control}
                     name="manager"
@@ -686,7 +698,7 @@ export function IncomeFormSheet() {
               </div>
 
               {/* 정산 기간 설정 섹션 */}
-              <div className="space-y-4 pt-2">
+              <div className="space-y-3 pt-1">
                 <h3 className="text-base font-semibold">정산 기간 설정</h3>
                 
                 <FormField
@@ -730,7 +742,7 @@ export function IncomeFormSheet() {
                   )}
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <FormField
                     control={form.control}
                     name="startDate"
@@ -814,7 +826,7 @@ export function IncomeFormSheet() {
               </div>
 
               {/* 세금 설정 */}
-              <div className="flex space-x-4">
+              <div className="flex space-x-4 pt-1">
                 <FormField
                   control={form.control}
                   name="taxFree"
@@ -915,6 +927,61 @@ export function IncomeFormSheet() {
                   </FormItem>
                 )}
               />
+
+              {/* 선택된 화물 목록 - 하단으로 이동 및 접을 수 있는 UI로 변경 */}
+              <Collapsible className="border rounded-md mt-4">
+                <div className="flex items-center justify-between p-3 bg-muted/50">
+                  <h3 className="text-base font-semibold">선택된 화물 ({orders?.length || 0}개)</h3>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="sm" onClick={() => setIsOrderListOpen(!isOrderListOpen)}>
+                      {isOrderListOpen ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                      <span className="sr-only">토글 화물 목록</span>
+                    </Button>
+                  </CollapsibleTrigger>
+                </div>
+                <CollapsibleContent>
+                  <ScrollArea className="h-48 rounded-b-md">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[50px]">번호</TableHead>
+                          <TableHead>화물 번호</TableHead>
+                          <TableHead>출발지</TableHead>
+                          <TableHead>도착지</TableHead>
+                          <TableHead className="text-right">운송료</TableHead>
+                          <TableHead className="text-right">배차료</TableHead>
+                          <TableHead className="text-right">순수익</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {orders && orders.length > 0 ? (
+                          orders.map((order, index) => (
+                            <TableRow key={order.id}>
+                              <TableCell>{index + 1}</TableCell>
+                              <TableCell>{order.id.slice(0, 8)}</TableCell>
+                              <TableCell>{order.departureLocation.split(' ')[0]}</TableCell>
+                              <TableCell>{order.arrivalLocation.split(' ')[0]}</TableCell>
+                              <TableCell className="text-right">{formatCurrency(order.amount || 0)}</TableCell>
+                              <TableCell className="text-right">{formatCurrency(order.fee || 0)}</TableCell>
+                              <TableCell className="text-right">{formatCurrency((order.amount || 0) - (order.fee || 0))}</TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={7} className="h-16 text-center">
+                              선택된 화물이 없습니다.
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </ScrollArea>
+                </CollapsibleContent>
+              </Collapsible>
 
               {/* 버튼 그룹 */}
               <div className="flex justify-end space-x-2 pt-4">
