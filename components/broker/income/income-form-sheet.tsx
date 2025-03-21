@@ -231,9 +231,6 @@ const formSchema = z.object({
   businessNumber: z.string({
     required_error: "사업자번호는 필수 입력 항목입니다.",
   }),
-  billingCompany: z.string({
-    required_error: "매출 회사는 필수 입력 항목입니다.",
-  }),
   manager: z.string({
     required_error: "담당자명은 필수 입력 항목입니다.",
   }),
@@ -258,7 +255,7 @@ const formSchema = z.object({
   memo: z.string().optional(),
   taxFree: z.boolean().default(false),
   hasTax: z.boolean().default(true),
-  invoiceNumber: z.string().optional(),
+  issueInvoice: z.boolean().default(true),
   paymentMethod: z.string().default("BANK_TRANSFER"),
 });
 
@@ -494,7 +491,6 @@ export function IncomeFormSheet() {
     defaultValues: {
       shipperName: formData.shipperName || "",
       businessNumber: formData.businessNumber || "",
-      billingCompany: formData.billingCompany || "",
       manager: formData.manager || managers[0] || "",
       managerContact: formData.managerContact || "",
       managerEmail: "",
@@ -505,7 +501,7 @@ export function IncomeFormSheet() {
       memo: formData.memo || "",
       taxFree: formData.isTaxFree || false,
       hasTax: true,
-      invoiceNumber: "",
+      issueInvoice: true,
       paymentMethod: "BANK_TRANSFER",
     },
   });
@@ -527,7 +523,6 @@ export function IncomeFormSheet() {
         orderIds,
         shipperName: values.shipperName,
         businessNumber: values.businessNumber,
-        billingCompany: values.billingCompany,
         manager: values.manager,
         managerContact: values.managerContact,
         managerEmail: values.managerEmail,
@@ -538,7 +533,7 @@ export function IncomeFormSheet() {
         memo: values.memo,
         taxFree: values.taxFree,
         hasTax: values.hasTax,
-        invoiceNumber: values.invoiceNumber,
+        issueInvoice: values.issueInvoice,
         paymentMethod: values.paymentMethod,
       };
       
@@ -572,61 +567,54 @@ export function IncomeFormSheet() {
         }
       }}
     >
-      <SheetContent className="sm:max-w-3xl overflow-y-auto" side="right">
-        <SheetHeader className="pb-4">
+      <SheetContent className="sm:max-w-3xl overflow-y-auto p-0" side="right">
+        <SheetHeader className="p-6 pb-2">
           <SheetTitle className="text-xl font-semibold">정산 생성</SheetTitle>
           <SheetDescription>
             선택한 화물을 정산 항목으로 등록합니다.
           </SheetDescription>
         </SheetHeader>
 
-        <div className="space-y-4">
-          {/* 금액 요약 - 상단으로 이동 */}
-          <div className="bg-muted p-3 rounded-md">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground text-sm">총 운송료:</span>
-                <span className="font-medium">{formatCurrency(calculatedTotals.totalFreight)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground text-sm">총 배차료:</span>
-                <span className="font-medium">{formatCurrency(calculatedTotals.totalDispatch)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground text-sm">순 이익:</span>
-                <span className="font-medium">{formatCurrency(calculatedTotals.totalNet)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground text-sm">부가세(10%):</span>
-                <span className="font-medium">{formatCurrency(calculatedTotals.tax)}</span>
-              </div>
-              <div className="col-span-2">
-                <div className="flex justify-between border-t border-border pt-2 mt-1">
-                  <span className="font-semibold">총 정산 금액:</span>
-                  <span className="font-bold text-lg">{formatCurrency(calculatedTotals.totalAmount)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
+        <div className="space-y-4 px-6 pb-20 overflow-y-auto h-[calc(100vh-180px)]">
           {/* 정산 폼 */}
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
               {/* 회사 정보 섹션 */}
               <div className="space-y-3">
-                <h3 className="text-base font-semibold">회사 정보</h3>
+                <h3 className="text-base font-semibold mb-1">회사 정보</h3>
                 
-                {/* 화주 정보 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* 화주 정보 - 선택 형식으로 변경 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <FormField
                     control={form.control}
                     name="shipperName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>화주명</FormLabel>
-                        <FormControl>
-                          <Input placeholder="화주명을 입력하세요" {...field} />
-                        </FormControl>
+                        <FormLabel className="text-xs font-medium">화주명</FormLabel>
+                        <Select 
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            // 여기서 선택된 화주에 해당하는 사업자번호 자동 설정
+                            const selectedCompany = companies.find(company => company === value);
+                            if (selectedCompany) {
+                              form.setValue("businessNumber", "000-00-00000"); // 실제로는 해당 기업의 사업자번호
+                            }
+                          }}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="h-9">
+                              <SelectValue placeholder="화주 선택" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {companies.map((company) => (
+                              <SelectItem key={company} value={company}>
+                                {company}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -637,71 +625,31 @@ export function IncomeFormSheet() {
                     name="businessNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>사업자등록번호</FormLabel>
+                        <FormLabel className="text-xs font-medium">사업자등록번호</FormLabel>
                         <FormControl>
-                          <Input placeholder="000-00-00000" {...field} />
+                          <Input placeholder="000-00-00000" className="h-9" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-
-                {/* 매출 회사(청구 주체) */}
-                <FormField
-                  control={form.control}
-                  name="billingCompany"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>매출 회사 (청구 주체)</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="매출 회사 선택" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {/* 기본으로 화주와 동일한 회사 표시 */}
-                          <SelectItem value={form.getValues("shipperName")}>
-                            {form.getValues("shipperName")} (화주와 동일)
-                          </SelectItem>
-                          
-                          {/* 다른 회사 목록 */}
-                          {companies && companies.filter(company => company !== form.getValues("shipperName")).map((company) => (
-                            <SelectItem key={company} value={company}>
-                              {company}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {field.value !== form.getValues("shipperName") && (
-                        <p className="text-xs text-yellow-600 mt-1">
-                          <span className="font-medium">참고:</span> 화주와 다른 매출 회사를 선택했습니다.
-                        </p>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               </div>
 
               {/* 담당자 정보 섹션 */}
-              <div className="space-y-3 pt-1">
-                <h3 className="text-base font-semibold">담당자 정보</h3>
+              <div className="space-y-3">
+                <h3 className="text-base font-semibold mb-1">담당자 정보</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <FormField
                     control={form.control}
                     name="manager"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>담당자명</FormLabel>
+                        <FormLabel className="text-xs font-medium">담당자명</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="h-9">
                               <SelectValue placeholder="담당자 선택" />
                             </SelectTrigger>
                           </FormControl>
@@ -723,9 +671,9 @@ export function IncomeFormSheet() {
                     name="managerContact"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>연락처</FormLabel>
+                        <FormLabel className="text-xs font-medium">연락처</FormLabel>
                         <FormControl>
-                          <Input placeholder="010-0000-0000" {...field} />
+                          <Input placeholder="010-0000-0000" className="h-9" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -738,9 +686,9 @@ export function IncomeFormSheet() {
                   name="managerEmail"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>이메일 (선택사항)</FormLabel>
+                      <FormLabel className="text-xs font-medium">이메일 (선택사항)</FormLabel>
                       <FormControl>
-                        <Input placeholder="example@email.com" {...field} />
+                        <Input placeholder="example@email.com" className="h-9" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -749,15 +697,15 @@ export function IncomeFormSheet() {
               </div>
 
               {/* 정산 기간 설정 섹션 */}
-              <div className="space-y-3 pt-1">
-                <h3 className="text-base font-semibold">정산 기간 설정</h3>
+              <div className="space-y-3">
+                <h3 className="text-base font-semibold mb-1">정산 기간 설정</h3>
                 
                 <FormField
                   control={form.control}
                   name="periodType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>정산 구분</FormLabel>
+                      <FormLabel className="text-xs font-medium">정산 구분</FormLabel>
                       <div className="flex space-x-4">
                         <div className="flex items-center space-x-2">
                           <input
@@ -793,16 +741,17 @@ export function IncomeFormSheet() {
                   )}
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <FormField
                     control={form.control}
                     name="startDate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>시작일</FormLabel>
+                        <FormLabel className="text-xs font-medium">시작일</FormLabel>
                         <FormControl>
                           <Input 
                             type="date" 
+                            className="h-9"
                             {...field}
                             onChange={(e) => {
                               field.onChange(e);
@@ -820,10 +769,11 @@ export function IncomeFormSheet() {
                     name="endDate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>종료일</FormLabel>
+                        <FormLabel className="text-xs font-medium">종료일</FormLabel>
                         <FormControl>
                           <Input 
                             type="date" 
+                            className="h-9"
                             {...field}
                             onChange={(e) => {
                               field.onChange(e);
@@ -842,14 +792,14 @@ export function IncomeFormSheet() {
                   control={form.control}
                   name="dueDate"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>정산 만기일</FormLabel>
+                    <FormItem>
+                      <FormLabel className="text-xs font-medium">정산 만기일</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
                               variant="outline"
-                              className="w-full pl-3 text-left font-normal"
+                              className="w-full h-9 pl-3 text-left font-normal"
                             >
                               {field.value ? (
                                 format(field.value, "PPP", { locale: ko })
@@ -877,92 +827,100 @@ export function IncomeFormSheet() {
               </div>
 
               {/* 세금 설정 */}
-              <div className="flex space-x-4 pt-1">
-                <FormField
-                  control={form.control}
-                  name="taxFree"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-2 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={(checked) => {
-                            field.onChange(checked);
-                            if (checked) {
-                              form.setValue("hasTax", false);
-                            }
-                          }}
-                        />
-                      </FormControl>
-                      <FormLabel className="font-normal cursor-pointer">
-                        면세 대상
-                      </FormLabel>
-                    </FormItem>
-                  )}
-                />
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <FormField
+                    control={form.control}
+                    name="taxFree"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked);
+                              if (checked) {
+                                form.setValue("hasTax", false);
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <FormLabel className="text-xs font-medium">
+                          면세 대상
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="hasTax"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-2 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={(checked) => {
-                            field.onChange(checked);
-                            if (checked) {
-                              form.setValue("taxFree", false);
-                            }
-                          }}
-                        />
-                      </FormControl>
-                      <FormLabel className="font-normal cursor-pointer">
-                        부가세 포함
-                      </FormLabel>
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="hasTax"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked);
+                              if (checked) {
+                                form.setValue("taxFree", false);
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <FormLabel className="text-xs font-medium">
+                          부가세 포함
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  {/* 세금계산서 발행 여부 체크박스 추가 */}
+                  <FormField
+                    control={form.control}
+                    name="issueInvoice"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="text-xs font-medium">
+                          세금계산서 발행
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* 결제 방법 */}
+                  <FormField
+                    control={form.control}
+                    name="paymentMethod"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs font-medium">결제 방법</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="h-9">
+                              <SelectValue placeholder="결제 방법 선택" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="BANK_TRANSFER">계좌이체</SelectItem>
+                            <SelectItem value="CREDIT_CARD">신용카드</SelectItem>
+                            <SelectItem value="CASH">현금</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
-
-              {/* 결제 방법 */}
-              <FormField
-                control={form.control}
-                name="paymentMethod"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>결제 방법</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="결제 방법 선택" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="BANK_TRANSFER">계좌이체</SelectItem>
-                        <SelectItem value="CREDIT_CARD">신용카드</SelectItem>
-                        <SelectItem value="CASH">현금</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* 세금계산서 번호 */}
-              <FormField
-                control={form.control}
-                name="invoiceNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>세금계산서 번호 (선택사항)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="세금계산서 번호를 입력하세요" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
               {/* 메모 */}
               <FormField
@@ -970,60 +928,60 @@ export function IncomeFormSheet() {
                 name="memo"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>메모 (선택사항)</FormLabel>
+                    <FormLabel className="text-xs font-medium">메모 (선택사항)</FormLabel>
                     <FormControl>
-                      <Input placeholder="메모를 입력하세요" {...field} />
+                      <Input placeholder="메모를 입력하세요" className="h-9" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* 선택된 화물 목록 - 하단으로 이동 및 접을 수 있는 UI로 변경 */}
-              <Collapsible className="border rounded-md mt-4">
-                <div className="flex items-center justify-between p-3 bg-muted/50">
-                  <h3 className="text-base font-semibold">선택된 화물 ({orders?.length || 0}개)</h3>
+              {/* 선택된 화물 목록 - 컴팩트하게 표시 */}
+              <Collapsible className="border rounded-md mt-2">
+                <div className="flex items-center justify-between p-2 bg-muted/50">
+                  <h3 className="text-sm font-semibold">선택된 화물 ({orders?.length || 0}개)</h3>
                   <CollapsibleTrigger asChild>
                     <Button variant="ghost" size="sm" onClick={() => setIsOrderListOpen(!isOrderListOpen)}>
                       {isOrderListOpen ? (
-                        <ChevronUp className="h-4 w-4" />
+                        <ChevronUp className="h-3 w-3" />
                       ) : (
-                        <ChevronDown className="h-4 w-4" />
+                        <ChevronDown className="h-3 w-3" />
                       )}
                       <span className="sr-only">토글 화물 목록</span>
                     </Button>
                   </CollapsibleTrigger>
                 </div>
                 <CollapsibleContent>
-                  <ScrollArea className="h-48 rounded-b-md">
+                  <ScrollArea className="h-36 rounded-b-md">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-[50px]">번호</TableHead>
-                          <TableHead>화물 번호</TableHead>
-                          <TableHead>출발지</TableHead>
-                          <TableHead>도착지</TableHead>
-                          <TableHead className="text-right">운송료</TableHead>
-                          <TableHead className="text-right">배차료</TableHead>
-                          <TableHead className="text-right">순수익</TableHead>
+                          <TableHead className="w-[40px] text-xs">번호</TableHead>
+                          <TableHead className="text-xs">화물 번호</TableHead>
+                          <TableHead className="text-xs">출발지</TableHead>
+                          <TableHead className="text-xs">도착지</TableHead>
+                          <TableHead className="text-right text-xs">운송료</TableHead>
+                          <TableHead className="text-right text-xs">배차료</TableHead>
+                          <TableHead className="text-right text-xs">순수익</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {orders && orders.length > 0 ? (
                           orders.map((order, index) => (
                             <TableRow key={order.id}>
-                              <TableCell>{index + 1}</TableCell>
-                              <TableCell>{order.id.slice(0, 8)}</TableCell>
-                              <TableCell>{order.departureLocation.split(' ')[0]}</TableCell>
-                              <TableCell>{order.arrivalLocation.split(' ')[0]}</TableCell>
-                              <TableCell className="text-right">{formatCurrency(order.amount || 0)}</TableCell>
-                              <TableCell className="text-right">{formatCurrency(order.fee || 0)}</TableCell>
-                              <TableCell className="text-right">{formatCurrency((order.amount || 0) - (order.fee || 0))}</TableCell>
+                              <TableCell className="text-xs">{index + 1}</TableCell>
+                              <TableCell className="text-xs">{order.id.slice(0, 8)}</TableCell>
+                              <TableCell className="text-xs">{order.departureLocation.split(' ')[0]}</TableCell>
+                              <TableCell className="text-xs">{order.arrivalLocation.split(' ')[0]}</TableCell>
+                              <TableCell className="text-right text-xs">{formatCurrency(order.amount || 0)}</TableCell>
+                              <TableCell className="text-right text-xs">{formatCurrency(order.fee || 0)}</TableCell>
+                              <TableCell className="text-right text-xs">{formatCurrency((order.amount || 0) - (order.fee || 0))}</TableCell>
                             </TableRow>
                           ))
                         ) : (
                           <TableRow>
-                            <TableCell colSpan={7} className="h-16 text-center">
+                            <TableCell colSpan={7} className="h-16 text-center text-xs">
                               선택된 화물이 없습니다.
                             </TableCell>
                           </TableRow>
@@ -1033,34 +991,59 @@ export function IncomeFormSheet() {
                   </ScrollArea>
                 </CollapsibleContent>
               </Collapsible>
-
-              {/* 버튼 그룹 */}
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => closeForm()}
-                  disabled={loading}
-                >
-                  <X className="mr-2 h-4 w-4" />
-                  취소
-                </Button>
-                <Button type="submit" disabled={loading}>
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      처리 중...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      정산 생성
-                    </>
-                  )}
-                </Button>
-              </div>
             </form>
           </Form>
+        </div>
+        
+        {/* 하단 고정 영역 - 금액 요약 및 버튼 */}
+        <div className="absolute bottom-0 left-0 right-0 border-t bg-background p-3">
+          {/* 금액 요약 */}
+          <div className="mb-3 grid grid-cols-3 gap-2 text-sm">
+            <div>
+              <div className="text-xs text-muted-foreground">총 운송료</div>
+              <div className="font-medium">{formatCurrency(calculatedTotals.totalFreight)}</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">총 배차료</div>
+              <div className="font-medium">{formatCurrency(calculatedTotals.totalDispatch)}</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">예상 수익</div>
+              <div className="font-medium text-green-600">{formatCurrency(calculatedTotals.totalNet)}</div>
+            </div>
+          </div>
+          
+          {/* 버튼 그룹 */}
+          <div className="flex justify-end space-x-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => closeForm()}
+              disabled={loading}
+              size="sm"
+            >
+              <X className="mr-1 h-4 w-4" />
+              취소
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={loading}
+              size="sm"
+              onClick={form.handleSubmit(onSubmit)}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                  처리 중...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-1 h-4 w-4" />
+                  정산 생성
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </SheetContent>
     </Sheet>
