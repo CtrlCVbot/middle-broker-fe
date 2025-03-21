@@ -33,6 +33,7 @@ interface IncomeListProps {
   onStatusChange?: (incomeId: string, newStatus: IncomeStatusType) => void;
   onIssueInvoice?: (incomeId: string) => void;
   onExportExcel?: (incomeId: string) => void;
+  currentTab?: IncomeStatusType; // 현재 선택된 탭
 }
 
 export function IncomeList({
@@ -43,6 +44,7 @@ export function IncomeList({
   onStatusChange,
   onIssueInvoice,
   onExportExcel,
+  currentTab = "MATCHING", // 기본값은 정산대사
 }: IncomeListProps) {
   // 상세 정보 모달을 위한 스토어 액세스
   const { openSheet } = useIncomeDetailStore();
@@ -79,11 +81,11 @@ export function IncomeList({
   // 정산 상태에 따른 배지 렌더링
   const renderStatusBadge = (status: IncomeStatusType) => {
     switch (status) {
-      case '정산대기':
+      case 'WAITING':
         return <Badge variant="outline" className="bg-slate-100">정산대기</Badge>;
-      case '정산대사':
+      case 'MATCHING':
         return <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-100">정산대사</Badge>;
-      case '정산완료':
+      case 'COMPLETED':
         return <Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">정산완료</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
@@ -108,6 +110,18 @@ export function IncomeList({
     }
   };
 
+  // 현재 탭에 따른 상태 컬럼 이름 설정
+  const getStatusColumnName = () => {
+    switch (currentTab) {
+      case "MATCHING":
+        return "정산대사 상태";
+      case "COMPLETED":
+        return "정산완료 상태";
+      default:
+        return "상태";
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="rounded-md border">
@@ -115,7 +129,7 @@ export function IncomeList({
           <TableHeader>
             <TableRow className="bg-slate-50">
               <TableHead className="w-[120px]">정산 ID</TableHead>
-              <TableHead>상태</TableHead>
+              <TableHead>{getStatusColumnName()}</TableHead>
               <TableHead>화주명</TableHead>
               <TableHead>정산 기간</TableHead>
               <TableHead className="text-center">화물 건수</TableHead>

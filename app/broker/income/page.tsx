@@ -195,11 +195,20 @@ export default function IncomePage() {
           </TabsList>
           
           {/* 필터 영역 */}          
-          {filter.status !== "WAITING" && (
+          {filter.status === "MATCHING" && (
             <IncomeFilter 
-            onFilterChange={handleFilterChange} 
-            onResetFilter={resetFilter}
-          />
+              onFilterChange={handleFilterChange}
+              onResetFilter={resetFilter}
+              tabStatus="MATCHING"
+            />
+          )}
+          
+          {filter.status === "COMPLETED" && (
+            <IncomeFilter 
+              onFilterChange={handleFilterChange}
+              onResetFilter={resetFilter}
+              tabStatus="COMPLETED"
+            />
           )}
           
           {/* 정산 대기 탭 */}
@@ -274,6 +283,7 @@ export default function IncomePage() {
                 onStatusChange={handleStatusChange}
                 onIssueInvoice={handleIssueInvoice}
                 onExportExcel={handleExportExcel}
+                currentTab="MATCHING"
               />
             )}
           </TabsContent>
@@ -300,6 +310,7 @@ export default function IncomePage() {
                 onStatusChange={handleStatusChange}
                 onIssueInvoice={handleIssueInvoice}
                 onExportExcel={handleExportExcel}
+                currentTab="COMPLETED"
               />
             )}
           </TabsContent>
