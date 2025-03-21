@@ -3,125 +3,160 @@
 import React, { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  BarChart, 
-  Building,
-  CircleDollarSign, 
-  FileText, 
-  Plus, 
-  PlusCircle, 
-  TrendingUp, 
-  Users 
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { formatCurrency } from "@/lib/utils";
+import { PlusCircle, Users } from "lucide-react";
+import { formatCurrency } from "../../../utils/format";
 import { IBrokerOrder } from "@/types/broker-order";
-import { Separator } from "@/components/ui/separator";
+
+interface IShipperGroup {
+  companyId: string;
+  companyName: string;
+  orders: IBrokerOrder[];
+  count: number;
+  totalFreight: number;
+  totalDispatch: number;
+  totalProfit: number;
+}
 
 interface IncomeWaitingSummaryProps {
   selectedOrders: IBrokerOrder[];
   onCreateIncome: () => void;
 }
 
-export function IncomeWaitingSummary({
+const IncomeWaitingSummary: React.FC<IncomeWaitingSummaryProps> = ({
   selectedOrders,
-  onCreateIncome
-}: IncomeWaitingSummaryProps) {
-  // 화주별 그룹화
+  onCreateIncome,
+}) => {
+  // 선택된 화물이 없으면 표시하지 않음
+  if (!selectedOrders || selectedOrders.length === 0) {
+    return null;
+  }
+
+  // 화주별 그룹화된 데이터 계산
   const shipperGroups = useMemo(() => {
-    const groups = new Map<string, { count: number, total: number }>();
-    
-    selectedOrders.forEach(order => {
-      const shipper = order.company || '미지정';
-      if (!groups.has(shipper)) {
-        groups.set(shipper, { count: 0, total: 0 });
+    const groups: Record<string, IShipperGroup> = {};
+
+    selectedOrders.forEach((order) => {
+      const companyId = order.company || "미지정";
+      const companyName = order.company || "미지정";
+
+      if (!groups[companyId]) {
+        groups[companyId] = {
+          companyId,
+          companyName,
+          orders: [],
+          count: 0,
+          totalFreight: 0,
+          totalDispatch: 0,
+          totalProfit: 0,
+        };
       }
-      
-      const group = groups.get(shipper)!;
-      group.count += 1;
-      group.total += order.amount || 0;
+
+      const freight = order.amount || 0;
+      const dispatch = order.fee || 0;
+      const profit = freight - dispatch;
+
+      groups[companyId].orders.push(order);
+      groups[companyId].count += 1;
+      groups[companyId].totalFreight += freight;
+      groups[companyId].totalDispatch += dispatch;
+      groups[companyId].totalProfit += profit;
     });
-    
-    return Array.from(groups.entries())
-      .map(([shipper, data]) => ({ shipper, ...data }))
-      .sort((a, b) => b.count - a.count); // 건수 내림차순 정렬
+
+    return Object.values(groups);
   }, [selectedOrders]);
-  
-  // 주요 화주 (가장 많은 건수)
-  const mainShipper = shipperGroups.length > 0 ? shipperGroups[0].shipper : '';
-  
-  // 총계 계산
-  const summaryData = useMemo(() => {
-    return selectedOrders.reduce(
-      (acc, order) => {
-        acc.totalFreight += order.amount || 0;
-        acc.totalDispatch += order.fee || 0;
+
+  // 전체 선택된 화물의 합계 계산
+  const totals = useMemo(() => {
+    return shipperGroups.reduce(
+      (acc, group) => {
+        acc.totalOrders += group.count;
+        acc.totalFreight += group.totalFreight;
+        acc.totalDispatch += group.totalDispatch;
+        acc.totalProfit += group.totalProfit;
         return acc;
       },
-      { totalFreight: 0, totalDispatch: 0 }
+      { totalOrders: 0, totalFreight: 0, totalDispatch: 0, totalProfit: 0 }
     );
-  }, [selectedOrders]);
-  
-  // 순수익 계산
-  const netProfit = summaryData.totalFreight - summaryData.totalDispatch;
-  
-  // 화물이 없는 경우 렌더링하지 않음
-  if (selectedOrders.length === 0) return null;
-  
+  }, [shipperGroups]);
+
   return (
-    <div className="bg-background fixed bottom-0 left-0 right-0 border-t shadow-md z-10">
-      <div className="container mx-auto py-3 px-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-6 flex-1">
-            <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-muted-foreground" />
-              <span className="font-medium">{selectedOrders.length}건</span>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Building className="h-5 w-5 text-muted-foreground" />
-              <span className="text-sm">
-                {shipperGroups.length === 1 ? (
-                  <span className="font-medium">{mainShipper}</span>
-                ) : (
-                  <span>
-                    <span className="font-medium">{mainShipper}</span>
-                    <span className="text-muted-foreground"> 외 {shipperGroups.length - 1}개 업체</span>
-                  </span>
-                )}
-              </span>
-            </div>
-            
-            <Separator orientation="vertical" className="h-6" />
-            
-            <div className="flex items-center gap-6">
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground">운송료</span>
-                <span className="font-medium">{formatCurrency(summaryData.totalFreight)}원</span>
-              </div>
-              
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground">배차료</span>
-                <span className="font-medium">{formatCurrency(summaryData.totalDispatch)}원</span>
-              </div>
-              
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground">순수익</span>
-                <span className="font-bold text-primary">{formatCurrency(netProfit)}원</span>
-              </div>
-            </div>
+    <div className="bg-background sticky bottom-0 border-t shadow-md z-10 mt-4">
+      <div className="container py-2">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium">선택된 화물 정산 요약</h3>
+            <Button onClick={onCreateIncome} className="gap-1">
+              <PlusCircle className="h-4 w-4" />
+              선택한 화물 정산하기
+            </Button>
           </div>
-          
-          <Button 
-            onClick={onCreateIncome}
-            className="gap-1" 
-            size="sm"
-          >
-            <PlusCircle className="h-4 w-4" />
-            선택한 화물 정산하기
-          </Button>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+            {shipperGroups.map((group) => (
+              <Card key={group.companyId} className="border">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users className="h-4 w-4 text-primary" />
+                    <span className="font-medium">{group.companyName}</span>
+                    <span className="text-sm text-muted-foreground">
+                      ({group.count}건)
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 text-sm">
+                    <div className="text-muted-foreground">운송비</div>
+                    <div className="text-right">
+                      {formatCurrency(group.totalFreight)}원
+                    </div>
+                    <div className="text-muted-foreground">배차비</div>
+                    <div className="text-right">
+                      {formatCurrency(group.totalDispatch)}원
+                    </div>
+                    <div className="text-muted-foreground font-medium">수익</div>
+                    <div className="text-right font-medium">
+                      {formatCurrency(group.totalProfit)}원
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <Card className="bg-muted/30 border">
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">전체 합계</span>
+                  <span className="text-sm text-muted-foreground">
+                    (총 {totals.totalOrders}건)
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-4 text-sm sm:flex sm:items-center">
+                  <div>
+                    <span className="text-muted-foreground mr-2">운송비:</span>
+                    <span className="font-medium">
+                      {formatCurrency(totals.totalFreight)}원
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground mr-2">배차비:</span>
+                    <span className="font-medium">
+                      {formatCurrency(totals.totalDispatch)}원
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground mr-2">수익:</span>
+                    <span className="font-medium">
+                      {formatCurrency(totals.totalProfit)}원
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
   );
-} 
+};
+
+export default IncomeWaitingSummary; 

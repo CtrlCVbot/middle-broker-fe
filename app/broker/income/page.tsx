@@ -24,7 +24,7 @@ import { IncomeStatusType } from "@/types/income";
 import { formatCurrency } from "@/lib/utils";
 import { IncomeWaitingTable } from "@/components/broker/income/income-waiting-table";
 import { IncomeWaitingSearch } from "@/components/broker/income/income-waiting-search";
-import { IncomeWaitingSummary } from "@/components/broker/income/income-waiting-summary";
+import IncomeWaitingSummary from "@/components/broker/income/income-waiting-summary";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -262,7 +262,7 @@ export default function IncomePage() {
           
           {/* 정산 대기 탭 */}
           <TabsContent value="WAITING" className="mt-6">
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-4 relative">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                   <h2 className="text-xl font-semibold">정산 대기 화물</h2>
@@ -287,22 +287,24 @@ export default function IncomePage() {
                 filterOptions={filterOptions}
               />
               
-              {/* 로딩 상태 */}
-              {waitingIsLoading ? (
-                <div className="flex h-[300px] items-center justify-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary/70" />
-                </div>
-              ) : (
-                <IncomeWaitingTable
-                  orders={currentWaitingOrders}
-                  currentPage={waitingCurrentPage}
-                  totalPages={waitingTotalPages}
-                  onPageChange={handleWaitingPageChange}
-                  selectedOrders={selectedOrderIds}
-                  onOrderSelect={selectOrder}
-                  onSelectAll={selectAllOrders}
-                />
-              )}
+              {/* 로딩 상태 또는 화물 테이블 */}
+              <div className="min-h-[300px]">
+                {waitingIsLoading ? (
+                  <div className="flex h-[300px] items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary/70" />
+                  </div>
+                ) : (
+                  <IncomeWaitingTable
+                    orders={currentWaitingOrders}
+                    currentPage={waitingCurrentPage}
+                    totalPages={waitingTotalPages}
+                    onPageChange={handleWaitingPageChange}
+                    selectedOrders={selectedOrderIds}
+                    onOrderSelect={selectOrder}
+                    onSelectAll={selectAllOrders}
+                  />
+                )}
+              </div>
               
               {/* 선택된 화물 요약 정보 */}
               {selectedOrderIds.length > 0 && (
