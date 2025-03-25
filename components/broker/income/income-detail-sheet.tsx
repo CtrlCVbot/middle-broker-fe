@@ -452,7 +452,7 @@ export function IncomeDetailSheet() {
               닫기
             </Button>
             
-            {incomeDetail.status !== '' && (
+            {incomeDetail.status !== 'COMPLETED' && (
               <Button size="sm" onClick={handleNextStatus}>
                 <CheckCircle className="h-3.5 w-3.5 mr-1" />
                 {incomeDetail.status === 'WAITING' ? '정산대사 전환' : '정산완료 처리'}
