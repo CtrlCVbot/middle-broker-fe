@@ -13,11 +13,15 @@ export interface IInvoice {
 
 export interface ICargo {
   id: string;
+  businessNumber: string;
   carNumber: string;
   dispatchAmount: number;
   transportDate: string;
-  receiptStatus: 'RECEIVED' | 'WAITING' | 'NOT_REQUIRED';
-  businessNumber: string;
+  departureLocation: string;
+  arrivalLocation: string;
+  driver?: {
+    name: string;
+  };
 }
 
 export interface IAdditionalCharge {

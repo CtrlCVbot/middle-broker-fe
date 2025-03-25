@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { IInvoice, IInvoiceFilter, ICargo, IAdditionalCharge } from '@/types/broker/expenditure';
 import { generateMockInvoices, getPaginatedInvoices } from '@/utils/mockdata/mock-invoices';
 
+type SheetMode = 'CREATE' | 'MATCH';
+
 interface IInvoiceStore {
   // 상태
   invoices: IInvoice[];
@@ -15,6 +17,7 @@ interface IInvoiceStore {
   totalPages: number;
   totalItems: number;
   isLoading: boolean;
+  mode: SheetMode;
 
   // 액션
   fetchInvoices: () => Promise<void>;
@@ -26,6 +29,8 @@ interface IInvoiceStore {
   setMatchingSheetOpen: (isOpen: boolean) => void;
   resetFilter: () => void;
   setPage: (page: number) => void;
+  setMode: (mode: SheetMode) => void;
+  setSelectedInvoice: (invoice: IInvoice | null) => void;
   
   // 계산된 값
   getTotalMatchedAmount: () => number;
@@ -50,6 +55,7 @@ export const useInvoiceStore = create<IInvoiceStore>((set, get) => ({
   totalPages: 0,
   totalItems: 0,
   isLoading: false,
+  mode: 'MATCH',
 
   // 액션
   fetchInvoices: async () => {
@@ -105,24 +111,36 @@ export const useInvoiceStore = create<IInvoiceStore>((set, get) => ({
   
   setPage: (page) => set({ currentPage: page }),
   
-  setMatchingSheetOpen: (isOpen) => set({ isMatchingSheetOpen: isOpen }),
+  setMatchingSheetOpen: (isOpen) => {
+    if (!isOpen) {
+      set({ 
+        selectedInvoice: null,
+        matchedCargos: [],
+        mode: 'MATCH'
+      });
+    }
+    set({ isMatchingSheetOpen: isOpen });
+  },
+  
+  setMode: (mode) => set({ mode }),
+  
+  setSelectedInvoice: (invoice) => {
+    set({ 
+      selectedInvoice: invoice,
+      mode: 'MATCH',
+      matchedCargos: []
+    });
+  },
   
   getTotalMatchedAmount: () => {
-    const { matchedCargos, additionalCharges } = get();
-    const cargoAmount = matchedCargos.reduce(
-      (sum, cargo) => sum + cargo.dispatchAmount, 
-      0
-    );
-    const additionalAmount = additionalCharges.reduce(
-      (sum, charge) => sum + charge.amount, 
-      0
-    );
-    return cargoAmount + additionalAmount;
+    const { matchedCargos } = get();
+    return matchedCargos.reduce((sum, cargo) => sum + (cargo.dispatchAmount || 0), 0);
   },
   
   getAmountDifference: () => {
     const { selectedInvoice } = get();
+    const totalMatchedAmount = get().getTotalMatchedAmount();
     if (!selectedInvoice) return 0;
-    return selectedInvoice.totalAmount - get().getTotalMatchedAmount();
+    return (selectedInvoice.totalAmount || 0) - totalMatchedAmount;
   }
 })); 
