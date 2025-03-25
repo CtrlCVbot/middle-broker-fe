@@ -25,7 +25,8 @@ export default function ExpenditurePage() {
     updateFilter,
     resetFilter,
     fetchInvoices,
-    setMatchingSheetOpen
+    setMatchingSheetOpen,
+    setCreateMode
   } = useInvoiceStore();
   
   const [isCardView, setIsCardView] = useState(false);
@@ -36,7 +37,8 @@ export default function ExpenditurePage() {
   }, [currentPage, filter]);
 
   const handleCreateInvoice = () => {
-    setMatchingSheetOpen(true);
+    //setMatchingSheetOpen(true);
+    setCreateMode();
   };
 
   return (

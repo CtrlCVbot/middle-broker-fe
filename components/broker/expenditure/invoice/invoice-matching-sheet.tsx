@@ -131,6 +131,11 @@ export const InvoiceMatchingSheet = () => {
     setAvailableCargos(generateMockCargos(20));
   }, []);
   
+  // mode 변경 확인용 useEffect
+  useEffect(() => {
+    console.log('Current mode:', mode);
+  }, [mode]);
+  
   // 세금계산서가 변경될 때 해당 사업자번호에 맞는 화물 자동 매칭
   useEffect(() => {
     if (selectedInvoice && matchedCargos.length === 0) {
@@ -229,10 +234,17 @@ export const InvoiceMatchingSheet = () => {
             </SheetTitle>
             <SheetDescription>
               {mode === 'CREATE'
-                ? '세금계산서 정보를 입력하고 화물을 매칭합니다.'
-                : '화물을 매칭하여 정산 대사로 전환합니다.'}
+                ? '세금계산서 정보를 입력하고 매칭할 화물을 선택하세요.'
+                : '선택한 세금계산서와 매칭할 화물을 선택하세요.'}
             </SheetDescription>
           </SheetHeader>
+
+          {/* 현재 모드 디버그 표시 (개발 중에만 사용) */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="bg-muted p-2 mb-4 rounded text-sm">
+              <p>Debug - Current Mode: <strong>{mode}</strong></p>
+            </div>
+          )}
 
           {/* 세금계산서 정보 요약 (선택된 세금계산서가 있을 경우) */}
           {selectedInvoice && mode === 'MATCH' && (
@@ -264,125 +276,28 @@ export const InvoiceMatchingSheet = () => {
             </Card>
           )}
 
-          {/* 세금계산서 정보 입력 (신규 생성 시) */}
+          {/* 세금계산서 정보 입력 폼 (신규 생성 시) */}
           {mode === 'CREATE' && (
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="mb-4 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="businessNumber"
-                    rules={{ 
-                      required: "사업자번호를 입력하세요",
-                      pattern: {
-                        value: /^\d{3}-\d{2}-\d{5}$|^\d{10}$/,
-                        message: "유효한 사업자번호 형식이 아닙니다"
-                      }
-                    }}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>사업자번호</FormLabel>
-                        <FormControl>
-                          <Input placeholder="000-00-00000" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="supplierName"
-                    rules={{ required: "운송사명을 입력하세요" }}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>운송사명</FormLabel>
-                        <FormControl>
-                          <Input placeholder="운송사명 입력" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="representative"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>대표자</FormLabel>
-                        <FormControl>
-                          <Input placeholder="대표자명 입력" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="issueDate"
-                    rules={{ required: "작성일을 선택하세요" }}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>작성일</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="supplyAmount"
-                    rules={{ required: "공급가액을 입력하세요" }}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>공급가액</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="0" 
-                            {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="taxAmount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>세액</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="0" 
-                            {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormDescription>공급가액의 10%로 자동 계산됩니다</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="flex gap-2 md:col-span-2">
+            <div className="mb-4 border-2 border-primary/10 rounded-md p-4 bg-primary/5">
+              <h3 className="text-base font-semibold mb-4">세금계산서 정보 입력</h3>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="bankName"
+                      name="businessNumber"
+                      rules={{ 
+                        required: "사업자번호를 입력하세요",
+                        pattern: {
+                          value: /^\d{3}-\d{2}-\d{5}$|^\d{10}$/,
+                          message: "유효한 사업자번호 형식이 아닙니다"
+                        }
+                      }}
                       render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel>은행명</FormLabel>
+                        <FormItem>
+                          <FormLabel>사업자번호</FormLabel>
                           <FormControl>
-                            <Input placeholder="은행명 입력" {...field} />
+                            <Input placeholder="000-00-00000" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -391,107 +306,201 @@ export const InvoiceMatchingSheet = () => {
                     
                     <FormField
                       control={form.control}
-                      name="accountNumber"
+                      name="supplierName"
+                      rules={{ required: "운송사명을 입력하세요" }}
                       render={({ field }) => (
-                        <FormItem className="flex-[2]">
-                          <FormLabel>계좌번호</FormLabel>
+                        <FormItem>
+                          <FormLabel>운송사명</FormLabel>
                           <FormControl>
-                            <Input placeholder="계좌번호 입력" {...field} />
+                            <Input placeholder="운송사명 입력" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="representative"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>대표자</FormLabel>
+                          <FormControl>
+                            <Input placeholder="대표자명 입력" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="issueDate"
+                      rules={{ required: "작성일을 선택하세요" }}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>작성일</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="supplyAmount"
+                      rules={{ required: "공급가액을 입력하세요" }}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>공급가액</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              placeholder="0" 
+                              {...field}
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="taxAmount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>세액</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              placeholder="0" 
+                              {...field}
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormDescription>공급가액의 10%로 자동 계산됩니다</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="flex gap-2 md:col-span-2">
+                      <FormField
+                        control={form.control}
+                        name="bankName"
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormLabel>은행명</FormLabel>
+                            <FormControl>
+                              <Input placeholder="은행명 입력" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="accountNumber"
+                        render={({ field }) => (
+                          <FormItem className="flex-[2]">
+                            <FormLabel>계좌번호</FormLabel>
+                            <FormControl>
+                              <Input placeholder="계좌번호 입력" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name="issueType"
+                      rules={{ required: "발행유형을 선택하세요" }}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>발행유형</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="발행유형 선택" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="ELECTRONIC">전자</SelectItem>
+                              <SelectItem value="MANUAL">수기</SelectItem>
+                              <SelectItem value="POSTAL">우편</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="totalAmount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>합계금액</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              placeholder="0" 
+                              disabled
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormDescription>공급가액 + 세액</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="memo"
+                      render={({ field }) => (
+                        <FormItem className="md:col-span-2">
+                          <FormLabel>메모</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="추가 정보를 입력하세요"
+                              className="resize-none"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                  
-                  <FormField
-                    control={form.control}
-                    name="issueType"
-                    rules={{ required: "발행유형을 선택하세요" }}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>발행유형</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="발행유형 선택" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="ELECTRONIC">전자</SelectItem>
-                            <SelectItem value="MANUAL">수기</SelectItem>
-                            <SelectItem value="POSTAL">우편</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="totalAmount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>합계금액</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="0" 
-                            disabled
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormDescription>공급가액 + 세액</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="memo"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel>메모</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="추가 정보를 입력하세요"
-                            className="resize-none"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </form>
-            </Form>
+                </form>
+              </Form>
+            </div>
           )}
           
           <Separator className="my-4" />
 
-          {/* 금액 불일치 경고 */}
-          {selectedInvoice && hasAmountMismatch && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertTriangle className="h-4 w-4 mr-2" />
-              <AlertDescription className="flex items-center justify-between">
-                <span>세금계산서 금액과 매칭된 화물의 총액이 일치하지 않습니다.</span>
-                <Badge variant="outline" className="ml-2 font-semibold">
-                  차액: <AmountDisplay amount={amountDifference} showSign />
-                </Badge>
-              </AlertDescription>
-            </Alert>
-          )}
+          
 
           {/* 화물 매칭 섹션 */}
           <div className="mb-4 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold">화물 매칭</h3>
+               {matchedCargos.length > 0 && (
+                  <Badge variant="outline">
+                    총 {matchedCargos.length}건
+                  </Badge>
+               )}
               <Button onClick={() => setIsSearchDialogOpen(true)}>
                 <Search className="h-4 w-4 mr-2" />
                 화물 검색
@@ -500,13 +509,7 @@ export const InvoiceMatchingSheet = () => {
 
             {/* 매칭된 화물 목록 */}
             {matchedCargos.length > 0 && (
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-base font-semibold">매칭된 화물</h3>
-                  <Badge variant="outline">
-                    총 {matchedCargos.length}건
-                  </Badge>
-                </div>
+              <div>                
                 <div className="border rounded-lg overflow-hidden">
                   <div className="overflow-x-auto">
                     <Table>

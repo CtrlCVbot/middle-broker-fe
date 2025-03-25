@@ -31,6 +31,7 @@ interface IInvoiceStore {
   setPage: (page: number) => void;
   setMode: (mode: SheetMode) => void;
   setSelectedInvoice: (invoice: IInvoice | null) => void;
+  setCreateMode: () => void;
   
   // 계산된 값
   getTotalMatchedAmount: () => number;
@@ -128,6 +129,15 @@ export const useInvoiceStore = create<IInvoiceStore>((set, get) => ({
     set({ 
       selectedInvoice: invoice,
       mode: 'MATCH',
+      matchedCargos: []
+    });
+  },
+  
+  setCreateMode: () => {
+    set({
+      mode: 'CREATE',
+      isMatchingSheetOpen: true,
+      selectedInvoice: null,
       matchedCargos: []
     });
   },

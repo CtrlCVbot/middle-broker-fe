@@ -6,11 +6,10 @@ import { Plus } from "lucide-react";
 import { useInvoiceStore } from "@/store/expenditure/invoice-store";
 
 export const WaitingTab = () => {
-  const { setMatchingSheetOpen, setMode } = useInvoiceStore();
+  const { setCreateMode } = useInvoiceStore();
 
   const handleCreateInvoice = () => {
-    setMode('CREATE');
-    setMatchingSheetOpen(true);
+    setCreateMode();
   };
 
   return (
