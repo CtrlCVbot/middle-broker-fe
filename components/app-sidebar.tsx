@@ -182,6 +182,17 @@ export const data = {
         },
       ],
     },
+    {
+      title: "매입 정산2",
+      url: "/broker/expenditure2",
+      icon: DollarSign,
+      items: [
+        {
+          title: "정산 목록",
+          url: "/broker/expenditure2",
+        },
+      ],
+    },
   ], 
 
 

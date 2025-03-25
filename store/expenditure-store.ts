@@ -27,7 +27,7 @@ export interface IExpenditureCreateRequest {
 // 매출 정산 목록 상태 관리 인터페이스
 interface ExpenditureStoreState {
   // 데이터 상태
-  Expenditures: IExpenditure[];
+  expenditures: IExpenditure[];
   currentPage: number;
   totalPages: number;
   totalItems: number;
@@ -48,14 +48,14 @@ interface ExpenditureStoreState {
   
   // 정산 생성 및 관리
   addExpenditure: (data: IExpenditureCreateRequest) => Promise<string>;
-  updateExpenditureStatus: (ExpenditureId: string, newStatus: ExpenditureStatusType) => Promise<void>;
+  updateExpenditureStatus: (expenditureId: string, newStatus: ExpenditureStatusType) => Promise<void>;
   
   // 추가금 관리
-  addAdditionalFee: (ExpenditureId: string, fee: Omit<IAdditionalFee, 'id' | 'createdAt' | 'createdBy'>) => Promise<void>;
-  removeAdditionalFee: (ExpenditureId: string, feeId: string) => Promise<void>;
+  addAdditionalFee: (expenditureId: string, fee: Omit<IAdditionalFee, 'id' | 'createdAt' | 'createdBy'>) => Promise<void>;
+  removeAdditionalFee: (expenditureId: string, feeId: string) => Promise<void>;
   
   // 세금 관리
-  setTaxFree: (ExpenditureId: string, isTaxFree: boolean) => Promise<void>;
+  setTaxFree: (expenditureId: string, isTaxFree: boolean) => Promise<void>;
   
   // 정산 생성
   createExpenditure: (data: IExpenditureCreateRequest) => Promise<void>;
@@ -75,7 +75,7 @@ const initialFilter: IExpenditureFilter = {
 // 매출 정산 목록 상태 스토어
 export const useExpenditureStore = create<ExpenditureStoreState>((set, get) => ({
   // 초기 상태
-  Expenditures: [],
+  expenditures: [],
   currentPage: 1,
   totalPages: 1,
   totalItems: 0,
@@ -133,7 +133,7 @@ export const useExpenditureStore = create<ExpenditureStoreState>((set, get) => (
       console.log('목업 데이터 응답 받음:', response.data.length);
       
       set({
-        Expenditures: response.data,
+        expenditures: response.data,
         currentPage: page,
         totalItems: response.pagination.total,
         totalPages: Math.ceil(response.pagination.total / limit),
@@ -155,7 +155,7 @@ export const useExpenditureStore = create<ExpenditureStoreState>((set, get) => (
   },
   
   // 정산 상태 변경
-  updateExpenditureStatus: async (ExpenditureId, newStatus) => {
+  updateExpenditureStatus: async (expenditureId, newStatus) => {
     set({ isLoading: true, error: null });
     
     try {
@@ -163,23 +163,23 @@ export const useExpenditureStore = create<ExpenditureStoreState>((set, get) => (
       // 목업 데이터에서는 상태만 변경
       
       // 현재 상태에서 해당 정산 찾기
-      const ExpenditureIndex = get().Expenditures.findIndex(Expenditure => Expenditure.id === ExpenditureId);
+      const expenditureIndex = get().expenditures.findIndex(expenditure => expenditure.id === expenditureId);
       
-      if (ExpenditureIndex === -1) {
+      if (expenditureIndex === -1) {
         throw new Error('정산 정보를 찾을 수 없습니다.');
       }
       
       // 상태 업데이트
-      const updatedExpenditures = [...get().Expenditures];
-      updatedExpenditures[ExpenditureIndex] = {
-        ...updatedExpenditures[ExpenditureIndex],
+      const updatedExpenditures = [...get().expenditures];
+      updatedExpenditures[expenditureIndex] = {
+        ...updatedExpenditures[expenditureIndex],
         status: newStatus,
         updatedAt: new Date().toISOString()
       };
       
       // 상태 반영
       set({
-        Expenditures: updatedExpenditures,
+        expenditures: updatedExpenditures,
         isLoading: false
       });
     } catch (error) {
@@ -192,7 +192,7 @@ export const useExpenditureStore = create<ExpenditureStoreState>((set, get) => (
   },
   
   // 추가금 추가
-  addAdditionalFee: async (ExpenditureId, fee) => {
+  addAdditionalFee: async (expenditureId, fee) => {
     set({ isLoading: true, error: null });
     
     try {
@@ -200,9 +200,9 @@ export const useExpenditureStore = create<ExpenditureStoreState>((set, get) => (
       // 목업 데이터에서는 상태만 변경
       
       // 현재 상태에서 해당 정산 찾기
-      const ExpenditureIndex = get().Expenditures.findIndex(Expenditure => Expenditure.id === ExpenditureId);
+      const expenditureIndex = get().expenditures.findIndex(expenditure => expenditure.id === expenditureId);
       
-      if (ExpenditureIndex === -1) {
+      if (expenditureIndex === -1) {
         throw new Error('정산 정보를 찾을 수 없습니다.');
       }
       
@@ -215,8 +215,8 @@ export const useExpenditureStore = create<ExpenditureStoreState>((set, get) => (
       };
       
       // 정산 정보 업데이트
-      const updatedExpenditures = [...get().Expenditures];
-      const targetExpenditure = updatedExpenditures[ExpenditureIndex];
+      const updatedExpenditures = [...get().expenditures];
+      const targetExpenditure = updatedExpenditures[expenditureIndex];
       
       // 추가금 추가
       const updatedFees = [...targetExpenditure.additionalFees, newFee];
@@ -228,7 +228,7 @@ export const useExpenditureStore = create<ExpenditureStoreState>((set, get) => (
       const totalAmount = targetExpenditure.totalBaseAmount + totalAdditionalAmount;
       const tax = targetExpenditure.isTaxFree ? 0 : Math.round(totalAmount * 0.1);
       
-      updatedExpenditures[ExpenditureIndex] = {
+      updatedExpenditures[expenditureIndex] = {
         ...targetExpenditure,
         additionalFees: updatedFees,
         totalAdditionalAmount,
@@ -240,7 +240,7 @@ export const useExpenditureStore = create<ExpenditureStoreState>((set, get) => (
       
       // 상태 반영
       set({
-        Expenditures: updatedExpenditures,
+        expenditures: updatedExpenditures,
         isLoading: false
       });
     } catch (error) {
@@ -253,7 +253,7 @@ export const useExpenditureStore = create<ExpenditureStoreState>((set, get) => (
   },
   
   // 추가금 삭제
-  removeAdditionalFee: async (ExpenditureId, feeId) => {
+  removeAdditionalFee: async (expenditureId, feeId) => {
     set({ isLoading: true, error: null });
     
     try {
@@ -261,15 +261,15 @@ export const useExpenditureStore = create<ExpenditureStoreState>((set, get) => (
       // 목업 데이터에서는 상태만 변경
       
       // 현재 상태에서 해당 정산 찾기
-      const ExpenditureIndex = get().Expenditures.findIndex(Expenditure => Expenditure.id === ExpenditureId);
+      const expenditureIndex = get().expenditures.findIndex(expenditure => expenditure.id === expenditureId);
       
-      if (ExpenditureIndex === -1) {
+      if (expenditureIndex === -1) {
         throw new Error('정산 정보를 찾을 수 없습니다.');
       }
       
       // 정산 정보 업데이트
-      const updatedExpenditures = [...get().Expenditures];
-      const targetExpenditure = updatedExpenditures[ExpenditureIndex];
+      const updatedExpenditures = [...get().expenditures];
+      const targetExpenditure = updatedExpenditures[expenditureIndex];
       
       // 추가금 삭제
       const updatedFees = targetExpenditure.additionalFees.filter(f => f.id !== feeId);
@@ -281,7 +281,7 @@ export const useExpenditureStore = create<ExpenditureStoreState>((set, get) => (
       const totalAmount = targetExpenditure.totalBaseAmount + totalAdditionalAmount;
       const tax = targetExpenditure.isTaxFree ? 0 : Math.round(totalAmount * 0.1);
       
-      updatedExpenditures[ExpenditureIndex] = {
+      updatedExpenditures[expenditureIndex] = {
         ...targetExpenditure,
         additionalFees: updatedFees,
         totalAdditionalAmount,
@@ -293,7 +293,7 @@ export const useExpenditureStore = create<ExpenditureStoreState>((set, get) => (
       
       // 상태 반영
       set({
-        Expenditures: updatedExpenditures,
+        expenditures: updatedExpenditures,
         isLoading: false
       });
     } catch (error) {
@@ -306,7 +306,7 @@ export const useExpenditureStore = create<ExpenditureStoreState>((set, get) => (
   },
   
   // 세금 면제 설정
-  setTaxFree: async (ExpenditureId, isTaxFree) => {
+  setTaxFree: async (expenditureId, isTaxFree) => {
     set({ isLoading: true, error: null });
     
     try {
@@ -314,20 +314,20 @@ export const useExpenditureStore = create<ExpenditureStoreState>((set, get) => (
       // 목업 데이터에서는 상태만 변경
       
       // 현재 상태에서 해당 정산 찾기
-      const ExpenditureIndex = get().Expenditures.findIndex(Expenditure => Expenditure.id === ExpenditureId);
+      const expenditureIndex = get().expenditures.findIndex(expenditure => expenditure.id === expenditureId);
       
-      if (ExpenditureIndex === -1) {
+      if (expenditureIndex === -1) {
         throw new Error('정산 정보를 찾을 수 없습니다.');
       }
       
       // 정산 정보 업데이트
-      const updatedExpenditures = [...get().Expenditures];
-      const targetExpenditure = updatedExpenditures[ExpenditureIndex];
+      const updatedExpenditures = [...get().expenditures];
+      const targetExpenditure = updatedExpenditures[expenditureIndex];
       
       // 세금 계산
       const tax = isTaxFree ? 0 : Math.round(targetExpenditure.totalAmount * 0.1);
       
-      updatedExpenditures[ExpenditureIndex] = {
+      updatedExpenditures[expenditureIndex] = {
         ...targetExpenditure,
         isTaxFree,
         tax,
@@ -337,7 +337,7 @@ export const useExpenditureStore = create<ExpenditureStoreState>((set, get) => (
       
       // 상태 반영
       set({
-        Expenditures: updatedExpenditures,
+        expenditures: updatedExpenditures,
         isLoading: false
       });
     } catch (error) {
@@ -381,7 +381,7 @@ export const useExpenditureStore = create<ExpenditureStoreState>((set, get) => (
       // 현재 목록이 정산대기 상태를 보여주고 있다면, 목록에 추가
       if (get().filter.status === 'MATCHING') {
         set(state => ({
-          Expenditures: [newExpenditure, ...state.Expenditures],
+          expenditures: [newExpenditure, ...state.expenditures],
           totalItems: state.totalItems + 1,
           totalPages: Math.ceil((state.totalItems + 1) / state.itemsPerPage),
           isLoading: false
@@ -463,7 +463,8 @@ export const useExpenditureDetailStore = create<ExpenditureDetailStoreState>((se
     set({ isLoading: true, error: null });
     
     try {
-      const expenditureDetail = await getExpenditureById(expenditureId);
+      // 목업 데이터에서 상세 정보 조회
+      const expenditureDetail = getExpenditureById(expenditureId);
       
       if (!expenditureDetail) {
         throw new Error('정산 정보를 찾을 수 없습니다.');
@@ -494,16 +495,24 @@ export const useExpenditureDetailStore = create<ExpenditureDetailStoreState>((se
     set({ isLoading: true, error: null });
     
     try {
+      // 백엔드 연동 시 실제 API 호출로 변경
+      // 목업 데이터에서는 상태만 변경
+      
+      // 추가금 생성
       const newFee: IAdditionalFee = {
-        id: Math.random().toString(36).substring(2, 11),
+        id: Math.random().toString(36).substring(2, 11), // 간단한 임의 ID
         ...fee,
         createdAt: new Date().toISOString(),
         createdBy: '관리자'
       };
       
+      // 추가금 추가
       const updatedFees = [...expenditureDetail.additionalFees, newFee];
-      const totalAdditionalAmount = updatedFees.reduce((sum: number, f: IAdditionalFee) => sum + f.amount, 0);
       
+      // 추가금 합계 재계산
+      const totalAdditionalAmount = updatedFees.reduce((sum, f) => sum + f.amount, 0);
+      
+      // 총 금액 및 세금 업데이트
       const totalAmount = expenditureDetail.totalBaseAmount + totalAdditionalAmount;
       const tax = expenditureDetail.isTaxFree ? 0 : Math.round(totalAmount * 0.1);
       
@@ -517,6 +526,7 @@ export const useExpenditureDetailStore = create<ExpenditureDetailStoreState>((se
         updatedAt: new Date().toISOString()
       };
       
+      // 상태 반영
       set({
         expenditureDetail: updatedExpenditureDetail,
         isLoading: false

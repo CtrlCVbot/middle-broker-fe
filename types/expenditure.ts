@@ -4,13 +4,13 @@
 import { IBrokerOrder, BrokerOrderStatusType } from "./broker-order";
 
 // 매출 정산 상태 타입 정의
-export type IncomeStatusType = 
+export type ExpenditureStatusType = 
   | 'WAITING'  // 정산대기 
   | 'MATCHING' // 정산대사 
   | 'COMPLETED'; // 정산완료
 
 // 매출 정산 상태 배열 - 상태 순서대로 정의
-export const INCOME_STATUS: IncomeStatusType[] = [
+export const Expenditure_STATUS: ExpenditureStatusType[] = [
   'WAITING', 
   'MATCHING', 
   'COMPLETED'
@@ -38,8 +38,8 @@ export interface IAdditionalFee {
 }
 
 // 매출 정산 로그 항목 인터페이스
-export interface IIncomeLog {
-  status: IncomeStatusType;    // 상태
+export interface IExpenditureLog {
+  status: ExpenditureStatusType;    // 상태
   time: string;                // 시간
   date: string;                // 날짜
   handler?: string;            // 처리자
@@ -47,9 +47,9 @@ export interface IIncomeLog {
 }
 
 // 매출 정산 정보 인터페이스
-export interface IIncome {
+export interface IExpenditure {
   id: string;                  // 정산번호 (고유 식별자)
-  status: IncomeStatusType;    // 상태 (정산대기, 정산대사, 정산완료)
+  status: ExpenditureStatusType;    // 상태 (정산대기, 정산대사, 정산완료)
   orderIds: string[];          // 포함된 화물 ID 목록
   // orders?: IBrokerOrder[]; 필드 제거 또는 주석 처리하여 불필요한 참조 제거
   orderCount: number;          // 화물 건수
@@ -75,7 +75,7 @@ export interface IIncome {
   
   // 추가 정보
   additionalFees: IAdditionalFee[]; // 추가금 목록
-  logs: IIncomeLog[];          // 로그 정보
+  logs: IExpenditureLog[];          // 로그 정보
   
   // 정산서 관련 정보
   invoiceNumber?: string;      // 세금계산서 번호
@@ -88,25 +88,26 @@ export interface IIncome {
   createdAt: string;           // 등록일
   updatedAt: string;           // 수정일
   memo?: string;               // 비고
+
 }
 
 // 응답 페이징 정보 인터페이스
-export interface IIncomePagination {
+export interface IExpenditurePagination {
   total: number;               // 전체 데이터 수
   page: number;                // 현재 페이지
   limit: number;               // 페이지당 항목 수
 }
 
 // 매출 정산 목록 응답 인터페이스
-export interface IIncomeResponse {
-  data: IIncome[];             // 매출 정산 목록 데이터
-  pagination: IIncomePagination; // 페이징 정보
-  summary?: IncomeSummary;     // 요약 정보
+export interface IExpenditureResponse {
+  data: IExpenditure[];             // 매출 정산 목록 데이터
+  pagination: IExpenditurePagination; // 페이징 정보
+  summary?: ExpenditureSummary;     // 요약 정보
 }
 
 // 매출 정산 요약 정보 인터페이스
-export interface IncomeSummary {
-  totalIncomes: number;        // 총 정산 건수
+export interface ExpenditureSummary {
+  totalExpenditures: number;        // 총 정산 건수
   totalOrders: number;         // 총 화물 건수
   totalBaseAmount: number;     // 총 기본 운임
   totalAdditionalAmount: number; // 총 추가금
@@ -116,12 +117,12 @@ export interface IncomeSummary {
 }
 
 // 검색 필터 인터페이스
-export interface IIncomeFilter {
+export interface IExpenditureFilter {
   shipperName?: string;        // 화주명
   businessNumber?: string;     // 사업자번호
   orderId?: string;            // 화물 번호
   searchTerm?: string;         // 검색어
-  status?: IncomeStatusType;   // 정산 상태
+  status?: ExpenditureStatusType;   // 정산 상태
   startDate?: string;          // 검색 시작일
   endDate?: string;            // 검색 종료일
   manager?: string;            // 담당자
@@ -131,7 +132,7 @@ export interface IIncomeFilter {
 }
 
 // 정산 생성 요청 인터페이스
-export interface IIncomeCreateRequest {
+export interface IExpenditureCreateRequest {
   orderIds: string[];          // 포함할 화물 ID 목록
   shipperName: string;         // 화주명
   businessNumber: string;      // 사업자번호
@@ -143,17 +144,17 @@ export interface IIncomeCreateRequest {
 }
 
 // 정산 상태 진행도를 계산하는 함수
-export const getIncomeProgressPercentage = (currentStatus: IncomeStatusType): number => {
-  const currentIndex = INCOME_STATUS.indexOf(currentStatus);
+export const getExpenditureProgressPercentage = (currentStatus: ExpenditureStatusType): number => {
+  const currentIndex = Expenditure_STATUS.indexOf(currentStatus);
   if (currentIndex === -1) return 0;
   
-  return (currentIndex / (INCOME_STATUS.length - 1)) * 100;
+  return (currentIndex / (Expenditure_STATUS.length - 1)) * 100;
 };
 
 // 정산 상태가 특정 상태 이상인지 확인하는 함수
-export const isIncomeStatusAtLeast = (currentStatus: IncomeStatusType, targetStatus: IncomeStatusType): boolean => {
-  const currentIndex = INCOME_STATUS.indexOf(currentStatus);
-  const targetIndex = INCOME_STATUS.indexOf(targetStatus);
+export const isExpenditureStatusAtLeast = (currentStatus: ExpenditureStatusType, targetStatus: ExpenditureStatusType): boolean => {
+  const currentIndex = Expenditure_STATUS.indexOf(currentStatus);
+  const targetIndex = Expenditure_STATUS.indexOf(targetStatus);
   
   if (currentIndex === -1 || targetIndex === -1) return false;
   

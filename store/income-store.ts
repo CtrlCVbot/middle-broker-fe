@@ -5,7 +5,7 @@ import {
   IIncomeResponse, 
   IAdditionalFee,
   IIncomeFilter,
-  IIncomeCreateRequest
+  IIncomeCreateRequest as IIncomeCreateRequestOriginal
 } from '@/types/income';
 import { 
   getIncomesByPage, 
@@ -128,15 +128,7 @@ export const useIncomeStore = create<IncomeStoreState>((set, get) => ({
       const response = getIncomesByPage(
         page,
         limit,
-        filter.status as IncomeStatusType | undefined,
-        filter.shipperName,
-        filter.startDate,
-        filter.endDate,
-        filter.searchTerm,
-        filter.invoiceStatus,
-        filter.minAmount,
-        filter.maxAmount,
-        filter.manager
+        { ...filter }  // 모든 필터 옵션을 하나의 객체로 전달
       );
       console.log('목업 데이터 응답 받음:', response.data.length);
       
@@ -384,7 +376,7 @@ export const useIncomeStore = create<IncomeStoreState>((set, get) => ({
     try {
       // 백엔드 연동 시 실제 API 호출로 변경
       // 목업 데이터에서는 createIncome 함수 사용
-      const newIncome = createIncomeMock(data);
+      const newIncome = await createIncomeMock(data);
       
       // 현재 목록이 정산대기 상태를 보여주고 있다면, 목록에 추가
       if (get().filter.status === 'MATCHING') {
@@ -654,7 +646,7 @@ export const useIncomeDetailStore = create<IncomeDetailStoreState>((set, get) =>
       };
       
       // 상태가 정산완료인 경우 세금계산서 상태도 변경
-      if (newStatus === '정산완료' && incomeDetail.invoiceStatus === '미발행') {
+      if (newStatus === 'COMPLETED' && incomeDetail.invoiceStatus === '미발행') {
         updatedIncomeDetail.invoiceStatus = '발행대기';
       }
       
