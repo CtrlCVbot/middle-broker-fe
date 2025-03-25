@@ -9,7 +9,7 @@ import {
   PopoverContent, 
   PopoverTrigger 
 } from "@/components/ui/popover";
-import { Filter, Search } from "lucide-react";
+import { Filter, Search, X } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export const InvoiceFilter = () => {
   const { filter, updateFilter } = useInvoiceStore();
@@ -64,29 +65,31 @@ export const InvoiceFilter = () => {
     setOpen(false);
   };
 
-  return (
-    <div className="flex items-center justify-between space-x-2 mb-4">
-      <div className="flex items-center space-x-2 w-full max-w-sm">
-        <Input
-          placeholder="세금계산서번호, 사업자번호, 운송사명, 공급가액 검색"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={handleSearchKeyDown}
-          className="max-w-xs"
-        />
-        <Button variant="outline" size="icon" onClick={handleSearch}>
-          <Search className="h-4 w-4" />
-        </Button>
-      </div>
+  const hasActiveFilters = !!(filter.dateRange?.start || filter.dateRange?.end || (filter.status && filter.status !== "WAITING"));
 
+  return (
+    <div className="flex items-center space-x-2 h-9">
+      {/* 필터 Popover 버튼 */}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="ml-auto">
+          <Button 
+            variant="outline" 
+            size="sm"
+            className={cn(
+              "h-9 px-3",
+              hasActiveFilters ? "border-primary text-primary" : ""
+            )}
+          >
             <Filter className="mr-2 h-4 w-4" />
             필터
+            {hasActiveFilters && (
+              <span className="ml-1 rounded-full bg-primary text-primary-foreground w-5 h-5 text-xs flex items-center justify-center">
+                {(filter.dateRange?.start ? 1 : 0) + (filter.dateRange?.end ? 1 : 0) + (filter.status && filter.status !== "WAITING" ? 1 : 0)}
+              </span>
+            )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-4" align="end">
+        <PopoverContent className="w-80 p-4" align="start">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleFilterSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-2">
@@ -173,6 +176,33 @@ export const InvoiceFilter = () => {
           </Form>
         </PopoverContent>
       </Popover>
+
+      {/* 검색 입력 필드 */}
+      <div className="relative flex-1 max-w-sm h-9">
+        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+          <Search className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <Input
+          placeholder="세금계산서번호, 사업자번호, 운송사명, 공급가액 검색"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={handleSearchKeyDown}
+          className="h-9 pl-9 pr-9"
+        />
+        {searchTerm && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute inset-y-0 right-0 h-9 px-3"
+            onClick={() => {
+              setSearchTerm("");
+              updateFilter({ searchTerm: undefined });
+            }}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 }; 

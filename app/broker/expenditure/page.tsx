@@ -88,7 +88,7 @@ export default function ExpenditurePage() {
           </div>
 
           <TabsContent value="waiting" className="space-y-4">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
               <div>
                 <h2 className="text-xl font-semibold">정산 대기 세금계산서</h2>
                 <p className="text-sm text-muted-foreground">
@@ -97,13 +97,16 @@ export default function ExpenditurePage() {
               </div>
             </div>
             
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4">
-              <InvoiceFilter />
+            <div className="flex flex-col md:flex-row items-center justify-between mb-4 gap-2">
+              <div className="w-full md:flex-1">
+                <InvoiceFilter />
+              </div>
               
-              <div className="flex items-center gap-2 mt-2 md:mt-0">
+              <div className="flex items-center gap-2 mt-2 md:mt-0 h-9">
                 <Button 
                   variant="outline" 
                   size="sm"
+                  className="h-9"
                   onClick={() => setIsCardView(!isCardView)}
                 >
                   {isCardView ? '테이블 뷰' : '카드 뷰'}
@@ -111,6 +114,7 @@ export default function ExpenditurePage() {
                 <Button 
                   variant="default" 
                   size="sm"
+                  className="h-9"
                   onClick={handleCreateInvoice}
                 >
                   <PlusCircle className="mr-2 h-4 w-4" />

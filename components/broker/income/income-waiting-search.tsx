@@ -220,7 +220,7 @@ export function IncomeWaitingSearch({ filter, setFilter, filterOptions }: Income
   const filterSummary = getFilterSummaryText(filter);
 
   return (
-    <div className="flex flex-col gap-4 md:flex-row items-center mb-6">
+    <div className="flex flex-col gap-4 md:flex-row items-center mb-4">
       {/* 필터 Popover 버튼 */}
       <div className="w-full md:w-auto">
         <Popover open={open} onOpenChange={handleOpenChange}>
