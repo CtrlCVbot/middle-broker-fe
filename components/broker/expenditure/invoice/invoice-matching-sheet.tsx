@@ -228,7 +228,7 @@ export const InvoiceMatchingSheet = () => {
     <>
       <Sheet open={isMatchingSheetOpen} onOpenChange={handleSheetOpenChange}>
         <SheetContent className="p-4 w-full sm:max-w-[720px] overflow-y-auto">
-          <SheetHeader className="mb-4">
+          <SheetHeader>
             <SheetTitle className="text-xl">
               {mode === 'CREATE' ? '세금계산서 수기 등록' : '세금계산서 매칭'}
             </SheetTitle>
@@ -239,12 +239,12 @@ export const InvoiceMatchingSheet = () => {
             </SheetDescription>
           </SheetHeader>
 
-          {/* 현재 모드 디버그 표시 (개발 중에만 사용) */}
-          {process.env.NODE_ENV === 'development' && (
+          {/* 현재 모드 디버그 표시 (개발 중에만 사용) - 주석없애지 말자! */}
+          {/*{process.env.NODE_ENV === 'development' && (
             <div className="bg-muted p-2 mb-4 rounded text-sm">
               <p>Debug - Current Mode: <strong>{mode}</strong></p>
             </div>
-          )}
+          )}*/}
 
           {/* 세금계산서 정보 요약 (선택된 세금계산서가 있을 경우) */}
           {selectedInvoice && mode === 'MATCH' && (

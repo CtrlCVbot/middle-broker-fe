@@ -25,7 +25,7 @@ export default function ExpenditurePage() {
     updateFilter,
     resetFilter,
     fetchInvoices,
-    setMatchingSheetOpen,
+    //setMatchingSheetOpen,
     setCreateMode
   } = useInvoiceStore();
   
