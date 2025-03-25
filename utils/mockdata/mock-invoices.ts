@@ -40,6 +40,8 @@ export const getPaginatedInvoices = (
     businessNumber?: string;
     supplierName?: string;
     taxId?: string;
+    searchTerm?: string;
+    status?: 'WAITING' | 'MATCHING' | 'COMPLETED';
     dateRange?: {
       start?: string;
       end?: string;
@@ -52,8 +54,23 @@ export const getPaginatedInvoices = (
 ) => {
   let filteredInvoices = [...invoices];
 
+  // 상태 필터 적용 (기본값: WAITING)
+  const status = filter?.status || 'WAITING';
+  filteredInvoices = filteredInvoices.filter(invoice => invoice.status === status);
+
   // 필터 적용
   if (filter) {
+    // 통합 검색어
+    if (filter.searchTerm) {
+      const searchTerm = filter.searchTerm.toLowerCase();
+      filteredInvoices = filteredInvoices.filter(invoice => 
+        invoice.taxId.toLowerCase().includes(searchTerm) ||
+        invoice.businessNumber.toLowerCase().includes(searchTerm) ||
+        invoice.supplierName.toLowerCase().includes(searchTerm) ||
+        invoice.supplyAmount.toString().includes(searchTerm)
+      );
+    }
+
     if (filter.businessNumber) {
       filteredInvoices = filteredInvoices.filter(invoice => 
         invoice.businessNumber.includes(filter.businessNumber!)

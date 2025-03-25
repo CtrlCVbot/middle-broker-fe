@@ -1,90 +1,178 @@
 'use client';
 
+import { useState } from "react";
 import { useInvoiceStore } from "@/store/expenditure/invoice-store";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from "@/components/ui/popover";
+import { Filter, Search } from "lucide-react";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useForm } from "react-hook-form";
+import { format } from "date-fns";
 
 export const InvoiceFilter = () => {
   const { filter, updateFilter } = useInvoiceStore();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const form = useForm({
+    defaultValues: {
+      startDate: filter.dateRange?.start || "",
+      endDate: filter.dateRange?.end || "",
+      status: filter.status || "WAITING"
+    }
+  });
+
+  const handleSearch = () => {
+    // 통합 검색: 세금계산서 번호, 사업자번호, 운송사명, 공급가액 중 하나에 포함된 경우 검색
+    updateFilter({
+      searchTerm
+    });
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleFilterSubmit = (data: any) => {
+    updateFilter({
+      dateRange: {
+        start: data.startDate || undefined,
+        end: data.endDate || undefined,
+      },
+      status: data.status
+    });
+    setOpen(false);
+  };
 
   return (
-    <Card className="p-4 space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="flex items-center justify-between space-x-2 mb-4">
+      <div className="flex items-center space-x-2 w-full max-w-sm">
         <Input
-          placeholder="사업자번호"
-          value={filter.businessNumber || ''}
-          onChange={(e) => updateFilter({ businessNumber: e.target.value })}
+          placeholder="세금계산서번호, 사업자번호, 운송사명, 공급가액 검색"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={handleSearchKeyDown}
+          className="max-w-xs"
         />
-        <Input
-          placeholder="운송사명"
-          value={filter.supplierName || ''}
-          onChange={(e) => updateFilter({ supplierName: e.target.value })}
-        />
-        <Input
-          placeholder="세금계산서 번호"
-          value={filter.taxId || ''}
-          onChange={(e) => updateFilter({ taxId: e.target.value })}
-        />
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="flex gap-2">
-          <Input
-            type="date"
-            value={filter.dateRange?.start || ''}
-            onChange={(e) => updateFilter({
-              dateRange: {
-                ...filter.dateRange,
-                start: e.target.value
-              }
-            })}
-          />
-          <Input
-            type="date"
-            value={filter.dateRange?.end || ''}
-            onChange={(e) => updateFilter({
-              dateRange: {
-                ...filter.dateRange,
-                end: e.target.value
-              }
-            })}
-          />
-        </div>
-        <div className="flex gap-2">
-          <Input
-            type="number"
-            placeholder="최소 금액"
-            value={filter.amountRange?.min || ''}
-            onChange={(e) => updateFilter({
-              amountRange: {
-                ...filter.amountRange,
-                min: e.target.value ? Number(e.target.value) : undefined
-              }
-            })}
-          />
-          <Input
-            type="number"
-            placeholder="최대 금액"
-            value={filter.amountRange?.max || ''}
-            onChange={(e) => updateFilter({
-              amountRange: {
-                ...filter.amountRange,
-                max: e.target.value ? Number(e.target.value) : undefined
-              }
-            })}
-          />
-        </div>
-      </div>
-
-      <div className="flex justify-end">
-        <Button
-          variant="outline"
-          onClick={() => updateFilter({})}
-        >
-          필터 초기화
+        <Button variant="outline" size="icon" onClick={handleSearch}>
+          <Search className="h-4 w-4" />
         </Button>
       </div>
-    </Card>
+
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="outline" size="sm" className="ml-auto">
+            <Filter className="mr-2 h-4 w-4" />
+            필터
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80 p-4" align="end">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleFilterSubmit)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-2">
+                <FormField
+                  control={form.control}
+                  name="startDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>시작일</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="date" 
+                          {...field} 
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="endDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>종료일</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="date" 
+                          {...field} 
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>상태</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="상태 선택" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="WAITING">정산 대기</SelectItem>
+                        <SelectItem value="MATCHING">정산 대사</SelectItem>
+                        <SelectItem value="COMPLETED">정산 완료</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+              
+              <div className="flex items-center justify-end space-x-2 pt-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    form.reset({
+                      startDate: "",
+                      endDate: "",
+                      status: "WAITING"
+                    });
+                    updateFilter({
+                      dateRange: undefined,
+                      status: "WAITING"
+                    });
+                    setOpen(false);
+                  }}
+                >
+                  초기화
+                </Button>
+                <Button type="submit">적용</Button>
+              </div>
+            </form>
+          </Form>
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }; 

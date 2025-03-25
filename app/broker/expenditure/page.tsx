@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WaitingTab } from "@/components/broker/expenditure/tabs/waiting-tab";
 import { MatchingTab } from "@/components/broker/expenditure/tabs/matching-tab";
@@ -9,7 +9,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbS
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { FileText, Loader2, PlusCircle } from "lucide-react";
 import { useInvoiceStore } from "@/store/expenditure/invoice-store";
 import { InvoiceFilter } from "@/components/broker/expenditure/invoice/invoice-filter";
 import { InvoiceTable } from "@/components/broker/expenditure/invoice/invoice-table";
@@ -24,13 +24,20 @@ export default function ExpenditurePage() {
     filter,
     updateFilter,
     resetFilter,
-    fetchInvoices
+    fetchInvoices,
+    setMatchingSheetOpen
   } = useInvoiceStore();
+  
+  const [isCardView, setIsCardView] = useState(false);
 
   // 초기 데이터 로드
   useEffect(() => {
     fetchInvoices();
   }, [currentPage, filter]);
+
+  const handleCreateInvoice = () => {
+    setMatchingSheetOpen(true);
+  };
 
   return (
     <>
@@ -90,7 +97,27 @@ export default function ExpenditurePage() {
               </div>
             </div>
             
-            <InvoiceFilter />
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4">
+              <InvoiceFilter />
+              
+              <div className="flex items-center gap-2 mt-2 md:mt-0">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setIsCardView(!isCardView)}
+                >
+                  {isCardView ? '테이블 뷰' : '카드 뷰'}
+                </Button>
+                <Button 
+                  variant="default" 
+                  size="sm"
+                  onClick={handleCreateInvoice}
+                >
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  세금계산서 생성
+                </Button>
+              </div>
+            </div>
             
             {isLoading ? (
               <div className="flex h-[300px] items-center justify-center">
@@ -104,7 +131,7 @@ export default function ExpenditurePage() {
                 </Button>
               </div>
             ) : (
-              <InvoiceTable />
+              <InvoiceTable isCardView={isCardView} />
             )}
           </TabsContent>
           

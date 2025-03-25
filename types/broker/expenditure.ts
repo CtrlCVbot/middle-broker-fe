@@ -32,6 +32,8 @@ export interface IInvoiceFilter {
   businessNumber?: string;
   supplierName?: string;
   taxId?: string;
+  searchTerm?: string;
+  status?: 'WAITING' | 'MATCHING' | 'COMPLETED';
   dateRange?: {
     start?: string;
     end?: string;

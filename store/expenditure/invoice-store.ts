@@ -6,10 +6,10 @@ interface IInvoiceStore {
   // 상태
   invoices: IInvoice[];
   selectedInvoice: IInvoice | null;
+  isMatchingSheetOpen: boolean;
   matchedCargos: ICargo[];
   additionalCharges: IAdditionalCharge[];
   filter: IInvoiceFilter;
-  isMatchingSheetOpen: boolean;
   currentPage: number;
   pageSize: number;
   totalPages: number;
@@ -41,7 +41,9 @@ export const useInvoiceStore = create<IInvoiceStore>((set, get) => ({
   selectedInvoice: null,
   matchedCargos: [],
   additionalCharges: [],
-  filter: {},
+  filter: {
+    status: 'WAITING'
+  },
   isMatchingSheetOpen: false,
   currentPage: 1,
   pageSize: 10,
@@ -70,7 +72,7 @@ export const useInvoiceStore = create<IInvoiceStore>((set, get) => ({
       set({ isLoading: false });
     }
   },
-
+  
   selectInvoice: (invoice) => set({ selectedInvoice: invoice }),
   
   setMatchedCargos: (cargos) => set({ matchedCargos: cargos }),
@@ -94,7 +96,9 @@ export const useInvoiceStore = create<IInvoiceStore>((set, get) => ({
   
   resetFilter: () => {
     set({
-      filter: {},
+      filter: {
+        status: 'WAITING'
+      },
       currentPage: 1
     });
   },
@@ -104,13 +108,21 @@ export const useInvoiceStore = create<IInvoiceStore>((set, get) => ({
   setMatchingSheetOpen: (isOpen) => set({ isMatchingSheetOpen: isOpen }),
   
   getTotalMatchedAmount: () => {
-    const { matchedCargos } = get();
-    return matchedCargos.reduce((sum, cargo) => sum + cargo.dispatchAmount, 0);
+    const { matchedCargos, additionalCharges } = get();
+    const cargoAmount = matchedCargos.reduce(
+      (sum, cargo) => sum + cargo.dispatchAmount, 
+      0
+    );
+    const additionalAmount = additionalCharges.reduce(
+      (sum, charge) => sum + charge.amount, 
+      0
+    );
+    return cargoAmount + additionalAmount;
   },
   
   getAmountDifference: () => {
     const { selectedInvoice } = get();
-    const totalMatchedAmount = get().getTotalMatchedAmount();
-    return selectedInvoice ? selectedInvoice.totalAmount - totalMatchedAmount : 0;
-  },
+    if (!selectedInvoice) return 0;
+    return selectedInvoice.totalAmount - get().getTotalMatchedAmount();
+  }
 })); 

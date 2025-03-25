@@ -9,17 +9,20 @@ import {
   TableHeader,
   TableRow 
 } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
 import { StatusBadge } from "../shared/status-badge";
 import { AmountDisplay } from "../shared/amount-display";
 import { IInvoice } from "@/types/broker/expenditure";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, FileText } from "lucide-react";
 
-export const InvoiceTable = () => {
+interface InvoiceTableProps {
+  isCardView?: boolean;
+}
+
+export const InvoiceTable = ({ isCardView = false }: InvoiceTableProps) => {
   const { 
     invoices, 
-    selectedInvoice,
     currentPage,
     totalPages,
     selectInvoice,
@@ -27,6 +30,7 @@ export const InvoiceTable = () => {
     setPage
   } = useInvoiceStore();
 
+  // 세금계산서 선택 및 매칭 시트 열기
   const handleRowClick = (invoice: IInvoice) => {
     selectInvoice(invoice);
     setMatchingSheetOpen(true);
@@ -34,56 +38,94 @@ export const InvoiceTable = () => {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[50px]">선택</TableHead>
-              <TableHead>세금계산서 번호</TableHead>
-              <TableHead>운송사명</TableHead>
-              <TableHead>사업자번호</TableHead>
-              <TableHead>작성일</TableHead>
-              <TableHead className="text-right">공급가액</TableHead>
-              <TableHead className="text-right">세액</TableHead>
-              <TableHead className="text-right">합계금액</TableHead>
-              <TableHead>상태</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {invoices.map((invoice) => (
-              <TableRow
-                key={invoice.id}
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleRowClick(invoice)}
-              >
-                <TableCell>
-                  <Checkbox
-                    checked={selectedInvoice?.id === invoice.id}
-                    onCheckedChange={() => selectInvoice(invoice)}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </TableCell>
-                <TableCell>{invoice.taxId}</TableCell>
-                <TableCell>{invoice.supplierName}</TableCell>
-                <TableCell>{invoice.businessNumber}</TableCell>
-                <TableCell>{invoice.issueDate}</TableCell>
-                <TableCell>
-                  <AmountDisplay amount={invoice.supplyAmount} />
-                </TableCell>
-                <TableCell>
-                  <AmountDisplay amount={invoice.taxAmount} />
-                </TableCell>
-                <TableCell>
-                  <AmountDisplay amount={invoice.totalAmount} size="lg" />
-                </TableCell>
-                <TableCell>
+      {isCardView ? (
+        // 카드 뷰
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {invoices.map((invoice) => (
+            <Card 
+              key={invoice.id} 
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => handleRowClick(invoice)}
+            >
+              <CardContent className="pt-6 pb-2">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <div className="text-sm font-medium">{invoice.supplierName}</div>
+                    <div className="text-sm text-muted-foreground">{invoice.businessNumber}</div>
+                  </div>
                   <StatusBadge status={invoice.status} />
-                </TableCell>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">세금계산서 번호</span>
+                    <span className="text-sm">{invoice.taxId}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">작성일</span>
+                    <span className="text-sm">{invoice.issueDate}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">공급가액</span>
+                    <span className="text-sm"><AmountDisplay amount={invoice.supplyAmount} /></span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">세액</span>
+                    <span className="text-sm"><AmountDisplay amount={invoice.taxAmount} /></span>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="pt-0 flex justify-between border-t">
+                <div className="text-sm text-muted-foreground">합계</div>
+                <div className="font-semibold"><AmountDisplay amount={invoice.totalAmount} size="lg" /></div>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        // 테이블 뷰
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>세금계산서 번호</TableHead>
+                <TableHead>운송사명</TableHead>
+                <TableHead>사업자번호</TableHead>
+                <TableHead>작성일</TableHead>
+                <TableHead className="text-right">공급가액</TableHead>
+                <TableHead className="text-right">세액</TableHead>
+                <TableHead className="text-right">합계금액</TableHead>
+                <TableHead>상태</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {invoices.map((invoice) => (
+                <TableRow
+                  key={invoice.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleRowClick(invoice)}
+                >
+                  <TableCell>{invoice.taxId}</TableCell>
+                  <TableCell>{invoice.supplierName}</TableCell>
+                  <TableCell>{invoice.businessNumber}</TableCell>
+                  <TableCell>{invoice.issueDate}</TableCell>
+                  <TableCell className="text-right">
+                    <AmountDisplay amount={invoice.supplyAmount} />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <AmountDisplay amount={invoice.taxAmount} />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <AmountDisplay amount={invoice.totalAmount} size="lg" />
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge status={invoice.status} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
 
       {/* 페이징 UI */}
       {totalPages > 1 && (
