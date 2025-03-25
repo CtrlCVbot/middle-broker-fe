@@ -190,7 +190,7 @@ export const InvoiceMatchingSheet = () => {
         driverName: ''
       });
       form.reset();
-      setMode('MATCH');
+      setMatchedCargos([]);
     }
     setMatchingSheetOpen(open);
   };
@@ -198,8 +198,8 @@ export const InvoiceMatchingSheet = () => {
   const handleModeChange = (newMode: SheetMode) => {
     setMode(newMode);
     if (newMode === 'CREATE') {
-      form.reset();
       setMatchedCargos([]);
+      form.reset();
     }
   };
 
@@ -215,8 +215,8 @@ export const InvoiceMatchingSheet = () => {
   };
 
   const handleSearchDialogSelect = (selectedCargos: ICargo[]) => {
-    const newMatchedCargos = [...matchedCargos, ...selectedCargos];
-    setMatchedCargos(newMatchedCargos);
+    const newCargos = [...matchedCargos, ...selectedCargos];
+    setMatchedCargos(newCargos);
   };
 
   return (
@@ -224,21 +224,9 @@ export const InvoiceMatchingSheet = () => {
       <Sheet open={isMatchingSheetOpen} onOpenChange={handleSheetOpenChange}>
         <SheetContent className="p-4 w-full sm:max-w-[720px] overflow-y-auto">
           <SheetHeader className="mb-4">
-            <div className="flex items-center justify-between">
-              <SheetTitle className="text-xl">
-                {mode === 'CREATE' ? '세금계산서 수기 등록' : '세금계산서 매칭'}
-              </SheetTitle>
-              {mode === 'MATCH' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleModeChange('CREATE')}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  수기 등록
-                </Button>
-              )}
-            </div>
+            <SheetTitle className="text-xl">
+              {mode === 'CREATE' ? '세금계산서 수기 등록' : '세금계산서 매칭'}
+            </SheetTitle>
             <SheetDescription>
               {mode === 'CREATE'
                 ? '세금계산서 정보를 입력하고 화물을 매칭합니다.'
@@ -249,35 +237,27 @@ export const InvoiceMatchingSheet = () => {
           {/* 세금계산서 정보 요약 (선택된 세금계산서가 있을 경우) */}
           {selectedInvoice && mode === 'MATCH' && (
             <Card className="mb-4">
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                  <div>
-                    <Label className="text-muted-foreground text-sm">운송사명</Label>
-                    <div className="font-medium">{selectedInvoice.supplierName}</div>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground text-sm">사업자번호</Label>
-                    <div className="font-medium">{selectedInvoice.businessNumber}</div>
+              <CardContent className="pt-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="col-span-2">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <Label className="text-muted-foreground text-sm">운송사명</Label>
+                        <div className="font-medium">{selectedInvoice.supplierName}</div>
+                      </div>
+                      <div className="text-right">
+                        <Label className="text-muted-foreground text-sm">사업자번호</Label>
+                        <div className="font-medium">{selectedInvoice.businessNumber}</div>
+                      </div>
+                    </div>
                   </div>
                   <div>
                     <Label className="text-muted-foreground text-sm">세금계산서 번호</Label>
-                    <div className="font-medium">{selectedInvoice.taxId}</div>
+                    <div className="font-medium truncate" title={selectedInvoice.taxId}>{selectedInvoice.taxId}</div>
                   </div>
                   <div>
                     <Label className="text-muted-foreground text-sm">작성일</Label>
                     <div className="font-medium">{selectedInvoice.issueDate}</div>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground text-sm">공급가액</Label>
-                    <div className="font-medium"><AmountDisplay amount={selectedInvoice.supplyAmount || 0} /></div>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground text-sm">세액</Label>
-                    <div className="font-medium"><AmountDisplay amount={selectedInvoice.taxAmount || 0} /></div>
-                  </div>
-                  <div className="col-span-2">
-                    <Label className="text-muted-foreground text-sm">합계금액</Label>
-                    <div className="font-medium text-lg"><AmountDisplay amount={selectedInvoice.totalAmount || 0} size="lg" /></div>
                   </div>
                 </div>
               </CardContent>
@@ -567,34 +547,55 @@ export const InvoiceMatchingSheet = () => {
             )}
           </div>
 
-          {/* 합계 및 액션 버튼 */}
-          <div className="sticky bottom-0 bg-background pt-4 border-t space-y-4">
+          {/* 하단 금액 정보 및 액션 버튼 */}
+          <div className="sticky bottom-0 bg-background pt-4 border-t">
             {matchedCargos.length > 0 && (
-              <Card className="bg-muted/50 border">
-                <CardContent className="py-4 flex justify-between items-center">
-                  <div>
-                    <div className="text-sm text-muted-foreground">매칭 총액</div>
-                    <div className="text-lg font-semibold">
-                      <AmountDisplay amount={getTotalMatchedAmount()} size="lg" />
+              <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="bg-muted/50 border">
+                  <CardContent className="py-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <div className="text-sm text-muted-foreground">공급가액</div>
+                        <div className="font-medium">
+                          <AmountDisplay amount={selectedInvoice?.supplyAmount || 0} />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">매칭된 화물</div>
+                        <div className="font-medium">
+                          <AmountDisplay amount={getTotalMatchedAmount()} />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  
-                  {selectedInvoice && !hasAmountMismatch && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="bg-green-100 text-green-800 p-1.5 rounded-full">
-                            <Check className="h-5 w-5" />
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>금액이 일치합니다</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+
+                <Card className={cn(
+                  "border",
+                  hasAmountMismatch ? "bg-destructive/10 border-destructive/50" : "bg-success/10 border-success/50"
+                )}>
+                  <CardContent className="py-3">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="text-sm text-muted-foreground">차액</div>
+                        <div className="font-medium">
+                          <AmountDisplay amount={amountDifference} showSign />
+                        </div>
+                      </div>
+                      {!hasAmountMismatch && (
+                        <div className="bg-success/20 text-success p-1.5 rounded-full">
+                          <Check className="h-5 w-5" />
+                        </div>
+                      )}
+                      {hasAmountMismatch && (
+                        <div className="bg-destructive/20 text-destructive p-1.5 rounded-full">
+                          <AlertTriangle className="h-5 w-5" />
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             )}
             
             <div className="flex justify-end gap-2">
@@ -621,7 +622,7 @@ export const InvoiceMatchingSheet = () => {
                     취소
                   </Button>
                   <Button 
-                    disabled={matchedCargos.length === 0}
+                    disabled={matchedCargos.length === 0 || hasAmountMismatch}
                     onClick={handleTransferToMatching}
                   >
                     정산 대사로 전환

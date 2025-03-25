@@ -35,8 +35,7 @@ interface CargoSearchDialogProps {
 interface CargoFilter {
   startDate: string;
   endDate: string;
-  businessNumber: string;
-  driverName: string;
+  searchTerm: string;
 }
 
 export function CargoSearchDialog({
@@ -50,8 +49,7 @@ export function CargoSearchDialog({
   const [cargoFilter, setCargoFilter] = useState<CargoFilter>({
     startDate: format(new Date(), 'yyyy-MM-dd'),
     endDate: format(new Date(), 'yyyy-MM-dd'),
-    businessNumber: '',
-    driverName: ''
+    searchTerm: ''
   });
 
   const handleFilterChange = (key: keyof CargoFilter, value: string) => {
@@ -60,13 +58,18 @@ export function CargoSearchDialog({
 
   const handleSearch = () => {
     // TODO: API 호출로 변경
-    const filtered = generateMockCargos(20).filter(cargo => {
-      const matchesBusinessNumber = !cargoFilter.businessNumber || 
-        cargo.businessNumber.includes(cargoFilter.businessNumber);
-      const matchesDriverName = !cargoFilter.driverName || 
-        cargo.carNumber.includes(cargoFilter.driverName);
-      return matchesBusinessNumber && matchesDriverName;
-    });
+    const filtered = generateMockCargos(20)
+      .filter(cargo => {
+        // 운송완료된 화물만 필터링 (실제 API에서는 이 조건을 쿼리에 포함)
+        const searchTermMatches = !cargoFilter.searchTerm || 
+          cargo.id.toLowerCase().includes(cargoFilter.searchTerm.toLowerCase()) ||
+          cargo.businessNumber.includes(cargoFilter.searchTerm) ||
+          cargo.driver?.name?.toLowerCase().includes(cargoFilter.searchTerm.toLowerCase()) ||
+          cargo.departureLocation.toLowerCase().includes(cargoFilter.searchTerm.toLowerCase()) ||
+          cargo.arrivalLocation.toLowerCase().includes(cargoFilter.searchTerm.toLowerCase());
+        
+        return searchTermMatches;
+      });
     setAvailableCargos(filtered);
   };
 
@@ -100,8 +103,8 @@ export function CargoSearchDialog({
 
         <div className="space-y-4 flex-1 overflow-hidden">
           {/* 검색 필터 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex gap-2 md:col-span-2">
+          <div className="space-y-4">
+            <div className="flex gap-2">
               <div className="relative flex-1">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3">
                   <CalendarIcon className="h-4 w-4 text-muted-foreground" />
@@ -127,36 +130,23 @@ export function CargoSearchDialog({
               </div>
             </div>
             
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                <Search className="h-4 w-4 text-muted-foreground" />
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <Input
+                  placeholder="화물번호, 사업자번호, 차주명, 상/하차지 검색"
+                  value={cargoFilter.searchTerm}
+                  onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
+                  className="pl-10"
+                />
               </div>
-              <Input
-                placeholder="사업자번호"
-                value={cargoFilter.businessNumber}
-                onChange={(e) => handleFilterChange('businessNumber', e.target.value)}
-                className="pl-10"
-              />
+              <Button onClick={handleSearch}>
+                <Search className="h-4 w-4 mr-2" />
+                검색
+              </Button>
             </div>
-            
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                <Search className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <Input
-                placeholder="차주명"
-                value={cargoFilter.driverName}
-                onChange={(e) => handleFilterChange('driverName', e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-          
-          <div className="flex justify-end">
-            <Button onClick={handleSearch}>
-              <Search className="h-4 w-4 mr-2" />
-              검색
-            </Button>
           </div>
 
           {/* 화물 목록 테이블 */}
