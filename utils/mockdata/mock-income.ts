@@ -280,7 +280,7 @@ export function generateMockIncomes(): IIncome[] {
   let incomes: IIncome[] = [];
   
   // 최대 15개의 정산 데이터 생성 (최적화)
-  for (let i = 0; i < 15; i++) {
+  for (let i = 11; i < 20; i++) {
     // 랜덤 화주 선택
     const randomShipper = shippers[Math.floor(Math.random() * shippers.length)];
     const shippersOrders = groupedOrders[randomShipper];

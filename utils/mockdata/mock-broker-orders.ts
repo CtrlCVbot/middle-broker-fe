@@ -119,7 +119,7 @@ const generateMockBrokerOrders = (count: number): IBrokerOrder[] => {
   console.log('화물 목업 데이터 생성 시작:', count);
   const orders: IBrokerOrder[] = [];
   
-  for (let i = 0; i < count; i++) {
+  for (let i = 10; i < count; i++) {
     const id = `BRO-${(1000 + i).toString().padStart(6, '0')}`;
     const departureCity = CITIES[Math.floor(Math.random() * CITIES.length)];
     const arrivalCity = CITIES[Math.floor(Math.random() * CITIES.length)];
