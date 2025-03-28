@@ -30,7 +30,6 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function ExpenditurePage() {
-  // 정산 데이터 스토어 접근
   const {
     expenditures,
     currentPage,
@@ -39,21 +38,21 @@ export default function ExpenditurePage() {
     isLoading,
     error,
     filter,
-    setFilter,
     fetchExpenditures,
+    setFilter,
+    resetFilter,
     setPage,
-    updateExpenditureStatus,
-    resetFilter
+    updateExpenditureStatus
   } = useExpenditureStore();
-  
-  // 정산 대기 화물 스토어 접근
+
   const {
+    waitingOrders,
+    selectedOrderIds,
     filter: waitingFilter,
     filterOptions,
     currentPage: waitingCurrentPage,
     totalPages: waitingTotalPages,
     isLoading: waitingIsLoading,
-    selectedOrderIds,
     fetchWaitingOrders,
     getOrdersByPage,
     setFilter: setWaitingFilter,
@@ -61,34 +60,16 @@ export default function ExpenditurePage() {
     selectOrder,
     selectAllOrders,
     createExpenditure,
-    getSelectedOrders,
+    getSelectedOrders
   } = useExpenditureWaitingStore();
 
-  // 초기 데이터 로드
   useEffect(() => {
-    console.log('useEffect 실행됨 - 정산 데이터 로드');
-    const loadData = async () => {
-      try {
-        await fetchExpenditures(currentPage);
-        console.log('정산 데이터 로드 완료');
-      } catch (error) {
-        console.error('정산 데이터 로드 중 오류 발생:', error);
-      }
-    };
-    
-    loadData();
-  }, [currentPage, 
-      filter.status, 
-      filter.startDate, 
-      filter.endDate, 
-      filter.searchTerm, 
-      filter.shipperName, 
-      filter.invoiceStatus, 
-      filter.manager]);
-      
-  // 정산 대기 화물 데이터 로드
+    console.log('초기 데이터 로딩 시작');
+    fetchExpenditures(1);
+  }, [fetchExpenditures]);
+
   useEffect(() => {
-    console.log('useEffect 실행됨 - 정산 대기 화물 데이터 로드');
+    console.log('정산 대기 데이터 로딩 시작');
     fetchWaitingOrders();
   }, [fetchWaitingOrders]);
 

@@ -111,6 +111,14 @@ const extractCompanies = (orders: IBrokerOrder[]): string[] => {
   return Array.from(companiesSet);
 };
 
+// ID 생성을 위한 카운터
+let waitingIdCounter = 1;
+
+// 안정적인 ID 생성 함수
+const generateWaitingId = () => {
+  return `waiting_${waitingIdCounter++}`;
+};
+
 // 정산 대기 화물 관리 스토어 생성
 export const useExpenditureWaitingStore = create<IExpenditureWaitingState>()(
   persist(

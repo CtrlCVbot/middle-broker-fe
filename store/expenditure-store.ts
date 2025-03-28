@@ -430,6 +430,14 @@ interface ExpenditureDetailStoreState {
   updateStatus: (newStatus: ExpenditureStatusType) => Promise<void>;
 }
 
+// ID 생성을 위한 카운터
+let idCounter = 1;
+
+// 안정적인 ID 생성 함수
+const generateStableId = () => {
+  return `fee_${idCounter++}`;
+};
+
 // 정산 상세 정보 스토어
 export const useExpenditureDetailStore = create<ExpenditureDetailStoreState>((set, get) => ({
   // 초기 상태
@@ -495,12 +503,9 @@ export const useExpenditureDetailStore = create<ExpenditureDetailStoreState>((se
     set({ isLoading: true, error: null });
     
     try {
-      // 백엔드 연동 시 실제 API 호출로 변경
-      // 목업 데이터에서는 상태만 변경
-      
-      // 추가금 생성
+      // 추가금 생성 - 안정적인 ID 사용
       const newFee: IAdditionalFee = {
-        id: Math.random().toString(36).substring(2, 11), // 간단한 임의 ID
+        id: generateStableId(),
         ...fee,
         createdAt: new Date().toISOString(),
         createdBy: '관리자'
