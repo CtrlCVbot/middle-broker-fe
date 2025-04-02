@@ -22,6 +22,7 @@ export interface IExpenditureCreateRequest {
   hasTax: boolean;
   invoiceNumber?: string;
   paymentMethod: string;
+  additionalFees: IAdditionalFee[];
 }
 
 // 매출 정산 목록 상태 관리 인터페이스

@@ -158,6 +158,10 @@ export const useExpenditureFormStore = create<IExpenditureFormState>((set, get) 
         useExpenditureStore.getState().addExpenditure({
           ...data,
           additionalFees: get().additionalFees,
+          dueDate: new Date(data.endDate), // 마감일을 종료일로 설정
+          taxFree: data.isTaxFree || false,
+          hasTax: !data.isTaxFree,
+          paymentMethod: '계좌이체' // 기본값 설정
         });
         
         // 성공 처리
@@ -169,12 +173,11 @@ export const useExpenditureFormStore = create<IExpenditureFormState>((set, get) 
           additionalFees: [],
         });
       } catch (error) {
-        // 에러 처리
         set({
           isLoading: false,
           error: error instanceof Error ? error.message : '정산 생성 실패',
         });
       }
-    }, 800); // 0.8초 지연 (로딩 상태 표시용)
+    }, 800);
   },
 })); 
