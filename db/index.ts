@@ -1,17 +1,8 @@
-import {config} from 'dotenv'
-import { drizzle } from 'drizzle-orm/postgres-js'
-import path from 'path'
-import postgres from 'postgres'
+import { config } from 'dotenv';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
 
-config({path: path.resolve(__dirname, '../.env.local')})
+config({ path: '.env.local' }); // or .env.local
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL is not defined')
-}
-
-const client = postgres(process.env.DATABASE_URL)
-const db = drizzle(client)
-
-//const allUsers = await db.select().from(...);
-
-
+const client = postgres(process.env.DATABASE_URL!);
+export const db = drizzle({ client });
