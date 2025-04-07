@@ -157,4 +157,39 @@ export const searchAddress = async (
     item.roadAddress.includes(keyword) || 
     item.jibunAddress.includes(keyword)
   );
+};
+
+// 최근 등록된 주소 목록
+export const RECENT_LOCATIONS: ILocationInfo[] = [
+  {
+    id: "LOC1",
+    address: "서울특별시 강남구 테헤란로 152",
+    roadAddress: "서울특별시 강남구 테헤란로 152 (역삼동)",
+    jibunAddress: "서울특별시 강남구 역삼동 737",
+    latitude: 37.5013068,
+    longitude: 127.0396597,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "LOC2",
+    address: "서울특별시 송파구 올림픽로 300",
+    roadAddress: "서울특별시 송파구 올림픽로 300 (신천동)",
+    jibunAddress: "서울특별시 송파구 신천동 29",
+    latitude: 37.5139268,
+    longitude: 127.0583787,
+    createdAt: new Date().toISOString(),
+  },
+];
+
+// 화물 등록 함수
+export const registerOrder = async (orderData: any) => {
+  // 실제로는 API를 호출하여 화물을 등록하겠지만,
+  // 목업 데이터를 위해 간단한 응답 생성
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  return {
+    success: true,
+    orderId: `ORD${Date.now()}`,
+    message: "화물이 성공적으로 등록되었습니다.",
+  };
 }; 

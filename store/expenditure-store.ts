@@ -1,137 +1,137 @@
-import { create } from 'zustand';
-import { IExpenditure, IExpenditureCreateRequest, ExpenditureStatusType } from '@/types/expenditure';
-import { generateId } from '@/lib/utils';
+import { create } from "zustand";
+import { IExpenditure, ExpenditureStatusType } from "@/types/expenditure";
+
+interface IExpenditureFilter {
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+  searchTerm?: string;
+}
 
 interface IExpenditureState {
   expenditures: IExpenditure[];
   isLoading: boolean;
   error: string | null;
+  selectedExpenditureId: string | null;
+  isSheetOpen: boolean;
   currentPage: number;
   totalPages: number;
-  filter: {
-    status?: ExpenditureStatusType;
-    [key: string]: any;
-  };
+  totalItems: number;
+  filter: IExpenditureFilter;
   
-  // 액션
-  addExpenditure: (data: IExpenditureCreateRequest) => void;
-  updateExpenditure: (id: string, data: Partial<IExpenditure>) => void;
+  // Actions
+  setExpenditures: (expenditures: IExpenditure[]) => void;
+  addExpenditure: (expenditure: IExpenditure) => void;
+  updateExpenditure: (id: string, expenditure: Partial<IExpenditure>) => void;
   deleteExpenditure: (id: string) => void;
-  getExpenditure: (id: string) => IExpenditure | undefined;
-  getAllExpenditures: () => IExpenditure[];
+  setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
-  fetchExpenditures: (page: number) => void;
-  setFilter: (filter: Partial<IExpenditureState['filter']>) => void;
+  setSelectedExpenditureId: (id: string | null) => void;
+  openSheet: () => void;
+  closeSheet: () => void;
+  setCurrentPage: (page: number) => void;
+  setTotalPages: (total: number) => void;
+  setTotalItems: (total: number) => void;
+  setFilter: (filter: Partial<IExpenditureFilter>) => void;
   resetFilter: () => void;
+  fetchExpenditures: (page?: number) => Promise<void>;
   setPage: (page: number) => void;
-  updateExpenditureStatus: (id: string, status: ExpenditureStatusType) => void;
+  updateExpenditureStatus: (id: string, status: ExpenditureStatusType) => Promise<void>;
 }
 
 export const useExpenditureStore = create<IExpenditureState>((set, get) => ({
   expenditures: [],
   isLoading: false,
   error: null,
+  selectedExpenditureId: null,
+  isSheetOpen: false,
   currentPage: 1,
   totalPages: 1,
+  totalItems: 0,
   filter: {},
   
-  fetchExpenditures: async (page: number) => {
-    set({ isLoading: true });
+  setExpenditures: (expenditures) => set({ expenditures }),
+  addExpenditure: (expenditure) => 
+    set((state) => ({ 
+      expenditures: [...state.expenditures, expenditure] 
+    })),
+  updateExpenditure: (id, expenditure) =>
+    set((state) => ({
+      expenditures: state.expenditures.map((exp) =>
+        exp.id === id ? { ...exp, ...expenditure } : exp
+      ),
+    })),
+  deleteExpenditure: (id) =>
+    set((state) => ({
+      expenditures: state.expenditures.filter((exp) => exp.id !== id),
+    })),
+  setLoading: (isLoading) => set({ isLoading }),
+  setError: (error) => set({ error }),
+  setSelectedExpenditureId: (id) => set({ selectedExpenditureId: id }),
+  openSheet: () => set({ isSheetOpen: true }),
+  closeSheet: () => set({ isSheetOpen: false, selectedExpenditureId: null }),
+  setCurrentPage: (page) => set({ currentPage: page }),
+  setTotalPages: (total) => set({ totalPages: total }),
+  setTotalItems: (total) => set({ totalItems: total }),
+  setFilter: (filter) => set((state) => ({ filter: { ...state.filter, ...filter } })),
+  resetFilter: () => set({ filter: {}, currentPage: 1 }),
+  fetchExpenditures: async (page) => {
+    const state = get();
+    const currentPage = page || state.currentPage;
+    set({ isLoading: true, error: null });
     try {
-      // TODO: API 연동 시 실제 데이터 fetching 로직으로 대체
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // TODO: Implement API call
+      const response = await fetch(`/api/expenditures?page=${currentPage}`);
+      const data = await response.json();
       set({ 
-        isLoading: false,
-        currentPage: page,
-        // 임시 데이터
-        expenditures: [],
-        totalPages: 1
+        expenditures: data.expenditures,
+        totalPages: data.totalPages,
+        totalItems: data.totalItems,
+        currentPage,
+        isLoading: false 
       });
     } catch (error) {
-      set({ 
-        isLoading: false,
-        error: '데이터 로딩 중 오류가 발생했습니다.'
-      });
+      set({ error: "Failed to fetch expenditures", isLoading: false });
     }
   },
-
-  setFilter: (newFilter) => {
-    set(state => ({
-      filter: { ...state.filter, ...newFilter }
-    }));
-  },
-
-  resetFilter: () => {
-    set({ filter: {} });
-  },
-
   setPage: (page) => {
     set({ currentPage: page });
-    get().fetchExpenditures(page);
   },
+  updateExpenditureStatus: async (id, status) => {
+    set({ isLoading: true, error: null });
+    try {
+      // TODO: Implement API call
+      await fetch(`/api/expenditures/${id}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status }),
+      });
+      set((state) => ({
+        expenditures: state.expenditures.map((exp) =>
+          exp.id === id ? { ...exp, status } : exp
+        ),
+        isLoading: false,
+      }));
+    } catch (error) {
+      set({ error: "Failed to update expenditure status", isLoading: false });
+    }
+  },
+}));
 
-  updateExpenditureStatus: (id, status) => {
-    set(state => ({
-      expenditures: state.expenditures.map(exp =>
-        exp.id === id ? { ...exp, status } : exp
-      )
-    }));
-  },
-  
-  addExpenditure: (data) => {
-    const newExpenditure: IExpenditure = {
-      id: generateId('EXP'),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      status: 'WAITING',
-      orderCount: data.orderIds.length,
-      totalBaseAmount: 0,
-      totalAdditionalAmount: 0,
-      totalAmount: 0,
-      tax: 0,
-      finalAmount: 0,
-      isTaxFree: data.isTaxFree ?? false,
-      additionalFees: data.additionalFees ?? [],
-      logs: [{
-        status: 'WAITING',
-        time: new Date().toISOString(),
-        date: new Date().toISOString().split('T')[0],
-        handler: data.manager,
-        remark: '정산 생성'
-      }],
-      ...data,
-    };
-    
-    set(state => ({
-      expenditures: [...state.expenditures, newExpenditure],
-    }));
-  },
-  
-  updateExpenditure: (id, data) => {
-    set(state => ({
-      expenditures: state.expenditures.map(exp => 
-        exp.id === id 
-          ? { ...exp, ...data, updatedAt: new Date().toISOString() }
-          : exp
-      ),
-    }));
-  },
-  
-  deleteExpenditure: (id) => {
-    set(state => ({
-      expenditures: state.expenditures.filter(exp => exp.id !== id),
-    }));
-  },
-  
-  getExpenditure: (id) => {
-    return get().expenditures.find(exp => exp.id === id);
-  },
-  
-  getAllExpenditures: () => {
-    return get().expenditures;
-  },
-  
-  setError: (error) => {
-    set({ error });
-  },
+interface IExpenditureDetailState {
+  selectedExpenditureId: string | null;
+  isSheetOpen: boolean;
+  openSheet: () => void;
+  closeSheet: () => void;
+  setSelectedExpenditureId: (id: string | null) => void;
+}
+
+export const useExpenditureDetailStore = create<IExpenditureDetailState>((set) => ({
+  selectedExpenditureId: null,
+  isSheetOpen: false,
+  openSheet: () => set({ isSheetOpen: true }),
+  closeSheet: () => set({ isSheetOpen: false, selectedExpenditureId: null }),
+  setSelectedExpenditureId: (id) => set({ selectedExpenditureId: id }),
 })); 

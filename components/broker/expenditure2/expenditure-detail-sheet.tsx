@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import { DollarSign, FileText, Package,  CheckCircle, AlertCircle,  Clock, Copy, Send, Truck } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useExpenditureDetailStore } from "@/store/expenditure-detail-store";
-import { ExpenditureStatusType, IAdditionalFee, IExpenditureLog } from "@/types/expenditure";
+import { ExpenditureStatusType, IAdditionalFee, IExpenditureLog, IExpenditure } from "@/types/expenditure";
 import { ExpenditureAdditionalCost } from "./expenditure-additional-cost";
 import { ExpenditureStatusBadge } from "./expenditure-status-badge";
 
@@ -40,6 +40,17 @@ interface IOrder {
 interface IExpenditureAdditionalCostProps {
   expenditureId: string;
   orderIds: string[];
+}
+
+interface IExpenditureWithOrders extends IExpenditure {
+  orders: IOrder[];
+  orderCount: number;
+  shipperName: string;
+  businessNumber: string;
+  startDate: string;
+  endDate: string;
+  manager: string;
+  managerContact?: string;
 }
 
 export function ExpenditureDetailSheet() {
@@ -67,11 +78,17 @@ export function ExpenditureDetailSheet() {
     }
   };
   
-  // 정산 상태 변경
-  const handleStatusChange = (newStatus: ExpenditureStatusType) => {
-    if (expenditureDetail?.id) {
-      updateStatus(newStatus);
-    }
+  const handleConfirm = () => {
+    if (!expenditureDetail) return;
+    handleStatusChange();
+  };
+  
+  const handleStatusChange = () => {
+    if (!expenditureDetail) return;
+    
+    const nextStatus = getNextStatus(expenditureDetail.status);
+    // TODO: API 호출하여 상태 변경
+    console.log(`상태 변경: ${expenditureDetail.status} -> ${nextStatus}`);
   };
   
   // 세금 면제 설정
@@ -98,9 +115,9 @@ export function ExpenditureDetailSheet() {
     if (!expenditureDetail) return;
     
     if (expenditureDetail.status === 'WAITING') {
-      handleStatusChange('MATCHING');
+      handleStatusChange();
     } else if (expenditureDetail.status === 'MATCHING') {
-      handleStatusChange('COMPLETED');
+      handleStatusChange();
     }
   };
   
@@ -443,17 +460,249 @@ export function ExpenditureDetailSheet() {
     ));
   };
 
+  const getStatusMessage = (status: ExpenditureStatusType) => {
+    switch (status) {
+      case "pending":
+        return "정산 대기 중입니다.";
+      case "processing":
+        return "정산 처리 중입니다.";
+      case "completed":
+        return "정산이 완료되었습니다.";
+      case "cancelled":
+        return "정산이 취소되었습니다.";
+      default:
+        return "알 수 없는 상태입니다.";
+    }
+  };
+
+  const getStatusAction = (status: ExpenditureStatusType) => {
+    switch (status) {
+      case "pending":
+        return "정산 처리";
+      case "processing":
+        return "정산 완료";
+      case "completed":
+        return "정산 취소";
+      case "cancelled":
+        return "정산 재개";
+      default:
+        return "상태 변경";
+    }
+  };
+
+  const getNextStatus = (status: ExpenditureStatusType): ExpenditureStatusType => {
+    switch (status) {
+      case "pending":
+        return "processing";
+      case "processing":
+        return "completed";
+      case "completed":
+        return "cancelled";
+      case "cancelled":
+        return "pending";
+      default:
+        return "pending";
+    }
+  };
+
+  const renderStatusAlert = () => {
+    if (!expenditureDetail) return null;
+
+    switch (expenditureDetail.status) {
+      case "pending":
+        return (
+          <Alert className="mb-6">
+            <Clock className="h-4 w-4" />
+            <AlertTitle>정산 대기</AlertTitle>
+            <AlertDescription>
+              정산 처리를 시작하려면 [정산 처리] 버튼을 클릭하세요.
+            </AlertDescription>
+          </Alert>
+        );
+      case "processing":
+        return (
+          <Alert className="mb-6">
+            <Package className="h-4 w-4" />
+            <AlertTitle>정산 처리 중</AlertTitle>
+            <AlertDescription>
+              정산 처리가 진행 중입니다. 완료하려면 [정산 완료] 버튼을 클릭하세요.
+            </AlertDescription>
+          </Alert>
+        );
+      case "completed":
+        return (
+          <Alert className="mb-6">
+            <CheckCircle className="h-4 w-4" />
+            <AlertTitle>정산 완료</AlertTitle>
+            <AlertDescription>
+              정산이 완료되었습니다.
+            </AlertDescription>
+          </Alert>
+        );
+      case "cancelled":
+        return (
+          <Alert className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>정산 취소</AlertTitle>
+            <AlertDescription>
+              정산이 취소되었습니다. 다시 시작하려면 [정산 재개] 버튼을 클릭하세요.
+            </AlertDescription>
+          </Alert>
+        );
+      default:
+        return null;
+    }
+  };
+
+  if (!expenditureDetail) return null;
+
   return (
-    <Sheet open={isSheetOpen} onOpenChange={(open) => !open && closeSheet()}>
-      <SheetContent className="w-full max-w-3xl sm:max-w-3xl overflow-y-auto">
-        <SheetHeader className="border-b pb-4">
-          <SheetTitle className="text-xl flex items-center">
-            <DollarSign className="h-5 w-5 mr-2 text-primary" />
-            매출 정산 상세 정보
-          </SheetTitle>
+    <Sheet open={isSheetOpen} onOpenChange={closeSheet}>
+      <SheetContent className="w-full max-w-3xl">
+        <SheetHeader className="mb-6">
+          <SheetTitle>정산 상세</SheetTitle>
         </SheetHeader>
-        
-        {renderContent()}
+
+        {renderStatusAlert()}
+
+        <Tabs defaultValue="info" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="info">기본 정보</TabsTrigger>
+            <TabsTrigger value="orders">화물 목록</TabsTrigger>
+            <TabsTrigger value="additional">추가금</TabsTrigger>
+            <TabsTrigger value="logs">처리 이력</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="info">
+            <div className="space-y-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-semibold">정산 정보</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs mb-1.5 block">정산 번호</Label>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium">{expenditureDetail.id}</p>
+                        <Button variant="ghost" size="icon" className="h-6 w-6">
+                          <Copy className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs mb-1.5 block">화물 건수</Label>
+                      <p className="text-sm font-medium">{expenditureDetail.orderIds.length}건</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs mb-1.5 block">총 청구금액</Label>
+                      <p className="text-sm font-medium">{formatCurrency(expenditureDetail.totalAmount)}원</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs mb-1.5 block">추가금 합계</Label>
+                      <p className="text-sm font-medium">{formatCurrency(expenditureDetail.totalAdditionalAmount)}원</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs mb-1.5 block">최종 금액</Label>
+                      <p className="text-sm font-medium">{formatCurrency(expenditureDetail.finalAmount)}원</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs mb-1.5 block">면세 여부</Label>
+                      <Switch checked={expenditureDetail.isTaxFree} disabled />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-semibold">처리 정보</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs mb-1.5 block">등록일</Label>
+                      <p className="text-sm">{expenditureDetail.createdAt}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs mb-1.5 block">등록자</Label>
+                      <p className="text-sm">{expenditureDetail.createdBy}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs mb-1.5 block">수정일</Label>
+                      <p className="text-sm">{expenditureDetail.updatedAt}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs mb-1.5 block">수정자</Label>
+                      <p className="text-sm">{expenditureDetail.updatedBy}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="orders">
+            <div className="border rounded-md">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead>화물 번호</TableHead>
+                    <TableHead>출발지</TableHead>
+                    <TableHead>도착지</TableHead>
+                    <TableHead>차량</TableHead>
+                    <TableHead className="text-right">운임</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {expenditureDetail.orderIds.map((orderId) => (
+                    <TableRow key={orderId}>
+                      <TableCell className="font-medium">{orderId}</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell className="text-right">-</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="additional">
+            <ExpenditureAdditionalCost
+              expenditureId={expenditureDetail.id}
+              orderIds={expenditureDetail.orderIds}
+            />
+          </TabsContent>
+
+          <TabsContent value="logs">
+            <div className="border rounded-md">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead>처리 시간</TableHead>
+                    <TableHead>상태</TableHead>
+                    <TableHead>처리자</TableHead>
+                    <TableHead>메시지</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {expenditureDetail.logs.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell>{log.createdAt}</TableCell>
+                      <TableCell>
+                        <ExpenditureStatusBadge status={log.status} />
+                      </TableCell>
+                      <TableCell>{log.createdBy}</TableCell>
+                      <TableCell>{log.message}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
+        </Tabs>
       </SheetContent>
     </Sheet>
   );

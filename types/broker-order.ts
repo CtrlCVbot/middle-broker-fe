@@ -5,21 +5,17 @@ import { SettlementStatus } from "./settlement";
 
 // 중개 화물 상태 타입 정의
 export type BrokerOrderStatusType = 
-  | '배차대기' 
-  | '배차완료' 
-  | '상차완료' 
-  | '운송중' 
-  | '하차완료' 
-  | '운송마감';
+  | "운송마감"
+  | "운송중"
+  | "운송완료"
+  | "취소";
 
 // 중개 화물 상태 배열 - 상태 순서대로 정의
 export const BROKER_ORDER_STATUS: BrokerOrderStatusType[] = [
-  '배차대기', 
-  '배차완료', 
-  '상차완료', 
-  '운송중', 
-  '하차완료', 
-  '운송마감'
+  "운송마감",
+  "운송중",
+  "운송완료",
+  "취소"
 ];
 
 // 콜센터 유형 정의
@@ -40,46 +36,37 @@ export interface IBrokerOrderLog {
 
 // 중개 화물 정보 인터페이스
 export interface IBrokerOrder {
-  id: string;                  // 중개 화물번호 (고유 식별자)
-  status: BrokerOrderStatusType;     // 상태 (배차대기, 배차완료, 상차완료, 하차완료 등)
-  departureDateTime: string;   // 출발 일시
-  departureCity: string;       // 출발지 도시
-  departureLocation: string;   // 출발지
-  arrivalDateTime: string;     // 도착 예정 일시
-  arrivalCity: string;         // 도착지 도시
-  arrivalLocation: string;     // 도착지
-  amount: number;              // 금액 (견적금)
-  fee: number;                 // 수수료
-  vehicle: {                   // 차량 정보
-    type: string;              // 차량 종류
-    weight: string;            // 중량
+  id: string;
+  status: BrokerOrderStatusType;
+  departureDateTime: string;
+  departureCity: string;
+  departureLocation: string;
+  arrivalDateTime: string;
+  arrivalCity: string;
+  arrivalLocation: string;
+  vehicle: {
+    type: string;
+    weight: string;
   };
-  driver: {                    // 차주 정보
-    name: string;              // 차주명
-    contact: string;           // 연락처
+  chargeAmount?: number;
+  amount: number;
+  fee: number;
+  shipperName: string;
+  shipperContact?: string;
+  shipperEmail?: string;
+  manager?: string;
+  driver: {
+    name: string;
+    contact: string;
   };
-  createdAt: string;           // 등록일
-  updatedAt: string;           // 수정일
-  settlementStatus?: SettlementStatus; // 정산 상태
-  settlementId?: string;       // 정산 ID
-  
-  // PRD에 따른 추가 필드
-  callCenter: CallCenterType;  // 콜센터 정보 (24시, 원콜, 화물맨, 직접)
-  company: string;             // 업체명
-  contactPerson: string;       // 업체담당자(신청자)
-  contractAmount?: number;     // 계약 금액
-  chargeAmount?: number;       // 청구 금액
-  supplyAmount?: number;       // 공급가(배차금)
-  paymentMethod: PaymentMethodType; // 결제 방식 (인수증, 선불, 착불, 선착불)
-  cargoItem: string;           // 화물 품목
-  manager: string;             // 담당자 정보
-  managerContact: string;      // 담당자 연락처
-  gpsLocation?: {              // 실시간 차주 위치 정보
-    lat: number;              // 위도
-    lng: number;              // 경도
-    lastUpdated: string;      // 마지막 업데이트 시간
-    status?: string;          // 상태 (좌표 확인, 상차 도착, 하차 도착, 상차 지각, 하차 지각)
-  }
+  createdAt: string;
+  updatedAt: string;
+  callCenter?: string;
+  company?: string;
+  contactPerson?: string;
+  paymentMethod?: string;
+  cargoItem?: string;
+  managerContact?: string;
 }
 
 // 응답 페이징 정보 인터페이스

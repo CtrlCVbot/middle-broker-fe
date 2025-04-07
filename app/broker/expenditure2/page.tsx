@@ -100,7 +100,7 @@ export default function ExpenditurePage() {
   
   // 상태별 탭 처리
   const handleTabChange = (value: string) => {
-    if (value === "WAITING" || value === "MATCHING" || value === "COMPLETED") {
+    if (value === "pending" || value === "approved" || value === "rejected") {
       setFilter({ status: value as ExpenditureStatusType });
     }
   };
@@ -159,20 +159,20 @@ export default function ExpenditurePage() {
         
         {/* 상태별 탭 영역 */}
         <Tabs 
-          defaultValue="WAITING" 
-          value={filter.status || "WAITING"}
+          defaultValue="pending" 
+          value={filter.status || "pending"}
           onValueChange={handleTabChange}
           className="w-full"
         >
           <TabsList className="grid grid-cols-3 md:w-auto">
-            <TabsTrigger value="WAITING">정산대기</TabsTrigger>
-            <TabsTrigger value="MATCHING">정산대사</TabsTrigger>
-            <TabsTrigger value="COMPLETED">정산완료</TabsTrigger>
+            <TabsTrigger value="pending">정산대기</TabsTrigger>
+            <TabsTrigger value="approved">정산완료</TabsTrigger>
+            <TabsTrigger value="rejected">정산거절</TabsTrigger>
           </TabsList>
                     
           
           {/* 정산 대기 탭 */}
-          <TabsContent value="WAITING" className="mt-6">
+          <TabsContent value="pending" className="mt-6">
             <div className="flex flex-col space-y-4 relative">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
@@ -221,7 +221,7 @@ export default function ExpenditurePage() {
           </TabsContent>
           
           {/* 정산 대사 탭 */}
-          <TabsContent value="MATCHING" className="mt-6">
+          <TabsContent value="approved" className="mt-6">
             {isLoading ? (
               <div className="flex h-24 items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary/70" />
@@ -246,7 +246,7 @@ export default function ExpenditurePage() {
               <ExpenditureFilter 
                 onFilterChange={handleFilterChange}
                 onResetFilter={resetFilter}
-                tabStatus="MATCHING"
+                tabStatus="approved"
               />
               <ExpenditureList
                 expenditures={expenditures}
@@ -256,14 +256,14 @@ export default function ExpenditurePage() {
                 onStatusChange={handleStatusChange}
                 onIssueInvoice={handleIssueInvoice}
                 onExportExcel={handleExportExcel}
-                currentTab="MATCHING"
+                currentTab="approved"
               />
               </>
             )}
           </TabsContent>
           
           {/* 정산 완료 탭 */}
-          <TabsContent value="COMPLETED" className="mt-6">
+          <TabsContent value="rejected" className="mt-6">
             {isLoading ? (
               <div className="flex h-24 items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary/70" />
@@ -288,7 +288,7 @@ export default function ExpenditurePage() {
               <ExpenditureFilter 
                 onFilterChange={handleFilterChange}
                 onResetFilter={resetFilter}
-                tabStatus="COMPLETED"
+                tabStatus="rejected"
               />
               <ExpenditureList
                 expenditures={expenditures}
@@ -298,7 +298,7 @@ export default function ExpenditurePage() {
                 onStatusChange={handleStatusChange}
                 onIssueInvoice={handleIssueInvoice}
                 onExportExcel={handleExportExcel}
-                currentTab="COMPLETED"
+                currentTab="rejected"
               />
               </>
             )}

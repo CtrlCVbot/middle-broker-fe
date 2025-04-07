@@ -4,91 +4,60 @@
 import { IBrokerOrder, BrokerOrderStatusType } from "./broker-order";
 
 // 매출 정산 상태 타입 정의
-export type ExpenditureStatusType = 
-  | 'WAITING'  // 정산대기 
-  | 'MATCHING' // 정산대사 
-  | 'COMPLETED'; // 정산완료
+export type ExpenditureStatusType = "pending" | "approved" | "rejected";
 
 // 매출 정산 상태 배열 - 상태 순서대로 정의
 export const Expenditure_STATUS: ExpenditureStatusType[] = [
-  'WAITING', 
-  'MATCHING', 
-  'COMPLETED'
+  "pending", 
+  "approved", 
+  "rejected"
 ];
 
 // 매출 정산 추가금 유형 타입 정의
-export type AdditionalFeeType =
-  | '대기비'
-  | '경유비'
-  | '왕복비'
-  | '하차비'
-  | '수작업비'
-  | '기타'
-  | '할인';
+export type AdditionalFeeType = 
+  | "대기비" 
+  | "경유비" 
+  | "왕복비" 
+  | "하차비" 
+  | "수작업비" 
+  | "기타" 
+  | "할인";
 
 // 추가금 인터페이스
 export interface IAdditionalFee {
-  id: string;                  // 고유 ID
-  type: AdditionalFeeType;     // 추가금 유형
-  amount: number;              // 금액 (할인인 경우 음수값)
-  description?: string;        // 설명
-  orderId?: string;            // 특정 화물에 대한 추가금인 경우, 화물 ID
-  createdAt: string;           // 생성일
-  createdBy: string;           // 생성자
+  id: string;
+  name: string;
+  amount: number;
+  description?: string;
+  createdAt: string;
 }
 
 // 매출 정산 로그 항목 인터페이스
 export interface IExpenditureLog {
-  status: ExpenditureStatusType;    // 상태
-  time: string;                // 시간
-  date: string;                // 날짜
-  handler?: string;            // 처리자
-  remark?: string;             // 비고
+  id: string;
+  status: ExpenditureStatusType;
+  message: string;
+  createdAt: string;
+  createdBy: string;
 }
 
 // 매출 정산 정보 인터페이스
 export interface IExpenditure {
-  id: string;                  // 정산번호 (고유 식별자)
-  status: ExpenditureStatusType;    // 상태 (정산대기, 정산대사, 정산완료)
-  orderIds: string[];          // 포함된 화물 ID 목록
-  // orders?: IBrokerOrder[]; 필드 제거 또는 주석 처리하여 불필요한 참조 제거
-  orderCount: number;          // 화물 건수
-  
-  // 화주 정보
-  shipperId?: string;          // 화주 ID
-  shipperName: string;         // 화주명
-  businessNumber: string;      // 사업자번호
-  shipperContact?: string;     // 화주 연락처
-  shipperEmail?: string;       // 화주 이메일
-  
-  // 정산 기간
-  startDate: string;           // 시작 일자
-  endDate: string;             // 종료 일자
-  
-  // 금액 정보
-  totalBaseAmount: number;     // 기본 운임 합계
-  totalAdditionalAmount: number; // 추가금 합계
-  totalAmount: number;         // 총 청구금액 (세금 제외)
-  tax: number;                 // 세금 (10%)
-  isTaxFree: boolean;          // 면세 여부
-  finalAmount: number;         // 최종 금액 (세금 포함)
-  
-  // 추가 정보
-  additionalFees: IAdditionalFee[]; // 추가금 목록
-  logs: IExpenditureLog[];          // 로그 정보
-  
-  // 정산서 관련 정보
-  invoiceNumber?: string;      // 세금계산서 번호
-  invoiceIssuedDate?: string;  // 세금계산서 발행일
-  invoiceStatus?: '미발행' | '발행대기' | '발행완료' | '발행오류'; // 세금계산서 상태
-  
-  // 관리 정보
-  manager: string;             // 담당자
-  managerContact?: string;     // 담당자 연락처
-  createdAt: string;           // 등록일
-  updatedAt: string;           // 수정일
-  memo?: string;               // 비고
-
+  id: string;
+  orderId: string;
+  amount: number;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  status: ExpenditureStatusType;
+  additionalFees: IAdditionalFee[];
+  orderIds: string[];
+  totalAmount: number;
+  totalAdditionalAmount: number;
+  finalAmount: number;
+  isTaxFree: boolean;
+  createdBy: string;
+  updatedBy: string;
 }
 
 // 응답 페이징 정보 인터페이스
@@ -159,4 +128,10 @@ export const isExpenditureStatusAtLeast = (currentStatus: ExpenditureStatusType,
   if (currentIndex === -1 || targetIndex === -1) return false;
   
   return currentIndex >= targetIndex;
-}; 
+};
+
+export const EXPENDITURE_STATUS = [
+  { value: "pending", label: "대기중" },
+  { value: "approved", label: "승인" },
+  { value: "rejected", label: "거절" },
+] as const; 

@@ -18,6 +18,8 @@ interface BrokerEditConfirmDialogProps {
   description?: string;
   confirmText?: string;
   cancelText?: string;
+  mode?: "edit" | "cancel" | "unsaved";
+  orderNumber?: string;
 }
 
 export function BrokerEditConfirmDialog({

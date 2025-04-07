@@ -130,13 +130,19 @@ export const TRANSPORT_OPTIONS: ITransportOption[] = [
 
 // 주소 정보 인터페이스
 export interface ILocationInfo {
+  id: string;
   address: string;
+  roadAddress: string;
+  jibunAddress: string;
+  latitude: number;
+  longitude: number;
   detailedAddress?: string;
   name: string;
   company: string;
   contact: string;
   date: string;
   time: string;
+  createdAt: string;
 }
 
 // 화물 등록 정보 인터페이스

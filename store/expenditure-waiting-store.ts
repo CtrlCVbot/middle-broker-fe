@@ -32,26 +32,64 @@ export interface IExpenditureWaitingFilter {
   manager?: string;
 }
 
+type BrokerOrderStatusType = 
+  | "운송마감"
+  | "운송중"
+  | "운송완료"
+  | "취소";
+
+interface IDriver {
+  name: string;
+  contact: string;
+}
+
+interface IWaitingOrder {
+  id: string;
+  status: BrokerOrderStatusType;
+  departureDateTime: string;
+  departureCity: string;
+  departureLocation: string;
+  arrivalDateTime: string;
+  arrivalCity: string;
+  arrivalLocation: string;
+  vehicle: {
+    type: string;
+    weight: string;
+  };
+  chargeAmount?: number;
+  amount: number;
+  fee: number;
+  shipperName: string;
+  shipperContact?: string;
+  shipperEmail?: string;
+  manager?: string;
+  driver?: IDriver;
+  createdAt: string;
+  updatedAt: string;
+  callCenter?: string;
+  company?: string;
+  contactPerson?: string;
+  paymentMethod?: string;
+  cargoItem?: string;
+  managerContact?: string;
+}
+
 interface IExpenditureWaitingState {
-  // 데이터
-  waitingOrders: IBrokerOrder[];
+  waitingOrders: IWaitingOrder[];
   filteredOrders: IBrokerOrder[];
   totalWaitingOrdersCount: number;
   isLoading: boolean;
+  error: string | null;
   
-  // 선택 관리
   selectedOrderIds: string[];
   
-  // 검색 필터
   filter: IExpenditureWaitingFilter;
   tempFilter: IExpenditureWaitingFilter; // Popover에서 임시로 사용할 필터
   
-  // 페이지네이션 상태
   currentPage: number;
   pageSize: number;
   totalPages: number;
   
-  // 기본 필터 옵션
   filterOptions: {
     cities: string[];
     vehicleTypes: string[];
@@ -61,7 +99,6 @@ interface IExpenditureWaitingState {
     managers: string[];
   };
   
-  // 액션
   fetchWaitingOrders: () => Promise<void>;
   getOrdersByPage: (page: number) => IBrokerOrder[];
   setFilter: (filter: Partial<IExpenditureWaitingFilter>) => void;
@@ -87,6 +124,13 @@ interface IExpenditureWaitingState {
     count: number;
   }>;
   selectOrdersByShipper: (shipper: string, isSelected: boolean) => void;
+  
+  // Actions
+  setWaitingOrders: (orders: IWaitingOrder[]) => void;
+  toggleOrderSelection: (orderId: string) => void;
+  unselectAllOrders: () => void;
+  setLoading: (isLoading: boolean) => void;
+  setError: (error: string | null) => void;
 }
 
 // 초기 필터 상태
@@ -385,7 +429,22 @@ export const useExpenditureWaitingStore = create<IExpenditureWaitingState>()(
           : selectedOrderIds.filter(id => !selectedOrders.some(order => order.id === id && order.company === shipper));
         
         set({ selectedOrderIds: newSelectedOrderIds });
-      }
+      },
+      
+      // Actions
+      setWaitingOrders: (orders) => set({ waitingOrders: orders }),
+      toggleOrderSelection: (orderId) =>
+        set((state) => {
+          const isSelected = state.selectedOrderIds.includes(orderId);
+          return {
+            selectedOrderIds: isSelected
+              ? state.selectedOrderIds.filter((id) => id !== orderId)
+              : [...state.selectedOrderIds, orderId],
+          };
+        }),
+      unselectAllOrders: () => set({ selectedOrderIds: [] }),
+      setLoading: (isLoading) => set({ isLoading }),
+      setError: (error) => set({ error }),
     }),
     {
       name: 'Expenditure-waiting-store',

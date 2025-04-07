@@ -1,52 +1,49 @@
-import React from "react";
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { ExpenditureStatusType } from "@/types/expenditure";
 
-interface ExpenditureStatusBadgeProps {
+interface IExpenditureStatusBadgeProps {
   status: ExpenditureStatusType;
-  size?: "default" | "sm" | "lg";
-  hidden?: boolean; // 숨김 여부
 }
 
-export function ExpenditureStatusBadge({ status, size = "default", hidden = false }: ExpenditureStatusBadgeProps) {
-  // 숨김 상태면 렌더링하지 않음
-  if (hidden) return null;
-
-  // 사이즈에 따른 클래스 설정
-  const sizeClasses = {
-    default: "px-2 py-1 text-xs",
-    sm: "px-1.5 py-0.5 text-[10px]",
-    lg: "px-2.5 py-1.5 text-sm",
+export function ExpenditureStatusBadge({ status }: IExpenditureStatusBadgeProps) {
+  const getStatusColor = (status: ExpenditureStatusType) => {
+    switch (status) {
+      case "pending":
+        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80";
+      case "processing":
+        return "bg-blue-100 text-blue-800 hover:bg-blue-100/80";
+      case "completed":
+        return "bg-green-100 text-green-800 hover:bg-green-100/80";
+      case "cancelled":
+        return "bg-red-100 text-red-800 hover:bg-red-100/80";
+      default:
+        return "bg-gray-100 text-gray-800 hover:bg-gray-100/80";
+    }
   };
-  
-  // 상태에 따른 배지 스타일 및 텍스트 설정
-  let badgeStyle = "";
-  let statusText = "";
-  
-  switch (status) {
-    case "WAITING":
-      badgeStyle = "bg-slate-100 text-slate-800 hover:bg-slate-100";
-      statusText = "정산대기";
-      break;
-    case "MATCHING":
-      badgeStyle = "bg-blue-100 text-blue-800 hover:bg-blue-100";
-      statusText = "정산대사";
-      break;
-    case "COMPLETED":
-      badgeStyle = "bg-green-100 text-green-800 hover:bg-green-100";
-      statusText = "정산완료";
-      break;
-    default:
-      badgeStyle = "bg-slate-100 text-slate-800";
-      statusText = status;
-  }
-  
+
+  const getStatusText = (status: ExpenditureStatusType) => {
+    switch (status) {
+      case "pending":
+        return "정산 대기";
+      case "processing":
+        return "정산 처리 중";
+      case "completed":
+        return "정산 완료";
+      case "cancelled":
+        return "정산 취소";
+      default:
+        return "알 수 없음";
+    }
+  };
+
   return (
-    <Badge 
-      variant="outline" 
-      className={`font-medium ${badgeStyle} ${sizeClasses[size]}`}
+    <Badge
+      variant="secondary"
+      className={`font-medium ${getStatusColor(status)}`}
     >
-      {statusText}
+      {getStatusText(status)}
     </Badge>
   );
 } 

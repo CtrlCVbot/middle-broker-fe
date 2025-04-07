@@ -27,23 +27,13 @@ import {
 } from "@/components/ui/select";
 
 import { useExpenditureDetailStore } from "@/store/expenditure-detail-store";
-import { AdditionalFeeType, IExpenditure, IAdditionalFee } from "@/types/expenditure";
-import { DollarSign, Plus, Trash2 } from "lucide-react";
+import { AdditionalFeeType, IAdditionalFee } from "@/types/expenditure";
+import { Plus, Trash2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
 interface IExpenditureAdditionalCostProps {
   expenditureId: string;
   orderIds: string[];
-}
-
-interface IFee extends IAdditionalFee {
-  id: string;
-  type: AdditionalFeeType;
-  amount: number;
-  description?: string;
-  orderId?: string;
-  createdAt: string;
-  createdBy: string;
 }
 
 export function ExpenditureAdditionalCost({ expenditureId, orderIds }: IExpenditureAdditionalCostProps) {
@@ -191,7 +181,7 @@ export function ExpenditureAdditionalCost({ expenditureId, orderIds }: IExpendit
               </TableRow>
             </TableHeader>
             <TableBody>
-              {expenditureDetail.additionalFees.map((fee: IFee) => (
+              {expenditureDetail.additionalFees.map((fee: IAdditionalFee) => (
                 <TableRow key={fee.id}>
                   <TableCell className="font-medium">{fee.type}</TableCell>
                   <TableCell>{fee.description || "-"}</TableCell>
@@ -200,49 +190,25 @@ export function ExpenditureAdditionalCost({ expenditureId, orderIds }: IExpendit
                     {fee.amount >= 0 ? "+" : ""}{formatCurrency(fee.amount)}원
                   </TableCell>
                   <TableCell>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="icon"
                       onClick={() => handleRemoveFee(fee.id)}
-                      className="h-7 w-7"
+                      className="h-8 w-8"
                     >
-                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
+                      <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                   </TableCell>
                 </TableRow>
               ))}
-              <TableRow>
-                <TableCell colSpan={3} className="text-right font-semibold">
-                  추가금 합계
-                </TableCell>
-                <TableCell className={`text-right font-semibold ${expenditureDetail.totalAdditionalAmount >= 0 ? "text-blue-600" : "text-red-600"}`}>
-                  {expenditureDetail.totalAdditionalAmount >= 0 ? "+" : ""}{formatCurrency(expenditureDetail.totalAdditionalAmount)}원
-                </TableCell>
-                <TableCell></TableCell>
-              </TableRow>
             </TableBody>
           </Table>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center h-32 bg-muted/20 rounded-md">
-          <DollarSign className="h-6 w-6 text-muted-foreground mb-2" />
-          <p className="text-muted-foreground">아직 추가금 내역이 없습니다.</p>
-          <p className="text-xs text-muted-foreground">위 양식을 사용하여 추가금을 등록하세요.</p>
+        <div className="border rounded-md p-4 text-center text-muted-foreground">
+          추가된 추가금이 없습니다.
         </div>
       )}
-      
-      {/* 안내 메시지 */}
-      <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-sm text-blue-700">
-        <p>
-          • <strong>대기비, 경유비, 왕복비</strong> 등은 양수 값을 입력하세요.
-        </p>
-        <p>
-          • <strong>할인</strong>의 경우 음수 값을 입력하세요. (예: -10000)
-        </p>
-        <p>
-          • 추가금은 정산 최종 금액에 자동으로 반영됩니다.
-        </p>
-      </div>
     </div>
   );
 } 

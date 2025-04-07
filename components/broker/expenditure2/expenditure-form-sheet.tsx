@@ -53,7 +53,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { useExpenditureStore } from "@/store/Expenditure-store";
+import { useExpenditureStore } from "@/store/expenditure-store";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,

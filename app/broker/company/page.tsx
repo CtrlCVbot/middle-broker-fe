@@ -144,7 +144,7 @@ export default function BrokerCompanyPage() {
       )}
       
       {/* 데이터 없음 상태 */}
-      {!isLoading && !isError && data?.data.length === 0 && (
+      {!isLoading && !isError && data && data.data && data.data.length === 0 && (
         <div className="flex flex-col justify-center items-center h-64">
           <p className="text-gray-500 mb-4">등록된 업체가 없습니다.</p>
           <BrokerCompanyRegisterSheet 
@@ -159,7 +159,7 @@ export default function BrokerCompanyPage() {
       )}
       
       {/* 데이터 표시 */}
-      {!isLoading && !isError && data?.data.length > 0 && (
+      {!isLoading && !isError && data && data.data && data.data.length > 0 && (
         <>
           {/* 테이블 뷰 */}
           {viewMode === 'table' && (
