@@ -3,20 +3,20 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardStore } from "@/store/dashboard-store";
-import { BarChart3, TruckIcon, Wallet, CalendarCheck } from "lucide-react";
+import { BarChart3, TruckIcon, Wallet } from "lucide-react";
 
 export function DashboardOverview() {
   const { kpi, loading } = useDashboardStore();
   
-  // 숫자 포맷 함수
-  const formatNumber = (num: number): string => {
-    return new Intl.NumberFormat('ko-KR').format(num);
-  };
+  // // 숫자 포맷 함수
+  // const formatNumber = (num: number): string => {
+  //   return new Intl.NumberFormat('ko-KR').format(num);
+  // };
   
-  // 화폐 포맷 함수
-  const formatCurrency = (num: number): string => {
-    return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 }).format(num);
-  };
+  // // 화폐 포맷 함수
+  // const formatCurrency = (num: number): string => {
+  //   return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 }).format(num);
+  // };
   
   // 숫자를 약식으로 표시 (예: 9.3k, 24k)
   const formatCompactNumber = (num: number): string => {

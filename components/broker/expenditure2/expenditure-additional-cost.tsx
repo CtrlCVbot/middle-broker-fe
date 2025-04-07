@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { useExpenditureDetailStore } from "@/store/expenditure-store";
+import { useExpenditureDetailStore } from "@/store/expenditure-detail-store";
 import { AdditionalFeeType, IExpenditure, IAdditionalFee } from "@/types/expenditure";
 import { DollarSign, Plus, Trash2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";

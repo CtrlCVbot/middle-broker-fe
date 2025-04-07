@@ -35,6 +35,8 @@ interface IExpenditureDetailState {
   setSelectedExpenditure: (expenditure: IExpenditureWithOrders) => void;
   updateStatus: (status: ExpenditureStatusType) => void;
   setTaxFree: (isTaxFree: boolean) => void;
+  addAdditionalFee: (fee: Omit<IAdditionalFee, 'id' | 'createdAt' | 'createdBy'>) => void;
+  removeAdditionalFee: (feeId: string) => void;
 }
 
 export const useExpenditureDetailStore = create<IExpenditureDetailState>((set, get) => ({
@@ -82,6 +84,39 @@ export const useExpenditureDetailStore = create<IExpenditureDetailState>((set, g
       expenditureDetail: {
         ...currentExpenditure,
         isTaxFree,
+        updatedAt: new Date().toISOString(),
+      }
+    });
+  },
+
+  addAdditionalFee: (fee) => {
+    const currentExpenditure = get().expenditureDetail;
+    if (!currentExpenditure) return;
+
+    const newFee: IAdditionalFee = {
+      id: `fee_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      createdBy: 'current_user', // TODO: 실제 사용자 ID로 대체
+      ...fee
+    };
+
+    set({
+      expenditureDetail: {
+        ...currentExpenditure,
+        additionalFees: [...currentExpenditure.additionalFees, newFee],
+        updatedAt: new Date().toISOString(),
+      }
+    });
+  },
+
+  removeAdditionalFee: (feeId) => {
+    const currentExpenditure = get().expenditureDetail;
+    if (!currentExpenditure) return;
+
+    set({
+      expenditureDetail: {
+        ...currentExpenditure,
+        additionalFees: currentExpenditure.additionalFees.filter(fee => fee.id !== feeId),
         updatedAt: new Date().toISOString(),
       }
     });
