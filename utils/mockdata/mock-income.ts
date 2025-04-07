@@ -6,7 +6,7 @@ import {
   IAdditionalFee,
   AdditionalFeeType,
   IIncomeLog,
-  IIncomeCreateRequest as IIncomeCreateRequestOriginal
+  IIncomeCreateRequest
 } from "@/types/income";
 import { IBrokerOrder } from "@/types/broker-order";
 import { v4 as uuidv4 } from 'uuid';
@@ -41,7 +41,7 @@ const getRandomTimeString = (): string => {
 // 화주별 화물을 그룹화하는 함수
 const groupOrdersByShipper = (orders: IBrokerOrder[]): Record<string, IBrokerOrder[]> => {
   return orders.reduce((acc, order) => {
-    const shipperName = order.company;
+    const shipperName = order.company || '미지정';
     if (!acc[shipperName]) {
       acc[shipperName] = [];
     }
@@ -148,16 +148,30 @@ const generateBusinessNumber = (): string => {
   return `${part1}-${part2}-${part3}`;
 };
 
-// 정산 생성 요청을 위한 인터페이스 재정의
-export interface IIncomeCreateRequest {
-  orderIds: string[];
-  dueDate: Date;
-  memo?: string;
-  taxFree: boolean;
-  hasTax: boolean;
-  invoiceNumber?: string;
-  paymentMethod: string;
-}
+// 정산 생성 함수
+export const createIncome = async (data: IIncomeCreateRequest): Promise<IIncome> => {
+  // 화물 정보 조회
+  const orders = getMockBrokerOrders().filter(order => data.orderIds.includes(order.id));
+  
+  if (orders.length === 0) {
+    throw new Error('화물 정보를 찾을 수 없습니다.');
+  }
+  
+  // 정산 데이터 생성
+  const income = createIncomeFromOrders(orders);
+  
+  // 요청 데이터로 덮어쓰기
+  return {
+    ...income,
+    shipperName: data.shipperName,
+    businessNumber: data.businessNumber,
+    startDate: data.startDate,
+    endDate: data.endDate,
+    manager: data.manager,
+    additionalFees: data.additionalFees || [],
+    isTaxFree: data.isTaxFree || false
+  };
+};
 
 // 특정 화물 ID 목록으로 정산 데이터 생성 함수
 export const createIncomeFromOrders = (
@@ -228,10 +242,10 @@ export const createIncomeFromOrders = (
     orderIds,
     orderCount: orders.length,
     
-    shipperName,
+    shipperName: shipperName || '미지정',
     businessNumber: generateBusinessNumber(),
-    shipperContact: firstOrder.contactPerson,
-    shipperEmail: `info@${shipperName.toLowerCase().replace(/\s+/g, '')}.com`,
+    shipperContact: firstOrder.contactPerson || '연락처 없음',
+    shipperEmail: `info@${(shipperName || '미지정').toLowerCase().replace(/\s+/g, '')}.com`,
     
     startDate,
     endDate,
@@ -371,14 +385,14 @@ export const getIncomesByPage = (
   // 화주명 필터
   if (filter.shipperName) {
     filteredIncomes = filteredIncomes.filter(income => 
-      income.shipperName?.includes(filter.shipperName)
+      income.shipperName.includes(filter.shipperName)
     );
   }
   
   // 사업자번호 필터
   if (filter.businessNumber) {
     filteredIncomes = filteredIncomes.filter(income => 
-      income.businessNumber?.includes(filter.businessNumber)
+      income.businessNumber.includes(filter.businessNumber)
     );
   }
   
@@ -460,91 +474,4 @@ export const getIncomeByOrderId = (orderId: string): IIncome | undefined => {
   // 지연 초기화된 데이터 사용
   const mockIncomes = getMockIncomes();
   return mockIncomes.find(income => income.orderIds.includes(orderId));
-};
-
-/**
- * 새로운 정산 생성
- */
-export const createIncome = async (data: IIncomeCreateRequest): Promise<IIncome> => {
-  console.log('정산 생성 요청 처리:', data);
-  
-  // 모든 broker orders 가져오기
-  const allOrders = getMockBrokerOrders();
-  
-  // 선택된 주문 ID들에 해당하는 주문만 필터링
-  const selectedOrders = allOrders.filter(order => data.orderIds.includes(order.id));
-  
-  if (selectedOrders.length === 0) {
-    throw new Error('유효한 주문을 찾을 수 없습니다.');
-  }
-  
-  // 첫 번째 주문으로부터 화주 정보 가져오기
-  const firstOrder = selectedOrders[0];
-  const shipperId = firstOrder.company; // IBrokerOrder에는 shipperId가 없으므로 company 필드를 사용
-  const shipperName = firstOrder.company; // 마찬가지로 company 필드 사용
-  
-  // 총 운임료 및 배차비용 계산
-  const totalFreight = selectedOrders.reduce((sum, order) => sum + (order.amount || 0), 0); // freightCharge 대신 amount 사용
-  const totalDispatch = selectedOrders.reduce((sum, order) => sum + (order.fee || 0), 0); // dispatchCost 대신 fee 사용
-  
-  // 순이익 및 세금 계산
-  const totalBaseAmount = totalFreight - totalDispatch;
-  const tax = data.taxFree ? 0 : Math.round(totalBaseAmount * 0.1);
-  const totalAmount = totalBaseAmount + tax;
-  
-  // 정산 기간 계산 (첫 주문의 상차일부터 마지막 주문의 하차일까지)
-  const departureDate = new Date(Math.min(...selectedOrders.map(order => new Date(order.departureDateTime).getTime()))); // departureDate 대신 departureDateTime 사용
-  const arrivalDate = new Date(Math.max(...selectedOrders.map(order => new Date(order.arrivalDateTime).getTime()))); // arrivalDate 대신 arrivalDateTime 사용
-  
-  // 현재 날짜 기준의 타임스탬프 생성
-  const now = new Date();
-  const createdAt = now.toISOString();
-  const updatedAt = now.toISOString();
-  
-  // 정산 로그 생성
-  const logs: IIncomeLog[] = [
-    {
-      status: 'MATCHING',
-      time: new Date().toLocaleTimeString('ko-KR'),
-      date: new Date().toLocaleDateString('ko-KR'),
-      handler: '시스템',
-      remark: '정산이 생성되었습니다.'
-    }
-  ];
-  
-  // 새 정산 객체 생성
-  const newIncome: IIncome = {
-    id: `INC-${Math.floor(Math.random() * 100000) + 10000}`,
-    status: 'MATCHING', // IncomeStatusType에 맞게 수정
-    orderIds: data.orderIds,
-    orderCount: selectedOrders.length,
-    shipperId: shipperId,
-    shipperName: shipperName,
-    businessNumber: `123-45-${Math.floor(Math.random() * 100000)}`,
-    shipperContact: `010-${Math.floor(Math.random() * 10000)}-${Math.floor(Math.random() * 10000)}`,
-    manager: '담당자1',
-    managerContact: '010-1234-5678',
-    startDate: departureDate.toISOString(),
-    endDate: arrivalDate.toISOString(),
-    totalBaseAmount,
-    totalAdditionalAmount: 0,
-    totalAmount,
-    tax,
-    isTaxFree: data.taxFree,
-    finalAmount: totalAmount,
-    additionalFees: [],
-    memo: data.memo || '',
-    invoiceStatus: '미발행',
-    invoiceNumber: data.invoiceNumber || '',
-    createdAt,
-    updatedAt,
-    logs,
-  };
-  
-  // 목업 데이터에 새 정산 추가
-  const mockIncomes = getMockIncomes();
-  mockIncomes.push(newIncome);
-  
-  console.log('새 정산이 생성되었습니다:', newIncome.id);
-  return newIncome;
 }; 

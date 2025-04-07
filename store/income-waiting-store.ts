@@ -103,11 +103,13 @@ const initialFilter: IIncomeWaitingFilter = {
   manager: undefined
 };
 
-// 회사명 추출 함수 (유니크한 값만)
-const extractCompanies = (orders: IBrokerOrder[]): string[] => {
-  const companiesSet = new Set(orders
+// 회사 목록 추출 (매출 회사 선택용)
+const extractCompanies = (): string[] => {
+  const allOrders = getMockBrokerOrders();
+  const companiesSet = new Set<string>(allOrders
     .filter(order => order.company)
-    .map(order => order.company));
+    .map(order => order.company)
+    .filter((company): company is string => company !== undefined));
   return Array.from(companiesSet);
 };
 
@@ -153,7 +155,7 @@ export const useIncomeWaitingStore = create<IIncomeWaitingState>()(
           );
           
           // 필터 옵션에 회사명 추가
-          const companies = extractCompanies(waitingOrders);
+          const companies = extractCompanies();
           
           // 현재 필터 적용
           const { filter } = get();

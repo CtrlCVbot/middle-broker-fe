@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 const DEFAULT_CITIES = CITIES || ["서울", "부산", "인천", "대구", "대전", "광주", "울산", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
 const DEFAULT_VEHICLE_TYPES = VEHICLE_TYPES || ["카고", "윙바디", "탑차", "냉장", "냉동", "트레일러"];
 const DEFAULT_WEIGHT_TYPES = WEIGHT_TYPES || ["1톤", "2.5톤", "3.5톤", "5톤", "11톤", "25톤"];
-const DEFAULT_MANAGERS = MANAGERS ? MANAGERS.map(m => m.name) : ["김중개", "이주선", "박배송", "정관리", "최물류"];
+const DEFAULT_MANAGERS = MANAGERS ? MANAGERS.map(m => m.name).filter(Boolean) : ["김중개", "이주선", "박배송", "정관리", "최물류"];
 const DEFAULT_STATUSES: BrokerOrderStatusType[] = ["운송마감"];
 
 // 필터 타입 정의
@@ -32,50 +32,13 @@ export interface IExpenditureWaitingFilter {
   manager?: string;
 }
 
-type BrokerOrderStatusType = 
-  | "운송마감"
-  | "운송중"
-  | "운송완료"
-  | "취소";
-
 interface IDriver {
   name: string;
   contact: string;
 }
 
-interface IWaitingOrder {
-  id: string;
-  status: BrokerOrderStatusType;
-  departureDateTime: string;
-  departureCity: string;
-  departureLocation: string;
-  arrivalDateTime: string;
-  arrivalCity: string;
-  arrivalLocation: string;
-  vehicle: {
-    type: string;
-    weight: string;
-  };
-  chargeAmount?: number;
-  amount: number;
-  fee: number;
-  shipperName: string;
-  shipperContact?: string;
-  shipperEmail?: string;
-  manager?: string;
-  driver?: IDriver;
-  createdAt: string;
-  updatedAt: string;
-  callCenter?: string;
-  company?: string;
-  contactPerson?: string;
-  paymentMethod?: string;
-  cargoItem?: string;
-  managerContact?: string;
-}
-
 interface IExpenditureWaitingState {
-  waitingOrders: IWaitingOrder[];
+  waitingOrders: IBrokerOrder[];
   filteredOrders: IBrokerOrder[];
   totalWaitingOrdersCount: number;
   isLoading: boolean;
@@ -126,7 +89,7 @@ interface IExpenditureWaitingState {
   selectOrdersByShipper: (shipper: string, isSelected: boolean) => void;
   
   // Actions
-  setWaitingOrders: (orders: IWaitingOrder[]) => void;
+  setWaitingOrders: (orders: IBrokerOrder[]) => void;
   toggleOrderSelection: (orderId: string) => void;
   unselectAllOrders: () => void;
   setLoading: (isLoading: boolean) => void;
@@ -151,7 +114,8 @@ const initialFilter: IExpenditureWaitingFilter = {
 const extractCompanies = (orders: IBrokerOrder[]): string[] => {
   const companiesSet = new Set(orders
     .filter(order => order.company)
-    .map(order => order.company));
+    .map(order => order.company)
+    .filter((company): company is string => company !== undefined));
   return Array.from(companiesSet);
 };
 
@@ -172,6 +136,7 @@ export const useExpenditureWaitingStore = create<IExpenditureWaitingState>()(
       filteredOrders: [],
       totalWaitingOrdersCount: 0,
       isLoading: false,
+      error: null,
       
       selectedOrderIds: [],
       

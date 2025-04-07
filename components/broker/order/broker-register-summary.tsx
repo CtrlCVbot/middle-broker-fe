@@ -1,21 +1,32 @@
 import React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { IBrokerOrderRegisterData, IBrokerTransportOption, BROKER_TRANSPORT_OPTIONS } from "@/types/broker-order";
-import { ArrowLeft, Check, Truck, MapPin, Info, Calculator } from "lucide-react";
+import { Check, Truck, MapPin, Info, Calculator } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
 interface BrokerOrderRegisterSummaryProps {
-  formData: IBrokerOrderRegisterData;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
   onBack: () => void;
-  onSubmit: () => void;
+  formData: IBrokerOrderRegisterData;
 }
 
 export function BrokerOrderRegisterSummary({
-  formData,
+  open,
+  onOpenChange,
+  onConfirm,
   onBack,
-  onSubmit,
+  formData,
 }: BrokerOrderRegisterSummaryProps) {
   // 선택된 옵션 정보 가져오기
   const selectedOptionDetails = formData.selectedOptions
@@ -24,17 +35,23 @@ export function BrokerOrderRegisterSummary({
     )
     .filter((option): option is IBrokerTransportOption => !!option);
 
-  // 예상 거리 및 금액 (실제 구현 시 API 호출 등으로 계산)
+  // 예상 거리 및 금액
   const estimatedDistance = formData.estimatedDistance || 150; // km
   const estimatedAmount = formData.estimatedAmount || 350000; // 원
 
+  const handleConfirm = () => {
+    onConfirm();
+    onOpenChange(false);
+  };
+
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">중개 화물 등록 요약</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-xl">중개 화물 등록 확인</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-6 py-4">
           {/* 차량 및 화물 정보 */}
           <div className="space-y-3">
             <h3 className="flex items-center text-lg font-medium">
@@ -76,8 +93,7 @@ export function BrokerOrderRegisterSummary({
                 <p className="text-sm text-muted-foreground">주소</p>
                 <p className="font-medium">
                   {formData.departure.address}
-                  {formData.departure.detailedAddress &&
-                    ` ${formData.departure.detailedAddress}`}
+                  {formData.departure.detailedAddress && ` ${formData.departure.detailedAddress}`}
                 </p>
               </div>
               <div className="space-y-1">
@@ -114,8 +130,7 @@ export function BrokerOrderRegisterSummary({
                 <p className="text-sm text-muted-foreground">주소</p>
                 <p className="font-medium">
                   {formData.destination.address}
-                  {formData.destination.detailedAddress &&
-                    ` ${formData.destination.detailedAddress}`}
+                  {formData.destination.detailedAddress && ` ${formData.destination.detailedAddress}`}
                 </p>
               </div>
               <div className="space-y-1">
@@ -184,20 +199,17 @@ export function BrokerOrderRegisterSummary({
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* 버튼 그룹 */}
-      <div className="flex justify-between">
-        <Button variant="outline" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          이전 단계
-        </Button>
-        <Button onClick={onSubmit}>
-          <Check className="mr-2 h-4 w-4" />
-          등록 완료
-        </Button>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            취소
+          </Button>
+          <Button onClick={handleConfirm}>
+            등록
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 } 

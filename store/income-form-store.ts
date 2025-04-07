@@ -156,8 +156,14 @@ export const useIncomeFormStore = create<IIncomeFormState>((set, get) => ({
       try {
         // 정산 스토어에 새 정산 추가
         useIncomeStore.getState().addIncome({
-          ...data,
+          orderIds: get().selectedOrders.map(order => order.id),
+          shipperName: data.shipperName,
+          businessNumber: data.businessNumber,
+          startDate: data.startDate,
+          endDate: data.endDate,
+          manager: data.manager,
           additionalFees: get().additionalFees,
+          isTaxFree: data.isTaxFree
         });
         
         // 성공 처리

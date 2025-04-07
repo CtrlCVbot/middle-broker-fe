@@ -12,6 +12,7 @@ import {
 
 import { BrokerOrderRegisterForm } from "@/components/broker/order/broker-register-form";
 import { BrokerOrderRegisterSummary } from "@/components/broker/order/broker-register-summary";
+import { IBrokerOrderRegisterData } from "@/types/broker-order";
 
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
@@ -20,6 +21,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function BrokerOrderRegisterPage() {
   const [openSummary, setOpenSummary] = useState(false);
+  const [formData, setFormData] = useState<IBrokerOrderRegisterData | null>(null);
   const { toast } = useToast();
   const router = useRouter();
   
@@ -33,6 +35,12 @@ export default function BrokerOrderRegisterPage() {
     
     // 화물 리스트 페이지로 이동
     router.push("/broker/order/list");
+  };
+
+  // 폼 제출 처리
+  const handleFormSubmit = (data: IBrokerOrderRegisterData) => {
+    setFormData(data);
+    setOpenSummary(true);
   };
   
   return (
@@ -80,16 +88,20 @@ export default function BrokerOrderRegisterPage() {
               </CardHeader>
             </Card>
             */}
-            <BrokerOrderRegisterForm onSubmit={() => setOpenSummary(true)} />
+            <BrokerOrderRegisterForm onSubmit={handleFormSubmit} />
           </div>
         </div>
         
         {/* 최종 확인 모달 */}
-        <BrokerOrderRegisterSummary 
-          open={openSummary}
-          onOpenChange={setOpenSummary}
-          onConfirm={handleRegisterSuccess}
-        />
+        {formData && (
+          <BrokerOrderRegisterSummary 
+            open={openSummary}
+            onOpenChange={setOpenSummary}
+            onConfirm={handleRegisterSuccess}
+            onBack={() => setOpenSummary(false)}
+            formData={formData}
+          />
+        )}
       </main>
     </>
   );

@@ -16,20 +16,20 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-import { Iexpenditure, expenditureStatusType } from "@/types/expenditure";
+import { IExpenditure, ExpenditureStatusType } from "@/types/expenditure";
 import { formatCurrency } from "@/lib/utils";
 import { useExpenditureDetailStore } from "@/store/expenditure-store";
 import { Badge } from "@/components/ui/badge";
 
 interface IExpenditureListProps {
-  expenditures: Iexpenditure[];
+  expenditures: IExpenditure[];
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  onStatusChange?: (expenditureId: string, newStatus: expenditureStatusType) => void;
+  onStatusChange?: (expenditureId: string, newStatus: ExpenditureStatusType) => void;
   onIssueInvoice?: (expenditureId: string) => void;
   onExportExcel?: (expenditureId: string) => void;
-  currentTab?: expenditureStatusType; // 현재 선택된 탭
+  currentTab?: ExpenditureStatusType; // 현재 선택된 탭
 }
 
 export function ExpenditureList({
@@ -40,13 +40,13 @@ export function ExpenditureList({
   onStatusChange,
   onIssueInvoice,
   onExportExcel,
-  currentTab = "MATCHING", // 기본값은 정산대사
+  currentTab = "pending", // 기본값은 정산대기
 }: IExpenditureListProps) {
   // 상세 정보 모달을 위한 스토어 액세스
   const { openSheet } = useExpenditureDetailStore();
   
   // 정산 상세 정보 열기
-  const handleexpenditureClick = (expenditureId: string) => {
+  const handleExpenditureClick = (expenditureId: string) => {
     openSheet(expenditureId);
   };
   
@@ -75,14 +75,16 @@ export function ExpenditureList({
   };
 
   // 정산 상태에 따른 배지 렌더링
-  const renderStatusBadge = (status: expenditureStatusType) => {
+  const renderStatusBadge = (status: ExpenditureStatusType) => {
     switch (status) {
-      case 'WAITING':
+      case 'pending':
         return <Badge variant="outline" className="bg-slate-100">정산대기</Badge>;
-      case 'MATCHING':
+      case 'processing':
         return <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-100">정산대사</Badge>;
-      case 'COMPLETED':
+      case 'completed':
         return <Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">정산완료</Badge>;
+      case 'cancelled':
+        return <Badge variant="destructive" className="bg-red-100 text-red-700 hover:bg-red-100">정산취소</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -109,9 +111,9 @@ export function ExpenditureList({
   // 현재 탭에 따른 상태 컬럼 이름 설정
   const getStatusColumnName = () => {
     switch (currentTab) {
-      case "MATCHING":
+      case "processing":
         return "정산대사 상태";
-      case "COMPLETED":
+      case "completed":
         return "정산완료 상태";
       default:
         return "상태";
@@ -152,7 +154,7 @@ export function ExpenditureList({
                 <TableRow 
                   key={expenditure.id} 
                   className="cursor-pointer hover:bg-secondary/20"
-                  onClick={() => handleexpenditureClick(expenditure.id)}
+                  onClick={() => handleExpenditureClick(expenditure.id)}
                 >
                   <TableCell className="font-medium text-primary underline">
                     {expenditure.id}
@@ -177,22 +179,22 @@ export function ExpenditureList({
                     {expenditure.orderCount}건
                   </TableCell>
                   <TableCell className="text-right">
-                    {formatCurrency(expenditure.totalBaseAmount)}원
+                    {formatCurrency(expenditure.totalBaseAmount || 0)}원
                   </TableCell>
                   <TableCell className="text-right">
-                    <span className={expenditure.totalAdditionalAmount >= 0 ? "text-blue-600" : "text-red-600"}>
-                      {expenditure.totalAdditionalAmount >= 0 ? "+" : ""}{formatCurrency(expenditure.totalAdditionalAmount)}원
+                    <span className={(expenditure.totalAdditionalAmount || 0) >= 0 ? "text-blue-600" : "text-red-600"}>
+                      {(expenditure.totalAdditionalAmount || 0) >= 0 ? "+" : ""}{formatCurrency(expenditure.totalAdditionalAmount || 0)}원
                     </span>
                   </TableCell>
                   <TableCell className="text-right pr-4">
                     {expenditure.isTaxFree ? (
                       <Badge variant="outline" className="bg-gray-100">면세</Badge>
                     ) : (
-                      `${formatCurrency(expenditure.tax)}원`
+                      `${formatCurrency(expenditure.tax || 0)}원`
                     )}
                   </TableCell>
                   <TableCell className="text-right font-semibold">
-                    {formatCurrency(expenditure.finalAmount)}원
+                    {formatCurrency(expenditure.finalAmount || 0)}원
                   </TableCell>
                   <TableCell>
                     {renderInvoiceStatusBadge(expenditure.invoiceStatus)}

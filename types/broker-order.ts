@@ -5,15 +5,23 @@ import { SettlementStatus } from "./settlement";
 
 // 중개 화물 상태 타입 정의
 export type BrokerOrderStatusType = 
-  | "운송마감"
+  | "배차대기"
+  | "배차완료"
   | "운송중"
+  | "상차완료"
+  | "하차완료"
+  | "운송마감"
   | "운송완료"
   | "취소";
 
 // 중개 화물 상태 배열 - 상태 순서대로 정의
 export const BROKER_ORDER_STATUS: BrokerOrderStatusType[] = [
-  "운송마감",
+  "배차대기",
+  "배차완료",
   "운송중",
+  "상차완료",
+  "하차완료",
+  "운송마감",
   "운송완료",
   "취소"
 ];
@@ -38,6 +46,7 @@ export interface IBrokerOrderLog {
 export interface IBrokerOrder {
   id: string;
   status: BrokerOrderStatusType;
+  statusProgress: BrokerOrderStatusType;
   departureDateTime: string;
   departureCity: string;
   departureLocation: string;
@@ -67,6 +76,13 @@ export interface IBrokerOrder {
   paymentMethod?: string;
   cargoItem?: string;
   managerContact?: string;
+  gpsLocation?: {
+    status: string;
+    latitude: number;
+    longitude: number;
+    updatedAt: string;
+  };
+  settlementId?: string;
 }
 
 // 응답 페이징 정보 인터페이스

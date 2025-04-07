@@ -97,7 +97,7 @@ export const getBrokerDriversByPage = (
       driver.name.toLowerCase().includes(searchTerm) ||
       driver.phoneNumber.includes(searchTerm) ||
       driver.vehicleNumber.toLowerCase().includes(searchTerm) ||
-      driver.companyName.toLowerCase().includes(searchTerm) ||
+      (driver.companyName?.toLowerCase() || '').includes(searchTerm) ||
       driver.businessNumber.includes(searchTerm)
     );
   }
@@ -121,25 +121,25 @@ export const getBrokerDriversByPage = (
   if (filter.dispatchCount) {
     const option = DISPATCH_COUNT_OPTIONS.find(opt => opt.value === filter.dispatchCount);
     if (option) {
-      filteredDrivers = filteredDrivers.filter(driver => driver.dispatchCount >= option.min);
+      filteredDrivers = filteredDrivers.filter(driver => (driver.dispatchCount ?? 0) >= option.min);
     }
   }
   
   // 날짜 필터링
   if (filter.startDate) {
     filteredDrivers = filteredDrivers.filter(
-      driver => driver.createdAt >= filter.startDate!
+      driver => (driver.createdAt ?? '') >= filter.startDate!
     );
   }
   
   if (filter.endDate) {
     filteredDrivers = filteredDrivers.filter(
-      driver => driver.createdAt <= filter.endDate!
+      driver => (driver.createdAt ?? '') <= filter.endDate!
     );
   }
   
   // 정렬: 배차 횟수 기준 내림차순
-  filteredDrivers.sort((a, b) => b.dispatchCount - a.dispatchCount);
+  filteredDrivers.sort((a, b) => (b.dispatchCount ?? 0) - (a.dispatchCount ?? 0));
   
   // 페이지네이션 적용
   const total = filteredDrivers.length;

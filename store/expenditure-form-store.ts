@@ -3,7 +3,8 @@ import {
   AdditionalFeeType, 
   IAdditionalFee, 
   IExpenditure, 
-  IExpenditureCreateRequest 
+  IExpenditureCreateRequest,
+  ExpenditureStatusType 
 } from '@/types/expenditure';
 import { IBrokerOrder } from '@/types/broker-order';
 import { useExpenditureStore } from './expenditure-store';
@@ -155,14 +156,27 @@ export const useExpenditureFormStore = create<IExpenditureFormState>((set, get) 
     setTimeout(() => {
       try {
         // 정산 스토어에 새 정산 추가
-        useExpenditureStore.getState().addExpenditure({
+        const now = new Date().toISOString();
+        const newExpenditure: IExpenditure = {
           ...data,
+          id: `EXP-${Date.now()}`,
+          orderId: data.orderIds[0],
+          amount: 0,
+          description: '',
+          createdAt: now,
+          updatedAt: now,
+          status: 'pending' as ExpenditureStatusType,
           additionalFees: get().additionalFees,
-          dueDate: new Date(data.endDate), // 마감일을 종료일로 설정
-          taxFree: data.isTaxFree || false,
-          hasTax: !data.isTaxFree,
-          paymentMethod: '계좌이체' // 기본값 설정
-        });
+          totalAmount: 0,
+          totalAdditionalAmount: 0,
+          finalAmount: 0,
+          isTaxFree: data.isTaxFree || false,
+          createdBy: 'system',
+          updatedBy: 'system',
+          orderCount: data.orderIds.length
+        };
+        
+        useExpenditureStore.getState().addExpenditure(newExpenditure);
         
         // 성공 처리
         set({

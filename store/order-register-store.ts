@@ -11,13 +11,19 @@ import {
 
 // 초기 주소 정보
 const initialLocationInfo: ILocationInfo = {
+  id: '',
   address: '',
+  roadAddress: '',
+  jibunAddress: '',
+  latitude: 0,
+  longitude: 0,
   detailedAddress: '',
   name: '',
   company: '',
   contact: '',
   date: '',
-  time: ''
+  time: '',
+  createdAt: new Date().toISOString()
 };
 
 // 초기 화물 등록 데이터
@@ -27,22 +33,34 @@ const initialOrderRegisterData: IOrderRegisterData = {
   cargoType: '',
   remark: '',
   departure: {
+    id: '',
     address: '',
+    roadAddress: '',
+    jibunAddress: '',
+    latitude: 0,
+    longitude: 0,
     detailedAddress: '',
     name: '',
     company: '',
     contact: '',
     date: '',
-    time: ''
+    time: '',
+    createdAt: new Date().toISOString()
   },
   destination: {
+    id: '',
     address: '',
+    roadAddress: '',
+    jibunAddress: '',
+    latitude: 0,
+    longitude: 0,
     detailedAddress: '',
     name: '',
     company: '',
     contact: '',
     date: '',
-    time: ''
+    time: '',
+    createdAt: new Date().toISOString()
   },
   selectedOptions: [],
   estimatedDistance: undefined,

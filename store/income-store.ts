@@ -5,24 +5,13 @@ import {
   IIncomeResponse, 
   IAdditionalFee,
   IIncomeFilter,
-  IIncomeCreateRequest as IIncomeCreateRequestOriginal
+  IIncomeCreateRequest
 } from '@/types/income';
 import { 
   getIncomesByPage, 
   getIncomeById,
   createIncome as createIncomeMock
 } from '@/utils/mockdata/mock-income';
-
-// 정산 생성 요청 인터페이스
-export interface IIncomeCreateRequest {
-  orderIds: string[];
-  dueDate: Date;
-  memo?: string;
-  taxFree: boolean;
-  hasTax: boolean;
-  invoiceNumber?: string;
-  paymentMethod: string;
-}
 
 // 매출 정산 목록 상태 관리 인터페이스
 interface IncomeStoreState {

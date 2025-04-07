@@ -82,7 +82,8 @@ export function BrokerOrderRegisterForm({ onSubmit, editMode = false, orderNumbe
   const { registerOrder, setFormData } = useBrokerOrderRegisterStore();
   
   // 폼 단계 상태
-  const [step, setStep] = useState<'info' | 'summary'>('info');
+  const [step, setStep] = useState<'form' | 'summary'>('form');
+  const [isOpen, setIsOpen] = useState(false);
   
   // 폼 초기화
   const form = useForm<z.infer<typeof formSchema>>({
@@ -136,36 +137,35 @@ export function BrokerOrderRegisterForm({ onSubmit, editMode = false, orderNumbe
   
   // 요약 단계에서 뒤로가기 처리
   const handleBack = () => {
-    setStep('info');
+    setStep('form');
+    setIsOpen(false);
   };
   
   // 폼 제출 핸들러
   const onSubmitHandler = (values: z.infer<typeof formSchema>) => {
-    if (step === 'info') {
-      // 요약 단계로 이동
-      setFormData(values as IBrokerOrderRegisterData);
+    if (step === 'form') {
       setStep('summary');
+      setIsOpen(true);
+      return;
+    }
+    if (editMode && onSubmit) {
+      // 수정 모드에서는 전달받은 onSubmit 함수 사용
+      onSubmit(values as IBrokerOrderRegisterData);
     } else {
-      // 최종 제출
-      if (editMode && onSubmit) {
-        // 수정 모드에서는 전달받은 onSubmit 함수 사용
-        onSubmit(values as IBrokerOrderRegisterData);
-      } else {
-        // 신규 등록 모드
-        try {
-          registerOrder(values as IBrokerOrderRegisterData);
-          // 등록 후 이동
-          router.push('/broker/order/list');
-        } catch (error) {
-          console.error('등록 실패:', error);
-        }
+      // 신규 등록 모드
+      try {
+        registerOrder(values as IBrokerOrderRegisterData);
+        // 등록 후 이동
+        router.push('/broker/order/list');
+      } catch (error) {
+        console.error('등록 실패:', error);
       }
     }
   };
   
   return (
     <div className="space-y-6">
-      {step === 'info' ? (
+      {step === 'form' ? (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmitHandler)} className="space-y-8">
             {/* 차량 및 화물 정보 */}
@@ -349,7 +349,9 @@ export function BrokerOrderRegisterForm({ onSubmit, editMode = false, orderNumbe
         <BrokerOrderRegisterSummary
           formData={form.getValues() as IBrokerOrderRegisterData}
           onBack={handleBack}
-          onSubmit={() => form.handleSubmit(onSubmitHandler)()}
+          onConfirm={() => form.handleSubmit(onSubmitHandler)()}
+          open={isOpen}
+          onOpenChange={setIsOpen}
         />
       )}
     </div>

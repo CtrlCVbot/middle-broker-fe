@@ -43,7 +43,7 @@ import {
 } from "@/components/ui/popover";
 import { formatCurrency } from "@/lib/utils";
 import { IBrokerOrder } from "@/types/broker-order";
-import { ExpenditureAdditionalCost } from "./Expenditure-additional-cost";
+import { ExpenditureAdditionalCost } from "./expenditure-additional-cost";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
@@ -68,18 +68,10 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { IExpenditure, IAdditionalFee, AdditionalFeeType } from "@/types/expenditure";
+import { useExpenditureFormStore } from "@/store/expenditure-form-store";
 
 // TypeScript로 인터페이스 정의
-interface IAdditionalFee {
-  id: string;
-  type: string;
-  amount: number;
-  memo?: string;
-  orderId?: string;
-  createdAt: string;
-  createdBy: string;
-}
-
 interface IExpenditureCreateRequest {
   orderIds: string[];
   shipperName: string;
@@ -97,6 +89,11 @@ interface IExpenditureCreateRequest {
   hasTax: boolean;
   invoiceNumber?: string;
   paymentMethod: string;
+  totalBaseAmount?: number;
+  totalAdditionalAmount?: number;
+  tax?: number;
+  finalAmount?: number;
+  orderCount?: number;
 }
 
 // 목업 데이터를 위한 임시 솔루션 (실제 구현시 제거)
@@ -130,85 +127,6 @@ interface MockExpenditureFormStore extends IMockStoreState {
   isLoading: boolean;
   resetForm: () => void;
 }
-
-// 목업 useExpenditureFormStore (실제 구현시 제거)
-const useExpenditureFormStore = (): MockExpenditureFormStore => {
-  const [state, setState] = React.useState<IMockStoreState>({
-    isOpen: false,
-    selectedOrders: [] as IBrokerOrder[],
-    formData: { 
-      shipperName: "기본 화주", 
-      businessNumber: "123-45-67890",
-      billingCompany: "기본 화주",
-      manager: "김중개",
-      managerContact: "010-1234-5678",
-      periodType: "departure" as const,
-      startDate: format(new Date(), 'yyyy-MM-dd'),
-      endDate: format(new Date(), 'yyyy-MM-dd'),
-      isTaxFree: false,
-      memo: ""
-    },
-    additionalFees: [],
-    companies: ["화주A", "화주B", "화주C"],
-    managers: ["김중개", "이중개", "박중개"],
-  });
-
-  // 실제로 작동하는 함수들 구현
-  const setFormField = React.useCallback((key: string, value: any) => {
-    setState(prev => ({
-      ...prev,
-      formData: {
-        ...prev.formData,
-        [key]: value
-      }
-    }));
-  }, []);
-
-  const openForm = React.useCallback((orders: IBrokerOrder[]) => {
-    console.log("openForm 호출됨", orders.length);
-    setState(prev => ({
-      ...prev,
-      isOpen: true,
-      selectedOrders: orders
-    }));
-  }, []);
-
-  const closeForm = React.useCallback(() => {
-    console.log("closeForm 호출됨");
-    setState(prev => ({
-      ...prev,
-      isOpen: false
-    }));
-  }, []);
-
-  const addAdditionalFee = React.useCallback((fee: any) => {
-    console.log('addAdditionalFee', fee);
-  }, []);
-
-  const removeAdditionalFee = React.useCallback((id: string) => {
-    console.log('removeAdditionalFee', id);
-  }, []);
-
-  const submitForm = React.useCallback((data: any) => {
-    console.log('submitForm', data);
-  }, []);
-
-  const resetForm = React.useCallback(() => {
-    console.log('resetForm');
-  }, []);
-
-  return {
-    ...state,
-    setFormField,
-    openForm,
-    closeForm,
-    addAdditionalFee,
-    removeAdditionalFee,
-    submitForm,
-    isLoading: false,
-    resetForm
-  };
-};
 
 // 정산 생성 폼 스키마
 const formSchema = z.object({
@@ -265,7 +183,7 @@ export function ExpenditureFormSheet() {
     resetForm,
     openForm,
   } = useExpenditureFormStore();
-  const { createExpenditure } = useExpenditureStore();
+  const { addExpenditure } = useExpenditureStore();
   const [activeTab, setActiveTab] = useState("info");
   const [isEditingAdditionalFee, setIsEditingAdditionalFee] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -324,7 +242,7 @@ export function ExpenditureFormSheet() {
   }, [orders, isOpen, setFormField]);
 
   // 정산 구분에 따른 날짜 변경
-  const handlePeriodTypeChange = (value: string) => {
+  const handlePeriodTypeChange = (value: "departure" | "arrival") => {
     setFormField('periodType', value);
     
     if (!orders || orders.length === 0) return;
@@ -430,15 +348,28 @@ export function ExpenditureFormSheet() {
 
   // 정산 대사로 전환
   const handleSubmit = () => {
-    submitForm({
-      ...formData,
+    const submitData: IExpenditureCreateRequest = {
+      orderIds: orders.map(order => order.id),
+      shipperName: formData.shipperName,
+      businessNumber: formData.businessNumber,
+      billingCompany: formData.billingCompany,
+      manager: formData.manager,
+      managerContact: formData.managerContact,
+      periodType: formData.periodType,
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      dueDate: new Date(),
+      memo: formData.memo,
+      taxFree: formData.isTaxFree,
+      hasTax: true,
+      paymentMethod: "BANK_TRANSFER",
       totalBaseAmount: ordersSummary.totalFreight - ordersSummary.totalDispatch,
       totalAdditionalAmount: additionalTotal,
       tax: taxAmount,
       finalAmount: finalAmount,
       orderCount: orders.length,
-      orderIds: orders.map(order => order.id),
-    });
+    };
+    submitForm(submitData);
   };
 
   // 화주별 그룹화
@@ -506,26 +437,35 @@ export function ExpenditureFormSheet() {
       const orderIds = orders.map(order => order.id);
       
       // 정산 생성 요청 데이터 생성
-      const ExpenditureData = {
-        orderIds,
+      const ExpenditureData: IExpenditure = {
+        id: crypto.randomUUID(),
+        orderId: orders[0].id,
+        amount: ordersSummary.totalFreight,
+        description: values.memo || '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        status: 'pending',
+        additionalFees: additionalFees,
+        orderIds: orderIds,
+        totalAmount: ordersSummary.totalFreight,
+        totalAdditionalAmount: additionalTotal,
+        finalAmount: finalAmount,
+        isTaxFree: values.taxFree,
+        createdBy: 'system',
+        updatedBy: 'system',
+        orderCount: orders.length,
         shipperName: values.shipperName,
         businessNumber: values.businessNumber,
-        manager: values.manager,
-        managerContact: values.managerContact,
-        managerEmail: values.managerEmail,
-        periodType: values.periodType,
         startDate: values.startDate,
         endDate: values.endDate,
-        dueDate: values.dueDate,
-        memo: values.memo,
-        taxFree: values.taxFree,
-        hasTax: values.hasTax,
-        issueInvoice: values.issueInvoice,
-        paymentMethod: values.paymentMethod,
+        manager: values.manager,
+        managerContact: values.managerContact,
+        tax: taxAmount,
+        totalBaseAmount: ordersSummary.totalFreight - ordersSummary.totalDispatch,
       };
       
       // 정산 생성 호출
-      await createExpenditure(ExpenditureData);
+      await addExpenditure(ExpenditureData);
       
       toast.success("정산이 성공적으로 생성되었습니다.");
       closeForm();

@@ -35,22 +35,34 @@ const initialRegisterData: IOrderRegisterData = {
   cargoType: '',
   remark: '',
   departure: {
+    id: '',
     address: '',
+    roadAddress: '',
+    jibunAddress: '',
+    latitude: 0,
+    longitude: 0,
     detailedAddress: '',
     name: '',
     company: '',
     contact: '',
     date: '',
-    time: ''
+    time: '',
+    createdAt: new Date().toISOString()
   },
   destination: {
+    id: '',
     address: '',
+    roadAddress: '',
+    jibunAddress: '',
+    latitude: 0,
+    longitude: 0,
     detailedAddress: '',
     name: '',
     company: '',
     contact: '',
     date: '',
-    time: ''
+    time: '',
+    createdAt: new Date().toISOString()
   },
   selectedOptions: [],
   estimatedDistance: undefined,
@@ -166,22 +178,34 @@ export const useOrderEditStore = create<IOrderEditState>((set, get) => ({
       cargoType: detail.cargo.type,
       remark: detail.cargo.remark || '',
       departure: {
+        id: '',
         address: detail.departure.address,
+        roadAddress: '',
+        jibunAddress: '',
+        latitude: 0,
+        longitude: 0,
         detailedAddress: detail.departure.detailedAddress || '',
         name: detail.departure.name,
         company: detail.departure.company,
         contact: detail.departure.contact,
         date: detail.departure.date,
-        time: detail.departure.time
+        time: detail.departure.time,
+        createdAt: new Date().toISOString()
       },
       destination: {
+        id: '',
         address: detail.destination.address,
+        roadAddress: '',
+        jibunAddress: '',
+        latitude: 0,
+        longitude: 0,
         detailedAddress: detail.destination.detailedAddress || '',
         name: detail.destination.name,
         company: detail.destination.company,
         contact: detail.destination.contact,
         date: detail.destination.date,
-        time: detail.destination.time
+        time: detail.destination.time,
+        createdAt: new Date().toISOString()
       },
       selectedOptions: detail.cargo.options || [],
       estimatedDistance: 0, // 상세 정보에서는 거리 정보가 없음

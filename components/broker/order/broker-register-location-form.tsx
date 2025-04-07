@@ -39,12 +39,12 @@ export function BrokerRegisterLocationForm({
   label,
 }: BrokerRegisterLocationFormProps) {
   // 시간 옵션 생성 (30분 간격)
-  const timeOptions = [];
+  const timeOptions: { value: string; label: string }[] = [];
   for (let hour = 0; hour < 24; hour++) {
     for (let minute = 0; minute < 60; minute += 30) {
       const formattedHour = hour.toString().padStart(2, "0");
       const formattedMinute = minute.toString().padStart(2, "0");
-      timeOptions.push(`${formattedHour}:${formattedMinute}`);
+      timeOptions.push({ value: `${formattedHour}:${formattedMinute}`, label: `${formattedHour}:${formattedMinute}` });
     }
   }
 
@@ -214,8 +214,8 @@ export function BrokerRegisterLocationForm({
                 </FormControl>
                 <SelectContent>
                   {timeOptions.map((time) => (
-                    <SelectItem key={time} value={time}>
-                      {time}
+                    <SelectItem key={time.value} value={time.value}>
+                      {time.label}
                     </SelectItem>
                   ))}
                 </SelectContent>

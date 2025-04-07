@@ -51,7 +51,7 @@ export interface IIncome {
   id: string;                  // 정산번호 (고유 식별자)
   status: IncomeStatusType;    // 상태 (정산대기, 정산대사, 정산완료)
   orderIds: string[];          // 포함된 화물 ID 목록
-  // orders?: IBrokerOrder[]; 필드 제거 또는 주석 처리하여 불필요한 참조 제거
+  orders?: IBrokerOrder[];     // 화물 상세 정보
   orderCount: number;          // 화물 건수
   
   // 화주 정보

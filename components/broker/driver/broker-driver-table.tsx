@@ -138,11 +138,11 @@ export function BrokerDriverTable({ drivers, onDriverClick }: BrokerDriverTableP
                 <TableCell>{driver.businessNumber}</TableCell>
                 <TableCell className="text-right font-medium">
                   <span className={cn(
-                    driver.dispatchCount >= 50 ? "text-primary font-bold" :
-                    driver.dispatchCount >= 30 ? "text-blue-600 font-semibold" :
-                    driver.dispatchCount >= 10 ? "text-blue-500" : ""
+                    (driver.dispatchCount || 0) >= 50 ? "text-primary font-bold" :
+                    (driver.dispatchCount || 0) >= 30 ? "text-blue-600 font-semibold" :
+                    (driver.dispatchCount || 0) >= 10 ? "text-blue-500" : ""
                   )}>
-                    {driver.dispatchCount}회
+                    {driver.dispatchCount || 0}회
                   </span>
                 </TableCell>
                 <TableCell>

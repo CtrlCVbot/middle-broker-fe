@@ -5,9 +5,10 @@ import { ExpenditureStatusType } from "@/types/expenditure";
 
 interface IExpenditureStatusBadgeProps {
   status: ExpenditureStatusType;
+  size?: string;
 }
 
-export function ExpenditureStatusBadge({ status }: IExpenditureStatusBadgeProps) {
+export function ExpenditureStatusBadge({ status, size = "default" }: IExpenditureStatusBadgeProps) {
   const getStatusColor = (status: ExpenditureStatusType) => {
     switch (status) {
       case "pending":

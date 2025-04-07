@@ -41,7 +41,7 @@ const getRandomTimeString = (): string => {
 // 화주별 화물을 그룹화하는 함수
 const groupOrdersByShipper = (orders: IBrokerOrder[]): Record<string, IBrokerOrder[]> => {
   return orders.reduce((acc, order) => {
-    const shipperName = order.company;
+    const shipperName = order.company || '미지정';
     if (!acc[shipperName]) {
       acc[shipperName] = [];
     }
@@ -101,7 +101,11 @@ function generateStatusLogs(status: ExpenditureStatusType, createdAt: Date): IEx
   
   // 항상 정산대기 로그 추가
   logs.push({
-    status: 'WAITING',
+    id: uuidv4(),
+    status: 'pending',
+    message: '정산 생성',
+    createdAt: createdDate.toISOString(),
+    createdBy: '시스템',
     time: createdDate.toTimeString().split(' ')[0],
     date: createdDate.toISOString().split('T')[0],
     handler: '시스템',
@@ -109,12 +113,16 @@ function generateStatusLogs(status: ExpenditureStatusType, createdAt: Date): IEx
   });
   
   // 정산대사 상태인 경우
-  if (status === 'MATCHING' || status === 'COMPLETED') {
+  if (status === 'processing' || status === 'completed') {
     const matchingDate = new Date(createdDate);
     matchingDate.setDate(matchingDate.getDate() + 1); // 하루 뒤
     
     logs.push({
-      status: 'MATCHING',
+      id: uuidv4(),
+      status: 'processing',
+      message: '정산 검토 완료',
+      createdAt: matchingDate.toISOString(),
+      createdBy: '김담당',
       time: matchingDate.toTimeString().split(' ')[0],
       date: matchingDate.toISOString().split('T')[0],
       handler: '김담당',
@@ -123,12 +131,16 @@ function generateStatusLogs(status: ExpenditureStatusType, createdAt: Date): IEx
   }
   
   // 정산완료 상태인 경우
-  if (status === 'COMPLETED') {
+  if (status === 'completed') {
     const completedDate = new Date(createdDate);
     completedDate.setDate(completedDate.getDate() + 2); // 이틀 뒤
     
     logs.push({
-      status: 'COMPLETED',
+      id: uuidv4(),
+      status: 'completed',
+      message: '최종 승인 완료',
+      createdAt: completedDate.toISOString(),
+      createdBy: '이승인',
       time: completedDate.toTimeString().split(' ')[0],
       date: completedDate.toISOString().split('T')[0],
       handler: '이승인',
@@ -159,10 +171,21 @@ export interface IExpenditureCreateRequest {
   paymentMethod: string;
 }
 
+// 정산 상태 배열
+const EXPENDITURE_STATUS: ExpenditureStatusType[] = ['pending', 'processing', 'completed', 'cancelled'];
+
+// 정산 상태 레이블
+const EXPENDITURE_STATUS_LABELS: Record<ExpenditureStatusType, string> = {
+  pending: '대기',
+  processing: '처리중',
+  completed: '완료',
+  cancelled: '취소'
+};
+
 // 특정 화물 ID 목록으로 정산 데이터 생성 함수
 export const createExpenditureFromOrders = (
   orders: IBrokerOrder[], 
-  status: ExpenditureStatusType = 'WAITING',
+  status: ExpenditureStatusType = 'pending',
   additionalFeesCount: number = 0
 ): IExpenditure => {
   // 화주 정보 추출 (첫 번째 화물에서 가져옴)
@@ -209,11 +232,11 @@ export const createExpenditureFromOrders = (
   let invoiceNumber: string | undefined = undefined;
   let invoiceIssuedDate: string | undefined = undefined;
   
-  if (status === 'COMPLETED') {
+  if (status === 'completed') {
     invoiceStatus = '발행완료';
     invoiceNumber = `INV-${Math.floor(Math.random() * 10000) + 1000}`;
     invoiceIssuedDate = getCurrentDateString();
-  } else if (status === 'MATCHING') {
+  } else if (status === 'processing') {
     invoiceStatus = Math.random() > 0.7 ? '발행대기' : '미발행';
   }
   
@@ -227,33 +250,34 @@ export const createExpenditureFromOrders = (
     status,
     orderIds,
     orderCount: orders.length,
+    orderId: orders[0].id,
+    amount: totalAmount,
+    description: `${orders.length}건의 화물 정산`,
     
-    shipperName,
+    shipperName: shipperName || '미지정',
     businessNumber: generateBusinessNumber(),
-    shipperContact: firstOrder.contactPerson,
-    shipperEmail: `info@${shipperName.toLowerCase().replace(/\s+/g, '')}.com`,
     
     startDate,
     endDate,
     
-    totalBaseAmount,
-    totalAdditionalAmount,
     totalAmount,
-    tax,
-    isTaxFree,
+    totalAdditionalAmount,
     finalAmount,
+    isTaxFree,
     
-    additionalFees,
-    logs,
-    
-    invoiceNumber,
-    invoiceIssuedDate,
-    invoiceStatus,
+    createdAt: logs[0].date + ' ' + logs[0].time,
+    updatedAt: logs[logs.length - 1].date + ' ' + logs[logs.length - 1].time,
+    createdBy: '시스템',
+    updatedBy: '시스템',
     
     manager,
-    managerContact: `010-${Math.floor(Math.random() * 9000) + 1000}-${Math.floor(Math.random() * 9000) + 1000}`,
-    createdAt: logs[0].date + ' ' + logs[0].time,
-    updatedAt: logs[logs.length - 1].date + ' ' + logs[logs.length - 1].time
+    managerContact: '010-1234-5678',
+    
+    invoiceStatus,
+    invoiceNumber,
+    
+    logs,
+    additionalFees
   };
 };
 
@@ -307,7 +331,7 @@ export function generateMockExpenditures(): IExpenditure[] {
     }
     
     // 정산 상태 랜덤 선택
-    const statusOptions: ExpenditureStatusType[] = ['WAITING', 'MATCHING', 'COMPLETED'];
+    const statusOptions: ExpenditureStatusType[] = ['pending', 'processing', 'completed'];
     const status = statusOptions[Math.floor(Math.random() * statusOptions.length)];
     
     // 정산 생성
@@ -327,10 +351,10 @@ export const calculateExpenditureSummary = (Expenditures: IExpenditure[]): Expen
   const summary: ExpenditureSummary = {
     totalExpenditures: Expenditures.length,
     totalOrders: Expenditures.reduce((sum, Expenditure) => sum + Expenditure.orderCount, 0),
-    totalBaseAmount: Expenditures.reduce((sum, Expenditure) => sum + Expenditure.totalBaseAmount, 0),
+    totalBaseAmount: Expenditures.reduce((sum, Expenditure) => sum + (Expenditure.totalBaseAmount || 0), 0),
     totalAdditionalAmount: Expenditures.reduce((sum, Expenditure) => sum + Expenditure.totalAdditionalAmount, 0),
     totalAmount: Expenditures.reduce((sum, Expenditure) => sum + Expenditure.totalAmount, 0),
-    totalTax: Expenditures.reduce((sum, Expenditure) => sum + Expenditure.tax, 0),
+    totalTax: Expenditures.reduce((sum, Expenditure) => sum + (Expenditure.tax || 0), 0),
     totalFinalAmount: Expenditures.reduce((sum, Expenditure) => sum + Expenditure.finalAmount, 0)
   };
   
@@ -371,14 +395,14 @@ export const getExpendituresByPage = (
   // 화주명 필터
   if (filter.shipperName) {
     filteredExpenditures = filteredExpenditures.filter(Expenditure => 
-      Expenditure.shipperName?.includes(filter.shipperName)
+      Expenditure.shipperName.includes(filter.shipperName)
     );
   }
   
   // 사업자번호 필터
   if (filter.businessNumber) {
     filteredExpenditures = filteredExpenditures.filter(Expenditure => 
-      Expenditure.businessNumber?.includes(filter.businessNumber)
+      Expenditure.businessNumber.includes(filter.businessNumber)
     );
   }
   
@@ -504,7 +528,11 @@ export const createExpenditure = async (data: IExpenditureCreateRequest): Promis
   // 정산 로그 생성
   const logs: IExpenditureLog[] = [
     {
-      status: 'MATCHING',
+      id: uuidv4(),
+      status: 'processing',
+      message: '정산이 생성되었습니다.',
+      createdAt: new Date().toISOString(),
+      createdBy: '시스템',
       time: new Date().toLocaleTimeString('ko-KR'),
       date: new Date().toLocaleDateString('ko-KR'),
       handler: '시스템',
@@ -515,30 +543,28 @@ export const createExpenditure = async (data: IExpenditureCreateRequest): Promis
   // 새 정산 객체 생성
   const newExpenditure: IExpenditure = {
     id: `INC-${Math.floor(Math.random() * 100000) + 10000}`,
-    status: 'MATCHING', // ExpenditureStatusType에 맞게 수정
+    status: 'processing',
     orderIds: data.orderIds,
     orderCount: selectedOrders.length,
-    shipperId: shipperId,
-    shipperName: shipperName,
+    orderId: selectedOrders[0].id,
+    amount: totalAmount,
+    description: `${selectedOrders.length}건의 화물 정산`,
+    shipperName: shipperName || '미지정',
     businessNumber: `123-45-${Math.floor(Math.random() * 100000)}`,
-    shipperContact: `010-${Math.floor(Math.random() * 10000)}-${Math.floor(Math.random() * 10000)}`,
     manager: '담당자1',
     managerContact: '010-1234-5678',
-    startDate: departureDate.toISOString(),
-    endDate: arrivalDate.toISOString(),
-    totalBaseAmount,
-    totalAdditionalAmount: 0,
+    startDate: departureDate.toISOString().split('T')[0],
+    endDate: arrivalDate.toISOString().split('T')[0],
     totalAmount,
-    tax,
-    isTaxFree: data.taxFree,
+    totalAdditionalAmount: 0,
     finalAmount: totalAmount,
-    additionalFees: [],
-    memo: data.memo || '',
-    invoiceStatus: '미발행',
-    invoiceNumber: data.invoiceNumber || '',
+    isTaxFree: data.taxFree,
     createdAt,
     updatedAt,
-    logs,
+    createdBy: '시스템',
+    updatedBy: '시스템',
+    additionalFees: [],
+    logs
   };
   
   // 목업 데이터에 새 정산 추가
@@ -547,4 +573,37 @@ export const createExpenditure = async (data: IExpenditureCreateRequest): Promis
   
   console.log('새 정산이 생성되었습니다:', newExpenditure.id);
   return newExpenditure;
+};
+
+// 정산 상태별 화물 목록 필터링 함수
+export const filterExpendituresByStatus = (expenditures: IExpenditure[], status?: ExpenditureStatusType): IExpenditure[] => {
+  if (!status) return expenditures;
+  return expenditures.filter(expenditure => expenditure.status === status);
+};
+
+// 정산 상태별 화물 수 계산 함수
+export const countExpendituresByStatus = (expenditures: IExpenditure[]): Record<ExpenditureStatusType, number> => {
+  const counts: Record<ExpenditureStatusType, number> = {
+    pending: 0,
+    processing: 0,
+    completed: 0,
+    cancelled: 0
+  };
+  
+  expenditures.forEach(expenditure => {
+    counts[expenditure.status]++;
+  });
+  
+  return counts;
+};
+
+// 정산 상태 진행도 계산 함수
+export const getExpenditureProgress = (status: ExpenditureStatusType): number => {
+  const index = EXPENDITURE_STATUS.indexOf(status);
+  return Math.round((index / (EXPENDITURE_STATUS.length - 1)) * 100);
+};
+
+// 정산 상태 레이블 가져오기 함수
+export const getExpenditureStatusLabel = (status: ExpenditureStatusType): string => {
+  return EXPENDITURE_STATUS_LABELS[status];
 }; 

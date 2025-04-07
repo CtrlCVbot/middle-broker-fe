@@ -102,11 +102,11 @@ export function BrokerDriverTonnageBadge({ tonnage, className }: BrokerDriverTon
 
 // 정산 상태 배지
 interface BrokerDriverSettlementBadgeProps {
-  status: '완료' | '미정산' | '-';
+  status?: '완료' | '미정산' | '-';
   className?: string;
 }
 
-export function BrokerDriverSettlementBadge({ status, className }: BrokerDriverSettlementBadgeProps) {
+export function BrokerDriverSettlementBadge({ status = '-', className }: BrokerDriverSettlementBadgeProps) {
   // 정산 상태별 색상 설정
   const getColorByStatus = (status: '완료' | '미정산' | '-') => {
     switch (status) {

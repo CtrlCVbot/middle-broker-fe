@@ -21,14 +21,30 @@ export const generateMockInvoices = (count: number = 20): IInvoice[] => {
 
 // 화물 목록 생성
 export const generateMockCargos = (count: number = 50): ICargo[] => {
-  return Array.from({ length: count }, (_, index) => ({
-    id: `CARGO-${String(index + 1).padStart(5, '0')}`,
-    carNumber: `${String(index + 1).padStart(2, '0')}가${String(1234 + index).padStart(4, '0')}`,
-    dispatchAmount: Math.floor(Math.random() * 500000) * 100,
-    transportDate: new Date(2024, 0, index + 1).toISOString().split('T')[0],
-    receiptStatus: ['RECEIVED', 'WAITING', 'NOT_REQUIRED'][Math.floor(Math.random() * 3)] as ICargo['receiptStatus'],
-    businessNumber: `123-45-${String(67890 + Math.floor(index / 3)).padStart(5, '0')}`,
-  }));
+  const cities = ['서울', '부산', '인천', '대구', '광주', '대전', '울산', '수원', '창원', '고양'];
+  const locations = ['물류센터', '공장', '창고', '마트', '배송센터', '물류단지'];
+  const driverNames = ['김운전', '이운전', '박운전', '최운전', '정운전'];
+  
+  return Array.from({ length: count }, (_, index) => {
+    const departureCity = cities[Math.floor(Math.random() * cities.length)];
+    const arrivalCity = cities[Math.floor(Math.random() * cities.length)];
+    const departurePlace = locations[Math.floor(Math.random() * locations.length)];
+    const arrivalPlace = locations[Math.floor(Math.random() * locations.length)];
+    const driverName = driverNames[Math.floor(Math.random() * driverNames.length)];
+    
+    return {
+      id: `CARGO-${String(index + 1).padStart(5, '0')}`,
+      carNumber: `${String(index + 1).padStart(2, '0')}가${String(1234 + index).padStart(4, '0')}`,
+      dispatchAmount: Math.floor(Math.random() * 500000) * 100,
+      transportDate: new Date(2024, 0, index + 1).toISOString().split('T')[0],
+      businessNumber: `123-45-${String(67890 + Math.floor(index / 3)).padStart(5, '0')}`,
+      departureLocation: `${departureCity} ${departurePlace}`,
+      arrivalLocation: `${arrivalCity} ${arrivalPlace}`,
+      driver: {
+        name: driverName
+      }
+    };
+  });
 };
 
 // 페이징된 세금계산서 데이터 반환

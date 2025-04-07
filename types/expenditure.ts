@@ -4,13 +4,14 @@
 import { IBrokerOrder, BrokerOrderStatusType } from "./broker-order";
 
 // 매출 정산 상태 타입 정의
-export type ExpenditureStatusType = "pending" | "approved" | "rejected";
+export type ExpenditureStatusType = "pending" | "processing" | "completed" | "cancelled";
 
 // 매출 정산 상태 배열 - 상태 순서대로 정의
 export const Expenditure_STATUS: ExpenditureStatusType[] = [
   "pending", 
-  "approved", 
-  "rejected"
+  "processing", 
+  "completed",
+  "cancelled"
 ];
 
 // 매출 정산 추가금 유형 타입 정의
@@ -26,10 +27,12 @@ export type AdditionalFeeType =
 // 추가금 인터페이스
 export interface IAdditionalFee {
   id: string;
-  name: string;
+  type: AdditionalFeeType;
   amount: number;
   description?: string;
+  orderId?: string;
   createdAt: string;
+  createdBy: string;
 }
 
 // 매출 정산 로그 항목 인터페이스
@@ -39,6 +42,10 @@ export interface IExpenditureLog {
   message: string;
   createdAt: string;
   createdBy: string;
+  date: string;
+  time: string;
+  handler: string;
+  remark?: string;
 }
 
 // 매출 정산 정보 인터페이스
@@ -58,6 +65,18 @@ export interface IExpenditure {
   isTaxFree: boolean;
   createdBy: string;
   updatedBy: string;
+  orderCount: number;
+  shipperName: string;
+  businessNumber: string;
+  startDate: string;
+  endDate: string;
+  manager: string;
+  managerContact?: string;
+  invoiceStatus?: string;
+  invoiceNumber?: string;
+  tax?: number;
+  totalBaseAmount?: number;
+  logs?: IExpenditureLog[];
 }
 
 // 응답 페이징 정보 인터페이스
@@ -132,6 +151,26 @@ export const isExpenditureStatusAtLeast = (currentStatus: ExpenditureStatusType,
 
 export const EXPENDITURE_STATUS = [
   { value: "pending", label: "대기중" },
-  { value: "approved", label: "승인" },
-  { value: "rejected", label: "거절" },
-] as const; 
+  { value: "processing", label: "처리중" },
+  { value: "completed", label: "완료" },
+  { value: "cancelled", label: "취소" },
+] as const;
+
+// 화물 정보 인터페이스
+export interface IOrder {
+  id: string;
+  departureLocation: string;
+  arrivalLocation: string;
+  vehicle: {
+    type: string;
+    weight: string;
+  };
+  chargeAmount?: number;
+  amount: number;
+  fee: number;
+}
+
+// 화물 정보가 포함된 매출 정산 정보 인터페이스
+export interface IExpenditureWithOrders extends IExpenditure {
+  orders: IOrder[];
+} 

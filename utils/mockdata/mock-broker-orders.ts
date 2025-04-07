@@ -3,7 +3,8 @@ import {
   IBrokerOrderResponse, 
   IBrokerOrderSummary,
   CallCenterType,
-  PaymentMethodType
+  PaymentMethodType,
+  BrokerOrderStatusType
 } from "@/types/broker-order";
 
 // 도시 목록 (상수로 먼저 정의)
@@ -213,15 +214,16 @@ const generateMockBrokerOrders = (count: number): IBrokerOrder[] => {
     // GPS 위치 (70% 확률로 데이터 있음)
     const hasGpsData = Math.random() > 0.3;
     const gpsLocation = hasGpsData ? {
-      lat: 35.5 + Math.random() * 3, // 한국 위도 범위 내 임의 값
-      lng: 126.5 + Math.random() * 3, // 한국 경도 범위 내 임의 값
-      lastUpdated: new Date(today.getTime() - Math.floor(Math.random() * 3600000)).toISOString(), // 최근 1시간 내
+      latitude: 35.5 + Math.random() * 3, // 한국 위도 범위 내 임의 값
+      longitude: 126.5 + Math.random() * 3, // 한국 경도 범위 내 임의 값
+      updatedAt: new Date(today.getTime() - Math.floor(Math.random() * 3600000)).toISOString(), // 최근 1시간 내
       status: ["좌표 확인", "상차 도착", "하차 도착", "상차 지각", "하차 지각"][Math.floor(Math.random() * 5)]
     } : undefined;
     
     orders.push({
       id,
-      status: status as any,
+      status: status as BrokerOrderStatusType,
+      statusProgress: status as BrokerOrderStatusType,
       departureDateTime: departureDate.toISOString().split('T')[0],
       departureCity,
       departureLocation,
@@ -238,22 +240,21 @@ const generateMockBrokerOrders = (count: number): IBrokerOrder[] => {
         name: driverName,
         contact
       },
+      shipperName: company,
       createdAt: date.toISOString().split('T')[0],
-      settlementStatus: settlementStatus as any,
-      settlementId,
+      updatedAt: date.toISOString().split('T')[0],
       
-      // 추가 필드
-      callCenter: callCenter,
+      // 선택적 필드
+      callCenter,
       company,
       contactPerson,
-      contractAmount,
       chargeAmount,
-      supplyAmount,
       paymentMethod,
       cargoItem,
       manager,
       managerContact,
-      gpsLocation
+      gpsLocation,
+      settlementId
     });
   }
   
@@ -282,9 +283,9 @@ const calculateOrdersSummary = (orders: IBrokerOrder[]): IBrokerOrderSummary => 
   return {
     totalOrders: orders.length,
     totalChargeAmount: orders.reduce((sum, order) => sum + (order.chargeAmount || 0), 0),
-    totalContractAmount: orders.reduce((sum, order) => sum + (order.contractAmount || 0), 0),
-    totalSupplyAmount: orders.reduce((sum, order) => sum + (order.supplyAmount || 0), 0),
-    totalProfit: orders.reduce((sum, order) => sum + ((order.chargeAmount || 0) - (order.supplyAmount || 0)), 0),
+    totalContractAmount: orders.reduce((sum, order) => sum + (order.amount || 0), 0),
+    totalSupplyAmount: orders.reduce((sum, order) => sum + (order.amount || 0), 0),
+    totalProfit: orders.reduce((sum, order) => sum + ((order.chargeAmount || 0) - (order.amount || 0)), 0),
   };
 };
 
@@ -347,15 +348,19 @@ export const getBrokerOrdersByPage = (
   // 검색어 필터 (화물번호, 출발지, 도착지, 차주명 검색)
   if (searchTerm) {
     const term = searchTerm.toLowerCase();
-    filteredOrders = filteredOrders.filter(order => 
-      order.id.toLowerCase().includes(term) ||
-      order.departureLocation.toLowerCase().includes(term) ||
-      order.arrivalLocation.toLowerCase().includes(term) ||
-      order.driver.name.toLowerCase().includes(term) ||
-      order.company.toLowerCase().includes(term) ||
-      order.contactPerson.toLowerCase().includes(term) ||
-      order.cargoItem.toLowerCase().includes(term)
-    );
+    filteredOrders = filteredOrders.filter(order => {
+      const searchFields = [
+        order.id,
+        order.departureCity,
+        order.arrivalCity,
+        order.driver.name,
+        order.company?.toLowerCase(),
+        order.contactPerson?.toLowerCase(),
+        order.cargoItem?.toLowerCase()
+      ].filter(Boolean);
+      
+      return searchFields.some(field => field?.toLowerCase().includes(term));
+    });
   }
   
   // 날짜 범위 필터

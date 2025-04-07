@@ -20,37 +20,20 @@ import { Label } from "@/components/ui/label";
 import { DollarSign, FileText, Package,  CheckCircle, AlertCircle,  Clock, Copy, Send, Truck } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useExpenditureDetailStore } from "@/store/expenditure-detail-store";
-import { ExpenditureStatusType, IAdditionalFee, IExpenditureLog, IExpenditure } from "@/types/expenditure";
+import { 
+  ExpenditureStatusType, 
+  IAdditionalFee, 
+  IExpenditureLog, 
+  IExpenditure,
+  IExpenditureWithOrders,
+  IOrder
+} from "@/types/expenditure";
 import { ExpenditureAdditionalCost } from "./expenditure-additional-cost";
 import { ExpenditureStatusBadge } from "./expenditure-status-badge";
-
-interface IOrder {
-  id: string;
-  departureLocation: string;
-  arrivalLocation: string;
-  vehicle: {
-    type: string;
-    weight: string;
-  };
-  chargeAmount?: number;
-  amount: number;
-  fee: number;
-}
 
 interface IExpenditureAdditionalCostProps {
   expenditureId: string;
   orderIds: string[];
-}
-
-interface IExpenditureWithOrders extends IExpenditure {
-  orders: IOrder[];
-  orderCount: number;
-  shipperName: string;
-  businessNumber: string;
-  startDate: string;
-  endDate: string;
-  manager: string;
-  managerContact?: string;
 }
 
 export function ExpenditureDetailSheet() {
@@ -114,9 +97,11 @@ export function ExpenditureDetailSheet() {
   const handleNextStatus = () => {
     if (!expenditureDetail) return;
     
-    if (expenditureDetail.status === 'WAITING') {
+    if (expenditureDetail.status === 'pending') {
       handleStatusChange();
-    } else if (expenditureDetail.status === 'MATCHING') {
+    } else if (expenditureDetail.status === 'processing') {
+      handleStatusChange();
+    } else if (expenditureDetail.status === 'completed') {
       handleStatusChange();
     }
   };
@@ -220,7 +205,7 @@ export function ExpenditureDetailSheet() {
                     id="tax-free"
                     checked={expenditureDetail.isTaxFree}
                     onCheckedChange={handleTaxFreeChange}
-                    disabled={expenditureDetail.status === 'COMPLETED'}
+                    disabled={expenditureDetail.status === 'completed'}
                   />
                   <Label htmlFor="tax-free" className="text-sm font-medium">
                     {expenditureDetail.isTaxFree ? "면세" : "과세(10%)"}
@@ -235,7 +220,7 @@ export function ExpenditureDetailSheet() {
               <div className="grid grid-cols-2 gap-4 px-3 py-2 bg-muted/50 rounded-md">
                 <div>
                   <h4 className="text-sm text-muted-foreground">기본 운임 합계</h4>
-                  <p className="text-sm font-medium">{formatCurrency(expenditureDetail.totalBaseAmount)}원</p>
+                  <p className="text-sm font-medium">{formatCurrency(expenditureDetail.totalBaseAmount || 0)}원</p>
                 </div>
                 <div>
                   <h4 className="text-sm text-muted-foreground">추가금 합계</h4>
@@ -245,7 +230,7 @@ export function ExpenditureDetailSheet() {
                 </div>
                 <div>
                   <h4 className="text-sm text-muted-foreground">세금 ({expenditureDetail.isTaxFree ? "면세" : "10%"})</h4>
-                  <p className="text-sm font-medium">{formatCurrency(expenditureDetail.tax)}원</p>
+                  <p className="text-sm font-medium">{formatCurrency(expenditureDetail.tax || 0)}원</p>
                 </div>
                 <div>
                   <h4 className="text-sm text-muted-foreground">총 청구금액</h4>
@@ -318,7 +303,7 @@ export function ExpenditureDetailSheet() {
                   추가금 내역 ({expenditureDetail.additionalFees.length}건)
                 </h3>
                 
-                {expenditureDetail.status !== 'COMPLETED' && (
+                {expenditureDetail.status !== 'completed' && (
                   <Button 
                     size="sm" 
                     variant={isEditingAdditionalFee ? "secondary" : "outline"}
@@ -349,7 +334,7 @@ export function ExpenditureDetailSheet() {
               </h3>
               
               <div className="space-y-2">
-                {renderStatusLogs(expenditureDetail.logs)}
+                {renderStatusLogs(expenditureDetail.logs || [])}
               </div>
             </div>
           </TabsContent>
@@ -359,7 +344,7 @@ export function ExpenditureDetailSheet() {
         <div className="flex justify-between items-center pt-4 border-t">
           <div className="space-x-2">
             {/* 좌측 버튼들 */}
-            {expenditureDetail.status === 'COMPLETED' && (
+            {expenditureDetail.status === 'completed' && (
               <Button 
                 variant="outline" 
                 size="sm"
@@ -370,12 +355,11 @@ export function ExpenditureDetailSheet() {
               </Button>
             )}
             
-            {(expenditureDetail.status === 'MATCHING' || expenditureDetail.status === 'COMPLETED') && (
+            {(expenditureDetail.status === 'processing' || expenditureDetail.status === 'completed') && (
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={handleIssueInvoice}
-                disabled={expenditureDetail.invoiceStatus === '발행완료'}
               >
                 <FileText className="h-3.5 w-3.5 mr-1" />
                 세금계산서 발행
@@ -389,10 +373,10 @@ export function ExpenditureDetailSheet() {
               닫기
             </Button>
             
-            {expenditureDetail.status !== 'COMPLETED' && (
+            {expenditureDetail.status !== 'completed' && expenditureDetail.status !== 'cancelled' && (
               <Button size="sm" onClick={handleNextStatus}>
                 <CheckCircle className="h-3.5 w-3.5 mr-1" />
-                {expenditureDetail.status === 'WAITING' ? '정산대사 전환' : '정산완료 처리'}
+                {expenditureDetail.status === 'pending' ? '정산대사 전환' : '정산완료 처리'}
               </Button>
             )}
           </div>
@@ -681,14 +665,14 @@ export function ExpenditureDetailSheet() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50">
-                    <TableHead>처리 시간</TableHead>
+                    <TableHead>일시</TableHead>
                     <TableHead>상태</TableHead>
                     <TableHead>처리자</TableHead>
-                    <TableHead>메시지</TableHead>
+                    <TableHead>비고</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {expenditureDetail.logs.map((log) => (
+                  {expenditureDetail.logs?.map((log) => (
                     <TableRow key={log.id}>
                       <TableCell>{log.createdAt}</TableCell>
                       <TableCell>
@@ -697,7 +681,13 @@ export function ExpenditureDetailSheet() {
                       <TableCell>{log.createdBy}</TableCell>
                       <TableCell>{log.message}</TableCell>
                     </TableRow>
-                  ))}
+                  )) || (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center h-16 text-muted-foreground">
+                        로그 데이터가 없습니다.
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </div>

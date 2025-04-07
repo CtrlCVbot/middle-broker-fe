@@ -246,7 +246,7 @@ export default function ExpenditurePage() {
               <ExpenditureFilter 
                 onFilterChange={handleFilterChange}
                 onResetFilter={resetFilter}
-                tabStatus="approved"
+                tabStatus="processing"
               />
               <ExpenditureList
                 expenditures={expenditures}
@@ -256,7 +256,7 @@ export default function ExpenditurePage() {
                 onStatusChange={handleStatusChange}
                 onIssueInvoice={handleIssueInvoice}
                 onExportExcel={handleExportExcel}
-                currentTab="approved"
+                currentTab="processing"
               />
               </>
             )}
@@ -288,7 +288,7 @@ export default function ExpenditurePage() {
               <ExpenditureFilter 
                 onFilterChange={handleFilterChange}
                 onResetFilter={resetFilter}
-                tabStatus="rejected"
+                tabStatus="completed"
               />
               <ExpenditureList
                 expenditures={expenditures}
@@ -298,7 +298,7 @@ export default function ExpenditurePage() {
                 onStatusChange={handleStatusChange}
                 onIssueInvoice={handleIssueInvoice}
                 onExportExcel={handleExportExcel}
-                currentTab="rejected"
+                currentTab="completed"
               />
               </>
             )}

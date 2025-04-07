@@ -123,7 +123,7 @@ export const useExpenditureStore = create<IExpenditureState>((set, get) => ({
 interface IExpenditureDetailState {
   selectedExpenditureId: string | null;
   isSheetOpen: boolean;
-  openSheet: () => void;
+  openSheet: (expenditureId: string) => void;
   closeSheet: () => void;
   setSelectedExpenditureId: (id: string | null) => void;
 }
@@ -131,7 +131,7 @@ interface IExpenditureDetailState {
 export const useExpenditureDetailStore = create<IExpenditureDetailState>((set) => ({
   selectedExpenditureId: null,
   isSheetOpen: false,
-  openSheet: () => set({ isSheetOpen: true }),
+  openSheet: (expenditureId) => set({ isSheetOpen: true, selectedExpenditureId: expenditureId }),
   closeSheet: () => set({ isSheetOpen: false, selectedExpenditureId: null }),
   setSelectedExpenditureId: (id) => set({ selectedExpenditureId: id }),
 })); 
