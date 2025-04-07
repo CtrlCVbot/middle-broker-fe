@@ -126,17 +126,17 @@ export default function IncomePage() {
   
   // 요약 정보 계산 - useMemo로 캐싱하여 무한 루프 방지
   const incomeData = useIncomeStore(state => state.incomes);
-  const summary = useMemo(() => {
-    return incomeData.reduce(
-      (acc, income) => {
-        acc.totalAmount += income.finalAmount;
-        acc.totalCount += 1;
-        acc.totalOrderCount += income.orderCount;
-        return acc;
-      },
-      { totalAmount: 0, totalCount: 0, totalOrderCount: 0 }
-    );
-  }, [incomeData]);
+  // const summary = useMemo(() => {
+  //   return incomeData.reduce(
+  //     (acc, income) => {
+  //       acc.totalAmount += income.finalAmount;
+  //       acc.totalCount += 1;
+  //       acc.totalOrderCount += income.orderCount;
+  //       return acc;
+  //     },
+  //     { totalAmount: 0, totalCount: 0, totalOrderCount: 0 }
+  //   );
+  // }, [incomeData]);
 
   return (
     <>

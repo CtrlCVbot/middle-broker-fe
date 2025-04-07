@@ -39,7 +39,7 @@ export default function ExpenditurePage() {
   } = useExpenditureStore();
 
   const {
-    waitingOrders,
+    //waitingOrders,
     selectedOrderIds,
     filter: waitingFilter,
     filterOptions,
@@ -109,20 +109,20 @@ export default function ExpenditurePage() {
   const currentWaitingOrders = getOrdersByPage(waitingCurrentPage);
   
   // 요약 정보 계산 - useMemo로 캐싱하여 무한 루프 방지
-  const summary = useMemo(() => {
-    if (!expenditures || expenditures.length === 0) {
-      return { totalAmount: 0, totalCount: 0, totalOrderCount: 0 };
-    }
+  // const summary = useMemo(() => {
+  //   if (!expenditures || expenditures.length === 0) {
+  //     return { totalAmount: 0, totalCount: 0, totalOrderCount: 0 };
+  //   }
     
-    return expenditures.reduce(
-      (acc, expenditure) => ({
-        totalAmount: acc.totalAmount + expenditure.finalAmount,
-        totalCount: acc.totalCount + 1,
-        totalOrderCount: acc.totalOrderCount + expenditure.orderCount
-      }),
-      { totalAmount: 0, totalCount: 0, totalOrderCount: 0 }
-    );
-  }, [expenditures]);
+  //   return expenditures.reduce(
+  //     (acc, expenditure) => ({
+  //       totalAmount: acc.totalAmount + expenditure.finalAmount,
+  //       totalCount: acc.totalCount + 1,
+  //       totalOrderCount: acc.totalOrderCount + expenditure.orderCount
+  //     }),
+  //     { totalAmount: 0, totalCount: 0, totalOrderCount: 0 }
+  //   );
+  // }, [expenditures]);
 
   return (
     <>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Table,
   TableBody,
@@ -13,12 +13,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { 
   BrokerDriverStatusBadge, 
   BrokerDriverVehicleTypeBadge, 
-  BrokerDriverTonnageBadge,
-  BrokerDriverSettlementBadge
+  BrokerDriverTonnageBadge
 } from './broker-driver-status-badge';
 import { IBrokerDriver } from '@/types/broker-driver';
 import { useBrokerDriverStore } from '@/store/broker-driver-store';
-import { cn, formatCurrency } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 interface BrokerDriverTableProps {
   drivers: IBrokerDriver[];

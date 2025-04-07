@@ -35,7 +35,7 @@ export function BrokerCompanyTable({ companies, onCompanyClick }: BrokerCompanyT
   
   // 모든 회사 선택 상태
   const allSelected = companies.length > 0 && selectedCompanyIds.length === companies.length;
-  const someSelected = selectedCompanyIds.length > 0 && !allSelected;
+  //const someSelected = selectedCompanyIds.length > 0 && !allSelected;
   
   // 전체 선택/해제 핸들러
   const handleSelectAll = () => {
@@ -47,10 +47,10 @@ export function BrokerCompanyTable({ companies, onCompanyClick }: BrokerCompanyT
   };
   
   // 개별 선택 핸들러
-  const handleSelectCompany = (e: React.MouseEvent, companyId: string) => {
-    e.stopPropagation();
-    toggleCompanySelection(companyId);
-  };
+  // const handleSelectCompany = (e: React.MouseEvent, companyId: string) => {
+  //   e.stopPropagation();
+  //   toggleCompanySelection(companyId);
+  // };
   
   return (
     <div className="rounded-md border">

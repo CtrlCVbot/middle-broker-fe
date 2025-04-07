@@ -106,7 +106,7 @@ export default function OrderEditPage() {
       setSaving(true);
       
       // 목업 API를 사용하여 화물 정보 업데이트
-      const updatedData = await updateOrder(orderId, registerData);
+      //const updatedData = await updateOrder(orderId, registerData);
       
       // 성공 메시지 표시
       toast({
@@ -136,14 +136,14 @@ export default function OrderEditPage() {
   };
   
   // 뒤로가기 처리
-  const handleGoBack = () => {
-    if (hasChanged) {
-      setDialogMode('unsaved');
-      setDialogOpen(true);
-    } else {
-      router.push(`/order/list`);
-    }
-  };
+  // const handleGoBack = () => {
+  //   if (hasChanged) {
+  //     setDialogMode('unsaved');
+  //     setDialogOpen(true);
+  //   } else {
+  //     router.push(`/order/list`);
+  //   }
+  // };
   
   // 대화상자 확인 처리
   const handleDialogConfirm = () => {

@@ -10,8 +10,8 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
-import { Home, ListFilter, Grid3x3, CreditCard, TrendingUp } from "lucide-react";
-import { Card, CardContent, CardHeader, CardDescription, CardTitle, CardFooter } from "@/components/ui/card";
+import { ListFilter, Grid3x3, CreditCard } from "lucide-react";
+import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { useSettlementStore } from "@/store/settlement-store";
 import { getSettlementsByPage } from "@/utils/mockdata/mock-settlements";
 import { SettlementSearch } from "@/components/settlement/settlement-search";
@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { cn, formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 // 총 정산액 요약 카드 컴포넌트
 function SettlementSummaryCard({ data, isLoading }: { data: any, isLoading: boolean }) {

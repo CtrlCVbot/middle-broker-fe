@@ -36,7 +36,7 @@ export const LocationForm: React.FC<LocationFormProps> = ({
   type, 
   locationInfo, 
   onChange, 
-  title = type === 'departure' ? '출발지 정보' : '도착지 정보',
+  //title = type === 'departure' ? '출발지 정보' : '도착지 정보',
   compact = false,
   disabled = false,
   onDisabledClick

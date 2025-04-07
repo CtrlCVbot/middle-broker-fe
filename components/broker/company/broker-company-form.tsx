@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -22,17 +22,10 @@ import {
   FormLabel, 
   FormMessage 
 } from '@/components/ui/form';
-import { 
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -46,7 +39,7 @@ import {
   StatementType, 
   CompanyStatus 
 } from '@/types/broker-company';
-import { COMPANY_TYPES, STATEMENT_TYPES, COMPANY_STATUS } from '@/utils/mockdata/mock-broker-companies';
+import { COMPANY_TYPES, STATEMENT_TYPES } from '@/utils/mockdata/mock-broker-companies';
 import { BrokerCompanyManagerList } from './broker-company-manager-list';
 
 interface BrokerCompanyFormProps {

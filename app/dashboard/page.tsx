@@ -17,10 +17,10 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
-import { Home } from "lucide-react";
+
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { TestChart01 } from "@/components/dashboard/test-chart01";
+
 
 export default function DashboardPage() {
   const { initDashboard } = useDashboardStore();

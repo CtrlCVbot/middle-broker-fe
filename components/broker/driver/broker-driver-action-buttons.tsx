@@ -35,7 +35,7 @@ export function BrokerDriverActionButtons({
   isLoading = false,
   onRefresh,
   onExportExcel,
-  onRegisterDriver,
+  //onRegisterDriver,
   onRegisterMultipleDrivers,
   disabledExportExcel = false,
 }: IBrokerDriverActionButtonsProps) {

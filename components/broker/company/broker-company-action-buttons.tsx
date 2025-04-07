@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Grid3x3, FileSpreadsheet, RotateCcw, Plus, Download, Upload, Trash2 } from 'lucide-react';
+import { RotateCcw, Plus, Download, Upload, Trash2 } from 'lucide-react';
 import { CompanyStatus } from '@/types/broker-company';
 import { toast } from 'sonner';
 import {
@@ -23,8 +23,8 @@ export function BrokerCompanyActionButtons({
   onActionSuccess
 }: BrokerCompanyActionButtonsProps) {
   const { 
-    viewMode, 
-    setViewMode, 
+    //viewMode, 
+    //setViewMode, 
     selectedCompanyIds, 
     clearSelectedCompanyIds 
   } = useBrokerCompanyStore();

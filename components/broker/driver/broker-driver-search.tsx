@@ -13,21 +13,9 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
   Form,
-  FormControl,
-  FormDescription,
   FormField,
-  FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -44,9 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useBrokerDriverStore } from "@/store/broker-driver-store";
-import { IBrokerDriverFilter } from "@/types/broker-driver";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { BrokerDriverVehicleTypeBadge, BrokerDriverTonnageBadge } from "./broker-driver-status-badge";
 
 // 검색 폼 스키마

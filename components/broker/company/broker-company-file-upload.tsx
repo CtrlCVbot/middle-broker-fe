@@ -3,7 +3,7 @@
 import React, { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Trash2, FileIcon, FileText, Image as ImageIcon } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { toast } from 'sonner';
 
 // 고유 ID 생성 함수 (uuid 대신 사용)

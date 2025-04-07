@@ -2,8 +2,6 @@
 
 import * as React from "react"
 import {
-  BookOpen,
-  Bot,
   Command,
   Frame,
   Home,
@@ -15,15 +13,11 @@ import {
   SquareTerminal,
   User,
   NotebookTabs,
-  CalendarClock,
-  Layers3,
   Truck,
   PackagePlus,
-  Calculator,
   CreditCard,
   Building,
   DollarSign,
-  PlusCircle
 } from "lucide-react"
 import Link from 'next/link'
 

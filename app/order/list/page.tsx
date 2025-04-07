@@ -10,7 +10,7 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
-import { Home, ListFilter, Grid3x3 } from "lucide-react";
+import { ListFilter, Grid3x3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { useOrderStore } from "@/store/order-store";
 import { getOrdersByPage } from "@/utils/mockdata/mock-orders";
@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
+
 
 export default function OrderListPage() {
   // Zustand 스토어에서 상태 및 액션 가져오기

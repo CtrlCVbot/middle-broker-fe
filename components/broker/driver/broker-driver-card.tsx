@@ -10,11 +10,9 @@ import {
   CardTitle 
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { 
-  MoreHorizontal, 
   Phone, 
   Truck, 
   MapPin,

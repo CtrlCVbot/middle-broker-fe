@@ -10,10 +10,9 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
-import { Home, ListFilter, Grid3x3, FileSpreadsheet, RotateCcw, Map, Edit } from "lucide-react";
-import { Card, CardContent, CardHeader, CardDescription, CardTitle, CardFooter } from "@/components/ui/card";
+import { ListFilter, Grid3x3, RotateCcw } from "lucide-react";
+import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { useBrokerOrderStore } from "@/store/broker-order-store";
-import { useBrokerOrderDetailStore } from "@/store/broker-order-detail-store";
 import { getBrokerOrdersByPage } from "@/utils/mockdata/mock-broker-orders";
 import { BrokerOrderSearch } from "@/components/broker/order/broker-order-search";
 import { BrokerOrderTable } from "@/components/broker/order/broker-order-table";
@@ -42,7 +41,7 @@ export default function BrokerOrderListPage() {
     setCurrentPage,
   } = useBrokerOrderStore();
   
-  const { openSheet } = useBrokerOrderDetailStore();
+  //const { openSheet } = useBrokerOrderDetailStore();
 
   // 디버깅을 위한 로그 추가
   useEffect(() => {

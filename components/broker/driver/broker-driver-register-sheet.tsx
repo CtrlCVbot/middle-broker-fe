@@ -13,8 +13,7 @@ import {
   SheetTitle,
   SheetDescription,
   SheetFooter,
-  SheetTrigger,
-  SheetClose
+  SheetTrigger
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, Loader2, Plus, Edit } from "lucide-react";

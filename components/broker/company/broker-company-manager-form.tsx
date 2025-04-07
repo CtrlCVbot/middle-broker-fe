@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
@@ -19,7 +18,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
-import { IBrokerCompanyManager, ManagerRole, ManagerStatus } from '@/types/broker-company';
+import { IBrokerCompanyManager } from '@/types/broker-company';
 import { MANAGER_ROLES } from '@/utils/mockdata/mock-broker-company-managers';
 import { useBrokerCompanyManagerStore } from '@/store/broker-company-manager-store';
 
