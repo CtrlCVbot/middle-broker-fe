@@ -61,25 +61,7 @@ export function SettlementSearch() {
     setFilter({ searchTerm: e.target.value });
   };
 
-  // 화물 번호 변경 핸들러
-  const handleOrderIdChange = (value: string) => {
-    setTempFilter({ ...tempFilter, orderId: value === "all" ? undefined : value });
-  };
-
-  // 출발지 도시 변경 핸들러
-  const handleDepartureCityChange = (value: string) => {
-    setTempFilter({ ...tempFilter, departureCity: value === "all" ? undefined : value });
-  };
-
-  // 도착지 도시 변경 핸들러
-  const handleArrivalCityChange = (value: string) => {
-    setTempFilter({ ...tempFilter, arrivalCity: value === "all" ? undefined : value });
-  };
-
-  // 차주명 변경 핸들러
-  const handleDriverNameChange = (value: string) => {
-    setTempFilter({ ...tempFilter, driverName: value === "all" ? undefined : value });
-  };
+ 
 
   // 정산 상태 변경 핸들러
   const handleStatusChange = (value: string) => {
@@ -89,15 +71,7 @@ export function SettlementSearch() {
     });
   };
 
-  // 최소 금액 변경 핸들러
-  const handleMinAmountChange = (value: string) => {
-    setTempFilter({ ...tempFilter, minAmount: value === "" ? undefined : value });
-  };
-
-  // 최대 금액 변경 핸들러
-  const handleMaxAmountChange = (value: string) => {
-    setTempFilter({ ...tempFilter, maxAmount: value === "" ? undefined : value });
-  };
+  
   
   // 시작일 선택 핸들러
   const handleStartDateSelect = (date: Date | undefined) => {

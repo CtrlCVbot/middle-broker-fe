@@ -61,7 +61,7 @@ export function StatusFlow({ currentStatus }: { currentStatus: OrderStatusType }
         // 현재 상태는 강조, 이전 상태는 완료, 이후 상태는 비활성화
         const isActive = index === currentIndex;
         const isCompleted = index < currentIndex;
-        const isPending = index > currentIndex;
+        //const isPending = index > currentIndex;
         
         let badgeClass = "";
         if (isActive) {

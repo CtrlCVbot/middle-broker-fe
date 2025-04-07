@@ -18,7 +18,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMutation } from "@tanstack/react-query";
 import { TRANSPORT_OPTIONS } from "@/types/order";
 import { useToast } from "@/components/ui/use-toast";
-import { CalendarIcon, CheckCircleIcon, MapPinIcon, PackageIcon, TruckIcon, HandCoins, Phone } from "lucide-react";
+import { CheckCircleIcon, MapPinIcon, PackageIcon, TruckIcon, HandCoins, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface OrderRegisterSummaryProps {

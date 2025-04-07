@@ -26,35 +26,30 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusFlow } from "@/components/order/status-badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useForm } from "react-hook-form";
 import { useOrderRegisterStore } from "@/store/order-register-store";
 import { useOrderEditStore } from "@/store/order-edit-store";
-import { useQuery } from "@tanstack/react-query";
 import { 
   VEHICLE_TYPES, 
   WEIGHT_TYPES, 
   TRANSPORT_OPTIONS, 
-  ILocationInfo,
-  IOrderRegisterData
+  //ILocationInfo,
+  //IOrderRegisterData
 } from "@/types/order";
 import { 
   calculateAmount, 
   calculateDistance, 
-  searchAddress 
+  //searchAddress 
 } from "@/utils/mockdata/mock-register";
 import { LocationForm } from "@/components/order/register-location-form";
 import { OptionSelector } from "./register-option-selector";
-import { CalendarIcon, InfoIcon, TruckIcon, MapPinIcon, Settings2 as OptionsIcon, Calculator as CalculatorIcon, ChevronDown, ChevronUp, PencilIcon, Info } from "lucide-react";
+import { TruckIcon, MapPinIcon, Settings2 as OptionsIcon, Calculator as CalculatorIcon, ChevronDown, ChevronUp, PencilIcon, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/components/ui/use-toast";
 

@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { WaitingTab } from "@/components/broker/expenditure/tabs/waiting-tab";
+
 import { MatchingTab } from "@/components/broker/expenditure/tabs/matching-tab";
 import { CompletedTab } from "@/components/broker/expenditure/tabs/completed-tab";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { FileText, Loader2, PlusCircle } from "lucide-react";
+import { Loader2, PlusCircle } from "lucide-react";
 import { useInvoiceStore } from "@/store/expenditure/invoice-store";
 import { InvoiceFilter } from "@/components/broker/expenditure/invoice/invoice-filter";
 import { InvoiceTable } from "@/components/broker/expenditure/invoice/invoice-table";
@@ -19,10 +19,10 @@ export default function ExpenditurePage() {
   const { 
     invoices,
     currentPage,
-    totalPages,
+    //totalPages,
     isLoading,
     filter,
-    updateFilter,
+    //updateFilter,
     resetFilter,
     fetchInvoices,
     //setMatchingSheetOpen,

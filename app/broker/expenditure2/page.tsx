@@ -1,18 +1,11 @@
 "use client";
 
 import React, { useEffect, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  BarChart4, 
-  Calendar, 
-  DollarSign, 
-  FileText, 
   Loader2,
-  Package, 
-  PlusCircle,
-  TrendingUp 
 } from "lucide-react";
 import { useExpenditureStore } from "@/store/expenditure-store";
 import { useExpenditureWaitingStore } from "@/store/expenditure-waiting-store";
@@ -21,7 +14,7 @@ import { ExpenditureDetailSheet } from "@/components/broker/expenditure2/expendi
 import { ExpenditureFormSheet } from "@/components/broker/expenditure2/expenditure-form-sheet";
 import { ExpenditureFilter } from "@/components/broker/expenditure2/expenditure-filter";
 import { ExpenditureStatusType } from "@/types/expenditure";
-import { formatCurrency } from "@/lib/utils";
+
 import { ExpenditureWaitingTable } from "@/components/broker/expenditure2/expenditure-waiting-table";
 import { ExpenditureWaitingSearch } from "@/components/broker/expenditure2/expenditure-waiting-search";
 import ExpenditureWaitingSummary from "@/components/broker/expenditure2/expenditure-waiting-summary";
@@ -34,9 +27,9 @@ export default function ExpenditurePage() {
     expenditures,
     currentPage,
     totalPages,
-    totalItems,
+    //totalItems,
     isLoading,
-    error,
+    // error,
     filter,
     fetchExpenditures,
     setFilter,

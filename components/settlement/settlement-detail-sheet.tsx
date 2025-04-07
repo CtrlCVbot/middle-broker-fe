@@ -19,14 +19,8 @@ import { ISettlement, ISettlementLog, SettlementStatus } from "@/types/settlemen
 import { formatCurrency, formatDate, cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Calendar,
-  CreditCard,
   MapPin,
-  Truck,
-  User,
   Clock,
-  ClipboardList,
-  Banknote,
   Phone,
   CalendarClock,
   AlertTriangle

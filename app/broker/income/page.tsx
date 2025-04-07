@@ -1,18 +1,11 @@
 "use client";
 
 import React, { useEffect, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  BarChart4, 
-  Calendar, 
-  DollarSign, 
-  FileText, 
   Loader2,
-  Package, 
-  PlusCircle,
-  TrendingUp 
 } from "lucide-react";
 import { useIncomeStore } from "@/store/income-store";
 import { useIncomeWaitingStore } from "@/store/income-waiting-store";
@@ -21,7 +14,6 @@ import { IncomeDetailSheet } from "@/components/broker/income/income-detail-shee
 import { IncomeFormSheet } from "@/components/broker/income/income-form-sheet";
 import { IncomeFilter } from "@/components/broker/income/income-filter";
 import { IncomeStatusType } from "@/types/income";
-import { formatCurrency } from "@/lib/utils";
 import { IncomeWaitingTable } from "@/components/broker/income/income-waiting-table";
 import { IncomeWaitingSearch } from "@/components/broker/income/income-waiting-search";
 import IncomeWaitingSummary from "@/components/broker/income/income-waiting-summary";
@@ -35,9 +27,7 @@ export default function IncomePage() {
     incomes,
     currentPage,
     totalPages,
-    totalItems,
     isLoading,
-    error,
     filter,
     setFilter,
     fetchIncomes,

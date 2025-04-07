@@ -10,8 +10,8 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
-import { Home, Truck, Info, Grid3x3, ListFilter, Menu, BarChart2 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Truck, Grid3x3, ListFilter, BarChart2 } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useBrokerDriverStore } from "@/store/broker-driver-store";
 import { TONNAGE_TYPES, getBrokerDriversByPage } from "@/utils/mockdata/mock-broker-drivers";
 import { BrokerDriverSearch } from "@/components/broker/driver/broker-driver-search";
@@ -20,14 +20,14 @@ import { BrokerDriverCardGrid } from "@/components/broker/driver/broker-driver-c
 import { BrokerDriverPagination } from "@/components/broker/driver/broker-driver-pagination";
 import { BrokerDriverActionButtons } from "@/components/broker/driver/broker-driver-action-buttons";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
+
 import { cn } from "@/lib/utils";
 import { IBrokerDriver, TonnageType } from "@/types/broker-driver";
 import { toast } from "sonner";
 import { ToggleGroup } from "@/components/ui/toggle-group";
 import { ToggleGroupItem } from "@/components/ui/toggle-group";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { BrokerDriverRegisterSheet } from "@/components/broker/driver/broker-driver-register-sheet";
 
 // 결과 타입 정의
@@ -62,39 +62,13 @@ export default function BrokerDriverPage() {
     setCurrentPage,
     setPageSize,
     selectedDriverIds,
-    clearSelectedDriverIds,
   } = useBrokerDriverStore();
 
   // 선택된 차주 상태 관리
   const [selectedDriver, setSelectedDriver] = useState<IBrokerDriver | null>(null);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
 
-  // 상태 통계 탭
-  const [statsTab, setStatsTab] = useState<string>("all");
-
-  // 탭 변경 시 필터 적용
-  const handleTabChange = (tab: string) => {
-    setStatsTab(tab);
-    
-    // 스토어에 필터 적용
-    if (tab === "active") {
-      useBrokerDriverStore.getState().setFilter({
-        status: "활성"
-      });
-    } else if (tab === "inactive") {
-      useBrokerDriverStore.getState().setFilter({
-        status: "비활성"
-      });
-    } else {
-      // "all"인 경우 상태 필터 제거
-      useBrokerDriverStore.getState().setFilter({
-        status: ""
-      });
-    }
-    
-    // 페이지 초기화
-    setCurrentPage(1);
-  };
+  
 
   // 차주 목록 데이터 조회
   const { data, isLoading, isError, refetch } = useQuery<DriverQueryResult>({
@@ -160,13 +134,6 @@ export default function BrokerDriverPage() {
     if (value === "table" || value === "card") {
       setViewMode(value);
     }
-  };
-
-  // 메뉴 버튼 클릭 핸들러
-  const handleMenuClick = () => {
-    // 사이드바를 직접 컨트롤할 수 없으므로 대안으로 메시지 표시
-    toast.info('메뉴 버튼이 클릭되었습니다.');
-    // 나중에 사이드바 상태를 전역 상태로 관리하면 여기서 토글할 수 있습니다
   };
 
   // 톤수별 통계 계산
@@ -376,7 +343,7 @@ export default function BrokerDriverPage() {
                     {/* 통합 바 차트 */}
                     <div className="mb-2">
                       <div className="flex h-4 overflow-hidden rounded-md bg-gray-100">
-                        {tonnageStats.map((stat, index) => (
+                        {tonnageStats.map((stat) => (
                           <div
                             key={stat.type}
                             className={cn(

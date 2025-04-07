@@ -10,7 +10,7 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
-import { Home, Building, Info, Grid3x3, ListFilter } from "lucide-react";
+import { Building, Grid3x3, ListFilter } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useBrokerCompanyStore } from "@/store/broker-company-store";
 import { getBrokerCompaniesByPage } from "@/utils/mockdata/mock-broker-companies";
@@ -22,7 +22,7 @@ import { BrokerCompanyActionButtons } from "@/components/broker/company/broker-c
 import { BrokerCompanyRegisterSheet } from "@/components/broker/company/broker-company-register-sheet";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { IBrokerCompany } from "@/types/broker-company";
 import { toast } from "sonner";
 import { ToggleGroup } from "@/components/ui/toggle-group";
@@ -50,8 +50,8 @@ export default function BrokerCompanyPage() {
     pageSize,
     setCurrentPage,
     setPageSize,
-    selectedCompanyIds,
-    clearSelectedCompanyIds,
+    //selectedCompanyIds,
+    //clearSelectedCompanyIds,
   } = useBrokerCompanyStore();
 
   // 선택된 업체 상태 관리
@@ -106,7 +106,7 @@ export default function BrokerCompanyPage() {
     if (!data || !data.total) return { total: 0, active: 0, inactive: 0 };
     
     const activeCount = data.data.filter(company => company.status === '활성').length;
-    const inactiveCount = data.data.filter(company => company.status === '비활성').length;
+    //const inactiveCount = data.data.filter(company => company.status === '비활성').length;
     
     // 현재 페이지의 활성/비활성 비율을 전체에 적용
     const estimatedActive = Math.round((activeCount / data.data.length) * data.total);

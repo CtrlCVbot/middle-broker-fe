@@ -59,6 +59,7 @@ export interface IBrokerOrder {
     contact: string;           // 연락처
   };
   createdAt: string;           // 등록일
+  updatedAt: string;           // 수정일
   settlementStatus?: SettlementStatus; // 정산 상태
   settlementId?: string;       // 정산 ID
   

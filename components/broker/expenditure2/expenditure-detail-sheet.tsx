@@ -23,24 +23,48 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { 
-  DollarSign, 
-  FileText, 
-  Package, 
-  CreditCard, 
-  CheckCircle, 
-  AlertCircle,
-  BarChart4,
-  Clock,
-  Copy,
-  Send,
-  Truck
-} from "lucide-react";
+import { DollarSign, FileText, Package, CreditCard, CheckCircle, AlertCircle, BarChart4, Clock, Copy, Send, Truck } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-import { useExpenditureDetailStore } from "@/store/expenditure-store";
+import { useExpenditureDetailStore } from "@/store/expenditure-detail-store";
 import { ExpenditureStatusType, AdditionalFeeType } from "@/types/expenditure";
 import { ExpenditureAdditionalCost } from "./expenditure-additional-cost";
 import { ExpenditureStatusBadge } from "./expenditure-status-badge";
+
+interface IOrder {
+  id: string;
+  departureLocation: string;
+  arrivalLocation: string;
+  vehicle: {
+    type: string;
+    weight: string;
+  };
+  chargeAmount?: number;
+  amount: number;
+  fee: number;
+}
+
+interface IAdditionalFee {
+  id: string;
+  type: string;
+  amount: number;
+  description?: string;
+  orderId?: string;
+  createdBy: string;
+  createdAt: string;
+}
+
+interface ILog {
+  status: ExpenditureStatusType;
+  time: string;
+  date: string;
+  handler?: string;
+  remark?: string;
+}
+
+interface IExpenditureAdditionalCostProps {
+  expenditureId: string;
+  orderIds: string[];
+}
 
 export function ExpenditureDetailSheet() {
   const {
@@ -278,20 +302,7 @@ export function ExpenditureDetailSheet() {
                   </TableHeader>
                   <TableBody>
                     {expenditureDetail.orders ? (
-                      expenditureDetail.orders.map((order) => (
-                        <TableRow key={order.id}>
-                          <TableCell className="font-medium">{order.id}</TableCell>
-                          <TableCell>{order.departureLocation}</TableCell>
-                          <TableCell>{order.arrivalLocation}</TableCell>
-                          <TableCell>{order.vehicle.type} {order.vehicle.weight}</TableCell>
-                          <TableCell className="text-right">
-                            {formatCurrency(order.chargeAmount || order.amount)}원
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {formatCurrency(order.fee)}원
-                          </TableCell>
-                        </TableRow>
-                      ))
+                      renderOrderList(expenditureDetail.orders)
                     ) : (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center h-16 text-muted-foreground">
@@ -327,55 +338,11 @@ export function ExpenditureDetailSheet() {
               
               {isEditingAdditionalFee ? (
                 <ExpenditureAdditionalCost 
-                  ExpenditureId={expenditureDetail.id} 
+                  expenditureId={expenditureDetail.id} 
                   orderIds={expenditureDetail.orderIds}
                 />
               ) : (
-                expenditureDetail.additionalFees.length > 0 ? (
-                  <div className="border rounded-md">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-muted/50">
-                          <TableHead>유형</TableHead>
-                          <TableHead>설명</TableHead>
-                          <TableHead>대상 화물</TableHead>
-                          <TableHead>등록자</TableHead>
-                          <TableHead>등록일</TableHead>
-                          <TableHead className="text-right">금액</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {expenditureDetail.additionalFees.map((fee) => (
-                          <TableRow key={fee.id}>
-                            <TableCell>{fee.type}</TableCell>
-                            <TableCell>{fee.description || "-"}</TableCell>
-                            <TableCell>{fee.orderId || "전체"}</TableCell>
-                            <TableCell>{fee.createdBy}</TableCell>
-                            <TableCell>{fee.createdAt.split(' ')[0]}</TableCell>
-                            <TableCell className={`text-right ${fee.amount >= 0 ? "text-blue-600" : "text-red-600"}`}>
-                              {fee.amount >= 0 ? "+" : ""}{formatCurrency(fee.amount)}원
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-32 bg-muted/20 rounded-md">
-                    <p className="text-muted-foreground">추가금 내역이 없습니다.</p>
-                    {expenditureDetail.status !== 'COMPLETED' && (
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="mt-2"
-                        onClick={() => setIsEditingAdditionalFee(true)}
-                      >
-                        <DollarSign className="h-3.5 w-3.5 mr-1" />
-                        추가금 추가하기
-                      </Button>
-                    )}
-                  </div>
-                )
+                renderAdditionalFees(expenditureDetail.additionalFees)
               )}
             </div>
           </TabsContent>
@@ -389,30 +356,7 @@ export function ExpenditureDetailSheet() {
               </h3>
               
               <div className="space-y-2">
-                {expenditureDetail.logs.map((log, index) => (
-                  <div 
-                    key={index} 
-                    className="flex items-start p-3 border rounded-md hover:bg-muted/20"
-                  >
-                    <div className="mr-4">
-                      <ExpenditureStatusBadge status={log.status} size="sm" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium">{log.status}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {log.date} {log.time}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-xs text-muted-foreground">처리자: {log.handler || "-"}</span>
-                        {log.remark && (
-                          <span className="text-xs">{log.remark}</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                {renderStatusLogs(expenditureDetail.logs)}
               </div>
             </div>
           </TabsContent>
@@ -462,6 +406,65 @@ export function ExpenditureDetailSheet() {
         </div>
       </div>
     );
+  };
+
+  const renderOrderList = (orders: IOrder[]) => {
+    return orders.map((order) => (
+      <TableRow key={order.id}>
+        <TableCell className="font-medium">{order.id}</TableCell>
+        <TableCell>{order.departureLocation}</TableCell>
+        <TableCell>{order.arrivalLocation}</TableCell>
+        <TableCell>{order.vehicle.type} {order.vehicle.weight}</TableCell>
+        <TableCell className="text-right">
+          {formatCurrency(order.chargeAmount || order.amount)}원
+        </TableCell>
+        <TableCell className="text-right">
+          {formatCurrency(order.fee)}원
+        </TableCell>
+      </TableRow>
+    ));
+  };
+
+  const renderAdditionalFees = (fees: IAdditionalFee[]) => {
+    return fees.map((fee) => (
+      <TableRow key={fee.id}>
+        <TableCell>{fee.type}</TableCell>
+        <TableCell>{fee.description || "-"}</TableCell>
+        <TableCell>{fee.orderId || "전체"}</TableCell>
+        <TableCell>{fee.createdBy}</TableCell>
+        <TableCell>{fee.createdAt.split(' ')[0]}</TableCell>
+        <TableCell className={`text-right ${fee.amount >= 0 ? "text-blue-600" : "text-red-600"}`}>
+          {fee.amount >= 0 ? "+" : ""}{formatCurrency(fee.amount)}원
+        </TableCell>
+      </TableRow>
+    ));
+  };
+
+  const renderStatusLogs = (logs: ILog[]) => {
+    return logs.map((log, index) => (
+      <div 
+        key={index} 
+        className="flex items-start p-3 border rounded-md hover:bg-muted/20"
+      >
+        <div className="mr-4">
+          <ExpenditureStatusBadge status={log.status} size="sm" />
+        </div>
+        <div className="flex-1">
+          <div className="flex justify-between mb-1">
+            <span className="text-sm font-medium">{log.status}</span>
+            <span className="text-xs text-muted-foreground">
+              {log.date} {log.time}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-xs text-muted-foreground">처리자: {log.handler || "-"}</span>
+            {log.remark && (
+              <span className="text-xs">{log.remark}</span>
+            )}
+          </div>
+        </div>
+      </div>
+    ));
   };
 
   return (
