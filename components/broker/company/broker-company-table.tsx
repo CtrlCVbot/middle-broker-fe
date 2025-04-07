@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Table,
   TableBody,
@@ -35,7 +35,6 @@ export function BrokerCompanyTable({ companies, onCompanyClick }: BrokerCompanyT
   
   // 모든 회사 선택 상태
   const allSelected = companies.length > 0 && selectedCompanyIds.length === companies.length;
-  //const someSelected = selectedCompanyIds.length > 0 && !allSelected;
   
   // 전체 선택/해제 핸들러
   const handleSelectAll = () => {

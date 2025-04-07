@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+
 import { BrokerRegisterLocationForm } from "./broker-register-location-form";
 import { BrokerRegisterOptionSelector } from "./broker-register-option-selector";
 import { BrokerOrderRegisterSummary } from "./broker-register-summary";

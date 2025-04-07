@@ -5,25 +5,19 @@ import {
   Sheet,
   SheetContent,
   SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+  SheetTitle
 } from "@/components/ui/sheet";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Separator } from "@/components/ui/separator";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { DollarSign, FileText, Package, CreditCard, CheckCircle, AlertCircle, BarChart4, Clock, Copy, Send, Truck } from "lucide-react";
+import { DollarSign, FileText, Package,  CheckCircle, AlertCircle,  Clock, Copy, Send, Truck } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useExpenditureDetailStore } from "@/store/expenditure-detail-store";
 import { ExpenditureStatusType, IAdditionalFee, IExpenditureLog } from "@/types/expenditure";

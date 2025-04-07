@@ -1,20 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { 
   AlertTriangle, 
   Truck, 
-  User, 
-  Phone, 
   MapPin, 
   Star, 
-  Bell, 
   Clock,
-  MessageSquare,
   Pin,
   Building,
   ChevronDown,

@@ -3,12 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { 
   Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
   FormLabel, 
-  FormMessage 
 } from "@/components/ui/form";
 import { 
   Select, 
@@ -28,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusFlow } from "@/components/order/status-badge";
 import { useForm } from "react-hook-form";
 import { useOrderRegisterStore } from "@/store/order-register-store";

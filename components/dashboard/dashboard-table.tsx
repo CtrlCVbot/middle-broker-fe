@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import { OrderStatusType } from "@/types/order";
-import { cn } from "@/lib/utils";
+
 
 // 상태에 따른 배지 색상 및 스타일
 const getStatusBadgeStyles = (status: OrderStatusType) => {

@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+
 import { 
   Select, 
   SelectContent, 
@@ -23,10 +23,10 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent } from "@/components/ui/card";
+
 import {
   Dialog,
   DialogContent,
@@ -34,17 +34,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  
 } from "@/components/ui/dialog";
 import { 
   Plus, 
   Trash, 
-  DollarSign, 
-  Edit, 
-  CreditCard, 
-  TrendingUp, 
-  Save, 
-  X,
+  Edit,
   AlertTriangle,
   Building,
   Factory

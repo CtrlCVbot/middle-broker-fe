@@ -1,11 +1,10 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardStore } from "@/store/dashboard-store";
-import { ActivitySquare, MoreVertical, ArrowUp, ArrowDown } from "lucide-react";
+import { MoreVertical, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { OrderStatusType } from "@/types/order";
 

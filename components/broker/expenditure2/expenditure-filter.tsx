@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { ko } from "date-fns/locale";
-import { IExpenditureFilter, Expenditure_STATUS, ExpenditureStatusType } from "@/types/expenditure";
+import { IExpenditureFilter, ExpenditureStatusType } from "@/types/expenditure";
 
 interface ExpenditureFilterProps {
   onFilterChange: (filter: Partial<IExpenditureFilter>) => void;
@@ -65,10 +65,10 @@ export function ExpenditureFilter({ onFilterChange, onResetFilter, tabStatus }: 
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   
   // 날짜 포맷 함수
-  const formatDateForFilter = (date: Date | undefined) => {
-    if (!date) return undefined;
-    return format(date, "yyyy-MM-dd");
-  };
+  // const formatDateForFilter = (date: Date | undefined) => {
+  //   if (!date) return undefined;
+  //   return format(date, "yyyy-MM-dd");
+  // };
   
   // 검색어 입력 시 필터 업데이트
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -15,10 +15,6 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  DollarSign,
-  FileText,
-  CheckCircle2,
-  XCircle,
 } from "lucide-react";
 import { IIncome, IncomeStatusType } from "@/types/income";
 import { formatCurrency } from "@/lib/utils";

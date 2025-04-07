@@ -6,16 +6,11 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
-  SheetFooter,
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+
 import {
   Table,
   TableBody,
@@ -32,15 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { 
-  PlusCircle, 
-  MinusCircle, 
   CheckCircle,
-  Truck,
-  DollarSign,
-  FileText,
-  Calendar,
-  Building,
-  User,
   CalendarIcon,
   Loader2,
   Save,
@@ -48,7 +35,7 @@ import {
   ChevronDown,
   ChevronUp
 } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+
 import { 
   Popover,
   PopoverContent,

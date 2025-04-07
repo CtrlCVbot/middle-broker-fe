@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Users } from "lucide-react";
 import { formatCurrency } from "../../../utils/format";

@@ -40,7 +40,6 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
   const { 
     managers, 
     isLoading, 
-    error,
     filter,
     selectedManagerIds,
     toggleManagerSelection,
@@ -158,15 +157,6 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
     return (
       <div className="flex items-center justify-center py-8">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-2 py-8">
-        <p className="text-destructive">{error}</p>
-        <Button onClick={() => loadManagers(companyId)}>다시 시도</Button>
       </div>
     );
   }

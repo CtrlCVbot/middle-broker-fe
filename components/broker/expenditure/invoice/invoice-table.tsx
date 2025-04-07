@@ -14,7 +14,7 @@ import { AmountDisplay } from "../shared/amount-display";
 import { IInvoice } from "@/types/broker/expenditure";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, FileText } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 
 interface InvoiceTableProps {
   isCardView?: boolean;

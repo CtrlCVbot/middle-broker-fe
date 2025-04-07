@@ -33,20 +33,15 @@ import { toast } from "@/components/ui/use-toast";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { 
-  AlertTriangle, 
-  Calendar,
   Search,
   Plus,
-  Trash,
   User,
-  Truck,
   X,
   Info,
   Factory

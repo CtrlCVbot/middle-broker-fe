@@ -38,10 +38,9 @@ import {
   Title,
   Tooltip as ChartTooltip,
   Legend,
-  ChartOptions,
   Filler
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+
 
 // Chart.js 컴포넌트 등록
 ChartJS.register(

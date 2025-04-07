@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Calendar, ArrowRight, Package, User, ChevronDown, ChevronUp, Search, X, Pencil, AlertTriangle, CreditCard, MessageSquare, Plus } from "lucide-react";
+
+import { MapPin, Calendar, ArrowRight, Package, User, ChevronDown, ChevronUp, Search, X, AlertTriangle, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -28,12 +28,12 @@ import {
   CommandItem,
   CommandList
 } from "@/components/ui/command";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { toast } from "@/components/ui/use-toast";
 import { 
   Form,
   FormControl,
-  FormDescription,
+
   FormField,
   FormItem,
   FormLabel,
@@ -175,7 +175,7 @@ interface BrokerOrderInfoEditFormProps {
 export function BrokerOrderInfoEditForm({ initialData, onSave, onCancel }: BrokerOrderInfoEditFormProps) {
   const [isShipperInfoOpen, setIsShipperInfoOpen] = useState(true);
   const [selectedOptions, setSelectedOptions] = useState<string[]>(initialData.cargo.options || []);
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  
   const [companyWarnings, setCompanyWarnings] = useState<CompanyWarning[]>(
     initialData.shipper.warnings || [
       { id: '1', date: '2023-05-15', content: '결제 지연 이력 있음', severity: 'medium' },

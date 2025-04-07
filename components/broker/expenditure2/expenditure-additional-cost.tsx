@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+
 import { useExpenditureDetailStore } from "@/store/expenditure-store";
 import { AdditionalFeeType, IExpenditure, IAdditionalFee } from "@/types/expenditure";
 import { DollarSign, Plus, Trash2 } from "lucide-react";

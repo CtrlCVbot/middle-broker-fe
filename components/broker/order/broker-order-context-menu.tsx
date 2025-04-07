@@ -3,12 +3,8 @@
 import React from "react";
 import {
   ContextMenu,
-  ContextMenuCheckboxItem,
   ContextMenuContent,
   ContextMenuItem,
-  ContextMenuLabel,
-  ContextMenuRadioGroup,
-  ContextMenuRadioItem,
   ContextMenuSeparator,
   ContextMenuShortcut,
   ContextMenuSub,
@@ -18,7 +14,7 @@ import {
 } from "@/components/ui/context-menu";
 import { useBrokerOrderDetailStore } from "@/store/broker-order-detail-store";
 import { IBrokerOrder, BrokerOrderStatusType, BROKER_ORDER_STATUS } from "@/types/broker-order";
-import { FileText, Truck, DollarSign, AlertCircle, ClipboardCheck, Map, Download, Send } from "lucide-react";
+import { FileText, Truck, DollarSign, AlertCircle, Map, Download, Send } from "lucide-react";
 
 interface BrokerOrderContextMenuProps {
   children: React.ReactNode;

@@ -5,38 +5,24 @@ import {
   Sheet, 
   SheetContent, 
   SheetHeader, 
-  SheetTitle,
-  SheetDescription, 
-  SheetFooter 
+  SheetTitle
 } from "@/components/ui/sheet";
-import { Separator } from "@/components/ui/separator";
 import { useQuery } from "@tanstack/react-query";
 import { useBrokerOrderDetailStore } from "@/store/broker-order-detail-store";
 import { getBrokerOrderDetailById } from "@/utils/mockdata/mock-broker-orders-detail";
-import { BrokerOrderProgress } from "./broker-order-progress";
 import { BrokerOrderInfoCard } from "./broker-order-info-card";
 import { BrokerOrderSettlementInfoCard } from "./broker-order-settlement-info-card";
 import { BrokerOrderStatusLog } from "./broker-order-status-log";
 import { BrokerOrderActionButtons } from "./broker-order-action-buttons";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { 
-  CalendarClock, 
   AlertTriangle, 
   Truck, 
   CreditCard, 
   Package, 
   History, 
-  Edit, 
-  Send,
-  User,
-  Bell,
-  Star,
-  MapPin,
-  Phone,
-  Clock,
   X,
   Pencil,
   AlertCircle,
@@ -44,31 +30,18 @@ import {
   MailX,
   MailCheck,
   Eye,
-  Save,
-  Building,
-  Factory,
   DollarSign,
   Check
 } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { formatCurrency } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BrokerOrderInfoEditForm } from "./broker-order-info-edit-form";
 import { BrokerOrderDriverInfoCard } from "./broker-order-driver-info-card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "@/components/ui/use-toast";
 import { BrokerOrderDriverInfoEditForm } from "./broker-order-driver-info-edit-form";
 import { BrokerOrderSettlementInfoEditForm } from "./broker-order-settlement-info-edit-form";
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from "@/components/ui/form";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Tooltip,
   TooltipContent,

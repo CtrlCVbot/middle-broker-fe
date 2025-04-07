@@ -23,8 +23,6 @@ export function BrokerCompanyActionButtons({
   onActionSuccess
 }: BrokerCompanyActionButtonsProps) {
   const { 
-    //viewMode, 
-    //setViewMode, 
     selectedCompanyIds, 
     clearSelectedCompanyIds 
   } = useBrokerCompanyStore();
@@ -82,42 +80,6 @@ export function BrokerCompanyActionButtons({
           <RotateCcw className="h-4 w-4" />
           <span className="hidden sm:inline">새로고침</span>
         </Button>
-        
-        {/* <Button
-          variant={viewMode === 'table' ? 'default' : 'outline'}
-          size="icon"
-          onClick={() => setViewMode('table')}
-          className="h-9 w-9"
-        >
-          <Grid3x3 className="h-4 w-4" />
-          <span className="sr-only">테이블 뷰</span>
-        </Button> */}
-        
-        {/* <Button
-          variant={viewMode === 'card' ? 'default' : 'outline'}
-          size="icon"
-          onClick={() => setViewMode('card')}
-          className="h-9 w-9"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
-          >
-            <rect width="7" height="7" x="3" y="3" rx="1" />
-            <rect width="7" height="7" x="14" y="3" rx="1" />
-            <rect width="7" height="7" x="14" y="14" rx="1" />
-            <rect width="7" height="7" x="3" y="14" rx="1" />
-          </svg>
-          <span className="sr-only">카드 뷰</span>
-        </Button> */}
       </div>
       
       {/* 선택 항목 수 표시 */}

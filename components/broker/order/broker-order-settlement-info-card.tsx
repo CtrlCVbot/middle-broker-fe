@@ -1,28 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Separator } from "@/components/ui/separator";
 import { 
-  AlertTriangle, 
-  CheckCircle, 
-  CreditCard, 
+  
   DollarSign, 
-  TrendingUp, 
-  ArrowDownUp, 
-  Clock, 
-  Plus, 
   Building, 
   Factory, 
-  ReceiptIcon, 
-  TicketCheck,
-  ChevronDown
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 
 // 추가금 타입 및 대상 정의

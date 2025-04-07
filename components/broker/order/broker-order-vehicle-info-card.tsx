@@ -1,7 +1,6 @@
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Truck, Package, ListFilter } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+
+import { Truck } from "lucide-react";
 
 interface VehicleInfo {
   type: string;
