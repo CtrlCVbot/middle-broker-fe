@@ -34,7 +34,7 @@ export function BrokerDriverTable({ drivers, onDriverClick }: BrokerDriverTableP
   
   // 모든 차주 선택 상태
   const allSelected = drivers.length > 0 && selectedDriverIds.length === drivers.length;
-  const someSelected = selectedDriverIds.length > 0 && !allSelected;
+  //const someSelected = selectedDriverIds.length > 0 && !allSelected;
   
   // 전체 선택/해제 핸들러
   const handleSelectAll = () => {

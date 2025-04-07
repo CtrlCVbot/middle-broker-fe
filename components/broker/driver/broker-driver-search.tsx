@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { CalendarIcon, Check, ChevronsUpDown, Filter, Loader2, Search, X } from "lucide-react";
+import { CalendarIcon, Filter, Loader2, Search, X } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 

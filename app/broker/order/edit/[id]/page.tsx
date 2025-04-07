@@ -8,7 +8,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BrokerOrderRegisterForm } from "@/components/broker/order/broker-register-form";
 import { BrokerEditConfirmDialog } from "@/components/broker/order/broker-edit-confirm-dialog";
 import { useBrokerOrderEditStore } from "@/store/broker-order-edit-store";
-import { updateBrokerOrder } from "@/utils/mockdata/mock-broker-order-edit";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, Home } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -42,8 +41,7 @@ export default function BrokerOrderEditPage() {
     setOriginalData,
     setLoading,
     setError,
-    resetState,
-    registerData
+    resetState
   } = useBrokerOrderEditStore();
   
   // URL 파라미터에서 ID를 추출합니다
@@ -104,9 +102,6 @@ export default function BrokerOrderEditPage() {
     
     try {
       setSaving(true);
-      
-      // 목업 API를 사용하여 화물 정보 업데이트
-      //const updatedData = await updateBrokerOrder(orderId, registerData);
       
       // 성공 메시지 표시
       toast({

@@ -17,11 +17,9 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Search, CalendarIcon } from "lucide-react";
 import { ICargo } from "@/types/broker/expenditure";
 import { AmountDisplay } from "../shared/amount-display";
-import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { generateMockCargos } from "@/utils/mockdata/mock-invoices";
 

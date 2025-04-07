@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -74,7 +74,8 @@ export default function IncomePage() {
       filter.searchTerm, 
       filter.shipperName, 
       filter.invoiceStatus, 
-      filter.manager]);
+      filter.manager,
+      fetchIncomes]);
       
   // 정산 대기 화물 데이터 로드
   useEffect(() => {
@@ -123,20 +124,6 @@ export default function IncomePage() {
   
   // 현재 페이지의 정산 대기 화물 목록
   const currentWaitingOrders = getOrdersByPage(waitingCurrentPage);
-  
-  // 요약 정보 계산 - useMemo로 캐싱하여 무한 루프 방지
-  const incomeData = useIncomeStore(state => state.incomes);
-  // const summary = useMemo(() => {
-  //   return incomeData.reduce(
-  //     (acc, income) => {
-  //       acc.totalAmount += income.finalAmount;
-  //       acc.totalCount += 1;
-  //       acc.totalOrderCount += income.orderCount;
-  //       return acc;
-  //     },
-  //     { totalAmount: 0, totalCount: 0, totalOrderCount: 0 }
-  //   );
-  // }, [incomeData]);
 
   return (
     <>

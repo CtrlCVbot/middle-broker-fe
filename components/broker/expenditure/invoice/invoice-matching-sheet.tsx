@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AmountDisplay } from "../shared/amount-display";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+
 import { 
   Table, 
   TableBody, 
@@ -40,15 +40,10 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
-import { AlertTriangle, Check, Plus, Trash2, Search, CalendarIcon } from "lucide-react";
+import { AlertTriangle, Check, Trash2, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";

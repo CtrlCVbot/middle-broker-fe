@@ -23,13 +23,17 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { formatCurrency } from "@/lib/utils";
+import { ISettlementResponse } from "@/types/settlement";
 
 // 총 정산액 요약 카드 컴포넌트
-function SettlementSummaryCard({ data, isLoading }: { data: any, isLoading: boolean }) {
+function SettlementSummaryCard({ data, isLoading }: { 
+  data: ISettlementResponse | undefined, 
+  isLoading: boolean 
+}) {
   // 총 정산액 계산
   const totalAmount = useMemo(() => {
     if (!data || !data.data || data.data.length === 0) return 0;
-    return data.data.reduce((sum: number, settlement: any) => sum + settlement.finalAmount, 0);
+    return data.data.reduce((sum, settlement) => sum + settlement.finalAmount, 0);
   }, [data]);
 
   // 총 건수

@@ -8,7 +8,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { OrderRegisterForm } from "@/components/order/register-form";
 import { EditConfirmDialog } from "@/components/order/edit-confirm-dialog";
 import { useOrderEditStore } from "@/store/order-edit-store";
-import { updateOrder } from "@/utils/mockdata/mock-order-edit";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, Home } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -42,8 +41,7 @@ export default function OrderEditPage() {
     setOriginalData,
     setLoading,
     setError,
-    resetState,
-    registerData
+    resetState
   } = useOrderEditStore();
   
   // URL 파라미터에서 ID를 추출합니다

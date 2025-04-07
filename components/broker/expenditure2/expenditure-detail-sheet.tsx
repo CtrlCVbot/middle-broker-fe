@@ -26,7 +26,7 @@ import { Label } from "@/components/ui/label";
 import { DollarSign, FileText, Package, CreditCard, CheckCircle, AlertCircle, BarChart4, Clock, Copy, Send, Truck } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useExpenditureDetailStore } from "@/store/expenditure-detail-store";
-import { ExpenditureStatusType, AdditionalFeeType } from "@/types/expenditure";
+import { ExpenditureStatusType, IAdditionalFee, IExpenditureLog } from "@/types/expenditure";
 import { ExpenditureAdditionalCost } from "./expenditure-additional-cost";
 import { ExpenditureStatusBadge } from "./expenditure-status-badge";
 
@@ -41,24 +41,6 @@ interface IOrder {
   chargeAmount?: number;
   amount: number;
   fee: number;
-}
-
-interface IAdditionalFee {
-  id: string;
-  type: string;
-  amount: number;
-  description?: string;
-  orderId?: string;
-  createdBy: string;
-  createdAt: string;
-}
-
-interface ILog {
-  status: ExpenditureStatusType;
-  time: string;
-  date: string;
-  handler?: string;
-  remark?: string;
 }
 
 interface IExpenditureAdditionalCostProps {
@@ -440,7 +422,7 @@ export function ExpenditureDetailSheet() {
     ));
   };
 
-  const renderStatusLogs = (logs: ILog[]) => {
+  const renderStatusLogs = (logs: IExpenditureLog[]) => {
     return logs.map((log, index) => (
       <div 
         key={index} 

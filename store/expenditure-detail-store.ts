@@ -1,5 +1,10 @@
 import { create } from 'zustand';
-import { IExpenditure, ExpenditureStatusType } from '@/types/expenditure';
+import { 
+  IExpenditure, 
+  ExpenditureStatusType, 
+  IAdditionalFee, 
+  IExpenditureLog 
+} from '@/types/expenditure';
 
 interface IOrder {
   id: string;
