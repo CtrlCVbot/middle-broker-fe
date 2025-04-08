@@ -150,43 +150,43 @@ export const data = {
       url: "/broker/driver/list",
       icon: Truck,
     },
-    {
-      title: "매출 정산",
-      url: "/broker/income",
-      icon: DollarSign,
-      items: [
-        {
-          title: "정산 목록",
-          url: "/broker/income",
-        },
-        {
-          title: "정산 대기 화물",
-          url: "/broker/income/first-settlement",
-        }
-      ],
-    },
-    {
-      title: "매입 정산",
-      url: "/broker/expenditure",
-      icon: DollarSign,
-      items: [
-        {
-          title: "정산 목록",
-          url: "/broker/expenditure",
-        },
-      ],
-    },
-    {
-      title: "매입 정산2",
-      url: "/broker/expenditure2",
-      icon: DollarSign,
-      items: [
-        {
-          title: "정산 목록",
-          url: "/broker/expenditure2",
-        },
-      ],
-    },
+    // {
+    //   title: "매출 정산",
+    //   url: "/broker/income",
+    //   icon: DollarSign,
+    //   items: [
+    //     {
+    //       title: "정산 목록",
+    //       url: "/broker/income",
+    //     },
+    //     {
+    //       title: "정산 대기 화물",
+    //       url: "/broker/income/first-settlement",
+    //     }
+    //   ],
+    // },
+    // {
+    //   title: "매입 정산",
+    //   url: "/broker/expenditure",
+    //   icon: DollarSign,
+    //   items: [
+    //     {
+    //       title: "정산 목록",
+    //       url: "/broker/expenditure",
+    //     },
+    //   ],
+    // },
+    // {
+    //   title: "매입 정산2",
+    //   url: "/broker/expenditure2",
+    //   icon: DollarSign,
+    //   items: [
+    //     {
+    //       title: "정산 목록",
+    //       url: "/broker/expenditure2",
+    //     },
+    //   ],
+    // },
   ], 
 
 
@@ -202,23 +202,7 @@ export const data = {
       icon: Send,
     },
   ],
-  projects: [
-    {
-      name: "디자인 엔지니어링",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "영업 및 마케팅",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "여행",
-      url: "#",
-      icon: Map,
-    },
-  ],
+  
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -244,7 +228,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavBroker items={data.navBroker} />
-        <NavProjects projects={data.projects} />
+        
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
