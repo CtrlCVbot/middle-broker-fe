@@ -460,6 +460,80 @@ export const swaggerSpec = {
           }
         }
       }
+    },
+    '/api/users/{userId}/fields': {
+      patch: {
+        summary: '사용자 필드 일괄 변경',
+        description: '특정 사용자의 여러 필드를 동시에 변경하고 변경 이력을 기록하는 API',
+        tags: ['Users'],
+        parameters: [
+          {
+            name: 'userId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: '사용자 ID'
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  fields: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      required: ['field', 'value'],
+                      properties: {
+                        field: {
+                          type: 'string',
+                          enum: ['status', 'system_access_level', 'name', 'phone_number', 'email', 'domains'],
+                          description: '변경할 필드명'
+                        },
+                        value: {
+                          type: 'string',
+                          description: '변경할 값'
+                        },
+                        reason: {
+                          type: 'string',
+                          description: '변경 사유'
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '200': {
+            description: '사용자 필드가 성공적으로 변경됨',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/User'
+                }
+              }
+            }
+          },
+          '400': {
+            description: '잘못된 요청 (잘못된 ID 형식, 잘못된 필드명 또는 값)'
+          },
+          '404': {
+            description: '사용자를 찾을 수 없음'
+          },
+          '500': {
+            description: '서버 오류'
+          }
+        }
+      }
     }
   }
 }; 

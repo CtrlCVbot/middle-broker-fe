@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { GET, POST } from '@/app/api/users/route';
 import { PUT, DELETE } from '@/app/api/users/[userId]/route';
-import { PATCH } from '@/app/api/users/[userId]/status/route';
+import { PATCH as STATUS_PATCH } from '@/app/api/users/[userId]/status/route';
+import { PATCH as FIELDS_PATCH } from '@/app/api/users/[userId]/fields/route';
 import { db } from '@/db';
 import { users, user_change_logs } from '@/db/schema/users';
 import { eq } from 'drizzle-orm';
@@ -216,7 +217,7 @@ describe('Users API', () => {
       };
 
       const request = createMockRequest('PATCH', statusChange, undefined, { userId });
-      const response = await PATCH(request, { params: { userId } });
+      const response = await STATUS_PATCH(request, { params: { userId } });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -240,11 +241,123 @@ describe('Users API', () => {
       const userId = result[0].id;
 
       const request = createMockRequest('PATCH', { status: 'invalid' }, undefined, { userId });
-      const response = await PATCH(request, { params: { userId } });
+      const response = await STATUS_PATCH(request, { params: { userId } });
       const data = await response.json();
 
       expect(response.status).toBe(400);
       expect(data.error).toContain('올바른 상태값이 필요합니다');
+    });
+  });
+
+  describe('PATCH /api/users/:userId/fields', () => {
+    it('should change multiple fields at once', async () => {
+      // 사용자 생성
+      const result = await db.insert(users).values(mockUser).returning().execute();
+      const userId = result[0].id;
+
+      const fieldsChange = {
+        fields: [
+          {
+            field: 'status',
+            value: 'inactive' as UserStatus,
+            reason: '상태 변경'
+          },
+          {
+            field: 'system_access_level',
+            value: 'viewer' as SystemAccessLevel,
+            reason: '권한 변경'
+          },
+          {
+            field: 'name',
+            value: '새로운 이름',
+            reason: '이름 변경'
+          }
+        ]
+      };
+
+      const request = createMockRequest('PATCH', fieldsChange, undefined, { userId });
+      const response = await FIELDS_PATCH(request, { params: { userId } });
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.status).toBe(fieldsChange.fields[0].value);
+      expect(data.system_access_level).toBe(fieldsChange.fields[1].value);
+      expect(data.name).toBe(fieldsChange.fields[2].value);
+      expect(data.password).toBeUndefined();
+
+      // 변경 이력이 기록되었는지 확인
+      const logs = await db
+        .select()
+        .from(user_change_logs)
+        .where(eq(user_change_logs.user_id, userId))
+        .execute();
+
+      expect(logs).toHaveLength(3); // 3개의 필드 변경
+      expect(logs[0].change_type).toBe('status_change');
+      expect(logs[1].change_type).toBe('system_access_level_change');
+      expect(logs[2].change_type).toBe('name_change');
+    });
+
+    it('should return 400 for invalid field value', async () => {
+      const result = await db.insert(users).values(mockUser).returning().execute();
+      const userId = result[0].id;
+
+      const fieldsChange = {
+        fields: [
+          {
+            field: 'status',
+            value: 'invalid_status',
+            reason: '잘못된 상태값'
+          }
+        ]
+      };
+
+      const request = createMockRequest('PATCH', fieldsChange, undefined, { userId });
+      const response = await FIELDS_PATCH(request, { params: { userId } });
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toContain('상태는 active, inactive, locked 중 하나여야 합니다');
+    });
+
+    it('should return 400 for duplicate email', async () => {
+      // 첫 번째 사용자 생성
+      const user1 = await db.insert(users).values(mockUser).returning().execute();
+      
+      // 두 번째 사용자 생성
+      const user2 = await db.insert(users).values({
+        ...mockUser,
+        email: 'another@example.com'
+      }).returning().execute();
+
+      const fieldsChange = {
+        fields: [
+          {
+            field: 'email',
+            value: mockUser.email, // 첫 번째 사용자의 이메일로 변경 시도
+            reason: '이메일 변경'
+          }
+        ]
+      };
+
+      const request = createMockRequest('PATCH', fieldsChange, undefined, { userId: user2[0].id });
+      const response = await FIELDS_PATCH(request, { params: { userId: user2[0].id } });
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe('이미 존재하는 이메일입니다.');
+    });
+
+    it('should return 400 for empty fields array', async () => {
+      const result = await db.insert(users).values(mockUser).returning().execute();
+      const userId = result[0].id;
+
+      const request = createMockRequest('PATCH', { fields: [] }, undefined, { userId });
+      const response = await FIELDS_PATCH(request, { params: { userId } });
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe('변경할 필드가 지정되지 않았습니다.');
     });
   });
 }); 
