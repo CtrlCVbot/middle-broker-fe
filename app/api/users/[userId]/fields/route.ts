@@ -17,12 +17,17 @@ const FieldUpdateSchema = z.object({
   }))
 });
 
+interface RouteContext {
+  params: Promise<{ userId: string }>;
+}
+
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  context: RouteContext
 ) {
   try {
-    const userId = await Promise.resolve(params.userId);
+    const params = await context.params;
+    const { userId } = params;
 
     // UUID 형식 검증
     if (!uuidValidate(userId)) {

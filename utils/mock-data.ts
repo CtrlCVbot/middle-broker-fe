@@ -133,9 +133,43 @@ export const mockAddresses: IAddress[] = [
 
 // 목업 사용자 데이터
 export const mockUsers: IUser[] = [
-  { email: "user@example.com", password: "password123" },
-  { email: "admin@example.com", password: "admin123" },
-]
+  {
+    id: "550e8400-e29b-41d4-a716-446655440000",
+    email: "user@example.com",
+    password: "password123",
+    name: "일반 사용자",
+    phone_number: "010-1234-5678",
+    company_id: "c550e840-e29b-41d4-a716-446655440000",
+    system_access_level: "shipper_member",
+    domains: ["logistics"],
+    status: "active",
+    department: "일반부서",
+    position: "사원",
+    rank: "사원",
+    created_by: "system",
+    updated_by: "system",
+    created_at: new Date(),
+    updated_at: new Date()
+  },
+  {
+    id: "550e8400-e29b-41d4-a716-446655440001",
+    email: "admin@example.com",
+    password: "admin123",
+    name: "관리자",
+    phone_number: "010-9876-5432",
+    company_id: "c550e840-e29b-41d4-a716-446655440000",
+    system_access_level: "platform_admin",
+    domains: ["logistics", "settlement"],
+    status: "active",
+    department: "관리부서",
+    position: "관리자",
+    rank: "관리자",
+    created_by: "system",
+    updated_by: "system",
+    created_at: new Date(),
+    updated_at: new Date()
+  }
+];
 
 // 페이지별 데이터 조회 함수
 export const getAddressesByPage = (page: number, limit: number, search?: string, type?: string) => {

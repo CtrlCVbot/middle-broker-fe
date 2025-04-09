@@ -3,17 +3,25 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { users } from '@/db/schema/users';
 import { IUser } from '@/types/user';
+import { z } from 'zod';
+import { validate as uuidValidate } from 'uuid';
 
 // UUID 형식 검증을 위한 정규식
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+interface RouteContext {
+  params: Promise<{ userId: string }>;
+}
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
-    // userId 파라미터 검증
+    const params = await context.params;
     const { userId } = params;
+
+    // userId 파라미터 검증
     if (!userId) {
       return NextResponse.json(
         { error: '사용자 ID가 필요합니다.' },
@@ -62,9 +70,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  context: RouteContext
 ) {
   try {
+    const params = await context.params;
     const { userId } = params;
     const body = await request.json();
 
@@ -142,9 +151,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  context: RouteContext
 ) {
   try {
+    const params = await context.params;
     const { userId } = params;
 
     // UUID 형식 검증

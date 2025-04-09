@@ -15,15 +15,17 @@ const QuerySchema = z.object({
   endDate: z.string().datetime().optional()
 });
 
-type Context = {
-  params: {
-    userId: string;
-  };
-};
+interface RouteContext {
+  params: Promise<{ userId: string }>;
+}
 
-export async function GET(request: NextRequest, context: Context) {
+export async function GET(
+  request: NextRequest,
+  context: RouteContext
+) {
   try {
-    const { userId } = context.params;
+    const params = await context.params;
+    const { userId } = params;
 
     // UUID 형식 검증
     if (!uuidValidate(userId)) {
