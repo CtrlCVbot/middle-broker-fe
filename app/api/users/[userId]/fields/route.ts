@@ -4,6 +4,10 @@ import { db } from '@/db';
 import { users } from '@/db/schema/users';
 import { eq } from 'drizzle-orm';
 import { validate as uuidValidate } from 'uuid';
+import { logUserChange } from '@/utils/user-change-logger';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { USER_DOMAINS, SYSTEM_ACCESS_LEVELS, USER_STATUSES, type UserDomain, type IUser } from '@/types/user';
 
 // 필드 값 검증을 위한 Zod 스키마
 const FieldUpdateSchema = z.object({
@@ -19,7 +23,15 @@ export async function PATCH(
   { params }: { params: { userId: string } }
 ) {
   try {
-    // params를 비동기적으로 처리
+    // 현재 로그인한 사용자 정보 가져오기
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return new Response(
+        JSON.stringify({ error: '인증되지 않은 사용자입니다.' }),
+        { status: 401 }
+      );
+    }
+
     const userId = await Promise.resolve(params.userId);
 
     // UUID 형식 검증
@@ -47,7 +59,7 @@ export async function PATCH(
     // 사용자 존재 여부 확인
     const existingUser = await db.query.users.findFirst({
       where: eq(users.id, userId)
-    });
+    }) as unknown as IUser;
 
     if (!existingUser) {
       return new Response(
@@ -57,9 +69,10 @@ export async function PATCH(
     }
 
     // 업데이트할 필드 데이터 준비
-    const updateData: Partial<typeof users.$inferSelect> = {};
+    const updateData: Partial<IUser> = {};
+    const reasons: Record<string, string> = {};
     
-    for (const { field, value } of body.fields) {
+    for (const { field, value, reason } of body.fields) {
       switch (field) {
         case 'status':
           if (!['active', 'inactive', 'locked'].includes(value)) {
@@ -69,6 +82,7 @@ export async function PATCH(
             );
           }
           updateData.status = value;
+          if (reason) reasons['status'] = reason;
           break;
           
         case 'system_access_level':
@@ -79,6 +93,7 @@ export async function PATCH(
             );
           }
           updateData.system_access_level = value;
+          if (reason) reasons['system_access_level'] = reason;
           break;
           
         case 'email':
@@ -93,18 +108,28 @@ export async function PATCH(
             );
           }
           updateData.email = value;
+          if (reason) reasons['email'] = reason;
           break;
           
         case 'phone_number':
           updateData.phone_number = value;
+          if (reason) reasons['phone_number'] = reason;
           break;
 
         case 'name':
           updateData.name = value;
+          if (reason) reasons['name'] = reason;
           break;
 
         case 'domains':
-          updateData.domains = value;
+          if (!Array.isArray(value) || !value.every(domain => USER_DOMAINS.includes(domain as UserDomain))) {
+            return new Response(
+              JSON.stringify({ error: '잘못된 도메인 값입니다.' }),
+              { status: 400 }
+            );
+          }
+          updateData.domains = value as UserDomain[];
+          if (reason) reasons['domains'] = reason;
           break;
       }
     }
@@ -115,10 +140,26 @@ export async function PATCH(
         .update(users)
         .set({
           ...updateData,
-          updated_at: new Date()
+          updated_at: new Date(),
+          updated_by: session.user.id
         })
         .where(eq(users.id, userId))
         .returning();
+
+      // 변경 이력 기록
+      await logUserChange({
+        user_id: userId,
+        changed_by: session.user.id,
+        changed_by_name: session.user.name || '',
+        changed_by_email: session.user.email || '',
+        changed_by_access_level: session.user.system_access_level,
+        change_type: 'update',
+        oldData: existingUser,
+        newData: updateData,
+        reason: Object.entries(reasons)
+          .map(([field, reason]) => `${field}: ${reason}`)
+          .join(', ')
+      });
         
       return result[0];
     });

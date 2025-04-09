@@ -44,20 +44,20 @@ export type UserStatus = typeof USER_STATUSES[number];
 // 기존 인터페이스 확장
 export interface IUser {
   id: string;
-  auth_id: string;
-  name: string;
   email: string;
+  password?: string;
+  name: string;
   phone_number: string;
-  company_id?: string;
+  company_id: string | null;
   system_access_level: SystemAccessLevel;
   domains: UserDomain[];
   status: UserStatus;
-  department?: string;
-  position?: string;
-  rank?: string;
+  department?: string | null;
+  position?: string | null;
+  rank?: string | null;
   last_login_at?: Date | null;
-  created_by: string;
-  updated_by: string;
+  created_by?: string | null;
+  updated_by?: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -90,8 +90,8 @@ export interface IUserChangeLog {
   changed_by_name: string;
   changed_by_email: string;
   changed_by_access_level?: string;
-  change_type: string;
-  diff: Record<string, [string, string]>;
+  change_type: 'create' | 'update' | 'status_change' | 'delete';
+  diff: Record<string, [any, any]>;
   reason?: string;
   created_at: Date;
 }

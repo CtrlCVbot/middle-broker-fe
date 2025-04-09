@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { eq, and, ilike, or, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { users } from '@/db/schema/users';
-import { IUserFilter, SystemAccessLevel, UserStatus } from '@/types/user';
+import { IUserFilter, SystemAccessLevel, UserStatus, UserDomain, USER_DOMAINS, IUser } from '@/types/user';
+import { z } from 'zod';
+import { hash } from 'bcrypt';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { logUserChange } from '@/utils/user-change-logger';
 
 export async function GET(request: NextRequest) {
   try {
@@ -83,54 +88,95 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// 사용자 생성 요청 스키마
+const CreateUserSchema = z.object({
+  email: z.string().email('올바른 이메일 형식이 아닙니다.'),
+  password: z.string().min(8, '비밀번호는 최소 8자 이상이어야 합니다.'),
+  name: z.string().min(2, '이름은 최소 2자 이상이어야 합니다.'),
+  phone_number: z.string().min(10, '올바른 전화번호 형식이 아닙니다.'),
+  company_id: z.string().uuid().optional(),
+  system_access_level: z.enum(['platform_admin', 'broker_admin', 'shipper_admin', 'broker_member', 'shipper_member', 'viewer', 'guest']),
+  domains: z.array(z.enum(USER_DOMAINS)),
+  department: z.string().optional(),
+  position: z.string().optional(),
+  rank: z.string().optional()
+});
+
 export async function POST(request: NextRequest) {
   try {
+    // 현재 로그인한 사용자 정보 가져오기
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return new Response(
+        JSON.stringify({ error: '인증되지 않은 사용자입니다.' }),
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
-    
-    // 필수 필드 검증
-    const requiredFields = ['email', 'password', 'name', 'phone_number', 'system_access_level', 'domains'];
-    const missingFields = requiredFields.filter(field => !body[field]);
-    
-    if (missingFields.length > 0) {
-      return NextResponse.json(
-        { error: `다음 필드가 필요합니다: ${missingFields.join(', ')}` },
+
+    // 요청 데이터 검증
+    const validationResult = CreateUserSchema.safeParse(body);
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({
+          error: '잘못된 요청 형식입니다.',
+          details: validationResult.error.errors
+        }),
         { status: 400 }
       );
     }
 
-    // 이메일 중복 확인
-    const existingUser = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, body.email))
-      .execute();
+    const { password, ...userData } = validationResult.data;
 
-    if (existingUser.length > 0) {
-      return NextResponse.json(
-        { error: '이미 존재하는 이메일입니다.' },
+    // 이메일 중복 검사
+    const existingUser = await db.query.users.findFirst({
+      where: eq(users.email, userData.email)
+    });
+
+    if (existingUser) {
+      return new Response(
+        JSON.stringify({ error: '이미 등록된 이메일입니다.' }),
         { status: 400 }
       );
     }
 
-    // 사용자 생성
-    const newUser = {
-      ...body,
-      status: 'active' as const,
-      created_at: new Date(),
-      updated_at: new Date(),
-      // TODO: 실제 구현 시 인증된 사용자 ID로 대체
-      created_by: 'system',
-      updated_by: 'system'
-    };
+    // 비밀번호 해시화
+    const hashedPassword = await hash(password, 10);
 
-    const result = await db
-      .insert(users)
-      .values(newUser)
-      .returning()
-      .execute();
+    // 트랜잭션으로 사용자 생성 및 이력 기록
+    const newUser = await db.transaction(async (tx) => {
+      // 사용자 생성
+      const [createdUser] = await tx
+        .insert(users)
+        .values({
+          ...userData,
+          password: hashedPassword,
+          status: 'active' as const,
+          created_by: session.user.id,
+          updated_by: session.user.id,
+          created_at: new Date(),
+          updated_at: new Date()
+        })
+        .returning();
+
+      // 변경 이력 기록
+      await logUserChange({
+        user_id: createdUser.id,
+        changed_by: session.user.id,
+        changed_by_name: session.user.name || '',
+        changed_by_email: session.user.email || '',
+        changed_by_access_level: session.user.system_access_level,
+        change_type: 'create',
+        newData: createdUser as unknown as IUser,
+        reason: '신규 사용자 생성'
+      });
+
+      return createdUser;
+    });
 
     // 비밀번호 필드 제외하고 응답
-    const { password, ...userWithoutPassword } = result[0];
+    const { password: _, ...userWithoutPassword } = newUser;
 
     return NextResponse.json(userWithoutPassword, { status: 201 });
   } catch (error) {
