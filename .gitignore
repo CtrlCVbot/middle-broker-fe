@@ -46,4 +46,6 @@ next-env.d.ts
 # doc
 /docs/
 
+#supabase
+/supabase/
 

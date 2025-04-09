@@ -61,16 +61,6 @@ export const user_login_logs = pgTable('user_login_logs', {
   fail_reason: varchar('fail_reason', { length: 100 }),
 });
 
-// 사용자 상태 변경 이력 테이블
-export const user_status_change_logs = pgTable('user_status_change_logs', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  previous_status: userStatusEnum('previous_status').notNull(),
-  new_status: userStatusEnum('new_status').notNull(),
-  changed_by: uuid('changed_by').notNull().references(() => users.id, { onDelete: 'set null' }),
-  reason: text('reason'),
-  changed_at: timestamp('changed_at').notNull().defaultNow(),
-});
 
 // 사용자 변경 이력 테이블
 export const user_change_logs = pgTable('user_change_logs', {
