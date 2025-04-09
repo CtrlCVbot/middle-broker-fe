@@ -8,7 +8,7 @@ import {
   json,
   pgEnum
 } from 'drizzle-orm/pg-core';
-import { companies } from './companies';
+import { type CompanyId } from '@/types/schema';
 import { 
   SYSTEM_ACCESS_LEVELS,
   USER_DOMAINS,
@@ -34,7 +34,7 @@ export const users = pgTable('users', {
   name: varchar('name', { length: 100 }).notNull(),
   phone_number: varchar('phone_number', { length: 20 }).notNull(),
   
-  company_id: uuid('company_id').references(() => companies.id, { onDelete: 'cascade' }), // 소속 업체 ID
+  company_id: uuid('company_id'), // 참조를 직접적으로 하지 않음
   system_access_level: systemAccessLevelEnum('system_access_level').notNull().default('guest'),
   domains: json('domains').$type<string[]>().notNull().default([]), // 도메인(logistics, settlement, sales, etc) - 다중 선택 가능
   status: userStatusEnum('status').notNull().default('active'),
@@ -53,7 +53,7 @@ export const users = pgTable('users', {
 // 사용자 로그인 이력 테이블
 export const user_login_logs = pgTable('user_login_logs', {
   id: uuid('id').defaultRandom().primaryKey(),
-  user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  user_id: uuid('user_id').notNull(),
   login_at: timestamp('login_at').notNull().defaultNow(),
   ip_address: varchar('ip_address', { length: 50 }),
   user_agent: varchar('user_agent', { length: 500 }),
@@ -61,12 +61,11 @@ export const user_login_logs = pgTable('user_login_logs', {
   fail_reason: varchar('fail_reason', { length: 100 }),
 });
 
-
 // 사용자 변경 이력 테이블
 export const user_change_logs = pgTable('user_change_logs', {
   id: uuid('id').defaultRandom().primaryKey(),
-  user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  changed_by: uuid('changed_by').notNull().references(() => users.id, { onDelete: 'set null' }),
+  user_id: uuid('user_id').notNull(),
+  changed_by: uuid('changed_by').notNull(),
   changed_by_name: varchar('changed_by_name', { length: 100 }).notNull(),
   changed_by_email: varchar('changed_by_email', { length: 100 }).notNull(),
   changed_by_access_level: varchar('changed_by_access_level', { length: 50 }),
