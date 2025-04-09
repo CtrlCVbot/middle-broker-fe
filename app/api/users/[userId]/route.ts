@@ -4,6 +4,9 @@ import { db } from '@/db';
 import { users } from '@/db/schema/users';
 import { IUser } from '@/types/user';
 
+// UUID 형식 검증을 위한 정규식
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { userId: string } }
@@ -14,6 +17,14 @@ export async function GET(
     if (!userId) {
       return NextResponse.json(
         { error: '사용자 ID가 필요합니다.' },
+        { status: 400 }
+      );
+    }
+
+    // UUID 형식 검증
+    if (!UUID_REGEX.test(userId)) {
+      return NextResponse.json(
+        { error: '잘못된 사용자 ID 형식입니다.' },
         { status: 400 }
       );
     }
