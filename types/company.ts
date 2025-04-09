@@ -54,7 +54,7 @@ export interface ICompanyChangeLog {
     name: string;
     email: string;
   };
-  changeType: 'update' | 'status_change' | 'delete';
+  changeType: 'create' | 'update' | 'status_change' | 'delete';
   diff: Record<string, [any, any]>;  // 변경된 필드: [이전, 이후]
   reason?: string;
   createdAt: string;
