@@ -5,12 +5,11 @@ import { users } from '@/db/schema/users';
 import { eq } from 'drizzle-orm';
 import { validate as uuidValidate } from 'uuid';
 import { logUserChange } from '@/utils/user-change-logger';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { USER_DOMAINS, SYSTEM_ACCESS_LEVELS, USER_STATUSES, type UserDomain, type IUser } from '@/types/user';
 
 // 필드 값 검증을 위한 Zod 스키마
 const FieldUpdateSchema = z.object({
+  requestUserId: z.string().uuid('잘못된 요청 사용자 ID 형식입니다.'),
   fields: z.array(z.object({
     field: z.enum(['status', 'system_access_level', 'name', 'phone_number', 'email', 'domains']),
     value: z.any(),
@@ -23,15 +22,6 @@ export async function PATCH(
   { params }: { params: { userId: string } }
 ) {
   try {
-    // 현재 로그인한 사용자 정보 가져오기
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return new Response(
-        JSON.stringify({ error: '인증되지 않은 사용자입니다.' }),
-        { status: 401 }
-      );
-    }
-
     const userId = await Promise.resolve(params.userId);
 
     // UUID 형식 검증
@@ -56,23 +46,49 @@ export async function PATCH(
       );
     }
 
-    // 사용자 존재 여부 확인
+    const { requestUserId, fields } = validationResult.data;
+
+    // 요청 사용자 정보 조회
+    const requestUser = await db.query.users.findFirst({
+      where: eq(users.id, requestUserId)
+    });
+
+    if (!requestUser) {
+      return new Response(
+        JSON.stringify({ error: '요청 사용자를 찾을 수 없습니다.' }),
+        { status: 404 }
+      );
+    }
+
+    // 대상 사용자 존재 여부 확인
     const existingUser = await db.query.users.findFirst({
       where: eq(users.id, userId)
     }) as unknown as IUser;
 
     if (!existingUser) {
       return new Response(
-        JSON.stringify({ error: '사용자를 찾을 수 없습니다.' }),
+        JSON.stringify({ error: '대상 사용자를 찾을 수 없습니다.' }),
         { status: 404 }
       );
     }
 
     // 업데이트할 필드 데이터 준비
-    const updateData: Partial<IUser> = {};
+    const now = new Date();
+    // UTC+9 시간을 계산
+    const kstOffset = 9 * 60 * 60 * 1000; // 9시간을 밀리초로 변환
+    const kstDate = new Date(now.getTime() + kstOffset);
+    
+    const updateData: Partial<IUser> & { updated_at: Date; updated_by: string } = {      
+      //updated_at: now, // DB에는 UTC 시간으로 저장
+      updated_at: kstDate, // DB에는 kst 시간으로 저장
+      updated_by: requestUserId
+    };
     const reasons: Record<string, string> = {};
     
-    for (const { field, value, reason } of body.fields) {
+    // 로그에는 KST로 표시
+    console.log('[UPDATE] 한국 시간:', kstDate.toLocaleString('ko-KR'));
+    console.log('[UPDATE] DB 저장 시간 (UTC):', now.toISOString());
+    for (const { field, value, reason } of fields) {
       switch (field) {
         case 'status':
           if (!['active', 'inactive', 'locked'].includes(value)) {
@@ -134,34 +150,26 @@ export async function PATCH(
       }
     }
 
-    // 트랜잭션으로 업데이트 실행
-    const updatedUser = await db.transaction(async (tx) => {
-      const result = await tx
-        .update(users)
-        .set({
-          ...updateData,
-          updated_at: new Date(),
-          updated_by: session.user.id
-        })
-        .where(eq(users.id, userId))
-        .returning();
+    // 업데이트 실행
+    const [updatedUser] = await db
+      .update(users)
+      .set(updateData)
+      .where(eq(users.id, userId))
+      .returning();
 
-      // 변경 이력 기록
-      await logUserChange({
-        user_id: userId,
-        changed_by: session.user.id,
-        changed_by_name: session.user.name || '',
-        changed_by_email: session.user.email || '',
-        changed_by_access_level: session.user.system_access_level,
-        change_type: 'update',
-        oldData: existingUser,
-        newData: updateData,
-        reason: Object.entries(reasons)
-          .map(([field, reason]) => `${field}: ${reason}`)
-          .join(', ')
-      });
-        
-      return result[0];
+    // 변경 이력 기록
+    await logUserChange({
+      user_id: userId,
+      changed_by: requestUserId,
+      changed_by_name: requestUser.name,
+      changed_by_email: requestUser.email,
+      changed_by_access_level: requestUser.system_access_level,
+      change_type: 'update',
+      oldData: existingUser,
+      newData: updateData,
+      reason: Object.entries(reasons)
+        .map(([field, reason]) => `${field}: ${reason}`)
+        .join(', ')
     });
 
     // 비밀번호 필드 제외하고 응답

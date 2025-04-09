@@ -475,7 +475,7 @@ export const swaggerSpec = {
               type: 'string',
               format: 'uuid'
             },
-            description: '사용자 ID'
+            description: '대상 사용자 ID'
           }
         ],
         requestBody: {
@@ -484,7 +484,13 @@ export const swaggerSpec = {
             'application/json': {
               schema: {
                 type: 'object',
+                required: ['requestUserId', 'fields'],
                 properties: {
+                  requestUserId: {
+                    type: 'string',
+                    format: 'uuid',
+                    description: '요청 사용자 ID (변경을 요청하는 사용자)'
+                  },
                   fields: {
                     type: 'array',
                     items: {
@@ -497,7 +503,20 @@ export const swaggerSpec = {
                           description: '변경할 필드명'
                         },
                         value: {
-                          type: 'string',
+                          oneOf: [
+                            {
+                              type: 'string',
+                              description: '문자열 타입 필드의 값'
+                            },
+                            {
+                              type: 'array',
+                              items: {
+                                type: 'string',
+                                enum: ['logistics', 'settlement', 'sales', 'etc']
+                              },
+                              description: 'domains 필드의 값'
+                            }
+                          ],
                           description: '변경할 값'
                         },
                         reason: {
@@ -527,7 +546,20 @@ export const swaggerSpec = {
             description: '잘못된 요청 (잘못된 ID 형식, 잘못된 필드명 또는 값)'
           },
           '404': {
-            description: '사용자를 찾을 수 없음'
+            description: '요청 사용자 또는 대상 사용자를 찾을 수 없음',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    error: {
+                      type: 'string',
+                      enum: ['요청 사용자를 찾을 수 없습니다.', '대상 사용자를 찾을 수 없습니다.']
+                    }
+                  }
+                }
+              }
+            }
           },
           '500': {
             description: '서버 오류'

@@ -5,8 +5,6 @@ import { users } from '@/db/schema/users';
 import { IUserFilter, SystemAccessLevel, UserStatus, UserDomain, USER_DOMAINS, IUser } from '@/types/user';
 import { z } from 'zod';
 import { hash } from 'bcrypt';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { logUserChange } from '@/utils/user-change-logger';
 
 export async function GET(request: NextRequest) {
@@ -99,20 +97,12 @@ const CreateUserSchema = z.object({
   domains: z.array(z.enum(USER_DOMAINS)),
   department: z.string().optional(),
   position: z.string().optional(),
-  rank: z.string().optional()
+  rank: z.string().optional(),
+  requestUserId: z.string().uuid('잘못된 요청 사용자 ID 형식입니다.')
 });
 
 export async function POST(request: NextRequest) {
   try {
-    // 현재 로그인한 사용자 정보 가져오기
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return new Response(
-        JSON.stringify({ error: '인증되지 않은 사용자입니다.' }),
-        { status: 401 }
-      );
-    }
-
     const body = await request.json();
 
     // 요청 데이터 검증
@@ -127,7 +117,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { password, ...userData } = validationResult.data;
+    const { password, requestUserId, ...userData } = validationResult.data;
+
+    // 요청 사용자 정보 조회
+    const requestUser = await db.query.users.findFirst({
+      where: eq(users.id, requestUserId)
+    });
+
+    if (!requestUser) {
+      return new Response(
+        JSON.stringify({ error: '요청 사용자를 찾을 수 없습니다.' }),
+        { status: 404 }
+      );
+    }
 
     // 이메일 중복 검사
     const existingUser = await db.query.users.findFirst({
@@ -144,39 +146,37 @@ export async function POST(request: NextRequest) {
     // 비밀번호 해시화
     const hashedPassword = await hash(password, 10);
 
-    // 트랜잭션으로 사용자 생성 및 이력 기록
-    const newUser = await db.transaction(async (tx) => {
-      // 사용자 생성
-      const [createdUser] = await tx
-        .insert(users)
-        .values({
-          ...userData,
-          password: hashedPassword,
-          status: 'active' as const,
-          created_by: session.user.id,
-          updated_by: session.user.id,
-          created_at: new Date(),
-          updated_at: new Date()
-        })
-        .returning();
+    // 현재 시간
+    const now = new Date();
 
-      // 변경 이력 기록
-      await logUserChange({
-        user_id: createdUser.id,
-        changed_by: session.user.id,
-        changed_by_name: session.user.name || '',
-        changed_by_email: session.user.email || '',
-        changed_by_access_level: session.user.system_access_level,
-        change_type: 'create',
-        newData: createdUser as unknown as IUser,
-        reason: '신규 사용자 생성'
-      });
+    // 사용자 생성
+    const [createdUser] = await db
+      .insert(users)
+      .values({
+        ...userData,
+        password: hashedPassword,
+        status: 'active' as const,
+        created_by: requestUserId,
+        updated_by: requestUserId,
+        created_at: now,
+        updated_at: now
+      })
+      .returning();
 
-      return createdUser;
+    // 변경 이력 기록
+    await logUserChange({
+      user_id: createdUser.id,
+      changed_by: requestUserId,
+      changed_by_name: requestUser.name,
+      changed_by_email: requestUser.email,
+      changed_by_access_level: requestUser.system_access_level,
+      change_type: 'create',
+      newData: createdUser as unknown as IUser,
+      reason: '신규 사용자 생성'
     });
 
     // 비밀번호 필드 제외하고 응답
-    const { password: _, ...userWithoutPassword } = newUser;
+    const { password: _, ...userWithoutPassword } = createdUser;
 
     return NextResponse.json(userWithoutPassword, { status: 201 });
   } catch (error) {
