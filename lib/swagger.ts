@@ -23,8 +23,14 @@ export const swaggerSpec = {
           '200': {
             description: '사용자 정보 조회 성공'
           },
+          '400': {
+            description: '잘못된 요청'
+          },
           '404': {
             description: '사용자를 찾을 수 없음'
+          },
+          '500': {
+            description: '서버 오류'
           }
         }
       }
