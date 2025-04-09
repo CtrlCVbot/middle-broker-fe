@@ -89,10 +89,10 @@ export interface IUserChangeLog {
   changed_by: string;
   changed_by_name: string;
   changed_by_email: string;
-  changed_by_access_level?: string;
+  changed_by_access_level: string | null;  // null 허용
   change_type: 'create' | 'update' | 'status_change' | 'delete';
-  diff: Record<string, [any, any]>;
-  reason?: string;
+  diff: unknown;  // 타입을 더 유연하게 변경
+  reason: string | null;  // null 허용
   created_at: Date;
 }
 
@@ -119,4 +119,12 @@ export const USER_DOMAIN_LABEL: Record<UserDomain, string> = {
   sales: '영업',
   etc: '기타',
 };
+
+export interface IChangeLogResponse {
+  items: IUserChangeLog[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+}
 

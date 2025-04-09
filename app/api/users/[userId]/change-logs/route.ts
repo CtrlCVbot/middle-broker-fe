@@ -1,30 +1,34 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { user_change_logs } from '@/db/schema/users';
 import { eq, desc, sql, and, gte, lte } from 'drizzle-orm';
 import { validate as uuidValidate } from 'uuid';
+import { IChangeLogResponse, IUserChangeLog } from '@/types/user';
 
 // 쿼리 파라미터 검증 스키마
 const QuerySchema = z.object({
   page: z.coerce.number().min(1).default(1),
   pageSize: z.coerce.number().min(1).max(100).default(20),
-  changeType: z.enum(['update', 'status_change', 'delete', 'create']).optional(),
+  changeType: z.enum(['create', 'update', 'status_change', 'delete']).optional(),
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional()
 });
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { userId: string } }
-) {
+type Context = {
+  params: {
+    userId: string;
+  };
+};
+
+export async function GET(request: NextRequest, context: Context) {
   try {
-    const userId = await Promise.resolve(params.userId);
+    const { userId } = context.params;
 
     // UUID 형식 검증
     if (!uuidValidate(userId)) {
-      return new Response(
-        JSON.stringify({ error: '잘못된 사용자 ID 형식입니다.' }),
+      return NextResponse.json(
+        { error: '잘못된 사용자 ID 형식입니다.' },
         { status: 400 }
       );
     }
@@ -35,13 +39,10 @@ export async function GET(
     // 검색 파라미터 검증
     const validationResult = QuerySchema.safeParse(searchParams);
     if (!validationResult.success) {
-      return new Response(
-        JSON.stringify({
-          error: '잘못된 검색 파라미터입니다.',
-          details: validationResult.error.errors
-        }),
-        { status: 400 }
-      );
+      return NextResponse.json({
+        error: '잘못된 검색 파라미터입니다.',
+        details: validationResult.error.errors
+      }, { status: 400 });
     }
 
     const { page, pageSize, changeType, startDate, endDate } = validationResult.data;
@@ -62,12 +63,14 @@ export async function GET(
 
     // 전체 레코드 수 조회
     const totalCount = await db
-      .select({ count: sql`count(*)` })
+      .select({ count: sql<number>`count(*)` })
       .from(user_change_logs)
-      .where(and(...whereConditions));
+      .where(and(...whereConditions))
+      .execute()
+      .then(result => Number(result[0].count));
 
     // 변경 이력 조회
-    const changeLogs = await db
+    const items = await db
       .select()
       .from(user_change_logs)
       .where(and(...whereConditions))
@@ -75,21 +78,19 @@ export async function GET(
       .limit(pageSize)
       .offset((page - 1) * pageSize);
 
-    return new Response(
-      JSON.stringify({
-        items: changeLogs,
-        page,
-        pageSize,
-        totalCount: Number(totalCount[0].count),
-        totalPages: Math.ceil(Number(totalCount[0].count) / pageSize)
-      }),
-      { status: 200 }
-    );
+    const response: IChangeLogResponse = {
+      items: items as IUserChangeLog[],
+      page,
+      pageSize,
+      totalCount,
+      totalPages: Math.ceil(totalCount / pageSize)
+    };
 
+    return NextResponse.json(response);
   } catch (error) {
     console.error('사용자 변경 이력 조회 중 오류 발생:', error);
-    return new Response(
-      JSON.stringify({ error: '서버 오류가 발생했습니다.' }),
+    return NextResponse.json(
+      { error: '서버 오류가 발생했습니다.' },
       { status: 500 }
     );
   }

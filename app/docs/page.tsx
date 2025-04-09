@@ -1,14 +1,17 @@
 'use client';
 
-import SwaggerUI from 'swagger-ui-react';
-import 'swagger-ui-react/swagger-ui.css';
+import { RedocStandalone } from 'redoc';
 import { swaggerSpec } from '@/lib/swagger';
 
-export default function ApiDocs() {
+export default function APIDocsPage() {
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">API 문서</h1>
-      <SwaggerUI spec={swaggerSpec} />
-    </div>
+    <RedocStandalone
+      spec={swaggerSpec}
+      options={{
+        theme: { colors: { primary: { main: '#5B21B6' } } },
+        hideDownloadButton: false,
+        nativeScrollbars: true,
+      }}
+    />
   );
-} 
+}
