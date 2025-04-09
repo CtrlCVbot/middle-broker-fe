@@ -1,5 +1,4 @@
 import { users, user_login_logs, user_change_logs } from '@/db/schema/users';
-import { companies } from '@/db/schema/companies';
 
 
 // Drizzle 스키마에서 타입 생성
@@ -7,8 +6,6 @@ export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type UserLoginLog = typeof user_login_logs.$inferSelect;
 export type NewUserLoginLog = typeof user_login_logs.$inferInsert;
-export type UserStatusChangeLog = typeof user_change_logs.$inferSelect;
-export type NewUserStatusChangeLog = typeof user_change_logs.$inferInsert;
 export type UserChangeLog = typeof user_change_logs.$inferSelect;
 export type NewUserChangeLog = typeof user_change_logs.$inferInsert;
 
@@ -85,17 +82,6 @@ export interface IUserLoginLog {
   fail_reason?: string;
 }
 
-// 사용자 상태 변경 이력 인터페이스
-export interface IUserStatusChangeLog {
-  id: string;
-  user_id: string;
-  previous_status: UserStatus;
-  new_status: UserStatus;
-  changed_by: string;
-  reason?: string;
-  changed_at: Date;
-}
-
 // 사용자 변경 이력 인터페이스
 export interface IUserChangeLog {
   id: string;
@@ -134,41 +120,3 @@ export const USER_DOMAIN_LABEL: Record<UserDomain, string> = {
   etc: '기타',
 };
 
-export type CompanyStatus = 'active' | 'inactive';
-export type CompanyType = 'broker' | 'shipper' | 'carrier';
-
-export interface ICompany {
-  id: string;
-  name: string;
-  businessNumber: string;
-  ceoName: string;
-  type: CompanyType;
-  status: CompanyStatus;
-  address: {
-    postal: string;
-    road: string;
-    detail: string;
-  };
-  contact: {
-    tel: string;
-    mobile: string;
-    email: string;
-  };
-  registeredAt: string;
-  updatedAt: string;
-}
-
-// 회사 변경 이력 인터페이스
-export interface ICompanyChangeLog {
-  id: string;
-  companyId: string;
-  changedBy: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  changeType: 'update' | 'status_change' | 'delete';
-  diff: Record<string, [any, any]>;  // 변경된 필드: [이전, 이후]
-  reason?: string;
-  createdAt: string;
-}
