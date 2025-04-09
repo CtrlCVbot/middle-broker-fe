@@ -26,8 +26,8 @@ export const companies = pgTable('companies', {
   contactTel: varchar('contact_tel', { length: 20 }),
   contactMobile: varchar('contact_mobile', { length: 20 }),
   contactEmail: varchar('contact_email', { length: 100 }),
-  createdBy: uuid('created_by').notNull(),
-  updatedBy: uuid('updated_by').notNull(),
+  createdBy: uuid('created_by'),
+  updatedBy: uuid('updated_by'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });

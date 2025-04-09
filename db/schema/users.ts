@@ -26,8 +26,7 @@ export const userStatusEnum = pgEnum('user_status', USER_STATUSES);
 
 // 사용자 테이블
 export const users = pgTable('users', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  auth_id: uuid('auth_id').notNull().unique(), // Supabase Auth ID
+  id: uuid('id').defaultRandom().primaryKey(),  
   
   email: varchar('email', { length: 100 }).notNull().unique(),
   password: varchar('password', { length: 255 }).notNull(), // 해시 처리된 비밀번호
@@ -44,8 +43,8 @@ export const users = pgTable('users', {
   rank: varchar('rank', { length: 100 }), // 직급 (선택 사항)
   
   last_login_at: timestamp('last_login_at'),
-  created_by: uuid('created_by').notNull(),
-  updated_by: uuid('updated_by').notNull(),
+  created_by: uuid('created_by'),
+  updated_by: uuid('updated_by'),
   created_at: timestamp('created_at').notNull().defaultNow(),
   updated_at: timestamp('updated_at').notNull().defaultNow(),
 });
