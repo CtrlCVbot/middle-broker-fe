@@ -9,7 +9,11 @@
     "lint": "next lint",
     "test": "vitest",
     "test:watch": "vitest watch",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "migrate:check": "ts-node --loader ts-node/esm scripts/migrate.ts",
+    "migrate:generate": "drizzle-kit generate:pg",
+    "migrate:push": "drizzle-kit push:pg",
+    "migrate:drop": "drizzle-kit drop"
   },
   "dependencies": {
     "@faker-js/faker": "^9.6.0",
