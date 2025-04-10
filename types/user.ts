@@ -1,13 +1,13 @@
-import { users, user_login_logs, user_change_logs } from '@/db/schema/users';
+import { users, userLoginLogs, userChangeLogs } from '@/db/schema/users';
 
 
 // Drizzle 스키마에서 타입 생성
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
-export type UserLoginLog = typeof user_login_logs.$inferSelect;
-export type NewUserLoginLog = typeof user_login_logs.$inferInsert;
-export type UserChangeLog = typeof user_change_logs.$inferSelect;
-export type NewUserChangeLog = typeof user_change_logs.$inferInsert;
+export type UserLoginLog = typeof userLoginLogs.$inferSelect;
+export type NewUserLoginLog = typeof userLoginLogs.$inferInsert;
+export type UserChangeLog = typeof userChangeLogs.$inferSelect;
+export type NewUserChangeLog = typeof userChangeLogs.$inferInsert;
 
 // 시스템 접근 레벨 상수 및 타입
 export const SYSTEM_ACCESS_LEVELS = [

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
-import { user_change_logs } from '@/db/schema/users';
+import { userChangeLogs } from '@/db/schema/users';
 import { eq, desc, sql, and, gte, lte } from 'drizzle-orm';
 import { validate as uuidValidate } from 'uuid';
 import { IChangeLogResponse, IUserChangeLog } from '@/types/user';
@@ -50,23 +50,23 @@ export async function GET(
     const { page, pageSize, changeType, startDate, endDate } = validationResult.data;
 
     // 기본 where 조건
-    let whereConditions = [eq(user_change_logs.user_id, userId)];
+    let whereConditions = [eq(userChangeLogs.user_id, userId)];
 
     // 추가 필터 조건
     if (changeType) {
-      whereConditions.push(eq(user_change_logs.change_type, changeType));
+      whereConditions.push(eq(userChangeLogs.change_type, changeType));
     }
     if (startDate) {
-      whereConditions.push(gte(user_change_logs.created_at, new Date(startDate)));
+      whereConditions.push(gte(userChangeLogs.created_at, new Date(startDate)));
     }
     if (endDate) {
-      whereConditions.push(lte(user_change_logs.created_at, new Date(endDate)));
+      whereConditions.push(lte(userChangeLogs.created_at, new Date(endDate)));
     }
 
     // 전체 레코드 수 조회
     const totalCount = await db
       .select({ count: sql<number>`count(*)` })
-      .from(user_change_logs)
+      .from(userChangeLogs)
       .where(and(...whereConditions))
       .execute()
       .then(result => Number(result[0].count));
@@ -74,9 +74,9 @@ export async function GET(
     // 변경 이력 조회
     const items = await db
       .select()
-      .from(user_change_logs)
+      .from(userChangeLogs)
       .where(and(...whereConditions))
-      .orderBy(desc(user_change_logs.created_at))
+      .orderBy(desc(userChangeLogs.created_at))
       .limit(pageSize)
       .offset((page - 1) * pageSize);
 

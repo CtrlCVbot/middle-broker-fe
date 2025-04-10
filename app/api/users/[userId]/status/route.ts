@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 import { db } from '@/db';
-import { users, user_change_logs } from '@/db/schema/users';
+import { users, userChangeLogs } from '@/db/schema/users';
 import { UserStatus } from '@/types/user';
 
 // UUID 형식 검증을 위한 정규식
@@ -78,7 +78,7 @@ export async function PATCH(
 
       // 변경 이력 기록
       await tx
-        .insert(user_change_logs)
+        .insert(userChangeLogs)
         .values({
           user_id: userId,
           changed_by: 'system', // TODO: 실제 구현 시 인증된 사용자 ID로 대체

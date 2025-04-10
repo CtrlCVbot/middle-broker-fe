@@ -5,7 +5,7 @@ import { PUT, DELETE } from '@/app/api/users/[userId]/route';
 import { PATCH as STATUS_PATCH } from '@/app/api/users/[userId]/status/route';
 import { PATCH as FIELDS_PATCH } from '@/app/api/users/[userId]/fields/route';
 import { db } from '@/db';
-import { users, user_change_logs } from '@/db/schema/users';
+import { users, userChangeLogs } from '@/db/schema/users';
 import { eq } from 'drizzle-orm';
 import { SystemAccessLevel, UserStatus } from '@/types/user';
 
@@ -227,8 +227,8 @@ describe('Users API', () => {
       // 변경 이력이 기록되었는지 확인
       const logs = await db
         .select()
-        .from(user_change_logs)
-        .where(eq(user_change_logs.user_id, userId))
+        .from(userChangeLogs)
+        .where(eq(userChangeLogs.user_id, userId))
         .execute();
 
       expect(logs).toHaveLength(1);
@@ -288,8 +288,8 @@ describe('Users API', () => {
       // 변경 이력이 기록되었는지 확인
       const logs = await db
         .select()
-        .from(user_change_logs)
-        .where(eq(user_change_logs.user_id, userId))
+        .from(userChangeLogs)
+        .where(eq(userChangeLogs.user_id, userId))
         .execute();
 
       expect(logs).toHaveLength(3); // 3개의 필드 변경

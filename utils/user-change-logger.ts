@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { user_change_logs } from '@/db/schema/users';
+import { userChangeLogs } from '@/db/schema/users';
 import { type IUser, type IUserChangeLog } from '@/types/user';
 
 type LogUserChangeParams = Omit<IUserChangeLog, 'id' | 'created_at' | 'diff'> & {
@@ -41,7 +41,7 @@ export async function logUserChange({
     }
 
     // 변경 이력 기록
-    await db.insert(user_change_logs).values({
+    await db.insert(userChangeLogs).values({
       user_id,
       changed_by,
       changed_by_name,

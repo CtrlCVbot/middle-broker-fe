@@ -8,7 +8,7 @@ import {
   json,
   pgEnum
 } from 'drizzle-orm/pg-core';
-import { type CompanyId } from '@/types/schema';
+
 import { 
   SYSTEM_ACCESS_LEVELS,
   USER_DOMAINS,
@@ -50,7 +50,7 @@ export const users = pgTable('users', {
 });
 
 // 사용자 로그인 이력 테이블
-export const user_login_logs = pgTable('user_login_logs', {
+export const userLoginLogs = pgTable('user_login_logs', {
   id: uuid('id').defaultRandom().primaryKey(),
   user_id: uuid('user_id').notNull(),
   login_at: timestamp('login_at').notNull().defaultNow(),
@@ -61,7 +61,7 @@ export const user_login_logs = pgTable('user_login_logs', {
 });
 
 // 사용자 변경 이력 테이블
-export const user_change_logs = pgTable('user_change_logs', {
+export const userChangeLogs = pgTable('user_change_logs', {
   id: uuid('id').defaultRandom().primaryKey(),
   user_id: uuid('user_id').notNull(),
   changed_by: uuid('changed_by').notNull(),
