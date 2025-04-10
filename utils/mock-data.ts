@@ -1,133 +1,328 @@
-import { IAddress } from "@/types/address";
+import { IAddress, AddressType, ILegacyAddress } from "@/types/address";
 import { IUser } from "@/types/user";
 
 // 주소록 모킹 데이터
 export const mockAddresses: IAddress[] = [
   {
-    id: 1,
+    id: "1",
     name: "남산롯데캐슬",
-    address: "서울 중구 회현동1가 208",
-    detailedAddress: "102-701",
-    contact: "010-7491-2425",
-    manager: "유일",
-    type: "상차지"
+    roadAddress: "서울 중구 회현동1가 208",
+    jibunAddress: "서울 중구 회현동1가 208",
+    detailAddress: "102-701",
+    postalCode: "04637",
+    contactName: "유일",
+    contactPhone: "010-7491-2425",
+    type: "load" as AddressType,
+    isFrequent: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      originalInput: "서울 중구 회현동1가 208 남산롯데캐슬 102-701",
+      source: "KAKAO",
+      lat: 37.557527,
+      lng: 126.977089,
+      buildingName: "남산롯데캐슬",
+      floor: "7",
+      tags: ["아파트", "주거지역"]
+    }
   },
   {
-    id: 2,
+    id: "2",
     name: "강남스테이션",
-    address: "서울 강남구 역삼동 858",
-    detailedAddress: "201호",
-    contact: "010-3456-7890",
-    manager: "김강남",
-    type: "하차지"
+    roadAddress: "서울 강남구 역삼동 858",
+    jibunAddress: "서울 강남구 역삼동 858",
+    detailAddress: "201호",
+    postalCode: "06236",
+    contactName: "김강남",
+    contactPhone: "010-3456-7890",
+    type: "drop" as AddressType,
+    isFrequent: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      originalInput: "서울 강남구 역삼동 858 강남스테이션 201호",
+      source: "KAKAO",
+      lat: 37.500627,
+      lng: 127.036377,
+      buildingName: "강남스테이션",
+      floor: "2",
+      tags: ["오피스", "상업지역"]
+    }
   },
   {
-    id: 3,
+    id: "3",
     name: "부산항만창고",
-    address: "부산 영도구 해양로 45",
-    detailedAddress: "창고동 A-12",
-    contact: "010-2345-6789",
-    manager: "박부산",
-    type: "상차지"
+    roadAddress: "부산 영도구 해양로 45",
+    jibunAddress: "부산 영도구 해양로 45",
+    detailAddress: "창고동 A-12",
+    postalCode: "04505",
+    contactName: "박부산",
+    contactPhone: "010-2345-6789",
+    type: "load" as AddressType,
+    isFrequent: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      originalInput: "부산 영도구 해양로 45 부산항만창고 창고동 A-12",
+      source: "KAKAO",
+      lat: 35.100627,
+      lng: 129.036377,
+      buildingName: "부산항만창고",
+      floor: "12",
+      tags: ["창고", "물류"]
+    }
   },
   {
-    id: 4,
+    id: "4",
     name: "인천물류센터",
-    address: "인천 서구 경서동 680-1",
-    detailedAddress: "제2터미널",
-    contact: "010-9876-5432",
-    manager: "이인천",
-    type: "하차지"
+    roadAddress: "인천 서구 경서동 680-1",
+    jibunAddress: "인천 서구 경서동 680-1",
+    detailAddress: "제2터미널",
+    postalCode: "22005",
+    contactName: "이인천",
+    contactPhone: "010-9876-5432",
+    type: "drop" as AddressType,
+    isFrequent: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      originalInput: "인천 서구 경서동 680-1 인천물류센터 제2터미널",
+      source: "KAKAO",
+      lat: 37.450627,
+      lng: 126.700377,
+      buildingName: "인천물류센터",
+      floor: "2",
+      tags: ["물류", "창고"]
+    }
   },
   {
-    id: 5,
+    id: "5",
     name: "대전 중앙창고",
-    address: "대전 유성구 대학로 99",
-    detailedAddress: "과학단지 C동",
-    contact: "010-4567-8901",
-    manager: "최대전",
-    type: "상차지"
+    roadAddress: "대전 유성구 대학로 99",
+    jibunAddress: "대전 유성구 대학로 99",
+    detailAddress: "과학단지 C동",
+    contactName: "최대전",
+    contactPhone: "010-4567-8901",
+    type: "load" as AddressType,
+    isFrequent: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      originalInput: "대전 유성구 대학로 99 대전 중앙창고 과학단지 C동",
+      source: "KAKAO",
+      lat: 36.350627,
+      lng: 127.360377,
+      buildingName: "대전 중앙창고",
+      floor: "10",
+      tags: ["창고", "물류"]
+    }
   },
   {
-    id: 6,
+    id: "6",
     name: "광주 운송센터",
-    address: "광주 광산구 무진대로 251",
-    detailedAddress: "물류파크 2층",
-    contact: "010-5678-9012",
-    manager: "정광주",
-    type: "하차지"
+    roadAddress: "광주 광산구 무진대로 251",
+    jibunAddress: "광주 광산구 무진대로 251",
+    detailAddress: "물류파크 2층",
+    postalCode: "54005",
+    contactName: "정광주",
+    contactPhone: "010-5678-9012",
+    type: "drop" as AddressType,
+    isFrequent: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      originalInput: "광주 광산구 무진대로 251 광주 운송센터 물류파크 2층",
+      source: "KAKAO",
+      lat: 35.150627,
+      lng: 126.860377,
+      buildingName: "광주 운송센터",
+      floor: "2",
+      tags: ["창고", "물류"]
+    }
   },
   {
-    id: 7,
+    id: "7",
     name: "울산항 물류시설",
-    address: "울산 남구 산업로 304",
-    detailedAddress: "항만단지 B블록",
-    contact: "010-6789-0123",
-    manager: "강울산",
-    type: "상차지"
+    roadAddress: "울산 남구 산업로 304",
+    jibunAddress: "울산 남구 산업로 304",
+    detailAddress: "항만단지 B블록",
+    postalCode: "67005",
+    contactName: "강울산",
+    contactPhone: "010-6789-0123",
+    type: "load" as AddressType,
+    isFrequent: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      originalInput: "울산 남구 산업로 304 울산항 물류시설 항만단지 B블록",
+      source: "KAKAO",
+      lat: 35.550627,
+      lng: 129.360377,
+      buildingName: "울산항 물류시설",
+      floor: "10",
+      tags: ["창고", "물류"]
+    }
   },
   {
-    id: 8,
+    id: "8",
     name: "제주 도심물류",
-    address: "제주 제주시 연동 263-15",
-    detailedAddress: "제주빌딩 1층",
-    contact: "010-7890-1234",
-    manager: "한제주",
-    type: "하차지"
+    roadAddress: "제주 제주시 연동 263-15",
+    jibunAddress: "제주 제주시 연동 263-15",
+    detailAddress: "제주빌딩 1층",
+    postalCode: "63005",
+    contactName: "한제주",
+    contactPhone: "010-7890-1234",
+    type: "drop" as AddressType,
+    isFrequent: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      originalInput: "제주 제주시 연동 263-15 제주 도심물류 제주빌딩 1층",
+      source: "KAKAO",
+      lat: 33.450627,
+      lng: 126.560377,
+      buildingName: "제주 도심물류",
+      floor: "1",
+      tags: ["창고", "물류"]
+    }
   },
   {
-    id: 9,
+    id: "9",
     name: "수원 신갈창고",
-    address: "경기 수원시 영통구 신원로 88",
-    detailedAddress: "지하 1층",
-    contact: "010-8901-2345",
-    manager: "서수원",
-    type: "상차지"
+    roadAddress: "경기 수원시 영통구 신원로 88",
+    jibunAddress: "경기 수원시 영통구 신원로 88",
+    detailAddress: "지하 1층",
+    postalCode: "16405",
+    contactName: "서수원",
+    contactPhone: "010-8901-2345",
+    type: "load" as AddressType,
+    isFrequent: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      originalInput: "경기 수원시 영통구 신원로 88 수원 신갈창고 지하 1층",
+      source: "KAKAO",
+      lat: 37.250627,
+      lng: 126.960377,
+      buildingName: "수원 신갈창고",
+      floor: "1",
+      tags: ["창고", "물류"]
+    }
   },
   {
-    id: 10,
+    id: "10",
     name: "평택항 국제물류",
-    address: "경기 평택시 포승읍 평택항로 98",
-    detailedAddress: "국제터미널",
-    contact: "010-9012-3456",
-    manager: "임평택",
-    type: "하차지"
+    roadAddress: "경기 평택시 포승읍 평택항로 98",
+    jibunAddress: "경기 평택시 포승읍 평택항로 98",
+    detailAddress: "국제터미널",
+    postalCode: "18105",
+    contactName: "임평택",
+    contactPhone: "010-9012-3456",
+    type: "drop" as AddressType,
+    isFrequent: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      originalInput: "경기 평택시 포승읍 평택항로 98 평택항 국제물류 국제터미널",
+      source: "KAKAO",
+      lat: 37.050627,
+      lng: 126.860377,
+      buildingName: "평택항 국제물류",
+      floor: "10",
+      tags: ["창고", "물류"]
+    }
   },
   {
-    id: 11,
+    id: "11",
     name: "대전 중앙창고",
-    address: "대전 유성구 대학로 99",
-    detailedAddress: "과학단지 C동",
-    contact: "010-4567-8901",
-    manager: "최대전",
-    type: "상차지"
+    roadAddress: "대전 유성구 대학로 99",
+    jibunAddress: "대전 유성구 대학로 99",
+    detailAddress: "과학단지 C동",
+    postalCode: "34141",
+    contactName: "최대전",
+    contactPhone: "010-4567-8901",
+    type: "load" as AddressType,
+    isFrequent: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      originalInput: "대전 유성구 대학로 99 대전 중앙창고 과학단지 C동",
+      source: "KAKAO",
+      lat: 36.350627,
+      lng: 127.360377,
+      buildingName: "대전 중앙창고",
+      floor: "10",
+      tags: ["창고", "물류"]
+    }
   },
   {
-    id: 12,
+    id: "12",
     name: "대전 중앙창고",
-    address: "대전 유성구 대학로 99",
-    detailedAddress: "과학단지 C동",
-    contact: "010-4567-8901",
-    manager: "최대전",
-    type: "상차지"
+    roadAddress: "대전 유성구 대학로 99",
+    jibunAddress: "대전 유성구 대학로 99",
+    detailAddress: "과학단지 C동",
+    postalCode: "34141",
+    contactName: "최대전",
+    contactPhone: "010-4567-8901",
+    type: "load" as AddressType,
+    isFrequent: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      originalInput: "대전 유성구 대학로 99 대전 중앙창고 과학단지 C동",
+      source: "KAKAO",
+      lat: 36.350627,
+      lng: 127.360377,
+      buildingName: "대전 중앙창고",
+      floor: "10",
+      tags: ["창고", "물류"]
+    }
   },
   {
-    id: 13,
+    id: "13",
     name: "대전 중앙창고",
-    address: "대전 유성구 대학로 99",
-    detailedAddress: "과학단지 C동",
-    contact: "010-4567-8901",
-    manager: "최대전",
-    type: "상차지"
+    roadAddress: "대전 유성구 대학로 99",
+    jibunAddress: "대전 유성구 대학로 99",
+    detailAddress: "과학단지 C동",
+    postalCode: "34141",
+    contactName: "최대전",
+    contactPhone: "010-4567-8901",
+    type: "load" as AddressType,
+    isFrequent: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      originalInput: "대전 유성구 대학로 99 대전 중앙창고 과학단지 C동",
+      source: "KAKAO",
+      lat: 36.350627,
+      lng: 127.360377,
+      buildingName: "대전 중앙창고",
+      floor: "10",
+      tags: ["창고", "물류"]
+    }
   },
   {
-    id: 14,
+    id: "14",
     name: "대전 중앙창고",      
-    address: "대전 유성구 대학로 99",
-    detailedAddress: "과학단지 C동",
-    contact: "010-4567-8901",
-    manager: "최대전",
-    type: "상차지"
+    roadAddress: "대전 유성구 대학로 99",
+    jibunAddress: "대전 유성구 대학로 99",
+    detailAddress: "과학단지 C동",
+    postalCode: "34141",
+    contactName: "최대전",
+    contactPhone: "010-4567-8901",
+    type: "load" as AddressType,
+    isFrequent: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      originalInput: "대전 유성구 대학로 99 대전 중앙창고 과학단지 C동",
+      source: "KAKAO",
+      lat: 36.350627,
+      lng: 127.360377,
+      buildingName: "대전 중앙창고",
+      floor: "10",
+      tags: ["창고", "물류"]
+    }
   }
 ];
 
@@ -182,9 +377,12 @@ export const getAddressesByPage = (page: number, limit: number, search?: string,
     filteredData = filteredData.filter(
       (address) =>
         address.name.toLowerCase().includes(searchTerm) ||
-        address.address.toLowerCase().includes(searchTerm) ||
-        address.manager.toLowerCase().includes(searchTerm) ||
-        address.contact.includes(searchTerm)
+        address.roadAddress.toLowerCase().includes(searchTerm) ||
+        address.jibunAddress.toLowerCase().includes(searchTerm) ||
+        address.detailAddress?.toLowerCase().includes(searchTerm) ||
+        address.postalCode?.includes(searchTerm) ||
+        address.contactName?.toLowerCase().includes(searchTerm) ||
+        address.contactPhone?.includes(searchTerm)
     );
   }
   
@@ -213,17 +411,41 @@ export const getAddressesByPage = (page: number, limit: number, search?: string,
   };
 };
 
+// 레거시 주소를 새로운 형식으로 변환하는 함수
+const convertLegacyToNewAddress = (legacy: ILegacyAddress): IAddress => {
+  return {
+    id: legacy.id.toString(),
+    name: legacy.name,
+    roadAddress: legacy.address,
+    jibunAddress: legacy.address,
+    detailAddress: legacy.detailedAddress,
+    contactName: legacy.manager,
+    contactPhone: legacy.contact,
+    type: legacy.type === "상차지" ? "load" : "drop" as AddressType,
+    isFrequent: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    metadata: {
+      originalInput: `${legacy.address} ${legacy.detailedAddress}`,
+      source: "LEGACY"
+    }
+  };
+};
+
 // 주소 추가 함수
-export const addAddress = (address: Omit<IAddress, "id">) => {
+export const addAddress = (address: Omit<IAddress, "id" | "createdAt" | "updatedAt" | "isFrequent">) => {
   // 새 ID 생성 (기존 ID 중 가장 큰 값 + 1)
-  const newId = mockAddresses.length > 0 
-    ? Math.max(...mockAddresses.map(addr => addr.id)) + 1 
-    : 1;
+  const newId = (mockAddresses.length > 0 
+    ? Math.max(...mockAddresses.map(addr => parseInt(addr.id))) + 1 
+    : 1).toString();
     
   // 새 주소 객체 생성
   const newAddress: IAddress = {
     id: newId,
-    ...address
+    ...address,
+    isFrequent: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
   
   // 목록에 추가
@@ -233,7 +455,7 @@ export const addAddress = (address: Omit<IAddress, "id">) => {
 };
 
 // 주소 수정 함수
-export const updateAddress = (id: number, addressData: Omit<IAddress, "id">) => {
+export const updateAddress = (id: string, addressData: Omit<IAddress, "id">) => {
   const index = mockAddresses.findIndex(address => address.id === id);
   
   if (index === -1) {
@@ -250,7 +472,7 @@ export const updateAddress = (id: number, addressData: Omit<IAddress, "id">) => 
 };
 
 // 주소 삭제 함수
-export const deleteAddress = (id: number) => {
+export const deleteAddress = (id: string) => {
   const index = mockAddresses.findIndex(address => address.id === id);
   
   if (index === -1) {

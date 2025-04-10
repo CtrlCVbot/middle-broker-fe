@@ -39,6 +39,10 @@ export function AddressDeleteModal({
       : `선택한 ${addresses.length}개의 주소를 모두 삭제하시겠습니까?`;
   };
 
+  const getAddressDisplay = (address: IAddress) => {
+    return `${address.name} (${address.roadAddress}${address.detailAddress ? `, ${address.detailAddress}` : ''})`;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
@@ -52,7 +56,7 @@ export function AddressDeleteModal({
             <p className="font-bold mb-2">삭제할 주소 목록:</p>
             <ul className="pl-4 space-y-1">
               {addresses.map((address) => (
-                <li key={address.id}>• {address.name}</li>
+                <li key={address.id}>• {getAddressDisplay(address)}</li>
               ))}
             </ul>
           </div>

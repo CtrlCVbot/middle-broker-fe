@@ -20,6 +20,7 @@ import {
   PaginationNext, 
   PaginationPrevious
 } from "@/components/ui/pagination";
+import { Badge } from "@/components/ui/badge";
 
 interface IAddressTableProps {
   addresses: IAddress[];
@@ -42,117 +43,55 @@ export function AddressTable({
 }: IAddressTableProps) {
   const [selectedAddresses, setSelectedAddresses] = useState<IAddress[]>([]);
 
-  // 체크박스 선택 처리
-  const handleCheckboxChange = (checked: boolean | "indeterminate", address: IAddress) => {
-    if (checked) {
-      setSelectedAddresses((prev) => [...prev, address]);
-    } else {
-      setSelectedAddresses((prev) =>
-        prev.filter((item) => item.id !== address.id)
-      );
-    }
-  };
-
-  // 전체 선택 처리
-  const handleSelectAll = (checked: boolean | "indeterminate") => {
-    if (checked) {
-        console.log("전체 선택", addresses);
-      setSelectedAddresses(addresses);
-    } else {
+  const handleSelectAll = () => {
+    if (selectedAddresses.length === addresses.length) {
       setSelectedAddresses([]);
+    } else {
+      setSelectedAddresses([...addresses]);
     }
   };
 
-  // 선택된 주소 삭제
-  const handleDeleteSelected = () => {
-    if (selectedAddresses.length > 0) {
-      onDeleteSelected(selectedAddresses);
+  const handleSelect = (address: IAddress) => {
+    if (selectedAddresses.find((a) => a.id === address.id)) {
+      setSelectedAddresses(selectedAddresses.filter((a) => a.id !== address.id));
+    } else {
+      setSelectedAddresses([...selectedAddresses, address]);
     }
   };
 
-  // 주소 목록이 비어있는 경우
-  if (addresses.length === 0) {
-    console.log("주소 목록이 비어있습니다.");
-    return (
-      <div className="flex flex-col items-center justify-center p-8 border rounded-md">
-        <p className="text-gray-500 mb-4">등록된 주소가 없습니다.</p>
-        <Button variant="outline" onClick={() => onEdit && onEdit(undefined)}>주소 추가하기</Button>
-      </div>
-    );
-  }
-
-  // 페이지 렌더링
-  const renderPagination = () => {
-    const pagesToShow = 5;
-    const startPage = Math.max(1, currentPage - Math.floor(pagesToShow / 2));
-    const endPage = Math.min(totalPages, startPage + pagesToShow - 1);
-
-    const pages = [];
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(
-        <PaginationItem key={i}>
-          <PaginationLink 
-            onClick={() => onPageChange(i)}
-            isActive={currentPage === i}
-          >
-            {i}
-          </PaginationLink>
-        </PaginationItem>
-      );
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'load':
+        return '상차지';
+      case 'drop':
+        return '하차지';
+      case 'any':
+        return '상/하차지';
+      default:
+        return type;
     }
-
-    return (
-      <Pagination className="mt-4">
-        <PaginationContent>
-          {currentPage > 1 && (
-            <PaginationItem>
-              <PaginationPrevious onClick={() => onPageChange(currentPage - 1)} />
-            </PaginationItem>
-          )}
-          
-          {pages}
-          
-          {currentPage < totalPages && (
-            <PaginationItem>
-              <PaginationNext onClick={() => onPageChange(currentPage + 1)} />
-            </PaginationItem>
-          )}
-        </PaginationContent>
-      </Pagination>
-    );
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          {selectedAddresses.length > 0 && (
-            <Button variant="destructive" onClick={handleDeleteSelected}>
-              선택 삭제 ({selectedAddresses.length}개)
-            </Button>
-          )}
-        </div>
-      </div>
-
-      <div className="border rounded-md">
+    <div className="space-y-4">
+      <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[50px]">
+              <TableHead className="w-12">
                 <Checkbox
-                  checked={
-                    addresses.length > 0 && selectedAddresses.length === addresses.length
-                  }
+                  checked={selectedAddresses.length === addresses.length && addresses.length > 0}
                   onCheckedChange={handleSelectAll}
-                  aria-label="전체 선택"
                 />
               </TableHead>
-              <TableHead className="w-[200px]">상/하차지명</TableHead>
-              <TableHead>주소</TableHead>
-              <TableHead className="w-[150px]">연락처</TableHead>
-              <TableHead className="w-[100px]">담당자</TableHead>
-              <TableHead className="w-[100px]">유형</TableHead>
-              <TableHead className="w-[160px]">관리</TableHead>
+              <TableHead>상/하차지명</TableHead>
+              <TableHead>도로명 주소</TableHead>
+              <TableHead>지번 주소</TableHead>
+              <TableHead>상세 주소</TableHead>
+              <TableHead>담당자</TableHead>
+              <TableHead>연락처</TableHead>
+              <TableHead>유형</TableHead>
+              <TableHead className="text-right">관리</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -161,36 +100,40 @@ export function AddressTable({
                 <TableCell>
                   <Checkbox
                     checked={selectedAddresses.some((a) => a.id === address.id)}
-                    onCheckedChange={(checked) =>
-                      handleCheckboxChange(checked, address)
-                    }
-                    aria-label={`선택 ${address.name}`}
+                    onCheckedChange={() => handleSelect(address)}
                   />
                 </TableCell>
-                <TableCell className="font-medium">{address.name}</TableCell>
-                <TableCell>{address.address + ", " + address.detailedAddress}</TableCell>
-                <TableCell>{address.contact}</TableCell>
-                <TableCell>{address.manager}</TableCell>
-                <TableCell>{address.type}</TableCell>
+                <TableCell className="font-medium">
+                  {address.name}
+                  {address.isFrequent && (
+                    <Badge variant="secondary" className="ml-2">자주 사용</Badge>
+                  )}
+                </TableCell>
+                <TableCell>{address.roadAddress}</TableCell>
+                <TableCell>{address.jibunAddress}</TableCell>
+                <TableCell>{address.detailAddress}</TableCell>
+                <TableCell>{address.contactName}</TableCell>
+                <TableCell>{address.contactPhone}</TableCell>
                 <TableCell>
-                  <div className="flex space-x-2">
-                    {onEdit && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onEdit(address)}
-                      >
-                        수정
-                      </Button>
-                    )}
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => onDeleteSingle(address)}
-                    >
-                      삭제
-                    </Button>
-                  </div>
+                  <Badge variant={address.type === 'load' ? 'default' : 'secondary'}>
+                    {getTypeLabel(address.type)}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="ghost"
+                    className="h-8 w-8 p-0"
+                    onClick={() => onEdit?.(address)}
+                  >
+                    수정
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="h-8 w-8 p-0 text-destructive"
+                    onClick={() => onDeleteSingle(address)}
+                  >
+                    삭제
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -198,7 +141,44 @@ export function AddressTable({
         </Table>
       </div>
 
-      {renderPagination()}
+      <div className="flex items-center justify-between">
+        <Button
+          variant="destructive"
+          onClick={() => onDeleteSelected(selectedAddresses)}
+          disabled={selectedAddresses.length === 0}
+        >
+          {selectedAddresses.length > 0
+            ? `선택 삭제 (${selectedAddresses.length})`
+            : "선택 삭제"}
+        </Button>
+
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious 
+                onClick={() => onPageChange(currentPage - 1)}
+                isActive={currentPage === 1}
+              />
+            </PaginationItem>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <PaginationItem key={page}>
+                <PaginationLink
+                  onClick={() => onPageChange(page)}
+                  isActive={currentPage === page}
+                >
+                  {page}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => onPageChange(currentPage + 1)}
+                isActive={currentPage === totalPages}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
     </div>
   );
 }
