@@ -84,24 +84,30 @@ export function AddressTable({
                   onCheckedChange={handleSelectAll}
                 />
               </TableHead>
+              <TableHead>유형</TableHead>
               <TableHead>상/하차지명</TableHead>
               <TableHead>도로명 주소</TableHead>
-              <TableHead>지번 주소</TableHead>
+              {/*<TableHead>지번 주소</TableHead>*/}
               <TableHead>상세 주소</TableHead>
               <TableHead>담당자</TableHead>
               <TableHead>연락처</TableHead>
-              <TableHead>유형</TableHead>
+              
               <TableHead className="text-right">관리</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {addresses.map((address) => (
-              <TableRow key={address.id}>
+              <TableRow key={address.id}>                
                 <TableCell>
                   <Checkbox
                     checked={selectedAddresses.some((a) => a.id === address.id)}
                     onCheckedChange={() => handleSelect(address)}
                   />
+                </TableCell>
+                <TableCell>
+                  <Badge variant={address.type === 'load' ? 'default' : 'secondary'}>
+                    {getTypeLabel(address.type)}
+                  </Badge>
                 </TableCell>
                 <TableCell className="font-medium">
                   {address.name}
@@ -110,25 +116,21 @@ export function AddressTable({
                   )}
                 </TableCell>
                 <TableCell>{address.roadAddress}</TableCell>
-                <TableCell>{address.jibunAddress}</TableCell>
+                {/*<TableCell>{address.jibunAddress}</TableCell>*/}
                 <TableCell>{address.detailAddress}</TableCell>
                 <TableCell>{address.contactName}</TableCell>
                 <TableCell>{address.contactPhone}</TableCell>
-                <TableCell>
-                  <Badge variant={address.type === 'load' ? 'default' : 'secondary'}>
-                    {getTypeLabel(address.type)}
-                  </Badge>
-                </TableCell>
+                
                 <TableCell className="text-right">
                   <Button
-                    variant="ghost"
-                    className="h-8 w-8 p-0"
+                    variant="secondary"
+                    className="h-8 w-8 mr-4"
                     onClick={() => onEdit?.(address)}
                   >
                     수정
                   </Button>
                   <Button
-                    variant="ghost"
+                    variant="default"
                     className="h-8 w-8 p-0 text-destructive"
                     onClick={() => onDeleteSingle(address)}
                   >
