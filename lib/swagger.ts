@@ -190,6 +190,104 @@ export const swaggerSpec = {
             description: '생성 일시'
           }
         }
+      },
+      Address: {
+        type: 'object',
+        required: ['id', 'name', 'type', 'roadAddress', 'jibunAddress', 'isFrequent'],
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            description: '주소 고유 ID'
+          },
+          name: {
+            type: 'string',
+            description: '장소명'
+          },
+          type: {
+            type: 'string',
+            enum: ['load', 'drop', 'any'],
+            description: '주소 유형'
+          },
+          roadAddress: {
+            type: 'string',
+            description: '도로명 주소'
+          },
+          jibunAddress: {
+            type: 'string',
+            description: '지번 주소'
+          },
+          detailAddress: {
+            type: 'string',
+            description: '상세 주소'
+          },
+          postalCode: {
+            type: 'string',
+            description: '우편번호'
+          },
+          metadata: {
+            type: 'object',
+            properties: {
+              originalInput: {
+                type: 'string',
+                description: '사용자 입력 주소'
+              },
+              source: {
+                type: 'string',
+                description: '주소 출처'
+              },
+              lat: {
+                type: 'number',
+                description: '위도'
+              },
+              lng: {
+                type: 'number',
+                description: '경도'
+              },
+              buildingName: {
+                type: 'string',
+                description: '건물명'
+              },
+              floor: {
+                type: 'string',
+                description: '층'
+              },
+              tags: {
+                type: 'array',
+                items: {
+                  type: 'string'
+                },
+                description: '태그'
+              }
+            }
+          },
+          contactName: {
+            type: 'string',
+            description: '담당자명'
+          },
+          contactPhone: {
+            type: 'string',
+            description: '연락처'
+          },
+          memo: {
+            type: 'string',
+            description: '메모'
+          },
+          isFrequent: {
+            type: 'boolean',
+            description: '자주 사용하는 주소 여부'
+          },
+          createdAt: {
+            type: 'string',
+            format: 'date-time',
+            description: '생성 일시'
+          },
+          updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            description: '수정 일시'
+          }
+        }
       }
     }
   },
@@ -1545,6 +1643,455 @@ export const swaggerSpec = {
           },
           '404': {
             description: '업체를 찾을 수 없음'
+          },
+          '500': {
+            description: '서버 오류'
+          }
+        }
+      }
+    },
+    '/api/addresses': {
+      get: {
+        summary: '주소 목록 조회',
+        description: '페이지네이션과 필터링을 지원하는 주소 목록 조회 API',
+        tags: ['Addresses'],
+        parameters: [
+          {
+            name: 'page',
+            in: 'query',
+            schema: {
+              type: 'integer',
+              default: 1
+            },
+            description: '페이지 번호'
+          },
+          {
+            name: 'limit',
+            in: 'query',
+            schema: {
+              type: 'integer',
+              default: 10
+            },
+            description: '페이지당 항목 수'
+          },
+          {
+            name: 'search',
+            in: 'query',
+            schema: {
+              type: 'string'
+            },
+            description: '주소명, 도로명, 지번, 담당자명 검색어'
+          },
+          {
+            name: 'type',
+            in: 'query',
+            schema: {
+              type: 'string',
+              enum: ['load', 'drop', 'any']
+            },
+            description: '주소 유형 필터'
+          }
+        ],
+        responses: {
+          '200': {
+            description: '성공적으로 주소 목록을 조회함',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'array',
+                      items: {
+                        $ref: '#/components/schemas/Address'
+                      }
+                    },
+                    pagination: {
+                      type: 'object',
+                      properties: {
+                        total: {
+                          type: 'integer',
+                          description: '전체 주소 수'
+                        },
+                        page: {
+                          type: 'integer',
+                          description: '현재 페이지 번호'
+                        },
+                        limit: {
+                          type: 'integer',
+                          description: '페이지당 항목 수'
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          '500': {
+            description: '서버 오류'
+          }
+        }
+      },
+      post: {
+        summary: '새로운 주소 등록',
+        description: '새로운 주소를 등록하는 API',
+        tags: ['Addresses'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['name', 'type', 'roadAddress', 'jibunAddress'],
+                properties: {
+                  name: {
+                    type: 'string'
+                  },
+                  type: {
+                    type: 'string',
+                    enum: ['load', 'drop', 'any']
+                  },
+                  roadAddress: {
+                    type: 'string'
+                  },
+                  jibunAddress: {
+                    type: 'string'
+                  },
+                  detailAddress: {
+                    type: 'string'
+                  },
+                  postalCode: {
+                    type: 'string'
+                  },
+                  metadata: {
+                    $ref: '#/components/schemas/Address/properties/metadata'
+                  },
+                  contactName: {
+                    type: 'string'
+                  },
+                  contactPhone: {
+                    type: 'string'
+                  },
+                  memo: {
+                    type: 'string'
+                  },
+                  isFrequent: {
+                    type: 'boolean'
+                  }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '201': {
+            description: '주소가 성공적으로 등록됨',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Address'
+                }
+              }
+            }
+          },
+          '400': {
+            description: '잘못된 요청 (필수 필드 누락)'
+          },
+          '500': {
+            description: '서버 오류'
+          }
+        }
+      }
+    },
+    '/api/addresses/{addressId}': {
+      get: {
+        summary: '주소 상세 조회',
+        description: '특정 주소의 상세 정보를 조회하는 API',
+        tags: ['Addresses'],
+        parameters: [
+          {
+            name: 'addressId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: '주소 ID'
+          }
+        ],
+        responses: {
+          '200': {
+            description: '주소 정보 조회 성공',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Address'
+                }
+              }
+            }
+          },
+          '404': {
+            description: '주소를 찾을 수 없음'
+          },
+          '500': {
+            description: '서버 오류'
+          }
+        }
+      },
+      put: {
+        summary: '주소 정보 수정',
+        description: '특정 주소의 정보를 수정하는 API',
+        tags: ['Addresses'],
+        parameters: [
+          {
+            name: 'addressId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: '주소 ID'
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['name', 'type', 'roadAddress', 'jibunAddress'],
+                properties: {
+                  name: {
+                    type: 'string'
+                  },
+                  type: {
+                    type: 'string',
+                    enum: ['load', 'drop', 'any']
+                  },
+                  roadAddress: {
+                    type: 'string'
+                  },
+                  jibunAddress: {
+                    type: 'string'
+                  },
+                  detailAddress: {
+                    type: 'string'
+                  },
+                  postalCode: {
+                    type: 'string'
+                  },
+                  metadata: {
+                    $ref: '#/components/schemas/Address/properties/metadata'
+                  },
+                  contactName: {
+                    type: 'string'
+                  },
+                  contactPhone: {
+                    type: 'string'
+                  },
+                  memo: {
+                    type: 'string'
+                  },
+                  isFrequent: {
+                    type: 'boolean'
+                  }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '200': {
+            description: '주소 정보가 성공적으로 수정됨',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Address'
+                }
+              }
+            }
+          },
+          '400': {
+            description: '잘못된 요청 (필수 필드 누락)'
+          },
+          '404': {
+            description: '주소를 찾을 수 없음'
+          },
+          '500': {
+            description: '서버 오류'
+          }
+        }
+      },
+      delete: {
+        summary: '주소 삭제',
+        description: '특정 주소를 삭제하는 API',
+        tags: ['Addresses'],
+        parameters: [
+          {
+            name: 'addressId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: '주소 ID'
+          }
+        ],
+        responses: {
+          '200': {
+            description: '주소가 성공적으로 삭제됨',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    message: {
+                      type: 'string'
+                    }
+                  }
+                }
+              }
+            }
+          },
+          '404': {
+            description: '주소를 찾을 수 없음'
+          },
+          '500': {
+            description: '서버 오류'
+          }
+        }
+      }
+    },
+    '/api/addresses/batch': {
+      post: {
+        summary: '주소 일괄 처리',
+        description: '여러 주소를 일괄적으로 처리하는 API',
+        tags: ['Addresses'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['addressIds', 'action'],
+                properties: {
+                  addressIds: {
+                    type: 'array',
+                    items: {
+                      type: 'string',
+                      format: 'uuid'
+                    },
+                    description: '처리할 주소 ID 목록'
+                  },
+                  action: {
+                    type: 'string',
+                    enum: ['delete', 'setFrequent', 'unsetFrequent'],
+                    description: '수행할 작업'
+                  }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '200': {
+            description: '주소 일괄 처리가 성공적으로 완료됨',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: {
+                      type: 'boolean'
+                    },
+                    processed: {
+                      type: 'integer',
+                      description: '처리된 주소 수'
+                    },
+                    failed: {
+                      type: 'integer',
+                      description: '실패한 주소 수'
+                    },
+                    errors: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id: {
+                            type: 'string',
+                            format: 'uuid'
+                          },
+                          error: {
+                            type: 'string'
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          '400': {
+            description: '잘못된 요청'
+          },
+          '500': {
+            description: '서버 오류'
+          }
+        }
+      }
+    },
+    '/api/addresses/validate': {
+      post: {
+        summary: '주소 데이터 검증',
+        description: '주소 데이터의 유효성을 검증하는 API',
+        tags: ['Addresses'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/Address'
+              }
+            }
+          }
+        },
+        responses: {
+          '200': {
+            description: '주소 데이터가 유효함',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    isValid: {
+                      type: 'boolean'
+                    },
+                    errors: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          field: {
+                            type: 'string'
+                          },
+                          message: {
+                            type: 'string'
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          '400': {
+            description: '유효하지 않은 주소 데이터'
           },
           '500': {
             description: '서버 오류'
