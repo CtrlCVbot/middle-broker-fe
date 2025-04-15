@@ -37,19 +37,4 @@ export const addresses = pgTable('addresses', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),  // 수정일
   createdBy: uuid('created_by'),                              // 등록자
   updatedBy: uuid('updated_by'),                              // 수정자
-});
-
-// 주소 변경 이력 테이블 정의
-export const addressChangeLogs = pgTable('address_change_logs', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  addressId: uuid('address_id').notNull().references(() => addresses.id),
-  userId: uuid('user_id').notNull(),
-  changedBy: uuid('changed_by').notNull(),
-  changedByName: varchar('changed_by_name', { length: 100 }).notNull(),
-  changedByEmail: varchar('changed_by_email', { length: 255 }).notNull(),
-  changedByAccessLevel: varchar('changed_by_access_level', { length: 50 }),
-  changeType: varchar('change_type', { length: 20 }).notNull(),
-  diff: jsonb('diff').default({}).notNull(),
-  reason: text('reason'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
 }); 
