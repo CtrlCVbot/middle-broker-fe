@@ -1,24 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { orders } from '@/db/schema/order';
-import { eq } from 'drizzle-orm';
+import { eq, sql, desc } from 'drizzle-orm';
 import { generateOrderNumber } from '@/utils/order';
 import { ICreateOrderRequest, IOrderResponse } from '@/types/order1';
 import { generateAddressSnapshot } from '@/utils/address';
-import { getCurrentUser } from '@/utils/auth';
 
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as ICreateOrderRequest;
-    const currentUser = await getCurrentUser();
-
-    if (!currentUser) {
-      return NextResponse.json(
-        { error: '인증되지 않은 사용자입니다.' },
-        { status: 401 }
-      );
-    }
-
+    
     // 주소 스냅샷 생성
     const pickupSnapshot = await generateAddressSnapshot(body.route.pickupAddressId);
     const deliverySnapshot = await generateAddressSnapshot(body.route.deliveryAddressId);
@@ -28,60 +19,50 @@ export async function POST(req: NextRequest) {
 
     // 주문 생성
     const [newOrder] = await db.insert(orders).values({
-      companyId: currentUser.companyId,
-      orderNumber,
-      orderName: body.orderName,
+      company_id: body.companyId,
+      order_number: orderNumber,
+      order_name: body.orderName,
       
       // 화물 정보
-      cargoName: body.cargo.name,
-      cargoWeight: body.cargo.weight,
-      cargoUnit: body.cargo.unit,
-      cargoQuantity: body.cargo.quantity,
-      packagingType: body.cargo.packagingType,
+      cargo_name: body.cargo.name,
+      cargo_weight: body.cargo.weight,
+      cargo_unit: body.cargo.unit,
+      cargo_quantity: body.cargo.quantity,
+      packaging_type: body.cargo.packagingType,
 
       // 차량 정보
-      vehicleType: body.vehicle.type,
-      vehicleCount: body.vehicle.count,
+      vehicle_type: body.vehicle.type,
+      vehicle_count: body.vehicle.count,
 
       // 가격 정보
-      priceAmount: body.price.amount,
-      priceType: body.price.priceType,
-      taxType: body.price.taxType,
+      price_amount: body.price.amount,
+      price_type: body.price.priceType,
+      tax_type: body.price.taxType,
 
       // 주소 정보
-      pickupAddressId: body.route.pickupAddressId,
-      deliveryAddressId: body.route.deliveryAddressId,
-      pickupSnapshot,
-      deliverySnapshot,
+      pickup_address_id: body.route.pickupAddressId,
+      delivery_address_id: body.route.deliveryAddressId,
+      pickup_snapshot: pickupSnapshot,
+      delivery_snapshot: deliverySnapshot,
 
       // 일정 정보
-      pickupDate: new Date(body.route.pickupDate),
-      deliveryDate: new Date(body.route.deliveryDate),
+      pickup_date: new Date(body.route.pickupDate),
+      delivery_date: new Date(body.route.deliveryDate),
 
       // 메모
       memo: body.memo,
 
-      // 생성자 정보
-      createdBy: currentUser.id,
-      createdBySnapshot: {
-        name: currentUser.name,
-        email: currentUser.email,
-        department: currentUser.department,
-        position: currentUser.position,
-      },
-      updatedBy: currentUser.id,
-      updatedBySnapshot: {
-        name: currentUser.name,
-        email: currentUser.email,
-        department: currentUser.department,
-        position: currentUser.position,
-      },
+      // 생성/수정 정보
+      created_by: body.userId,
+      created_by_snapshot: body.userSnapshot,
+      updated_by: body.userId,
+      updated_by_snapshot: body.userSnapshot,
     }).returning();
 
     const response: IOrderResponse = {
       id: newOrder.id,
-      orderNumber: newOrder.orderNumber,
-      createdAt: newOrder.createdAt?.toISOString() || '',
+      orderNumber: newOrder.order_number,
+      createdAt: newOrder.created_at?.toISOString() || '',
     };
 
     return NextResponse.json(response, { status: 201 });
@@ -101,12 +82,12 @@ export async function GET(req: NextRequest) {
     const page = Number(searchParams.get('page')) || 1;
     const limit = Number(searchParams.get('limit')) || 10;
     const offset = (page - 1) * limit;
+    const companyId = searchParams.get('companyId');
 
-    const currentUser = await getCurrentUser();
-    if (!currentUser) {
+    if (!companyId) {
       return NextResponse.json(
-        { error: '인증되지 않은 사용자입니다.' },
-        { status: 401 }
+        { error: '회사 ID가 필요합니다.' },
+        { status: 400 }
       );
     }
 
@@ -114,16 +95,16 @@ export async function GET(req: NextRequest) {
     const totalCount = await db
       .select({ count: sql<number>`count(*)` })
       .from(orders)
-      .where(eq(orders.companyId, currentUser.companyId));
+      .where(eq(orders.company_id, companyId));
 
     // 페이지네이션된 데이터 조회
     const orderList = await db
       .select()
       .from(orders)
-      .where(eq(orders.companyId, currentUser.companyId))
+      .where(eq(orders.company_id, companyId))
       .limit(limit)
       .offset(offset)
-      .orderBy(desc(orders.createdAt));
+      .orderBy(desc(orders.created_at));
 
     return NextResponse.json({
       data: orderList,
