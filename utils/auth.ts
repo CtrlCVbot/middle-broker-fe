@@ -3,17 +3,14 @@
 import Cookies from 'js-cookie'
 import { IUser } from '@/types/user'
 
-// 목업 사용자 데이터 타입
-// export interface IUser {
-//   email: string;
-//   name?: string;
-//   isLoggedIn: boolean;
-// }
+// Auth 전용 사용자 타입
+export interface AuthUser extends IUser {
+  isLoggedIn: boolean;
+}
 
 // 사용자 정보 저장 (localStorage와 쿠키 모두 사용)
-export const setUser = (user: IUser): void => {
+export const setUser = (user: AuthUser): void => {
   if (typeof window !== "undefined") {
-    // localStorage에 저장
     localStorage.setItem("user", JSON.stringify(user));
     
     // 쿠키에 저장 (7일 유효기간)
@@ -22,9 +19,8 @@ export const setUser = (user: IUser): void => {
 };
 
 // 사용자 정보 가져오기 (localStorage 우선, 없으면 쿠키)
-export const getUser = (): IUser | null => {
+export const getUser = (): AuthUser | null => {
   if (typeof window !== "undefined") {
-    // localStorage에서 확인
     const localUser = localStorage.getItem("user");
     if (localUser) return JSON.parse(localUser);
     
@@ -45,7 +41,7 @@ export const isLoggedIn = (): boolean => {
   return !!user && user.isLoggedIn;
 };
 
-// 로그아웃 (localStorage와 쿠키 모두 제거)
+// 로그아웃 (localStorageuserState거)
 export const logout = (): void => {
   if (typeof window !== "undefined") {
     localStorage.removeItem("user");
@@ -57,7 +53,7 @@ export const logout = (): void => {
 export const loginWithEmail = (
   email: string,
   password: string
-): { success: boolean; user?: IUser; error?: string } => {
+): { success: boolean; user?: AuthUser; error?: string } => {
   // 목업 사용자 데이터
   const MOCK_USERS = [
     { email: "user@example.com", password: "password123", name: "일반 사용자" },
@@ -69,9 +65,16 @@ export const loginWithEmail = (
   );
 
   if (user) {
-    const userData: IUser = {
-      email: user.email,
-      name: user.name,
+    const userData: AuthUser = {
+      ...user,
+      id: '1', // 목업 데이터
+      phone_number: '', // 목업 데이터
+      company_id: null,
+      system_access_level: 'shipper_member',
+      domains: ['logistics'],
+      status: 'active',
+      created_at: new Date(),
+      updated_at: new Date(),
       isLoggedIn: true,
     };
     setUser(userData);
