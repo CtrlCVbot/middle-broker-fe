@@ -1,13 +1,14 @@
 "use client"
 
 import Cookies from 'js-cookie'
+import { IUser } from '@/types/user'
 
 // 목업 사용자 데이터 타입
-export interface IUser {
-  email: string;
-  name?: string;
-  isLoggedIn: boolean;
-}
+// export interface IUser {
+//   email: string;
+//   name?: string;
+//   isLoggedIn: boolean;
+// }
 
 // 사용자 정보 저장 (localStorage와 쿠키 모두 사용)
 export const setUser = (user: IUser): void => {
