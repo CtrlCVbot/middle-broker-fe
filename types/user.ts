@@ -47,19 +47,19 @@ export interface IUser {
   email: string;
   password?: string;
   name: string;
-  phone_number: string;
-  company_id: string | null;
-  system_access_level: SystemAccessLevel;
+  phoneNumber: string;
+  companyId: string | null;
+  systemAccessLevel: SystemAccessLevel;
   domains: UserDomain[];
   status: UserStatus;
   department?: string | null;
   position?: string | null;
   rank?: string | null;
-  last_login_at?: Date | null;
-  created_by?: string | null;
-  updated_by?: string | null;
-  created_at: Date;
-  updated_at: Date;
+  lastLoginAt?: Date | null;
+  createdBy?: string | null;
+  updatedBy?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // 사용자 필터 인터페이스
@@ -67,30 +67,30 @@ export interface IUserFilter {
   searchTerm: string;
   domains: UserDomain[];
   status: UserStatus | '';
-  system_access_level?: SystemAccessLevel;
-  company_id?: string;
+  systemAccessLevel?: SystemAccessLevel;
+  companyId?: string;
 }
 
 // 사용자 로그인 이력 인터페이스
 export interface IUserLoginLog {
   id: string;
-  user_id: string;
-  login_at: Date;
-  ip_address?: string;
-  user_agent?: string;
+  userId: string;
+  loginAt: Date;
+  ipAddress?: string;
+  userAgent?: string;
   success: boolean;
-  fail_reason?: string;
+  failReason?: string;
 }
 
 // 사용자 변경 이력 인터페이스
 export interface IUserChangeLog {
   id: string;
-  user_id: string;
-  changed_by: string;
-  changed_by_name: string;
-  changed_by_email: string;
-  changed_by_access_level: string | null;  // null 허용
-  change_type: 'create' | 'update' | 'status_change' | 'delete';
+  userId: string;
+  changedBy: string;
+  changedByName: string;
+  changedByEmail: string;
+  changedByAccessLevel: string | null;  // null 허용
+  changeType: 'create' | 'update' | 'status_change' | 'delete';
   diff: unknown;  // 타입을 더 유연하게 변경
   reason: string | null;  // null 허용
   created_at: Date;

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { orders } from '@/db/schema/order';
-import { addresses } from '@/db/schema/addresses';
 import { eq } from 'drizzle-orm';
 import { generateOrderNumber } from '@/utils/order';
 import { ICreateOrderRequest, IOrderResponse } from '@/types/order1';

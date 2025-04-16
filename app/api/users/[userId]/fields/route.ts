@@ -164,12 +164,12 @@ export async function PATCH(
 
     // 변경 이력 기록
     await logUserChange({
-      user_id: userId,
-      changed_by: requestUserId,
-      changed_by_name: requestUser.name,
-      changed_by_email: requestUser.email,
-      changed_by_access_level: requestUser.system_access_level,
-      change_type: 'update',
+      userId: userId,
+      changedBy: requestUserId,
+      changedByName: requestUser.name,
+      changedByEmail: requestUser.email,
+      changedByAccessLevel: requestUser.system_access_level,
+      changeType: 'update',
       oldData: existingUser,
       newData: updateData,
       reason: Object.entries(reasons)

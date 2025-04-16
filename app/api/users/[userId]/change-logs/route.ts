@@ -81,7 +81,7 @@ export async function GET(
       .offset((page - 1) * pageSize);
 
     const response: IChangeLogResponse = {
-      items: items as IUserChangeLog[],
+      items: items as unknown as IUserChangeLog[],
       page,
       pageSize,
       totalCount,

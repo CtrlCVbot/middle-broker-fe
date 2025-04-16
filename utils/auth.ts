@@ -68,13 +68,13 @@ export const loginWithEmail = (
     const userData: AuthUser = {
       ...user,
       id: '1', // 목업 데이터
-      phone_number: '', // 목업 데이터
-      company_id: null,
-      system_access_level: 'shipper_member',
+      phoneNumber: '', // 목업 데이터
+      companyId: null,
+      systemAccessLevel: 'shipper_member',
       domains: ['logistics'],
       status: 'active',
-      created_at: new Date(),
-      updated_at: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
       isLoggedIn: true,
     };
     setUser(userData);
@@ -82,4 +82,11 @@ export const loginWithEmail = (
   }
 
   return { success: false, error: "이메일 또는 비밀번호가 올바르지 않습니다." };
-}; 
+};
+
+// 현재 로그인한 사용자 정보 조회
+export async function getCurrentUser(): Promise<AuthUser | null> {
+  const user = getUser();
+  if (!user || !user.isLoggedIn) return null;
+  return user;
+} 
