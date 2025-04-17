@@ -7,6 +7,7 @@ const protectedRoutes = [
   '/dashboard', 
   '/profile', 
   '/orders',
+  '/order-details',  
   '/addresses',
   '/companies',
   '/users',
