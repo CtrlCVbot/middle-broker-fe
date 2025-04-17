@@ -41,6 +41,46 @@ export const isLoggedIn = (): boolean => {
   return useAuthStore.getState().isLoggedIn();
 };
 
+// 토큰 만료 확인 (클라이언트 측)
+export const isTokenExpired = (token: string): boolean => {
+  try {
+    // JWT 토큰 디코딩 (Base64)
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(window.atob(base64));
+    
+    // 현재 시간과 만료 시간 비교 (초 단위)
+    const now = Math.floor(Date.now() / 1000);
+    return !payload.exp || payload.exp < now;
+  } catch (error) {
+    console.error('토큰 만료 확인 오류:', error);
+    return true; // 오류 발생 시 만료된 것으로 간주
+  }
+};
+
+// 토큰 자동 갱신 함수
+export const refreshAccessToken = async (): Promise<boolean> => {
+  try {
+    const response = await fetch('/api/auth/refresh', {
+      method: 'GET',
+      credentials: 'include', // 쿠키 포함
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success && data.token && data.user) {
+        // 스토어에 새 토큰과 사용자 정보 저장
+        useAuthStore.getState().login(data.user, data.token);
+        return true;
+      }
+    }
+    return false;
+  } catch (error) {
+    console.error('토큰 갱신 오류:', error);
+    return false;
+  }
+};
+
 // 로그아웃 (API 호출)
 export const logout = async (): Promise<boolean> => {
   try {
@@ -79,11 +119,9 @@ export const loginWithEmail = async (
     });
 
     const data = await response.json();
-    console.log("loginWithEmail");
 
     // 성공적으로 로그인한 경우
     if (response.ok && data.success) {
-      console.log("loginWithEmail success");
       // auth-store에 사용자 정보 저장
       useAuthStore.getState().login(data.user, data.token);
       return { 
@@ -91,7 +129,6 @@ export const loginWithEmail = async (
         user: data.user
       };
     }
-    console.log("loginWithEmail fail");
 
     // 로그인 실패한 경우
     return { 
