@@ -9,8 +9,7 @@ import { cookies } from 'next/headers';
 export async function POST(req: NextRequest) {
   try {
     // 요청 본문에서 이메일과 비밀번호 추출
-    const { email, password } = await req.json();
-    console.log("login route : " + email + " / " + password);
+    const { email, password } = await req.json();    
 
     // 유효성 검사
     if (!email || !password) {
@@ -24,7 +23,7 @@ export async function POST(req: NextRequest) {
     const user = await db.query.users.findFirst({
       where: eq(users.email, email)
     });
-    console.log("login route2 : " + user?.id);
+    
 
     // 사용자가 존재하지 않는 경우
     if (!user) {
