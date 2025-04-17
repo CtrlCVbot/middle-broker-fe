@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { verifyAccessToken } from './utils/jwt'
 
 // 로그인이 필요한 경로
 const protectedRoutes = [
@@ -19,30 +20,36 @@ const protectedRoutes = [
 // 로그인 상태에서 접근 불가능한 경로
 const authRoutes = ['/login']
 
-export function middleware(request: NextRequest) {
-  // auth-store에서 저장한 쿠키를 확인
-  const authStorageCookie = request.cookies.get('auth-storage')?.value
-  let isLoggedIn = false;
+export async function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname
   
-  if (authStorageCookie) {
+  // 액세스 토큰 쿠키 확인
+  const accessTokenCookie = request.cookies.get('access_token')?.value
+  let isAuthenticated = false
+  let userId = null
+  
+  // 토큰이 있는 경우 검증
+  if (accessTokenCookie) {
     try {
-      const authStorage = JSON.parse(decodeURIComponent(authStorageCookie));
-      isLoggedIn = authStorage.state?.loggedIn || false;
+      const payload = await verifyAccessToken(accessTokenCookie)
+      if (payload) {
+        isAuthenticated = true
+        userId = payload.id
+      }
     } catch (error) {
-      console.error('Auth cookie parsing error:', error);
+      console.error('JWT 토큰 검증 오류:', error)
     }
   }
-  
-  const path = request.nextUrl.pathname
 
-  // 보호된 경로에 접근하려고 하는데 로그인이 안 되어 있는 경우
-  if (protectedRoutes.some(route => path.startsWith(route)) && !isLoggedIn) {
-    const redirectUrl = new URL('/login', request.url)
+  // 보호된 경로에 접근하려고 하는데 인증이 안 되어 있는 경우
+  if (protectedRoutes.some(route => path.startsWith(route)) && !isAuthenticated) {
+    // 현재 URL을 redirect 파라미터로 추가하여 로그인 후 해당 페이지로 이동할 수 있도록 함
+    const redirectUrl = new URL(`/login?redirect=${encodeURIComponent(request.nextUrl.pathname)}`, request.url)
     return NextResponse.redirect(redirectUrl)
   }
 
-  // 이미 로그인되어 있는 경우 로그인 페이지 접근 제한
-  if (authRoutes.some(route => path.startsWith(route)) && isLoggedIn) {
+  // 이미 인증된 경우 로그인 페이지 접근 제한
+  if (authRoutes.some(route => path.startsWith(route)) && isAuthenticated) {
     const redirectUrl = new URL('/dashboard', request.url)
     return NextResponse.redirect(redirectUrl)
   }

@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { users } from '@/db/schema/users';
-import bcrypt from 'bcryptjs';
 import { IUser } from '@/types/user';
+import { signAccessToken } from '@/utils/jwt';
+import { cookies } from 'next/headers';
 
 export async function POST(req: NextRequest) {
   try {
@@ -44,23 +45,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-     // 비밀번호 검증 (단순 문자열 비교)
-     console.log('비밀번호 검증:', password === user.password ? '일치' : '불일치');
+    // 비밀번호 검증 (단순 문자열 비교)
+    console.log('비밀번호 검증:', password === user.password ? '일치' : '불일치');
     
-     if (password !== user.password) {
-       return NextResponse.json(
-         { error: 'INVALID_CREDENTIALS', message: '비밀번호가 일치하지 않습니다.' },
-         { status: 403 }
-       );
-     }
-
-    // 로그인 성공 로그 기록 (옵션)
-    // await db.insert(userLoginLogs).values({
-    //   user_id: user.id,
-    //   success: true,
-    //   ip_address: req.headers.get('x-forwarded-for') || '',
-    //   user_agent: req.headers.get('user-agent') || ''
-    // });
+    if (password !== user.password) {
+      return NextResponse.json(
+        { error: 'INVALID_CREDENTIALS', message: '비밀번호가 일치하지 않습니다.' },
+        { status: 403 }
+      );
+    }
 
     // 사용자 정보 변환 (스네이크 케이스 -> 카멜 케이스)
     const userData: IUser = {
@@ -76,10 +69,28 @@ export async function POST(req: NextRequest) {
       updatedAt: user.updated_at,
     };
 
-    // 성공 응답 반환 (토큰은 mock 문자열로 대체)
+    // JWT 토큰 생성
+    const accessToken = await signAccessToken({
+      id: user.id,
+      email: user.email
+    });
+
+    // 쿠키에 JWT 토큰 저장
+    const cookieStore = await cookies();
+    cookieStore.set({
+      name: 'access_token',
+      value: accessToken,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 15, // 15분 (초 단위)
+    });
+
+    // 성공 응답 반환
     return NextResponse.json({
       success: true,
-      token: 'mock-access-token-' + Date.now(),
+      token: accessToken, // 클라이언트에도 토큰 전달 (스토어에 저장용)
       user: userData
     });
 

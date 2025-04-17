@@ -50,20 +50,38 @@ export function NavUser({
   const router = useRouter()
   const { toast } = useToast()
 
-  const handleLogout = (e: React.MouseEvent) => {
+  const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault()
-    logout()
     
-    toast({
-      title: "로그아웃 되었습니다",
-      description: "성공적으로 로그아웃 되었습니다.",
-      variant: "default",
-    })
-    
-    // 짧은 지연 후 로그인 페이지로 리디렉션 (토스트 메시지를 볼 수 있도록)
-    setTimeout(() => {
-      router.push("/login")
-    }, 1000)
+    try {
+      const success = await logout()
+      
+      if (success) {
+        toast({
+          title: "로그아웃 되었습니다",
+          description: "성공적으로 로그아웃 되었습니다.",
+          variant: "default",
+        })
+        
+        // 짧은 지연 후 로그인 페이지로 리디렉션 (토스트 메시지를 볼 수 있도록)
+        setTimeout(() => {
+          router.push("/login")
+        }, 1000)
+      } else {
+        toast({
+          title: "로그아웃 실패",
+          description: "로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Logout error:", error)
+      toast({
+        title: "로그아웃 실패",
+        description: "로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive",
+      })
+    }
   }
 
   return (

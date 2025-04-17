@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -21,6 +21,9 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectPath = searchParams.get('redirect') || '/dashboard'
+  
   const { toast } = useToast()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -40,12 +43,12 @@ export function LoginForm({
         // 로그인 성공 시 토스트 메시지 표시
         toast({
           title: "로그인 성공",
-          description: "환영합니다! 대시보드로 이동합니다.",
+          description: "환영합니다! 이동합니다.",
           variant: "default",
         })
         
-        // 대시보드로 이동
-        router.push("/dashboard")
+        // 리다이렉트 경로로 이동
+        router.push(redirectPath)
       } else {
         // 로그인 실패 메시지 표시
         setError(result.message || result.error || "로그인에 실패했습니다.")

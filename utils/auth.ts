@@ -41,9 +41,27 @@ export const isLoggedIn = (): boolean => {
   return useAuthStore.getState().isLoggedIn();
 };
 
-// 로그아웃
-export const logout = (): void => {
-  useAuthStore.getState().logout();
+// 로그아웃 (API 호출)
+export const logout = async (): Promise<boolean> => {
+  try {
+    const response = await fetch('/api/auth/logout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (response.ok) {
+      // 스토어에서 로그아웃 처리
+      useAuthStore.getState().logout();
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Logout error:', error);
+    return false;
+  }
 };
 
 // 이메일과 비밀번호로 로그인 시도 (API 사용)
@@ -77,7 +95,6 @@ export const loginWithEmail = async (
 
     // 로그인 실패한 경우
     return { 
-      
       success: false, 
       error: data.error || 'LOGIN_FAILED',
       message: data.message || '로그인에 실패했습니다.'
@@ -85,7 +102,6 @@ export const loginWithEmail = async (
   } catch (error) {
     console.error('Login error:', error);
     return { 
-      
       success: false, 
       error: 'SERVER_ERROR',
       message: '서버와 통신 중 오류가 발생했습니다.'
