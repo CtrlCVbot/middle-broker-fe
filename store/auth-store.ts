@@ -6,7 +6,7 @@ import { IUser } from '@/types/user';
 export interface IAuthUserState {
   user: IUser | null;
   token: string | null;
-  isLoggedIn: boolean;
+  loggedIn: boolean;
 }
 
 export interface IAuthActions {
@@ -70,13 +70,13 @@ export const useAuthStore = create<AuthStore>()(
     (set, get) => ({
       user: null,
       token: null,
-      isLoggedIn: false,
+      loggedIn: false,
       
       login: (userData: IUser, token: string) => {
         set({
           user: userData,
           token: token,
-          isLoggedIn: true,
+          loggedIn: true,
         });
       },
       
@@ -84,13 +84,13 @@ export const useAuthStore = create<AuthStore>()(
         set({
           user: null,
           token: null,
-          isLoggedIn: false,
+          loggedIn: false,
         });
       },
       
       getUser: () => get().user,
       
-      isLoggedIn: () => get().isLoggedIn,
+      isLoggedIn: () => get().loggedIn,
     }),
     {
       name: 'auth-storage',

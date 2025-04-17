@@ -41,7 +41,7 @@ export const isLoggedIn = (): boolean => {
   return useAuthStore.getState().isLoggedIn();
 };
 
-// 로그아웃 (localStorageuserState거)
+// 로그아웃
 export const logout = (): void => {
   useAuthStore.getState().logout();
 };

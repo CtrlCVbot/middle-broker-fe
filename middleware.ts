@@ -27,7 +27,7 @@ export function middleware(request: NextRequest) {
   if (authStorageCookie) {
     try {
       const authStorage = JSON.parse(decodeURIComponent(authStorageCookie));
-      isLoggedIn = authStorage.state?.isLoggedIn || false;
+      isLoggedIn = authStorage.state?.loggedIn || false;
     } catch (error) {
       console.error('Auth cookie parsing error:', error);
     }
