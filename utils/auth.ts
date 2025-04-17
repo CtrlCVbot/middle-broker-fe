@@ -2,6 +2,7 @@
 
 import Cookies from 'js-cookie'
 import { IUser } from '@/types/user'
+import { useAuthStore } from '@/store/auth-store'
 
 // Auth 전용 사용자 타입
 export interface AuthUser extends IUser {
@@ -37,56 +38,57 @@ export const getUser = (): AuthUser | null => {
 
 // 로그인 상태 확인
 export const isLoggedIn = (): boolean => {
-  const user = getUser();
-  return !!user && user.isLoggedIn;
+  return useAuthStore.getState().isLoggedIn();
 };
 
 // 로그아웃 (localStorageuserState거)
 export const logout = (): void => {
-  if (typeof window !== "undefined") {
-    localStorage.removeItem("user");
-    Cookies.remove('user', { path: '/' });
-  }
+  useAuthStore.getState().logout();
 };
 
-// 이메일과 비밀번호로 로그인 시도
-export const loginWithEmail = (
+// 이메일과 비밀번호로 로그인 시도 (API 사용)
+export const loginWithEmail = async (
   email: string,
   password: string
-): { success: boolean; user?: AuthUser; error?: string } => {
-  // 목업 사용자 데이터
-  const MOCK_USERS = [
-    { email: "user@example.com", password: "password123", name: "일반 사용자" },
-    { email: "admin@example.com", password: "admin123", name: "관리자" },
-  ];
+): Promise<{ success: boolean; user?: IUser; error?: string; message?: string }> => {
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-  const user = MOCK_USERS.find(
-    (user) => user.email === email && user.password === password
-  );
+    const data = await response.json();
 
-  if (user) {
-    const userData: AuthUser = {
-      ...user,
-      id: '1', // 목업 데이터
-      phoneNumber: '', // 목업 데이터
-      companyId: null,
-      systemAccessLevel: 'shipper_member',
-      domains: ['logistics'],
-      status: 'active',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      isLoggedIn: true,
+    // 성공적으로 로그인한 경우
+    if (response.ok && data.success) {
+      // auth-store에 사용자 정보 저장
+      useAuthStore.getState().login(data.user, data.token);
+      return { 
+        success: true, 
+        user: data.user
+      };
+    }
+
+    // 로그인 실패한 경우
+    return { 
+      success: false, 
+      error: data.error || 'LOGIN_FAILED',
+      message: data.message || '로그인에 실패했습니다.'
     };
-    setUser(userData);
-    return { success: true, user: userData };
+  } catch (error) {
+    console.error('Login error:', error);
+    return { 
+      success: false, 
+      error: 'SERVER_ERROR',
+      message: '서버와 통신 중 오류가 발생했습니다.'
+    };
   }
-
-  return { success: false, error: "이메일 또는 비밀번호가 올바르지 않습니다." };
 };
 
 // 현재 로그인한 사용자 정보 조회
-export async function getCurrentUser(): Promise<AuthUser | null> {
-  const user = getUser();
-  if (!user || !user.isLoggedIn) return null;
-  return user;
-} 
+export const getCurrentUser = (): IUser | null => {
+  return useAuthStore.getState().getUser();
+}; 

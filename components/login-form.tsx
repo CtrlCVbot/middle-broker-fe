@@ -14,14 +14,14 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { loginWithEmail } from "@/utils/auth"
-
-
+import { useToast } from "@/components/ui/use-toast"
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter()
+  const { toast } = useToast()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -33,14 +33,22 @@ export function LoginForm({
     setIsLoading(true)
 
     try {
-      // 인증 유틸리티를 사용한 로그인
-      const result = loginWithEmail(email, password)
+      // 인증 API를 호출하여 로그인
+      const result = await loginWithEmail(email, password)
       
       if (result.success) {
-        // 로그인 성공 시 대시보드로 이동
+        // 로그인 성공 시 토스트 메시지 표시
+        toast({
+          title: "로그인 성공",
+          description: "환영합니다! 대시보드로 이동합니다.",
+          variant: "default",
+        })
+        
+        // 대시보드로 이동
         router.push("/dashboard")
       } else {
-        setError(result.error || "로그인에 실패했습니다.")
+        // 로그인 실패 메시지 표시
+        setError(result.message || result.error || "로그인에 실패했습니다.")
       }
     } catch (err) {
       setError("로그인 중 오류가 발생했습니다.")

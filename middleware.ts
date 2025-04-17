@@ -2,13 +2,37 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // 로그인이 필요한 경로
-const protectedRoutes = ['/dashboard', '/profile']
+const protectedRoutes = [
+  '/dashboard', 
+  '/profile', 
+  '/orders',
+  '/addresses',
+  '/companies',
+  '/users',
+  '/settings',
+  '/notifications',
+  '/payments',
+  '/invoices',
+  '/settlements',
+]
+
 // 로그인 상태에서 접근 불가능한 경로
 const authRoutes = ['/login']
 
 export function middleware(request: NextRequest) {
-  const currentUser = request.cookies.get('user')?.value
-  const isLoggedIn = !!currentUser
+  // auth-store에서 저장한 쿠키를 확인
+  const authStorageCookie = request.cookies.get('auth-storage')?.value
+  let isLoggedIn = false;
+  
+  if (authStorageCookie) {
+    try {
+      const authStorage = JSON.parse(decodeURIComponent(authStorageCookie));
+      isLoggedIn = authStorage.state?.isLoggedIn || false;
+    } catch (error) {
+      console.error('Auth cookie parsing error:', error);
+    }
+  }
+  
   const path = request.nextUrl.pathname
 
   // 보호된 경로에 접근하려고 하는데 로그인이 안 되어 있는 경우
