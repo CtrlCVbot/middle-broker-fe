@@ -61,9 +61,11 @@ export const loginWithEmail = async (
     });
 
     const data = await response.json();
+    console.log("loginWithEmail");
 
     // 성공적으로 로그인한 경우
     if (response.ok && data.success) {
+      console.log("loginWithEmail success");
       // auth-store에 사용자 정보 저장
       useAuthStore.getState().login(data.user, data.token);
       return { 
@@ -71,9 +73,11 @@ export const loginWithEmail = async (
         user: data.user
       };
     }
+    console.log("loginWithEmail fail");
 
     // 로그인 실패한 경우
     return { 
+      
       success: false, 
       error: data.error || 'LOGIN_FAILED',
       message: data.message || '로그인에 실패했습니다.'
@@ -81,6 +85,7 @@ export const loginWithEmail = async (
   } catch (error) {
     console.error('Login error:', error);
     return { 
+      
       success: false, 
       error: 'SERVER_ERROR',
       message: '서버와 통신 중 오류가 발생했습니다.'

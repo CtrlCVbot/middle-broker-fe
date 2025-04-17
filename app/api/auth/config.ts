@@ -27,6 +27,7 @@ export const authOptions: AuthOptions = {
           throw new Error('등록되지 않은 이메일입니다.');
         }
 
+        //주석처리 풀지마시오!
         const isPasswordValid = await compare(credentials.password, user.password);
 
         if (!isPasswordValid) {

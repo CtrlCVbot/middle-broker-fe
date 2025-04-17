@@ -1,14 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { users } from '@/db/schema/users';
 import bcrypt from 'bcryptjs';
 import { IUser } from '@/types/user';
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     // 요청 본문에서 이메일과 비밀번호 추출
     const { email, password } = await req.json();
+    console.log("login route : " + email + " / " + password);
 
     // 유효성 검사
     if (!email || !password) {
@@ -22,6 +23,7 @@ export async function POST(req: Request) {
     const user = await db.query.users.findFirst({
       where: eq(users.email, email)
     });
+    console.log("login route2 : " + user?.id);
 
     // 사용자가 존재하지 않는 경우
     if (!user) {
@@ -42,24 +44,15 @@ export async function POST(req: Request) {
       );
     }
 
-    // 비밀번호 검증
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+     // 비밀번호 검증 (단순 문자열 비교)
+     console.log('비밀번호 검증:', password === user.password ? '일치' : '불일치');
     
-    if (!isPasswordValid) {
-      // 로그인 실패 로그 기록 (옵션)
-      // await db.insert(userLoginLogs).values({
-      //   user_id: user.id,
-      //   success: false,
-      //   fail_reason: 'INVALID_CREDENTIALS',
-      //   ip_address: req.headers.get('x-forwarded-for') || '',
-      //   user_agent: req.headers.get('user-agent') || ''
-      // });
-
-      return NextResponse.json(
-        { error: 'INVALID_CREDENTIALS', message: '비밀번호가 일치하지 않습니다.' },
-        { status: 403 }
-      );
-    }
+     if (password !== user.password) {
+       return NextResponse.json(
+         { error: 'INVALID_CREDENTIALS', message: '비밀번호가 일치하지 않습니다.' },
+         { status: 403 }
+       );
+     }
 
     // 로그인 성공 로그 기록 (옵션)
     // await db.insert(userLoginLogs).values({
