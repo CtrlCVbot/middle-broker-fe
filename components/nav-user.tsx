@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import {
   BadgeCheck,
   Bell,
@@ -31,6 +32,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { logout } from "@/utils/auth"
+import { useToast } from "@/components/ui/use-toast"
 
 export function NavUser({
   user,
@@ -44,6 +47,24 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const router = useRouter()
+  const { toast } = useToast()
+
+  const handleLogout = (e: React.MouseEvent) => {
+    e.preventDefault()
+    logout()
+    
+    toast({
+      title: "로그아웃 되었습니다",
+      description: "성공적으로 로그아웃 되었습니다.",
+      variant: "default",
+    })
+    
+    // 짧은 지연 후 로그인 페이지로 리디렉션 (토스트 메시지를 볼 수 있도록)
+    setTimeout(() => {
+      router.push("/login")
+    }, 1000)
+  }
 
   return (
     <SidebarMenu className={className} {...props}>
@@ -121,7 +142,7 @@ export function NavUser({
                 <span>설정</span>
               </a>
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 size-4" />
               로그아웃
             </DropdownMenuItem>
