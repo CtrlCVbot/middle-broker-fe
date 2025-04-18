@@ -12,39 +12,27 @@ const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    // 에러 응답이 있는 경우
+    // API 에러 처리
     if (error.response) {
-      // 서버에서 제공한 에러 메시지가 있다면 사용
-      if (error.response.data && error.response.data.error) {
-        error.message = error.response.data.error;
-      } else {
-        // HTTP 상태 코드에 따른 기본 메시지
-        switch (error.response.status) {
-          case 400:
-            error.message = '잘못된 요청입니다.';
-            break;
-          case 401:
-            error.message = '인증이 필요합니다.';
-            break;
-          case 403:
-            error.message = '접근 권한이 없습니다.';
-            break;
-          case 404:
-            error.message = '요청한 리소스를 찾을 수 없습니다.';
-            break;
-          case 500:
-            error.message = '서버 오류가 발생했습니다.';
-            break;
-          default:
-            error.message = `요청 처리 중 오류가 발생했습니다. (${error.response.status})`;
-        }
-      }
-    } else if (error.request) {
-      // 요청은 보냈지만 응답을 받지 못한 경우
-      error.message = '서버에서 응답이 없습니다. 네트워크 연결을 확인해주세요.';
+      const { data, status } = error.response;
+      // 에러 응답이 객체인 경우 에러 메시지 활용
+      const errorMessage = data && typeof data === 'object' && data.error 
+        ? data.error 
+        : '요청 처리 중 오류가 발생했습니다.';
+        
+      // 사용자 정의 에러 객체 반환
+      return Promise.reject({
+        status,
+        message: errorMessage,
+        data: data,
+      });
     }
     
-    return Promise.reject(error);
+    // 네트워크 오류 등 기타 오류 처리
+    return Promise.reject({
+      status: 0,
+      message: error.message || '서버에 연결할 수 없습니다.',
+    });
   }
 );
 
