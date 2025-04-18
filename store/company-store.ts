@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   CompanyFilter, 
   CompanyType, 
@@ -13,7 +14,8 @@ import {
   COMPANY_TYPE_LABEL,
   COMPANY_STATUS_LABEL,
   COMPANY_TYPES,
-  COMPANY_STATUSES
+  COMPANY_STATUSES,
+  CompanyListResponse
 } from '@/types/company';
 import * as companyService from '@/services/company-service';
 
@@ -31,7 +33,8 @@ export const getFilterSummaryText = (filter: CompanyFilter): string => {
   }
   
   if (filter.type) {
-    parts.push(COMPANY_TYPE_LABEL[filter.type as CompanyType]);
+    parts.push(filter.type === 'broker' ? '주선사' : 
+               filter.type === 'shipper' ? '화주' : '운송사');
   }
   
   if (filter.status) {
@@ -101,28 +104,23 @@ interface ICompanyState {
   };
 }
 
+// 기본 필터 상태
+const defaultFilter: CompanyFilter = {
+  keyword: '',
+  type: '',
+  status: '',
+  startDate: null,
+  endDate: null
+};
+
 // Zustand 스토어 생성
 export const useCompanyStore = create<ICompanyState>()(
   persist(
     (set, get) => ({
       // 기본 상태
       viewMode: 'table',
-      filter: {
-        keyword: '',
-        type: '',
-        status: '',
-        region: '',
-        startDate: null,
-        endDate: null,
-      },
-      tempFilter: {
-        keyword: '',
-        type: '',
-        status: '',
-        region: '',
-        startDate: null,
-        endDate: null,
-      },
+      filter: { ...defaultFilter },
+      tempFilter: { ...defaultFilter },
       currentPage: 1,
       pageSize: 10,
       selectedCompanyIds: [],
@@ -153,14 +151,7 @@ export const useCompanyStore = create<ICompanyState>()(
       })),
       
       resetFilter: () => set({
-        filter: {
-          keyword: '',
-          type: '',
-          status: '',
-          region: '',
-          startDate: null,
-          endDate: null,
-        },
+        filter: { ...defaultFilter },
         currentPage: 1,
       }),
       
@@ -360,4 +351,124 @@ export const useCompanyStore = create<ICompanyState>()(
       }),
     }
   )
-); 
+);
+
+// React Query Hooks
+
+// 업체 목록 조회
+export const useCompanies = () => {
+  const { filter, currentPage, pageSize } = useCompanyStore();
+  
+  return useQuery<CompanyListResponse, Error, CompanyListResponse, [string, CompanyFilter, number, number]>({
+    queryKey: ['companies', filter, currentPage, pageSize],
+    queryFn: () => companyService.getCompanies(currentPage, pageSize, filter),
+    staleTime: 30 * 1000, // 30초 동안 데이터 캐싱
+    placeholderData: (oldData) => oldData, // 새 데이터 로드 중 이전 데이터 유지 (keepPreviousData 대체)
+  });
+};
+
+// 특정 업체 조회
+export const useCompany = (id: string) => {
+  return useQuery<ICompany, Error, ICompany, [string, string]>({
+    queryKey: ['company', id],
+    queryFn: () => companyService.getCompanyById(id),
+    staleTime: 60 * 1000, // 1분 동안 데이터 캐싱
+    enabled: !!id, // id가 있을 때만 쿼리 실행
+  });
+};
+
+// 업체 생성 뮤테이션
+export const useCreateCompany = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (data: CompanyRequest) => companyService.createCompany(data),
+    onSuccess: () => {
+      // 성공 시 업체 목록 쿼리 무효화하여 자동 갱신
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
+    },
+  });
+};
+
+// 업체 수정 뮤테이션
+export const useUpdateCompany = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: CompanyRequest }) => 
+      companyService.updateCompany(id, data),
+    onSuccess: (_, variables) => {
+      // 성공 시 업체 목록 및 상세 정보 쿼리 무효화하여 자동 갱신
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      queryClient.invalidateQueries({ queryKey: ['company', variables.id] });
+    },
+  });
+};
+
+// 업체 삭제 뮤테이션
+export const useDeleteCompany = () => {
+  const queryClient = useQueryClient();
+  const { clearSelectedCompanyIds } = useCompanyStore();
+  
+  return useMutation({
+    mutationFn: ({ id, requestUserId }: { id: string; requestUserId: string }) => 
+      companyService.deleteCompany(id, requestUserId),
+    onSuccess: () => {
+      // 성공 시 업체 목록 쿼리 무효화하여 자동 갱신 및 선택 항목 초기화
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      clearSelectedCompanyIds();
+    },
+  });
+};
+
+// 업체 상태 변경 뮤테이션
+export const useChangeCompanyStatus = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { status: CompanyStatus; reason?: string; requestUserId: string } }) => 
+      companyService.changeCompanyStatus(id, data),
+    onSuccess: (_, variables) => {
+      // 성공 시 업체 목록 및 상세 정보 쿼리 무효화하여 자동 갱신
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      queryClient.invalidateQueries({ queryKey: ['company', variables.id] });
+    },
+  });
+};
+
+// 업체 배치 처리 뮤테이션
+export const useBatchUpdateCompanies = () => {
+  const queryClient = useQueryClient();
+  const { clearSelectedCompanyIds } = useCompanyStore();
+  
+  return useMutation({
+    mutationFn: (data: { companyIds: string[]; action: 'activate' | 'deactivate' | 'delete'; reason?: string }) => 
+      companyService.batchUpdateCompanies(data),
+    onSuccess: () => {
+      // 성공 시 업체 목록 쿼리 무효화하여 자동 갱신 및 선택 항목 초기화
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      clearSelectedCompanyIds();
+    },
+  });
+};
+
+// 레거시 코드와 호환성을 위한 유틸리티 함수들
+
+// API 응답을 레거시 포맷으로 변환하여 사용할 수 있는 훅
+export const useCompaniesLegacyFormat = () => {
+  const companiesQuery = useCompanies();
+  
+  // API 데이터를 레거시 포맷으로 변환
+  const legacyData = {
+    data: companiesQuery.data ? companiesQuery.data.data.map(convertApiToLegacyCompany) : [],
+    total: companiesQuery.data?.total || 0,
+    page: companiesQuery.data?.page || 1,
+    pageSize: companiesQuery.data?.pageSize || 10,
+    totalPages: companiesQuery.data?.totalPages || 1,
+  };
+  
+  return {
+    ...companiesQuery,
+    legacyData,
+  };
+}; 
