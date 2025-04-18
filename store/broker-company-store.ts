@@ -16,7 +16,22 @@ import { persist } from 'zustand/middleware';
 import { IBrokerCompany, IBrokerCompanyFilter, CompanyType, StatementType, CompanyStatus } from '@/types/broker-company';
 import { COMPANY_TYPES, STATEMENT_TYPES, COMPANY_STATUS, getBrokerCompanyById, updateBrokerCompany } from '@/utils/mockdata/mock-broker-companies';
 import { useCompanyStore, useCompanies, useCompany, useUpdateCompany } from '@/store/company-store';
-import { convertApiToLegacyCompany } from '@/types/company';
+import { convertApiToLegacyCompany, ILegacyCompany } from '@/types/company';
+
+// ILegacyCompany에서 IBrokerCompany로 타입 변환하는 유틸리티 함수
+const convertLegacyToBrokerCompany = (legacyCompany: ILegacyCompany): IBrokerCompany => {
+  return {
+    ...legacyCompany,
+    // 타입은 문자열에서 CompanyType으로 명시적 변환
+    type: legacyCompany.type as CompanyType,
+    // StatementType 설정 (기본값으로 '매출처' 사용)
+    statementType: legacyCompany.statementType as StatementType || '매출처',
+    // status는 문자열에서 CompanyStatus로 명시적 변환
+    status: legacyCompany.status as CompanyStatus,
+    // 빈 배열 대신 undefined 처리 (필요한 경우)
+    managers: legacyCompany.managers as any[] || undefined,
+  };
+};
 
 // 필터 요약 문구 생성 함수
 export const getFilterSummaryText = (filter: IBrokerCompanyFilter): string => {
@@ -215,8 +230,12 @@ export const useBrokerCompanyStore = create<IBrokerCompanyState>()(
         // 새 스토어의 데이터 훅 사용
         const result = useCompanies();
         
-        // 데이터를 레거시 형식으로 변환
-        const legacyData = result.data ? result.data.data.map(convertApiToLegacyCompany) : undefined;
+        // 데이터를 레거시 형식으로 변환 후 IBrokerCompany로 변환
+        const legacyData = result.data 
+          ? result.data.data.map(company => 
+              convertLegacyToBrokerCompany(convertApiToLegacyCompany(company))
+            ) 
+          : undefined;
         
         return {
           data: legacyData,
@@ -245,8 +264,12 @@ export const useBrokerCompanyData = () => {
   // 새 스토어의 데이터 조회 훅 사용
   const companiesQuery = useCompanies();
   
-  // API 응답 데이터를 레거시 형식으로 변환
-  const legacyData = companiesQuery.data ? companiesQuery.data.data.map(convertApiToLegacyCompany) : [];
+  // API 응답 데이터를 레거시 형식으로 변환 후 IBrokerCompany로 변환
+  const legacyData = companiesQuery.data 
+    ? companiesQuery.data.data.map(company => 
+        convertLegacyToBrokerCompany(convertApiToLegacyCompany(company))
+      ) 
+    : [];
   
   return {
     data: legacyData,
@@ -266,8 +289,10 @@ export const useBrokerCompanyById = (id: string) => {
   // 새 스토어의 단일 조회 훅 사용
   const companyQuery = useCompany(id);
   
-  // API 응답 데이터를 레거시 형식으로 변환
-  const legacyData = companyQuery.data ? convertApiToLegacyCompany(companyQuery.data) : undefined;
+  // API 응답 데이터를 레거시 형식으로 변환 후 IBrokerCompany로 변환
+  const legacyData = companyQuery.data 
+    ? convertLegacyToBrokerCompany(convertApiToLegacyCompany(companyQuery.data)) 
+    : undefined;
   
   return {
     data: legacyData,
