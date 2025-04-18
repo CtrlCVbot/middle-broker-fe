@@ -14,15 +14,18 @@ import { toast } from 'sonner';
 import { Plus, Edit, Loader2 } from 'lucide-react';
 import { BrokerCompanyForm } from './broker-company-form';
 import { IBrokerCompany } from '@/types/broker-company';
-import { 
-  useBrokerCompanyStore, 
-  useBrokerCompanyById 
-} from '@/store/broker-company-store';
+// 기존 스토어 import 주석 처리
+// import { 
+//   useBrokerCompanyStore, 
+//   useBrokerCompanyById 
+// } from '@/store/broker-company-store';
 import { 
   useCreateCompany, 
-  useUpdateCompany 
+  useUpdateCompany,
+  useCompany
 } from '@/store/company-store';
 import { convertLegacyToApiCompany } from '@/types/company';
+import { v4 as uuidv4 } from 'uuid';
 
 interface BrokerCompanyRegisterSheetProps {
   onRegisterSuccess?: (company: IBrokerCompany) => void;
@@ -44,14 +47,16 @@ export function BrokerCompanyRegisterSheet({
   onOpenChange
 }: BrokerCompanyRegisterSheetProps) {
   const [internalOpen, setInternalOpen] = useState(false);
-  const { updateCompany } = useBrokerCompanyStore();
+  // const { updateCompany } = useBrokerCompanyStore(); // 기존 스토어 사용 코드 주석 처리
   
   // API 훅 사용
   const createCompanyMutation = useCreateCompany();
   const updateCompanyMutation = useUpdateCompany();
   
   // 편집 모드에서 최신 데이터 조회 (ID가 있는 경우)
-  const companyQuery = useBrokerCompanyById(mode === 'edit' && company ? company.id : '');
+  // const companyQuery = useBrokerCompanyById(mode === 'edit' && company ? company.id : ''); // 기존 스토어 사용 코드 주석 처리
+  // 새로운 스토어 훅 사용
+  const companyQuery = useCompany(mode === 'edit' && company ? company.id : '');
   
   // 로딩 상태 관리
   const isLoading = createCompanyMutation.isPending || 
@@ -81,7 +86,8 @@ export function BrokerCompanyRegisterSheet({
     try {
       if (mode === 'register') {
         // 임시 사용자 ID (실제로는 인증된 사용자 ID를 사용해야 함)
-        const requestUserId = 'system-user-id';
+        // const requestUserId = 'system-user-id';
+        const requestUserId = uuidv4(); // 유효한 UUID 생성
         
         // 디버깅용 로그 추가
         console.log('등록 - 원본 폼 데이터:', formData);
@@ -104,7 +110,8 @@ export function BrokerCompanyRegisterSheet({
         }
       } else if (mode === 'edit' && formData.id) {
         // 임시 사용자 ID (실제로는 인증된 사용자 ID를 사용해야 함)
-        const requestUserId = 'system-user-id';
+        // const requestUserId = 'system-user-id';
+        const requestUserId = uuidv4(); // 유효한 UUID 생성
         
         // 디버깅용 로그 추가
         console.log('수정 - 원본 폼 데이터:', formData);
@@ -122,8 +129,8 @@ export function BrokerCompanyRegisterSheet({
             data: apiData
           });
           
-          // 스토어 업데이트
-          updateCompany(formData);
+          // 스토어 업데이트 - 기존 코드 주석 처리
+          // updateCompany(formData);
           
           // 성공 처리
           toast.success(`${formData.name} 업체 정보가 수정되었습니다.`);

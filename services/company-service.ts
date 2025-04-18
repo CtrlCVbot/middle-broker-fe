@@ -61,7 +61,30 @@ export const createCompany = async (data: CompanyRequest): Promise<ICompany> => 
  * @returns 수정된 업체 정보
  */
 export const updateCompany = async (id: string, data: CompanyRequest): Promise<ICompany> => {
-  return apiClient.put<ICompany>(`/companies/${id}`, data);
+  // PUT 방식 코드 주석 처리
+  // return apiClient.put<ICompany>(`/companies/${id}`, data);
+  
+  // PATCH 방식으로 변경: /companies/:id/fields 엔드포인트 사용
+  // 먼저 데이터 형식을 fields API에 맞게 변환
+  const fieldsData = {
+    fields: {
+      name: data.name,
+      businessNumber: data.businessNumber,
+      ceoName: data.ceoName,
+      type: data.type,
+      status: data.status,
+      // 중첩된 객체 필드 풀어서 전달
+      addressPostal: data.address?.postal || '',
+      addressRoad: data.address?.road || '',
+      addressDetail: data.address?.detail || '',
+      contactTel: data.contact?.tel || '',
+      contactMobile: data.contact?.mobile || '',
+      contactEmail: data.contact?.email || '',
+    },
+    reason: `관리자에 의해 수정됨 (사용자 ID: ${data.requestUserId})`,
+  };
+  
+  return apiClient.patch<ICompany>(`/companies/${id}/fields`, fieldsData);
 };
 
 /**

@@ -16,10 +16,15 @@ import {
   BrokerCompanyStatementBadge 
 } from './broker-company-status-badge';
 import { IBrokerCompany } from '@/types/broker-company';
+// 기존 스토어 import 주석 처리
+// import { useBrokerCompanyStore } from '@/store/broker-company-store';
 import { useCompanyStore } from '@/store/company-store';
 import { BrokerCompanyContextMenu } from './broker-company-context-menu';
 import { cn } from '@/lib/utils';
 import { ILegacyCompany } from '@/types/company';
+import { Button } from "@/components/ui/button";
+import { formatDate, formatPhoneNumber } from "@/utils/format";
+import { Badge } from "@/components/ui/badge";
 
 interface BrokerCompanyTableProps {
   companies: IBrokerCompany[] | ILegacyCompany[];
@@ -52,6 +57,22 @@ export function BrokerCompanyTable({ companies, onCompanyClick }: BrokerCompanyT
   //   toggleCompanySelection(companyId);
   // };
   
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case "활성":
+      case "active":
+        return "success";
+      case "비활성":
+      case "inactive":
+        return "destructive";
+      case "보류":
+      case "pending":
+        return "warning";
+      default:
+        return "secondary";
+    }
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -130,7 +151,9 @@ export function BrokerCompanyTable({ companies, onCompanyClick }: BrokerCompanyT
                   <TableCell>{company.managerPhoneNumber}</TableCell>
                   <TableCell>{company.registeredDate}</TableCell>
                   <TableCell>
-                    <BrokerCompanyStatusBadge status={company.status as any} />
+                    <Badge variant={getStatusBadgeVariant(company.status as string) as any}>
+                      {company.status}
+                    </Badge>
                   </TableCell>
                 </TableRow>
               </BrokerCompanyContextMenu>

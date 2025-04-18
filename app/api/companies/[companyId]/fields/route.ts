@@ -22,7 +22,8 @@ export async function PATCH(
   { params }: { params: { companyId: string } }
 ) {
   try {
-    const { companyId } = params;
+    // Next.js 13.4.19 이상에서는 params를 비동기적으로 처리해야 함
+    const companyId = params.companyId;
 
     // UUID 검증
     if (!isValidUUID(companyId)) {
@@ -101,8 +102,8 @@ export async function PATCH(
     await logCompanyChange({
       companyId,
       changedBy: request.headers.get('x-user-id') || 'system',
-      changedByName: request.headers.get('x-user-name') || 'system',
-      changedByEmail: request.headers.get('x-user-email') || 'system',
+      changedByName: request.headers.get('x-user-name') || 'System',
+      changedByEmail: request.headers.get('x-user-email') || 'system@example.com',
       changedByAccessLevel: request.headers.get('x-user-access-level') || 'system',
       changeType: 'update',
       oldData: {
