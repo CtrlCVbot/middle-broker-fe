@@ -38,8 +38,8 @@ export default function RootLayout({
           <AuthInitializer>
             {children}
           </AuthInitializer>
+          <Toaster />
         </Providers>
-        <Toaster />
       </body>
     </html>
   );

@@ -1,22 +1,10 @@
 import { create } from 'zustand';
-import { 
-  getAddresses, 
-  getAddress, 
-  createAddress, 
-  updateAddress, 
-  deleteAddress, 
-  batchProcessAddresses,
-  validateAddress 
-} from '@/services/address-service';
-import { 
-  IAddress, 
-  IAddressResponse, 
-  IAddressSearchParams, 
-  AddressType,
-  IAddressBatchResponse
-} from '@/types/address';
+import { AddressService } from '@/services/address-service';
+import { IAddress, IAddressResponse, IAddressSearchParams } from '@/types/address';
+import { ToastUtils } from '@/utils/toast-utils';
+import { IApiError } from '@/utils/api-client';
 
-interface IAddressState {
+interface AddressState {
   // 상태
   addresses: IAddress[];
   totalItems: number;
@@ -25,300 +13,356 @@ interface IAddressState {
   searchTerm: string;
   selectedType: string;
   isLoading: boolean;
-  error: string | null;
+  error: IApiError | null;
   selectedAddresses: IAddress[];
-  lastFetchTime: number | null; // 캐싱을 위한 마지막 데이터 로드 시간
+  frequentAddresses: IAddress[];
+  isLoadingFrequent: boolean;
   
   // 액션
   fetchAddresses: (params?: IAddressSearchParams) => Promise<void>;
-  fetchAddress: (id: string) => Promise<IAddress>;
-  addAddress: (address: Omit<IAddress, 'id' | 'createdAt' | 'updatedAt' | 'isFrequent' | 'createdBy' | 'updatedBy'>) => Promise<IAddress>;
-  editAddress: (id: string, address: Omit<IAddress, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'updatedBy'>) => Promise<IAddress>;
-  removeAddress: (id: string) => Promise<void>;
-  batchRemoveAddresses: (ids: string[]) => Promise<void>;
-  toggleFrequent: (id: string, isFrequent: boolean) => Promise<IAddress>;
-  validateAddressData: (address: Partial<IAddress>) => Promise<{ isValid: boolean; errors?: string[] }>;
+  fetchAddress: (id: string) => Promise<IAddress | null>;
+  fetchFrequentAddresses: () => Promise<void>;
+  addAddress: (address: Omit<IAddress, 'id' | 'createdAt' | 'updatedAt' | 'isFrequent'>) => Promise<IAddress | null>;
+  editAddress: (id: string, address: Omit<IAddress, 'id' | 'createdAt' | 'updatedAt'>) => Promise<IAddress | null>;
+  removeAddress: (id: string) => Promise<boolean>;
+  batchRemoveAddresses: (ids: string[]) => Promise<boolean>;
+  setAddressFrequent: (id: string, isFrequent: boolean) => Promise<boolean>;
+  batchSetAddressesFrequent: (ids: string[], isFrequent: boolean) => Promise<boolean>;
   setSelectedAddresses: (addresses: IAddress[]) => void;
   setSearchTerm: (term: string) => void;
   setSelectedType: (type: string) => void;
   setCurrentPage: (page: number) => void;
-  resetState: () => void;
+  clearSelectedAddresses: () => void;
+  refreshAddresses: () => Promise<void>;
 }
 
-const initialState = {
+const useAddressStore = create<AddressState>((set, get) => ({
+  // 초기 상태
   addresses: [],
   totalItems: 0,
   currentPage: 1,
   itemsPerPage: 10,
   searchTerm: '',
-  selectedType: '',
+  selectedType: 'all',
   isLoading: false,
   error: null,
   selectedAddresses: [],
-  lastFetchTime: null,
-};
-
-const useAddressStore = create<IAddressState>((set, get) => ({
-  ...initialState,
+  frequentAddresses: [],
+  isLoadingFrequent: false,
   
-  // 주소 목록 조회
+  // 액션 구현
   fetchAddresses: async (params) => {
-    // API 요청 전 로딩 상태 설정
     set({ isLoading: true, error: null });
     
     try {
-      // 검색 파라미터 준비
-      const searchParams: IAddressSearchParams = {
+      const response = await AddressService.getAddresses({
         page: params?.page || get().currentPage,
         limit: params?.limit || get().itemsPerPage,
         search: params?.search !== undefined ? params.search : get().searchTerm,
-        type: (params?.type || get().selectedType) as AddressType,
-      };
+        type: params?.type !== undefined ? params.type : get().selectedType === 'all' ? undefined : get().selectedType,
+      });
       
-      // API 호출
-      const response = await getAddresses(searchParams);
-      
-      // 상태 업데이트
       set({
         addresses: response.data,
         totalItems: response.pagination.total,
         currentPage: response.pagination.page,
         itemsPerPage: response.pagination.limit,
         isLoading: false,
-        lastFetchTime: Date.now(),
+        // 선택된 주소 목록 필터링 (삭제된 주소가 있을 수 있으므로)
+        selectedAddresses: get().selectedAddresses.filter(
+          selected => response.data.some(addr => addr.id === selected.id)
+        ),
       });
     } catch (error) {
-      // 에러 처리
-      console.error('주소 목록 조회 에러:', error);
       set({ 
-        error: error instanceof Error ? error.message : '주소 목록을 불러오는 중 오류가 발생했습니다.',
+        error: error as IApiError,
         isLoading: false 
       });
+      
+      // 토스트 에러 표시
+      ToastUtils.apiError(error, '주소 목록 로드 실패');
     }
   },
   
-  // 개별 주소 조회
   fetchAddress: async (id) => {
     set({ isLoading: true, error: null });
     
     try {
-      const address = await getAddress(id);
+      const address = await AddressService.getAddress(id);
       set({ isLoading: false });
       return address;
     } catch (error) {
-      console.error('개별 주소 조회 에러:', error);
       set({ 
-        error: error instanceof Error ? error.message : '주소를 불러오는 중 오류가 발생했습니다.',
+        error: error as IApiError,
         isLoading: false 
       });
-      throw error;
+      
+      // 토스트 에러 표시
+      ToastUtils.apiError(error, '주소 로드 실패');
+      return null;
     }
   },
   
-  // 새 주소 추가
+  fetchFrequentAddresses: async () => {
+    set({ isLoadingFrequent: true });
+    
+    try {
+      const frequentAddresses = await AddressService.getFrequentAddresses();
+      set({ frequentAddresses, isLoadingFrequent: false });
+    } catch (error) {
+      set({ isLoadingFrequent: false });
+      ToastUtils.apiError(error, '자주 사용하는 주소 로드 실패');
+    }
+  },
+  
   addAddress: async (address) => {
     set({ isLoading: true, error: null });
     
     try {
-      // 주소 생성 API 호출
-      const newAddress = await createAddress(address);
+      const newAddress = await AddressService.createAddress({
+        ...address,
+        isFrequent: false, // 새 주소는 기본적으로 자주 사용 안함
+      });
       
-      // 현재 페이지가 1이고 검색어가 없을 때만 상태 즉시 업데이트 
-      if (get().currentPage === 1 && !get().searchTerm && !get().selectedType) {
+      // 주소 추가 성공 알림
+      ToastUtils.saveSuccess('주소', true);
+      
+      // 현재 페이지가 1이고 검색어가 없을 때만 상태 업데이트
+      if (get().currentPage === 1 && !get().searchTerm && get().selectedType === 'all') {
         set((state) => ({
           addresses: [newAddress, ...state.addresses].slice(0, state.itemsPerPage),
           totalItems: state.totalItems + 1,
         }));
       } else {
-        // 다른 경우에는 페이지 새로고침 (데이터 일관성을 위해)
-        await get().fetchAddresses();
+        // 다른 경우에는 페이지를 새로고침
+        await get().fetchAddresses({ page: 1 });
       }
       
       set({ isLoading: false });
       return newAddress;
     } catch (error) {
-      console.error('주소 추가 에러:', error);
       set({ 
-        error: error instanceof Error ? error.message : '주소를 추가하는 중 오류가 발생했습니다.',
+        error: error as IApiError,
         isLoading: false 
       });
-      throw error;
+      
+      // 폼 오류 토스트 표시
+      ToastUtils.formError(error);
+      return null;
     }
   },
   
-  // 주소 수정
   editAddress: async (id, address) => {
     set({ isLoading: true, error: null });
     
     try {
-      // 주소 수정 API 호출
-      const updatedAddress = await updateAddress(id, address);
+      const updatedAddress = await AddressService.updateAddress(id, address);
       
-      // 현재 표시된 주소 목록 업데이트
-      set((state) => ({
-        addresses: state.addresses.map((addr) => 
-          addr.id === id ? updatedAddress : addr
-        ),
-        isLoading: false,
-      }));
-      
-      return updatedAddress;
-    } catch (error) {
-      console.error('주소 수정 에러:', error);
-      set({ 
-        error: error instanceof Error ? error.message : '주소를 수정하는 중 오류가 발생했습니다.',
-        isLoading: false 
-      });
-      throw error;
-    }
-  },
-  
-  // 주소 삭제
-  removeAddress: async (id) => {
-    set({ isLoading: true, error: null });
-    
-    try {
-      // 주소 삭제 API 호출
-      await deleteAddress(id);
-      
-      // 주소 목록에서 삭제된 항목 제거
-      set((state) => ({
-        addresses: state.addresses.filter((addr) => addr.id !== id),
-        totalItems: state.totalItems - 1,
-        selectedAddresses: state.selectedAddresses.filter((addr) => addr.id !== id),
-        isLoading: false,
-      }));
-      
-      // 페이지 업데이트 로직: 현재 페이지에 항목이 없는 경우 이전 페이지로 이동
-      const { addresses, currentPage, totalItems, itemsPerPage } = get();
-      const totalPages = Math.ceil(totalItems / itemsPerPage);
-      
-      if (addresses.length === 0 && currentPage > 1 && currentPage > totalPages) {
-        await get().fetchAddresses({ page: currentPage - 1 });
-      }
-    } catch (error) {
-      console.error('주소 삭제 에러:', error);
-      set({ 
-        error: error instanceof Error ? error.message : '주소를 삭제하는 중 오류가 발생했습니다.',
-        isLoading: false 
-      });
-      throw error;
-    }
-  },
-  
-  // 다중 주소 삭제
-  batchRemoveAddresses: async (ids) => {
-    if (ids.length === 0) return;
-    
-    set({ isLoading: true, error: null });
-    
-    try {
-      // 배치 처리 API 호출
-      const result = await batchProcessAddresses(ids, 'delete');
-      
-      // 주소 목록에서 성공적으로 삭제된 항목만 제거
-      if (result.success) {
-        const processedIds = result.processed || ids;
-        
-        set((state) => ({
-          addresses: state.addresses.filter((addr) => !processedIds.includes(addr.id)),
-          totalItems: state.totalItems - processedIds.length,
-          selectedAddresses: [],
-          isLoading: false,
-        }));
-        
-        // 페이지 업데이트 로직
-        const { addresses, currentPage, totalItems, itemsPerPage } = get();
-        const totalPages = Math.ceil(totalItems / itemsPerPage);
-        
-        if (addresses.length === 0 && currentPage > 1 && currentPage > totalPages) {
-          await get().fetchAddresses({ page: currentPage - 1 });
-        } else if (addresses.length < itemsPerPage / 2) {
-          // 현재 페이지의 항목이 절반 이하로 남은 경우 목록 새로고침
-          await get().fetchAddresses();
-        }
-      } else {
-        throw new Error('일부 주소를 삭제하는데 실패했습니다. 다시 시도해주세요.');
-      }
-    } catch (error) {
-      console.error('주소 일괄 삭제 에러:', error);
-      set({ 
-        error: error instanceof Error ? error.message : '주소를 일괄 삭제하는 중 오류가 발생했습니다.',
-        isLoading: false 
-      });
-      throw error;
-    }
-  },
-  
-  // 자주 사용하는 주소 토글
-  toggleFrequent: async (id, isFrequent) => {
-    set({ isLoading: true, error: null });
-    
-    try {
-      // 현재 주소 찾기
-      const addressToUpdate = get().addresses.find(addr => addr.id === id);
-      if (!addressToUpdate) {
-        throw new Error('주소를 찾을 수 없습니다.');
-      }
-      
-      // 주소 업데이트
-      const updatedAddress = await updateAddress(id, { 
-        ...addressToUpdate,
-        isFrequent 
-      });
+      // 주소 수정 성공 알림
+      ToastUtils.saveSuccess('주소', false);
       
       // 주소 목록 업데이트
       set((state) => ({
         addresses: state.addresses.map((addr) => 
           addr.id === id ? updatedAddress : addr
         ),
+        // 자주 사용하는 주소 목록도 업데이트
+        frequentAddresses: state.frequentAddresses.map((addr) =>
+          addr.id === id ? updatedAddress : addr
+        ),
         isLoading: false,
       }));
       
       return updatedAddress;
     } catch (error) {
-      console.error('자주 사용 설정 에러:', error);
       set({ 
-        error: error instanceof Error ? error.message : '자주 사용 주소 설정 중 오류가 발생했습니다.',
+        error: error as IApiError,
         isLoading: false 
       });
-      throw error;
+      
+      // 폼 오류 토스트 표시
+      ToastUtils.formError(error);
+      return null;
     }
   },
   
-  // 주소 데이터 유효성 검증
-  validateAddressData: async (address) => {
+  removeAddress: async (id) => {
+    set({ isLoading: true, error: null });
+    
     try {
-      return await validateAddress(address);
+      await AddressService.deleteAddress(id);
+      
+      // 주소 삭제 성공 알림
+      ToastUtils.deleteSuccess('주소');
+      
+      // 주소 목록에서 제거
+      set((state) => ({
+        addresses: state.addresses.filter((addr) => addr.id !== id),
+        totalItems: state.totalItems - 1,
+        selectedAddresses: state.selectedAddresses.filter((addr) => addr.id !== id),
+        frequentAddresses: state.frequentAddresses.filter((addr) => addr.id !== id),
+        isLoading: false,
+      }));
+      
+      // 필요한 경우 페이지를 새로고침
+      if (get().addresses.length === 0 && get().currentPage > 1) {
+        await get().fetchAddresses({ page: get().currentPage - 1 });
+      }
+
+      return true;
     } catch (error) {
-      console.error('주소 유효성 검증 에러:', error);
-      throw error;
+      set({ 
+        error: error as IApiError,
+        isLoading: false 
+      });
+      
+      // 토스트 에러 표시
+      ToastUtils.apiError(error, '주소 삭제 실패');
+      return false;
     }
   },
   
-  // 선택된 주소 설정
+  batchRemoveAddresses: async (ids) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      await AddressService.batchDelete(ids);
+      
+      // 다중 주소 삭제 성공 알림
+      ToastUtils.deleteSuccess('주소', ids.length);
+      
+      // 주소 목록에서 제거
+      set((state) => ({
+        addresses: state.addresses.filter((addr) => !ids.includes(addr.id)),
+        totalItems: state.totalItems - ids.length,
+        selectedAddresses: [],
+        frequentAddresses: state.frequentAddresses.filter((addr) => !ids.includes(addr.id)),
+        isLoading: false,
+      }));
+      
+      // 필요한 경우 페이지를 새로고침
+      if (get().addresses.length === 0 && get().currentPage > 1) {
+        await get().fetchAddresses({ page: get().currentPage - 1 });
+      } else if (get().addresses.length < get().itemsPerPage / 2) {
+        await get().fetchAddresses();
+      }
+
+      return true;
+    } catch (error) {
+      set({ 
+        error: error as IApiError,
+        isLoading: false 
+      });
+      
+      // 토스트 에러 표시
+      ToastUtils.apiError(error, '주소 일괄 삭제 실패');
+      return false;
+    }
+  },
+  
+  setAddressFrequent: async (id, isFrequent) => {
+    try {
+      if (isFrequent) {
+        await AddressService.setFrequent([id]);
+      } else {
+        await AddressService.unsetFrequent([id]);
+      }
+      
+      // 주소 목록 업데이트
+      set((state) => ({
+        addresses: state.addresses.map((addr) => 
+          addr.id === id ? { ...addr, isFrequent } : addr
+        ),
+        frequentAddresses: isFrequent 
+          ? [...state.frequentAddresses, state.addresses.find(addr => addr.id === id)!]
+          : state.frequentAddresses.filter(addr => addr.id !== id)
+      }));
+      
+      ToastUtils.success(
+        isFrequent ? '자주 사용하는 주소로 설정' : '자주 사용하는 주소에서 제거',
+        '주소 설정이 변경되었습니다.'
+      );
+      
+      return true;
+    } catch (error) {
+      ToastUtils.apiError(error, '주소 설정 변경 실패');
+      return false;
+    }
+  },
+  
+  batchSetAddressesFrequent: async (ids, isFrequent) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      if (isFrequent) {
+        await AddressService.setFrequent(ids);
+      } else {
+        await AddressService.unsetFrequent(ids);
+      }
+      
+      // 주소 목록 업데이트
+      set((state) => {
+        const updatedAddresses = state.addresses.map((addr) => 
+          ids.includes(addr.id) ? { ...addr, isFrequent } : addr
+        );
+        
+        // 자주 사용하는 주소 목록 업데이트
+        const updatedFrequentAddresses = isFrequent
+          ? [...state.frequentAddresses, ...updatedAddresses.filter(addr => ids.includes(addr.id))]
+          : state.frequentAddresses.filter(addr => !ids.includes(addr.id));
+          
+        return {
+          addresses: updatedAddresses,
+          frequentAddresses: updatedFrequentAddresses,
+          isLoading: false,
+        };
+      });
+      
+      ToastUtils.success(
+        isFrequent ? '자주 사용하는 주소로 설정' : '자주 사용하는 주소에서 제거',
+        `${ids.length}개의 주소 설정이 변경되었습니다.`
+      );
+      
+      return true;
+    } catch (error) {
+      set({ 
+        error: error as IApiError,
+        isLoading: false 
+      });
+      
+      ToastUtils.apiError(error, '주소 일괄 설정 변경 실패');
+      return false;
+    }
+  },
+  
   setSelectedAddresses: (addresses) => {
     set({ selectedAddresses: addresses });
   },
   
-  // 검색어 설정
   setSearchTerm: (term) => {
     set({ searchTerm: term, currentPage: 1 });
   },
   
-  // 주소 유형 필터 설정
   setSelectedType: (type) => {
     set({ selectedType: type, currentPage: 1 });
   },
   
-  // 현재 페이지 설정
   setCurrentPage: (page) => {
     set({ currentPage: page });
+    get().fetchAddresses({ page });
   },
   
-  // 상태 초기화
-  resetState: () => {
-    set(initialState);
+  clearSelectedAddresses: () => {
+    set({ selectedAddresses: [] });
+  },
+  
+  refreshAddresses: async () => {
+    const params = {
+      page: get().currentPage,
+      search: get().searchTerm,
+      type: get().selectedType === 'all' ? undefined : get().selectedType,
+    };
+    await get().fetchAddresses(params);
   },
 }));
 
