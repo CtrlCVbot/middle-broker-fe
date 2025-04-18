@@ -33,6 +33,9 @@ interface IAddressTableProps {
   onDeleteSingle: (address: IAddress) => void;
   onEdit?: (address?: IAddress) => void;
   onToggleFrequent?: (address: IAddress) => void;
+  selectedAddresses?: IAddress[];
+  onSelectAddresses?: (addresses: IAddress[]) => void;
+  hidePagenation?: boolean;
 }
 
 export function AddressTable({
@@ -44,8 +47,23 @@ export function AddressTable({
   onDeleteSingle,
   onEdit,
   onToggleFrequent,
+  selectedAddresses: externalSelectedAddresses,
+  onSelectAddresses,
+  hidePagenation = false,
 }: IAddressTableProps) {
-  const [selectedAddresses, setSelectedAddresses] = useState<IAddress[]>([]);
+  const [internalSelectedAddresses, setInternalSelectedAddresses] = useState<IAddress[]>([]);
+  
+  // 선택된 주소 상태 - 내부 또는 외부에서 관리
+  const selectedAddresses = externalSelectedAddresses || internalSelectedAddresses;
+  
+  // 선택 상태 변경 핸들러
+  const setSelectedAddresses = (addresses: IAddress[]) => {
+    if (onSelectAddresses) {
+      onSelectAddresses(addresses);
+    } else {
+      setInternalSelectedAddresses(addresses);
+    }
+  };
 
   const handleSelectAll = () => {
     if (selectedAddresses.length === addresses.length) {
@@ -184,32 +202,34 @@ export function AddressTable({
             : "선택 삭제"}
         </Button>
 
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious 
-                onClick={() => onPageChange(currentPage - 1)}
-                isActive={currentPage === 1}
-              />
-            </PaginationItem>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  onClick={() => onPageChange(page)}
-                  isActive={currentPage === page}
-                >
-                  {page}
-                </PaginationLink>
+        {!hidePagenation && (
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
+                  onClick={() => onPageChange(currentPage - 1)}
+                  isActive={currentPage === 1}
+                />
               </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => onPageChange(currentPage + 1)}
-                isActive={currentPage === totalPages}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    onClick={() => onPageChange(page)}
+                    isActive={currentPage === page}
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => onPageChange(currentPage + 1)}
+                  isActive={currentPage === totalPages}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
       </div>
     </div>
   );

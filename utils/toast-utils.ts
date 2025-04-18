@@ -75,7 +75,7 @@ export class ToastUtils {
       const fieldErrors = apiError.details;
       
       // 첫 번째 필드 오류를 토스트로 표시
-      if (Object.keys(fieldErrors).length > 0) {
+      if (fieldErrors && Object.keys(fieldErrors).length > 0) {
         const firstField = Object.keys(fieldErrors)[0];
         const firstError = fieldErrors[firstField][0];
         

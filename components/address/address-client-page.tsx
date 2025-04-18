@@ -91,7 +91,7 @@ export default function AddressClientPage() {
   const handleSearch = useCallback((term: string, type?: string) => {
     setSearchTerm(term);
     setSelectedType(type || "all");
-    fetchAddresses({ page: 1, search: term, type });
+    fetchAddresses({ page: 1, search: term, type: type as any });
   }, [setSearchTerm, setSelectedType, fetchAddresses]);
   
   // 페이지 변경 핸들러
@@ -132,7 +132,7 @@ export default function AddressClientPage() {
   }, []);
   
   // 주소 폼 제출 핸들러
-  const handleFormSubmit = useCallback(async (data: Omit<IAddress, "id" | "createdAt" | "updatedAt" | "isFrequent">) => {
+  const handleFormSubmit = useCallback(async (data: Omit<IAddress, "id" | "createdAt" | "updatedAt" | "isFrequent" | "createdBy" | "updatedBy">) => {
     let success = false;
     
     if (editingAddress) {
