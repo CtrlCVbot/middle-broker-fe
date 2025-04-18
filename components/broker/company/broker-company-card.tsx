@@ -16,18 +16,19 @@ import {
   BrokerCompanyStatementBadge
 } from './broker-company-status-badge';
 import { IBrokerCompany } from '@/types/broker-company';
-import { useBrokerCompanyStore } from '@/store/broker-company-store';
+import { useCompanyStore } from '@/store/company-store';
 import { BrokerCompanyContextMenu } from './broker-company-context-menu';
 import { cn } from '@/lib/utils';
 import { Mail, Phone, Smartphone, Calendar } from 'lucide-react';
+import { ILegacyCompany } from '@/types/company';
 
 interface BrokerCompanyCardProps {
-  company: IBrokerCompany;
+  company: IBrokerCompany | ILegacyCompany;
   onClick?: () => void;
 }
 
 export function BrokerCompanyCard({ company, onClick }: BrokerCompanyCardProps) {
-  const { selectedCompanyIds, toggleCompanySelection } = useBrokerCompanyStore();
+  const { selectedCompanyIds, toggleCompanySelection } = useCompanyStore();
 
   if (!company) {
     return (
@@ -49,7 +50,7 @@ export function BrokerCompanyCard({ company, onClick }: BrokerCompanyCardProps) 
       <Card 
         className={cn(
           "cursor-pointer hover:shadow-md transition-shadow",
-          company.status === '비활성' && "bg-gray-50",
+          (company.status === '비활성' || company.status === 'inactive') && "bg-gray-50",
           selectedCompanyIds.includes(company.id) && "border-primary border-2"
         )}
         onClick={onClick}
@@ -76,7 +77,7 @@ export function BrokerCompanyCard({ company, onClick }: BrokerCompanyCardProps) 
             <span>•</span>
             <BrokerCompanyTypeBadge type={company.type} />
             <span>•</span>
-            <BrokerCompanyStatementBadge type={company.statementType} />
+            <BrokerCompanyStatementBadge type={(company as IBrokerCompany).statementType || '매출처'} />
           </CardDescription>
         </CardHeader>
         <CardContent className="pb-2 pt-0">

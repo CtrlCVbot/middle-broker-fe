@@ -9,11 +9,12 @@ import {
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 import { IBrokerCompany } from '@/types/broker-company';
+import { ILegacyCompany } from '@/types/company';
 import { FileSpreadsheet, Pencil, Eye, Power, Trash } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface BrokerCompanyContextMenuProps {
-  company: IBrokerCompany;
+  company: IBrokerCompany | ILegacyCompany;
   children: React.ReactNode;
 }
 
@@ -30,7 +31,10 @@ export function BrokerCompanyContextMenu({ company, children }: BrokerCompanyCon
 
   // 상태 변경 기능
   const handleToggleStatus = () => {
-    const newStatus = company.status === '활성' ? '비활성' : '활성';
+    // 레거시 포맷에서 한글로 된 상태 텍스트 가져오기
+    const currentStatus = company.status as string;
+    const isActive = currentStatus === '활성' || currentStatus === 'active';
+    const newStatus = isActive ? '비활성' : '활성';
     toast.success(`${company.name}의 상태가 ${newStatus}로 변경되었습니다.`);
   };
 
@@ -42,6 +46,13 @@ export function BrokerCompanyContextMenu({ company, children }: BrokerCompanyCon
   // 삭제 기능
   const handleDelete = () => {
     toast.warning(`${company.name} 삭제 (관리자 권한 필요)`);
+  };
+
+  // 레거시 포맷에서 상태 텍스트 가져오기
+  const getStatusText = () => {
+    const status = company.status as string;
+    const isActive = status === '활성' || status === 'active';
+    return isActive ? '비활성화' : '활성화';
   };
 
   return (
@@ -58,7 +69,7 @@ export function BrokerCompanyContextMenu({ company, children }: BrokerCompanyCon
         </ContextMenuItem>
         <ContextMenuItem onClick={handleToggleStatus} className="flex items-center gap-2 cursor-pointer">
           <Power className="h-4 w-4" />
-          <span>{company.status === '활성' ? '비활성화' : '활성화'}</span>
+          <span>{getStatusText()}</span>
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem onClick={handleExcelDownload} className="flex items-center gap-2 cursor-pointer">

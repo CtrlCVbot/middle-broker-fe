@@ -16,13 +16,14 @@ import {
   BrokerCompanyStatementBadge 
 } from './broker-company-status-badge';
 import { IBrokerCompany } from '@/types/broker-company';
-import { useBrokerCompanyStore } from '@/store/broker-company-store';
+import { useCompanyStore } from '@/store/company-store';
 import { BrokerCompanyContextMenu } from './broker-company-context-menu';
 import { cn } from '@/lib/utils';
+import { ILegacyCompany } from '@/types/company';
 
 interface BrokerCompanyTableProps {
-  companies: IBrokerCompany[];
-  onCompanyClick: (company: IBrokerCompany) => void;
+  companies: IBrokerCompany[] | ILegacyCompany[];
+  onCompanyClick: (company: IBrokerCompany | ILegacyCompany) => void;
 }
 
 export function BrokerCompanyTable({ companies, onCompanyClick }: BrokerCompanyTableProps) {
@@ -31,7 +32,7 @@ export function BrokerCompanyTable({ companies, onCompanyClick }: BrokerCompanyT
     toggleCompanySelection, 
     setSelectedCompanyIds, 
     clearSelectedCompanyIds 
-  } = useBrokerCompanyStore();
+  } = useCompanyStore();
   
   // 모든 회사 선택 상태
   const allSelected = companies.length > 0 && selectedCompanyIds.length === companies.length;
@@ -87,7 +88,7 @@ export function BrokerCompanyTable({ companies, onCompanyClick }: BrokerCompanyT
             </TableRow>
           ) : (
             companies.map((company) => (
-              <BrokerCompanyContextMenu key={company.id} company={company}>
+              <BrokerCompanyContextMenu key={company.id} company={company as IBrokerCompany}>
                 <TableRow 
                   className={cn(
                     "cursor-pointer hover:bg-muted/50",
@@ -110,10 +111,10 @@ export function BrokerCompanyTable({ companies, onCompanyClick }: BrokerCompanyT
                   </TableCell>
                   <TableCell className="font-medium">{company.code}</TableCell>
                   <TableCell>
-                    <BrokerCompanyTypeBadge type={company.type} />
+                    <BrokerCompanyTypeBadge type={company.type as any} />
                   </TableCell>
                   <TableCell>
-                    <BrokerCompanyStatementBadge type={company.statementType} />
+                    <BrokerCompanyStatementBadge type={(company as IBrokerCompany).statementType || '매출처'} />
                   </TableCell>
                   <TableCell>{company.businessNumber}</TableCell>
                   <TableCell className="font-semibold text-gray-800">{company.name}</TableCell>
@@ -129,7 +130,7 @@ export function BrokerCompanyTable({ companies, onCompanyClick }: BrokerCompanyT
                   <TableCell>{company.managerPhoneNumber}</TableCell>
                   <TableCell>{company.registeredDate}</TableCell>
                   <TableCell>
-                    <BrokerCompanyStatusBadge status={company.status} />
+                    <BrokerCompanyStatusBadge status={company.status as any} />
                   </TableCell>
                 </TableRow>
               </BrokerCompanyContextMenu>

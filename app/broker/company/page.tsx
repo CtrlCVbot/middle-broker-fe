@@ -10,8 +10,9 @@ import { BrokerCompanySearch } from '@/components/broker/company/broker-company-
 import { BrokerCompanyPagination } from '@/components/broker/company/broker-company-pagination';
 import { BrokerCompanyActionButtons } from '@/components/broker/company/broker-company-action-buttons';
 import { BrokerCompanyRegisterSheet } from '@/components/broker/company/broker-company-register-sheet';
-import { useBrokerCompanyStore, useBrokerCompanyData } from '@/store/broker-company-store';
+import { useCompanyStore, useCompaniesLegacyFormat } from '@/store/company-store';
 import { IBrokerCompany } from '@/types/broker-company';
+import { ILegacyCompany } from '@/types/company';
 import { Home, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -21,27 +22,43 @@ export default function BrokerCompanyPage() {
     setViewMode,
     setCurrentPage,
     setPageSize
-  } = useBrokerCompanyStore();
+  } = useCompanyStore();
   
-  // 선택된 업체 상태 관리
-  const [selectedCompany, setSelectedCompany] = useState<IBrokerCompany | null>(null);
+  // 선택된 업체 상태 관리 (타입 변경)
+  const [selectedCompany, setSelectedCompany] = useState<IBrokerCompany | ILegacyCompany | null>(null);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   
-  // API 데이터 조회 (기존 목업 데이터 대신 API 사용)
-  const { 
-    data, 
-    total, 
-    page, 
-    pageSize, 
-    totalPages,
-    isLoading, 
-    isError, 
-    error, 
-    refetch 
-  } = useBrokerCompanyData();
+  // API 데이터 조회 - 이전 코드 (레거시 호환용으로 주석 처리)
+  // const { 
+  //   data, 
+  //   total, 
+  //   page, 
+  //   pageSize, 
+  //   totalPages,
+  //   isLoading, 
+  //   isError, 
+  //   error, 
+  //   refetch 
+  // } = useBrokerCompanyData();
   
-  // 업체 클릭 핸들러
-  const handleCompanyClick = (company: IBrokerCompany) => {
+  // 새로운 데이터 조회 코드
+  const {
+    legacyData,
+    isLoading,
+    isError,
+    error,
+    refetch
+  } = useCompaniesLegacyFormat();
+  
+  // legacyData 구조 분해
+  const data = legacyData?.data || [];
+  const total = legacyData?.total || 0;
+  const page = legacyData?.page || 1;
+  const pageSize = legacyData?.pageSize || 10;
+  const totalPages = legacyData?.totalPages || 1;
+  
+  // 업체 클릭 핸들러 (타입 변경)
+  const handleCompanyClick = (company: IBrokerCompany | ILegacyCompany) => {
     setSelectedCompany(company);
     setIsEditSheetOpen(true);
   };
@@ -202,7 +219,7 @@ export default function BrokerCompanyPage() {
       {/* 업체 수정 시트 */}
       {selectedCompany && (
         <BrokerCompanyRegisterSheet
-          company={selectedCompany}
+          company={selectedCompany as IBrokerCompany}
           mode="edit"
           onUpdateSuccess={handleUpdateSuccess}
           trigger={<div className="hidden" />} // 숨겨진 트리거

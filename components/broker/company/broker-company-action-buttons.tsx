@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useBrokerCompanyStore } from '@/store/broker-company-store';
+import { useCompanyStore, useBatchUpdateCompanies } from '@/store/company-store';
 import { BrokerCompanyRegisterSheet } from './broker-company-register-sheet';
 import {
   AlertDialog,
@@ -24,7 +24,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useCompanyStore, useBatchUpdateCompanies } from '@/store/company-store';
 
 interface BrokerCompanyActionButtonsProps {
   onActionSuccess?: () => void;
@@ -36,7 +35,7 @@ export function BrokerCompanyActionButtons({
   const { 
     selectedCompanyIds, 
     clearSelectedCompanyIds 
-  } = useBrokerCompanyStore();
+  } = useCompanyStore();
   
   // API 뮤테이션 훅 사용
   const batchUpdateMutation = useBatchUpdateCompanies();
