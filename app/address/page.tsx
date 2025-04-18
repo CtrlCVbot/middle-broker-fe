@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { AddressSearch } from "@/components/address/address-search";
 import { AddressTable } from "@/components/address/address-table";
@@ -45,6 +46,7 @@ export default function AddressPage() {
     editAddress,
     removeAddress,
     batchRemoveAddresses,
+    toggleFrequent,
     setCurrentPage,
     setSearchTerm,
     setSelectedType,
@@ -60,15 +62,25 @@ export default function AddressPage() {
   const [editingAddress, setEditingAddress] = useState<IAddress | undefined>(undefined);
   const [initialFetchDone, setInitialFetchDone] = useState<boolean>(false);
 
-  // 컴포넌트 마운트 시 데이터 로드
-  useEffect(() => {
-    const loadData = async () => {
+  // 컴포넌트 마운트 시 데이터 로드 - useCallback으로 최적화
+  const loadAddresses = useCallback(async () => {
+    try {
       await fetchAddresses();
       setInitialFetchDone(true);
-    };
-    
-    loadData();
+    } catch (error) {
+      console.error("데이터 로드 실패:", error);
+      // 에러는 스토어에서 처리되어 error 상태로 설정됨
+    }
   }, [fetchAddresses]);
+
+  useEffect(() => {
+    loadAddresses();
+    
+    // 컴포넌트 언마운트 시 선택된 주소 및 필터 초기화를 위한 클린업 함수
+    return () => {
+      // 필요한 경우 클린업 작업 추가
+    };
+  }, [loadAddresses]);
   
   // 에러 발생 시 토스트 표시
   useEffect(() => {
@@ -81,8 +93,8 @@ export default function AddressPage() {
     }
   }, [error, toast]);
 
-  // 검색 처리
-  const handleSearch = (term: string, type?: string) => {
+  // 검색 처리 - useCallback으로 최적화
+  const handleSearch = useCallback((term: string, type?: string) => {
     setSearchTerm(term);
     setSelectedType(type || "");
     setCurrentPage(1); // 검색 시 첫 페이지로 이동
@@ -91,34 +103,51 @@ export default function AddressPage() {
       search: term, 
       type: type as any 
     });
-  };
+  }, [fetchAddresses, setCurrentPage, setSearchTerm, setSelectedType]);
 
-  // 페이지 변경 처리
-  const handlePageChange = (page: number) => {
+  // 페이지 변경 처리 - useCallback으로 최적화
+  const handlePageChange = useCallback((page: number) => {
     // 유효 페이지 범위 확인
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     if (page < 1 || page > totalPages) return;
     
     setCurrentPage(page);
     fetchAddresses({ page });
-  };
+  }, [fetchAddresses, itemsPerPage, setCurrentPage, totalItems]);
 
-  // 단일 주소 삭제 처리
-  const handleDeleteSingle = (address: IAddress) => {
+  // 단일 주소 삭제 처리 - useCallback으로 최적화
+  const handleDeleteSingle = useCallback((address: IAddress) => {
     setAddressesToDelete([address]);
     setIsDeleteModalOpen(true);
-  };
+  }, []);
 
-  // 선택된 주소 일괄 삭제 처리
-  const handleDeleteSelected = (selectedAddresses: IAddress[]) => {
+  // 선택된 주소 일괄 삭제 처리 - useCallback으로 최적화
+  const handleDeleteSelected = useCallback((selectedAddresses: IAddress[]) => {
     if (selectedAddresses.length === 0) return;
     
     setAddressesToDelete(selectedAddresses);
     setIsDeleteModalOpen(true);
-  };
+  }, []);
 
-  // 삭제 확인
-  const handleConfirmDelete = async () => {
+  // 자주 사용하는 주소 토글 처리 - useCallback으로 최적화
+  const handleToggleFrequent = useCallback(async (address: IAddress) => {
+    try {
+      await toggleFrequent(address.id, !address.isFrequent);
+      toast({
+        title: address.isFrequent ? "자주 사용 해제" : "자주 사용 설정",
+        description: `${address.name} 주소가 성공적으로 ${address.isFrequent ? '해제' : '등록'}되었습니다.`,
+      });
+    } catch (error) {
+      toast({
+        title: "설정 실패",
+        description: error instanceof Error ? error.message : "자주 사용 주소 설정 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  }, [toast, toggleFrequent]);
+
+  // 삭제 확인 - useCallback으로 최적화
+  const handleConfirmDelete = useCallback(async () => {
     try {
       if (addressesToDelete.length === 0) return;
       
@@ -148,16 +177,16 @@ export default function AddressPage() {
       setIsDeleteModalOpen(false);
       setAddressesToDelete([]);
     }
-  };
+  }, [addressesToDelete, batchRemoveAddresses, removeAddress, toast]);
 
-  // 주소 등록/수정 폼 열기
-  const handleOpenFormSheet = (address?: IAddress) => {
+  // 주소 등록/수정 폼 열기 - useCallback으로 최적화
+  const handleOpenFormSheet = useCallback((address?: IAddress) => {
     setEditingAddress(address);
     setIsFormSheetOpen(true);
-  };
+  }, []);
 
-  // 주소 등록/수정 제출 처리
-  const handleFormSubmit = async (data: Omit<IAddress, "id" | "createdAt" | "updatedAt" | "isFrequent" | "createdBy" | "updatedBy">) => {
+  // 주소 등록/수정 제출 처리 - useCallback으로 최적화
+  const handleFormSubmit = useCallback(async (data: Omit<IAddress, "id" | "createdAt" | "updatedAt" | "isFrequent" | "createdBy" | "updatedBy">) => {
     try {
       if (editingAddress) {
         // 주소 수정
@@ -187,7 +216,19 @@ export default function AddressPage() {
         variant: "destructive",
       });
     }
-  };
+  }, [addAddress, editAddress, editingAddress, toast]);
+
+  // 폼 닫기 핸들러 - useCallback으로 최적화
+  const handleCloseForm = useCallback(() => {
+    setIsFormSheetOpen(false);
+    setEditingAddress(undefined);
+  }, []);
+
+  // 삭제 모달 닫기 핸들러 - useCallback으로 최적화
+  const handleCloseDeleteModal = useCallback(() => {
+    setIsDeleteModalOpen(false);
+    setAddressesToDelete([]);
+  }, []);
 
   // 총 페이지 수 계산
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
@@ -277,22 +318,20 @@ export default function AddressPage() {
                 onDeleteSingle={handleDeleteSingle}
                 onDeleteSelected={handleDeleteSelected}
                 onEdit={handleOpenFormSheet}
+                onToggleFrequent={handleToggleFrequent}
               />
             )}
             
             <AddressDeleteModal
               isOpen={isDeleteModalOpen}
               addresses={addressesToDelete}
-              onClose={() => setIsDeleteModalOpen(false)}
+              onClose={handleCloseDeleteModal}
               onConfirm={handleConfirmDelete}
             />
             
             <AddressFormSheet
               isOpen={isFormSheetOpen}
-              onClose={() => {
-                setIsFormSheetOpen(false);
-                setEditingAddress(undefined);
-              }}
+              onClose={handleCloseForm}
               onSubmit={handleFormSubmit}
               defaultValues={editingAddress}
               title={editingAddress ? "주소 수정" : "주소 등록"}

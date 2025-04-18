@@ -21,6 +21,8 @@ import {
   PaginationPrevious
 } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
+import { Star, StarOff } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface IAddressTableProps {
   addresses: IAddress[];
@@ -30,6 +32,7 @@ interface IAddressTableProps {
   onDeleteSelected: (addresses: IAddress[]) => void;
   onDeleteSingle: (address: IAddress) => void;
   onEdit?: (address?: IAddress) => void;
+  onToggleFrequent?: (address: IAddress) => void;
 }
 
 export function AddressTable({
@@ -40,6 +43,7 @@ export function AddressTable({
   onDeleteSelected,
   onDeleteSingle,
   onEdit,
+  onToggleFrequent,
 }: IAddressTableProps) {
   const [selectedAddresses, setSelectedAddresses] = useState<IAddress[]>([]);
 
@@ -72,6 +76,13 @@ export function AddressTable({
     }
   };
 
+  // 자주 사용하는 주소 토글 핸들러
+  const handleToggleFrequent = (address: IAddress) => {
+    if (onToggleFrequent) {
+      onToggleFrequent(address);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="rounded-md border">
@@ -91,7 +102,7 @@ export function AddressTable({
               <TableHead>상세 주소</TableHead>
               <TableHead>담당자</TableHead>
               <TableHead>연락처</TableHead>
-              
+              <TableHead>자주 사용</TableHead>
               <TableHead className="text-right">관리</TableHead>
             </TableRow>
           </TableHeader>
@@ -111,16 +122,35 @@ export function AddressTable({
                 </TableCell>
                 <TableCell className="font-medium">
                   {address.name}
-                  {address.isFrequent && (
-                    <Badge variant="secondary" className="ml-2">자주 사용</Badge>
-                  )}
                 </TableCell>
                 <TableCell>{address.roadAddress}</TableCell>
                 {/*<TableCell>{address.jibunAddress}</TableCell>*/}
                 <TableCell>{address.detailAddress}</TableCell>
                 <TableCell>{address.contactName}</TableCell>
                 <TableCell>{address.contactPhone}</TableCell>
-                
+                <TableCell>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8"
+                          onClick={() => handleToggleFrequent(address)}
+                        >
+                          {address.isFrequent ? (
+                            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                          ) : (
+                            <StarOff className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {address.isFrequent ? '자주 사용 해제하기' : '자주 사용 등록하기'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </TableCell>
                 <TableCell className="text-right">
                   <Button
                     variant="secondary"
