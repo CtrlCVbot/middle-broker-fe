@@ -11,65 +11,77 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
+import { useToast } from "@/components/ui/use-toast";
 import { AddressSearch } from "@/components/address/address-search";
 import { AddressTable } from "@/components/address/address-table";
 import { AddressDeleteModal } from "@/components/address/address-delete-modal";
 import { AddressFormSheet } from "@/components/address/address-form-sheet";
-import { getAddressesByPage } from "@/utils/mock-data";
-import { IAddress, IAddressResponse } from "@/types/address";
+// import { getAddressesByPage } from "@/utils/mock-data"; // 모킹 데이터 대신 API 사용
+import { IAddress } from "@/types/address";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import useAddressStore from "@/store/address-store";
 
 export default function AddressPage() {
-  // 상태 관리
-  const [addresses, setAddresses] = useState<IAddress[]>([]);
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [selectedType, setSelectedType] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<number>(1);
+  // Zustand 스토어에서 상태 및 액션 가져오기
+  const {
+    addresses,
+    totalItems,
+    currentPage,
+    itemsPerPage,
+    isLoading,
+    error,
+    fetchAddresses,
+    addAddress,
+    editAddress,
+    removeAddress,
+    batchRemoveAddresses,
+    setCurrentPage,
+    setSearchTerm,
+    setSelectedType,
+  } = useAddressStore();
+  
+  // 토스트 컴포넌트
+  const { toast } = useToast();
+  
+  // 로컬 상태
   const [addressesToDelete, setAddressesToDelete] = useState<IAddress[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
   const [isFormSheetOpen, setIsFormSheetOpen] = useState<boolean>(false);
   const [editingAddress, setEditingAddress] = useState<IAddress | undefined>(undefined);
-  
-  // 한 페이지당 표시할 항목 수
-  const ITEMS_PER_PAGE = 10;
 
-  // 주소록 데이터 로드
-  const loadAddresses = useCallback(() => {
-    setLoading(true);
-    
-    // 모킹 데이터 사용 (백엔드 구현 시 API 호출로 대체)
-    const response: IAddressResponse = getAddressesByPage(
-      currentPage,
-      ITEMS_PER_PAGE,
-      searchTerm,
-      selectedType
-    );
-    
-    setAddresses(response.data);
-    setTotalPages(Math.ceil(response.pagination.total / ITEMS_PER_PAGE));
-    setLoading(false);
-  }, [currentPage, searchTerm, selectedType]);
-
-  // 페이지 로드 시 데이터 로드
+  // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
-    loadAddresses();
-  }, [currentPage, searchTerm, selectedType, loadAddresses]);
+    fetchAddresses();
+  }, [fetchAddresses]);
+  
+  // 에러 발생 시 토스트 표시
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "오류 발생",
+        description: error,
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
 
   // 검색 처리
   const handleSearch = (term: string, type?: string) => {
     setSearchTerm(term);
     setSelectedType(type || "");
-    setCurrentPage(1); // 검색 시 첫 페이지로 이동
-    loadAddresses(); // 모든 주소를 다시 로드
+    fetchAddresses({
+      page: 1, 
+      search: term, 
+      type: type as any 
+    });
   };
 
   // 페이지 변경 처리
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    fetchAddresses({ page });
   };
 
   // 단일 주소 삭제 처리
@@ -85,45 +97,73 @@ export default function AddressPage() {
   };
 
   // 삭제 확인
-  const handleConfirmDelete = () => {
-    // 현재는 클라이언트 사이드에서만 처리
-    // 백엔드 구현 시 API 호출로 대체
-    const addressIdsToDelete = addressesToDelete.map((address) => address.id);
-    
-    setAddresses((prevAddresses) =>
-      prevAddresses.filter((address) => !addressIdsToDelete.includes(address.id))
-    );
-    
-    setAddressesToDelete([]);
-    setIsDeleteModalOpen(false);
-    
-    // 새로운 데이터 로드 (백엔드 구현 시 사용)
-    // loadAddresses();
+  const handleConfirmDelete = async () => {
+    try {
+      if (addressesToDelete.length === 1) {
+        // 단일 삭제
+        await removeAddress(addressesToDelete[0].id);
+        toast({
+          title: "삭제 완료",
+          description: "주소가 성공적으로 삭제되었습니다.",
+        });
+      } else {
+        // 다중 삭제
+        const ids = addressesToDelete.map((addr) => addr.id);
+        await batchRemoveAddresses(ids);
+        toast({
+          title: "일괄 삭제 완료",
+          description: `${ids.length}개의 주소가 성공적으로 삭제되었습니다.`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "삭제 실패",
+        description: error instanceof Error ? error.message : "주소 삭제 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleteModalOpen(false);
+      setAddressesToDelete([]);
+    }
   };
 
   // 주소 등록/수정 폼 열기
   const handleOpenFormSheet = (address?: IAddress) => {
-    console.log("handleOpenFormSheet called with address:", address);
     setEditingAddress(address);
     setIsFormSheetOpen(true);
   };
 
   // 주소 등록/수정 제출 처리
-  const handleFormSubmit = (data: Omit<IAddress, "id">) => {
-    console.log("handleFormSubmit called with data:", data, "editingAddress:", editingAddress);
-    // 백엔드 구현 시 API 호출로 대체
-    if (editingAddress) {
-      setAddresses((prevAddresses) =>
-        prevAddresses.map((address) =>
-          address.id === editingAddress.id ? { ...address, ...data } : address
-        )
-      );
-    } else {
-      setAddresses((prevAddresses) => [...prevAddresses, { id: Date.now(), ...data }]);
+  const handleFormSubmit = async (data: Omit<IAddress, "id" | "createdAt" | "updatedAt" | "isFrequent" | "createdBy" | "updatedBy">) => {
+    try {
+      if (editingAddress) {
+        // 주소 수정
+        await editAddress(editingAddress.id, { 
+          ...data, 
+          isFrequent: editingAddress.isFrequent 
+        });
+        toast({
+          title: "수정 완료",
+          description: "주소가 성공적으로 수정되었습니다.",
+        });
+      } else {
+        // 주소 추가
+        await addAddress(data);
+        toast({
+          title: "등록 완료",
+          description: "새 주소가 성공적으로 등록되었습니다.",
+        });
+      }
+      
+      setIsFormSheetOpen(false);
+      setEditingAddress(undefined);
+    } catch (error) {
+      toast({
+        title: editingAddress ? "수정 실패" : "등록 실패",
+        description: error instanceof Error ? error.message : "주소 처리 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
     }
-    
-    setIsFormSheetOpen(false);
-    setEditingAddress(undefined);
   };
 
   return (
@@ -163,14 +203,14 @@ export default function AddressPage() {
                 <CardContent>
                     <AddressSearch onSearch={handleSearch} />
                     
-                    {loading ? (
+                    {isLoading && addresses.length === 0 ? (
                         <div className="flex justify-center items-center h-64">
                         <p>데이터를 불러오는 중...</p>
                         </div>
                     ) : (
                         <AddressTable
                         addresses={addresses}
-                        totalPages={totalPages}
+                        totalPages={Math.ceil(totalItems / itemsPerPage)}
                         currentPage={currentPage}
                         onPageChange={handlePageChange}
                         onDeleteSingle={handleDeleteSingle}

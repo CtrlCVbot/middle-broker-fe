@@ -61,7 +61,7 @@ type AddressFormValues = z.infer<typeof addressFormSchema>;
 interface IAddressFormSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: Omit<IAddress, "id" | "createdAt" | "updatedAt" | "isFrequent">) => void;
+  onSubmit: (data: Omit<IAddress, "id" | "createdAt" | "updatedAt" | "isFrequent" | "createdBy" | "updatedBy">) => void;
   defaultValues?: IAddress;
   title?: string;
 }
@@ -75,21 +75,18 @@ export function AddressFormSheet({
 }: IAddressFormSheetProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 디버깅용 로그 추가
-  console.log("AddressFormSheet - defaultValues:", defaultValues);
-
   const form = useForm<AddressFormValues>({
     resolver: zodResolver(addressFormSchema),
     defaultValues: defaultValues ? {
       name: defaultValues.name,
       roadAddress: defaultValues.roadAddress,
       jibunAddress: defaultValues.jibunAddress,
-      detailAddress: defaultValues.detailAddress,
-      postalCode: defaultValues.postalCode,
-      contactName: defaultValues.contactName,
-      contactPhone: defaultValues.contactPhone,
+      detailAddress: defaultValues.detailAddress || undefined,
+      postalCode: defaultValues.postalCode || undefined,
+      contactName: defaultValues.contactName || undefined,
+      contactPhone: defaultValues.contactPhone || undefined,
       type: defaultValues.type,
-      memo: defaultValues.memo,
+      memo: defaultValues.memo || undefined,
       metadata: defaultValues.metadata
     } : {
       type: "load"
@@ -99,17 +96,16 @@ export function AddressFormSheet({
   // useEffect 추가하여 defaultValues가 변경될 때 폼 값 업데이트
   useEffect(() => {
     if (defaultValues) {
-      console.log("Reset form with defaultValues:", defaultValues);
       form.reset({
         name: defaultValues.name,
         roadAddress: defaultValues.roadAddress,
         jibunAddress: defaultValues.jibunAddress,
-        detailAddress: defaultValues.detailAddress,
-        postalCode: defaultValues.postalCode,
-        contactName: defaultValues.contactName,
-        contactPhone: defaultValues.contactPhone,
+        detailAddress: defaultValues.detailAddress || undefined,
+        postalCode: defaultValues.postalCode || undefined,
+        contactName: defaultValues.contactName || undefined,
+        contactPhone: defaultValues.contactPhone || undefined,
         type: defaultValues.type,
-        memo: defaultValues.memo,
+        memo: defaultValues.memo || undefined,
         metadata: defaultValues.metadata
       });
     }
@@ -119,8 +115,15 @@ export function AddressFormSheet({
     setIsSubmitting(true);
     
     try {
-      // 폼 데이터 제출
-      onSubmit(data);
+      // 폼 데이터 제출 - undefined를 null로 변환
+      onSubmit({
+        ...data,
+        detailAddress: data.detailAddress || null,
+        postalCode: data.postalCode || null,
+        contactName: data.contactName || null,
+        contactPhone: data.contactPhone || null,
+        memo: data.memo || null
+      });
       
       // 폼 초기화 및 시트 닫기
       form.reset();
@@ -285,21 +288,7 @@ export function AddressFormSheet({
               )}
             />
 
-            
-            
-
             <SheetFooter className="pt-4">
-                {/* 취소 */}
-                {/*
-                <Button
-                type="button"
-                variant="outline"
-                onClick={handleSheetClose}
-                disabled={isSubmitting}
-                >
-                취소
-                </Button>
-                */}
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "저장 중..." : defaultValues ? "수정" : "등록"}
               </Button>
