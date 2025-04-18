@@ -185,18 +185,45 @@ export const convertApiToLegacyCompany = (company: ICompany): ILegacyCompany => 
 // 레거시 형식 데이터를 API 요청 형식으로 변환하는 유틸리티 함수
 export const convertLegacyToApiCompany = (company: ILegacyCompany, requestUserId: string): CompanyRequest => {
   // 업체 타입 변환 (한글 -> 영문)
-  let apiType: CompanyType = 'broker';  // 기본값
+  let apiType: CompanyType;
   
-  if (company.type === '운송사') apiType = 'carrier';
-  else if (company.type === '화주') apiType = 'shipper';
+  // 정확한 타입 매핑을 위해 switch문 사용
+  switch(company.type) {
+    case '운송사':
+      apiType = 'carrier';
+      break;
+    case '화주':
+      apiType = 'shipper';
+      break;
+    case '주선사':
+    default:
+      apiType = 'broker';
+      break;
+  }
   
   // 업체 상태 변환 (한글 -> 영문)
-  let apiStatus: CompanyStatus = 'active';  // 기본값
-  if (company.status === '비활성') apiStatus = 'inactive';
+  const apiStatus: CompanyStatus = company.status === '비활성' ? 'inactive' : 'active';
+  
+  // business number 형식 정리 (하이픈 유지 여부는 API 요구사항에 따라 결정)
+  const businessNumber = company.businessNumber?.trim() || '';
+  
+  // 전화번호 및 모바일 번호 형식 정리
+  const tel = company.phoneNumber?.trim() || '';
+  const mobile = company.managerPhoneNumber?.trim() || '';
+  
+  // 이메일이 없는 경우 빈 문자열로 설정
+  const email = company.email?.trim() || '';
+  
+  console.log('변환 전 데이터:', {
+    type: company.type,
+    status: company.status,
+    apiType,
+    apiStatus
+  });
   
   return {
     name: company.name,
-    businessNumber: company.businessNumber,
+    businessNumber: businessNumber,
     ceoName: company.representative,
     type: apiType,
     status: apiStatus,
@@ -206,9 +233,9 @@ export const convertLegacyToApiCompany = (company: ILegacyCompany, requestUserId
       detail: '',  // 레거시 데이터에 없는 필드
     },
     contact: {
-      tel: company.phoneNumber,
-      mobile: company.managerPhoneNumber,
-      email: company.email,
+      tel: tel,
+      mobile: mobile,
+      email: email,
     },
     requestUserId,
   };

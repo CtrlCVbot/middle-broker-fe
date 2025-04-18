@@ -83,8 +83,14 @@ export function BrokerCompanyRegisterSheet({
         // 임시 사용자 ID (실제로는 인증된 사용자 ID를 사용해야 함)
         const requestUserId = 'system-user-id';
         
+        // 디버깅용 로그 추가
+        console.log('등록 - 원본 폼 데이터:', formData);
+        
         // 레거시 타입을 API 요청 포맷으로 변환
         const apiData = convertLegacyToApiCompany(formData, requestUserId);
+        
+        // 변환된 API 데이터 로깅
+        console.log('등록 - 변환된 API 데이터:', apiData);
         
         // API 호출로 업체 생성
         const result = await createCompanyMutation.mutateAsync(apiData);
@@ -100,33 +106,67 @@ export function BrokerCompanyRegisterSheet({
         // 임시 사용자 ID (실제로는 인증된 사용자 ID를 사용해야 함)
         const requestUserId = 'system-user-id';
         
+        // 디버깅용 로그 추가
+        console.log('수정 - 원본 폼 데이터:', formData);
+        
         // 레거시 타입을 API 요청 포맷으로 변환
         const apiData = convertLegacyToApiCompany(formData, requestUserId);
         
-        // API 호출로 업체 수정
-        await updateCompanyMutation.mutateAsync({ 
-          id: formData.id,
-          data: apiData
-        });
+        // 변환된 API 데이터 로깅
+        console.log('수정 - 변환된 API 데이터:', apiData);
         
-        // 스토어 업데이트
-        updateCompany(formData);
-        
-        // 성공 처리
-        toast.success(`${formData.name} 업체 정보가 수정되었습니다.`);
-        
-        // 콜백 실행
-        if (onUpdateSuccess) {
-          onUpdateSuccess(formData);
+        try {
+          // API 호출로 업체 수정
+          await updateCompanyMutation.mutateAsync({ 
+            id: formData.id,
+            data: apiData
+          });
+          
+          // 스토어 업데이트
+          updateCompany(formData);
+          
+          // 성공 처리
+          toast.success(`${formData.name} 업체 정보가 수정되었습니다.`);
+          
+          // 콜백 실행
+          if (onUpdateSuccess) {
+            onUpdateSuccess(formData);
+          }
+        } catch (updateError) {
+          // 업데이트 특정 오류 처리
+          console.error('업체 수정 오류:', updateError);
+          
+          // AxiosError에서 상세 정보 추출
+          if (updateError && typeof updateError === 'object' && 'response' in updateError) {
+            const response = (updateError as any).response;
+            console.error('API 응답 데이터:', response?.data);
+            
+            // 오류 메시지에 상세 정보 포함
+            const detailsMsg = response?.data?.details ? 
+              `상세 오류: ${JSON.stringify(response?.data?.details)}` : '';
+            
+            toast.error(`업체 수정 중 오류가 발생했습니다: ${response?.data?.message || '알 수 없는 오류'} ${detailsMsg}`);
+          } else {
+            // 일반 오류
+            const errorMessage = updateError instanceof Error ? updateError.message : '알 수 없는 오류';
+            toast.error(`업체 수정 중 오류가 발생했습니다: ${errorMessage}`);
+          }
+          
+          // 오류 전파
+          throw updateError;
         }
       }
       
       // 시트 닫기
       handleOpenChange(false);
     } catch (error) {
-      // 오류 처리
-      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
-      toast.error(`업체 ${mode === 'register' ? '등록' : '수정'} 중 오류가 발생했습니다: ${errorMessage}`);
+      // 전역 오류 처리 (이미 구체적인 오류가 처리되지 않은 경우)
+      console.error('API 요청 중 전역 오류:', error);
+      
+      if (!(error && typeof error === 'object' && 'response' in error)) {
+        const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+        toast.error(`업체 ${mode === 'register' ? '등록' : '수정'} 중 오류가 발생했습니다: ${errorMessage}`);
+      }
     }
   };
 
