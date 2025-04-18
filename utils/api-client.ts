@@ -8,11 +8,19 @@ export interface IApiError {
   timestamp?: string;
 }
 
+interface CacheItem {
+  data: any;
+  timestamp: number;
+  expiresAt: number;
+}
+
 /**
  * API 클라이언트 유틸리티
  * - 표준화된 API 요청 및 응답 처리
  * - 에러 핸들링
  * - 인터셉터 설정
+ * - 요청 캐싱
+ * - 중복 요청 방지
  */
 class ApiClient {
   private instance: AxiosInstance;
@@ -23,6 +31,15 @@ class ApiClient {
     },
     timeout: 30000, // 30초 타임아웃
   };
+  
+  // 요청 캐싱을 위한 맵
+  private cache: Map<string, CacheItem> = new Map();
+  
+  // 진행 중인 요청 추적
+  private pendingRequests: Map<string, Promise<any>> = new Map();
+  
+  // 캐시 기본 만료 시간 (10분)
+  private defaultCacheLifetime: number = 10 * 60 * 1000;
 
   constructor(config?: AxiosRequestConfig) {
     this.instance = axios.create({
@@ -101,39 +118,158 @@ class ApiClient {
 
     return Promise.reject(apiError);
   }
-
+  
   /**
-   * GET 요청
+   * 요청 캐시키 생성
    */
-  public get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    return this.instance.get(url, config);
+  private _createCacheKey(url: string, method: string, data?: any): string {
+    const dataString = data ? JSON.stringify(data) : '';
+    return `${method.toUpperCase()}:${url}:${dataString}`;
+  }
+  
+  /**
+   * 캐시에서 응답 가져오기
+   */
+  private _getFromCache<T>(cacheKey: string): T | null {
+    const cached = this.cache.get(cacheKey);
+    
+    if (!cached) return null;
+    
+    // 캐시 만료 확인
+    if (cached.expiresAt < Date.now()) {
+      this.cache.delete(cacheKey);
+      return null;
+    }
+    
+    return cached.data as T;
+  }
+  
+  /**
+   * 캐시에 응답 저장
+   */
+  private _setCache<T>(cacheKey: string, data: T, lifetime?: number): void {
+    const now = Date.now();
+    const expiresAt = now + (lifetime || this.defaultCacheLifetime);
+    
+    this.cache.set(cacheKey, {
+      data,
+      timestamp: now,
+      expiresAt
+    });
+  }
+  
+  /**
+   * 캐시 항목 삭제
+   */
+  private _invalidateCache(url: string, method?: string): void {
+    // 특정 URL 패턴에 대한 모든 캐시 삭제
+    if (!method) {
+      const urlPattern = new RegExp(`^${method?.toUpperCase() || ''}:${url}`);
+      
+      for (const key of this.cache.keys()) {
+        if (urlPattern.test(key)) {
+          this.cache.delete(key);
+        }
+      }
+    } 
+    // 특정 URL, 메소드 조합의 캐시만 삭제
+    else {
+      const keyPrefix = `${method.toUpperCase()}:${url}`;
+      
+      for (const key of this.cache.keys()) {
+        if (key.startsWith(keyPrefix)) {
+          this.cache.delete(key);
+        }
+      }
+    }
+  }
+  
+  /**
+   * 모든 캐시 지우기
+   */
+  public clearCache(): void {
+    this.cache.clear();
   }
 
   /**
-   * POST 요청
+   * GET 요청 (캐싱 지원)
+   */
+  public get<T = any>(url: string, config?: AxiosRequestConfig & { useCache?: boolean, cacheLifetime?: number }): Promise<T> {
+    const useCache = config?.useCache !== false;
+    const cacheLifetime = config?.cacheLifetime;
+    const cacheKey = this._createCacheKey(url, 'GET');
+    
+    // 캐싱이 활성화되어 있고 캐시에 데이터가 있는 경우
+    if (useCache) {
+      const cachedData = this._getFromCache<T>(cacheKey);
+      if (cachedData) return Promise.resolve(cachedData);
+    }
+    
+    // 중복 요청 방지: 동일한 요청이 진행 중인 경우 해당 Promise 반환
+    if (this.pendingRequests.has(cacheKey)) {
+      return this.pendingRequests.get(cacheKey)!;
+    }
+    
+    // 새 요청 생성
+    const request = this.instance.get<T>(url, config)
+      .then(response => {
+        if (useCache) {
+          this._setCache(cacheKey, response, cacheLifetime);
+        }
+        this.pendingRequests.delete(cacheKey);
+        return response;
+      })
+      .catch(error => {
+        this.pendingRequests.delete(cacheKey);
+        throw error;
+      }) as Promise<T>;
+    
+    // 진행 중인 요청 추적
+    this.pendingRequests.set(cacheKey, request);
+    
+    return request;
+  }
+
+  /**
+   * POST 요청 (write 작업이므로 관련 GET 캐시 무효화)
    */
   public post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    // URL 패턴 기반으로 관련 GET 캐시 무효화
+    this._invalidateCache(url.split('?')[0].split('/').slice(0, -1).join('/'));
+    
     return this.instance.post(url, data, config);
   }
 
   /**
-   * PUT 요청
+   * PUT 요청 (write 작업이므로 관련 GET 캐시 무효화)
    */
   public put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    // URL 패턴 기반으로 관련 GET 캐시 무효화
+    this._invalidateCache(url.split('?')[0]);
+    this._invalidateCache(url.split('?')[0].split('/').slice(0, -1).join('/'));
+    
     return this.instance.put(url, data, config);
   }
 
   /**
-   * PATCH 요청
+   * PATCH 요청 (write 작업이므로 관련 GET 캐시 무효화)
    */
   public patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    // URL 패턴 기반으로 관련 GET 캐시 무효화
+    this._invalidateCache(url.split('?')[0]);
+    this._invalidateCache(url.split('?')[0].split('/').slice(0, -1).join('/'));
+    
     return this.instance.patch(url, data, config);
   }
 
   /**
-   * DELETE 요청
+   * DELETE 요청 (write 작업이므로 관련 GET 캐시 무효화)
    */
   public delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    // URL 패턴 기반으로 관련 GET 캐시 무효화
+    this._invalidateCache(url.split('?')[0]);
+    this._invalidateCache(url.split('?')[0].split('/').slice(0, -1).join('/'));
+    
     return this.instance.delete(url, config);
   }
 }

@@ -15,99 +15,82 @@ import {
   CardContent 
 } from "@/components/ui/card";
 import { Search, X, Filter } from "lucide-react";
-// Lodash 임포트를 제거하고 동적으로 임포트 구현
+import { debounce } from "@/utils/debounce";
 
 interface IAddressSearchProps {
   onSearch: (searchTerm: string, type?: string) => void;
   initialSearchTerm?: string;
   initialType?: string;
+  debounceTime?: number;
 }
 
 export function AddressSearch({ 
   onSearch, 
   initialSearchTerm = "", 
-  initialType = "" 
+  initialType = "",
+  debounceTime = 400
 }: IAddressSearchProps) {
   const [searchTerm, setSearchTerm] = useState<string>(initialSearchTerm);
   const [selectedType, setSelectedType] = useState<string>(initialType || "all");
   const [isSearching, setIsSearching] = useState<boolean>(false);
-  const [debounceFn, setDebounceFn] = useState<any>(null);
-
-  // Lodash를 클라이언트 사이드에서만 로드하기 위한 처리
+  
+  // 디바운스 검색 핸들러 (useCallback으로 메모이제이션)
+  const debouncedSearch = useCallback(
+    debounce((term: string, type: string) => {
+      setIsSearching(false);
+      onSearch(term, type === "all" ? undefined : type as any);
+    }, debounceTime),
+    [onSearch, debounceTime]
+  );
+  
+  // 검색어나 타입이 변경될 때 검색 실행
   useEffect(() => {
-    // 서버 사이드에서는 실행하지 않음
     if (typeof window === 'undefined') return;
-    
-    import('lodash/debounce').then((module) => {
-      const debounce = module.default;
-      const fn = debounce((term: string, type?: string) => {
-        setIsSearching(false);
-        onSearch(term, type === "all" ? undefined : type);
-      }, 500);
-      
-      setDebounceFn(() => fn);
-    });
-    
-    // 컴포넌트 언마운트 시 디바운스 취소
-    return () => {
-      if (debounceFn && typeof debounceFn.cancel === 'function') {
-        debounceFn.cancel();
-      }
-    };
-  }, [onSearch]);
-
-  // 검색어나 타입이 변경될 때 검색 실행 (client-side only)
-  useEffect(() => {
-    // 서버 사이드 렌더링 중에는 실행하지 않음
-    if (typeof window === 'undefined' || !debounceFn) return;
     
     if (searchTerm || selectedType !== "all") {
       setIsSearching(true);
-      debounceFn(searchTerm, selectedType);
+      debouncedSearch(searchTerm, selectedType);
     }
     
     return () => {
-      if (debounceFn && typeof debounceFn.cancel === 'function') {
-        debounceFn.cancel();
-      }
+      debouncedSearch.cancel();
     };
-  }, [searchTerm, selectedType, debounceFn]);
+  }, [searchTerm, selectedType, debouncedSearch]);
 
   // 검색어 입력 핸들러
-  const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-  };
+  }, []);
 
   // 타입 변경 핸들러
-  const handleTypeChange = (value: string) => {
+  const handleTypeChange = useCallback((value: string) => {
     setSelectedType(value);
-  };
+  }, []);
 
   // 검색 폼 초기화 핸들러
-  const handleClearSearch = () => {
+  const handleClearSearch = useCallback(() => {
     setSearchTerm("");
     setSelectedType("all");
-    setIsSearching(true);
-    
-    if (debounceFn && typeof debounceFn.cancel === 'function') {
-      debounceFn.cancel();
-    }
-    
+    setIsSearching(false);
+    debouncedSearch.cancel();
     onSearch("", undefined);
-  };
+  }, [debouncedSearch, onSearch]);
 
   // 엔터 키 핸들러
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       setIsSearching(true);
-      
-      if (debounceFn && typeof debounceFn.cancel === 'function') {
-        debounceFn.cancel();
-      }
-      
-      onSearch(searchTerm, selectedType === "all" ? undefined : selectedType);
+      debouncedSearch.cancel();
+      onSearch(searchTerm, selectedType === "all" ? undefined : selectedType as any);
     }
-  };
+  }, [debouncedSearch, onSearch, searchTerm, selectedType]);
+  
+  // 검색 버튼 클릭 핸들러
+  const handleSearchClick = useCallback(() => {
+    setIsSearching(true);
+    debouncedSearch.cancel();
+    onSearch(searchTerm, selectedType === "all" ? undefined : selectedType as any);
+  }, [debouncedSearch, onSearch, searchTerm, selectedType]);
 
   return (
     <Card className="mb-6 border-0 shadow-none">
@@ -149,15 +132,7 @@ export function AddressSearch({
             </div>
 
             <Button 
-              onClick={() => {
-                setIsSearching(true);
-                
-                if (debounceFn && typeof debounceFn.cancel === 'function') {
-                  debounceFn.cancel();
-                }
-                
-                onSearch(searchTerm, selectedType === "all" ? undefined : selectedType);
-              }}
+              onClick={handleSearchClick}
               variant="default"
               disabled={isSearching}
             >

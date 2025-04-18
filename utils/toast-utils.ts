@@ -1,116 +1,215 @@
-import { IApiError } from './api-client';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from "sonner";
+import { isObject } from "@/lib/utils";
+
+interface IToastOptions {
+  duration?: number;
+  position?: "top-right" | "top-center" | "top-left" | "bottom-right" | "bottom-center" | "bottom-left";
+  id?: string;
+}
 
 /**
- * 토스트 유틸리티 - 사용자 피드백을 위한 토스트 메시지 표시
+ * 토스트 알림 유틸리티
+ * - 일관된 사용자 피드백을 위한 토스트 알림 관리
+ * - 서버 에러, 폼 에러, 일반 알림 등 다양한 케이스 처리
  */
 export class ToastUtils {
+  // 토스트 기본 옵션
+  private static defaultOptions: IToastOptions = {
+    duration: 5000,
+    position: "bottom-right",
+  };
+
   /**
-   * 성공 토스트 표시
+   * 성공 알림
    */
-  static success(title: string, description?: string) {
-    toast({
-      title,
-      description,
-      variant: 'default',
+  static success(title: string, description?: string, options?: IToastOptions): void {
+    toast.success(title, {
+      description: description,
+      ...this.defaultOptions,
+      ...options,
     });
   }
 
   /**
-   * 에러 토스트 표시
+   * 에러 알림
    */
-  static error(title: string, description?: string) {
-    toast({
-      title,
-      description,
-      variant: 'destructive',
+  static error(message: string, description?: string, options?: IToastOptions): void {
+    toast.error(message, {
+      description: description,
+      ...this.defaultOptions,
+      duration: 8000, // 에러는 좀 더 오래 보여줌
+      ...options,
     });
   }
 
   /**
-   * API 에러 표시
+   * 경고 알림
    */
-  static apiError(error: IApiError | Error | unknown, title?: string) {
-    let errorTitle = title || '오류가 발생했습니다';
-    let errorDescription = '';
-
-    if (error instanceof Error) {
-      errorDescription = error.message;
-    } else if ((error as IApiError)?.message) {
-      const apiError = error as IApiError;
-      errorDescription = apiError.message;
-
-      // 상태 코드에 따른 추가 메시지
-      if (apiError.status === 401) {
-        errorTitle = '인증 오류';
-        errorDescription = '인증이 필요하거나 만료되었습니다. 다시 로그인해주세요.';
-      } else if (apiError.status === 403) {
-        errorTitle = '권한 오류';
-        errorDescription = '해당 기능에 접근 권한이 없습니다.';
-      } else if (apiError.status === 404) {
-        errorTitle = '리소스 없음';
-        errorDescription = '요청하신 데이터를 찾을 수 없습니다.';
-      } else if (apiError.status === 500) {
-        errorTitle = '서버 오류';
-        errorDescription = '서버에서 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-      }
-    } else {
-      errorDescription = '알 수 없는 오류가 발생했습니다.';
-    }
-
-    toast({
-      title: errorTitle,
-      description: errorDescription,
-      variant: 'destructive',
+  static warning(message: string, description?: string, options?: IToastOptions): void {
+    toast.warning(message, {
+      description: description,
+      ...this.defaultOptions,
+      duration: 7000, // 경고는 좀 더 오래 보여줌
+      ...options,
     });
   }
 
   /**
-   * 폼 에러 표시
+   * 정보 알림
    */
-  static formError(error: IApiError | Error | unknown) {
-    // API 에러에서 폼 필드별 오류 추출
-    if ((error as IApiError)?.details) {
-      const apiError = error as IApiError;
-      const fieldErrors = apiError.details;
-      
-      // 첫 번째 필드 오류를 토스트로 표시
-      if (fieldErrors && Object.keys(fieldErrors).length > 0) {
-        const firstField = Object.keys(fieldErrors)[0];
-        const firstError = fieldErrors[firstField][0];
-        
-        toast({
-          title: '입력 오류',
-          description: `${firstField}: ${firstError}`,
-          variant: 'destructive',
-        });
-        
-        return fieldErrors;
-      }
+  static info(message: string, description?: string, options?: IToastOptions): void {
+    toast.info(message, {
+      description: description,
+      ...this.defaultOptions,
+      ...options,
+    });
+  }
+  
+  /**
+   * API 에러 처리
+   * @param error API 에러 객체
+   * @param defaultMessage 기본 에러 메시지
+   */
+  static apiError(error: any, defaultMessage: string = "요청 처리 중 오류가 발생했습니다"): void {
+    console.error("[ToastUtils] API 에러:", error);
+    
+    // 에러 객체 구조 확인
+    if (!error) {
+      this.error(defaultMessage);
+      return;
     }
     
-    // 일반 에러는 일반 API 에러로 표시
-    this.apiError(error, '입력 오류');
-    return null;
+    // API 에러 구조 처리
+    if (isObject(error) && 'message' in error) {
+      // 상세 필드 에러가 있는 경우
+      if ('details' in error && isObject(error.details) && Object.keys(error.details).length > 0) {
+        this.formError("요청 처리 실패", error.details);
+      } else {
+        this.error(
+          error.message as string || defaultMessage,
+          error.path ? `경로: ${error.path}` : undefined
+        );
+      }
+    } else if (typeof error === 'string') {
+      this.error(error);
+    } else {
+      this.error(defaultMessage);
+    }
   }
-
+  
   /**
-   * 삭제 성공 토스트
+   * 폼 에러 처리
+   * @param title 에러 제목
+   * @param fieldErrors 필드별 에러 객체
    */
-  static deleteSuccess(entityName: string, count: number = 1) {
-    this.success(
-      '삭제 완료',
-      count > 1 ? `${count}개의 ${entityName}가 삭제되었습니다.` : `${entityName}가 삭제되었습니다.`
-    );
+  static formError(title: string, fieldErrors?: Record<string, string[] | string>): void {
+    // 필드 에러가 없는 경우
+    if (!fieldErrors || Object.keys(fieldErrors).length === 0) {
+      this.error(title);
+      return;
+    }
+    
+    // 첫 번째 에러 필드 및 메시지 추출
+    const firstErrorField = Object.keys(fieldErrors)[0];
+    const firstError = fieldErrors[firstErrorField];
+    
+    // 에러 메시지 포맷팅
+    let errorMessage: string;
+    if (Array.isArray(firstError)) {
+      errorMessage = firstError[0] || `${firstErrorField} 필드에 오류가 있습니다`;
+    } else {
+      errorMessage = firstError || `${firstErrorField} 필드에 오류가 있습니다`;
+    }
+    
+    // 여러 필드에 에러가 있는 경우 추가 안내
+    const fieldCount = Object.keys(fieldErrors).length;
+    const description = fieldCount > 1 
+      ? `외 ${fieldCount - 1}개 필드에 오류가 있습니다`
+      : undefined;
+    
+    this.error(title, `${errorMessage}${description ? ` (${description})` : ''}`);
   }
-
+  
   /**
-   * 저장 성공 토스트
+   * 로딩 상태 토스트 (프로미스 관련)
+   * @param promise 처리할 프로미스
+   * @param messages 각 상태별 메시지 객체
+   * @param options 토스트 옵션
    */
-  static saveSuccess(entityName: string, isNew: boolean = false) {
-    this.success(
-      '저장 완료',
-      isNew ? `새 ${entityName}가 등록되었습니다.` : `${entityName}가 수정되었습니다.`
-    );
+  static promise<T>(
+    promise: Promise<T>, 
+    messages: { 
+      loading: string; 
+      success: string; 
+      error: string; 
+    },
+    options?: IToastOptions
+  ): Promise<T> {
+    toast.promise(promise, {
+      loading: messages.loading,
+      success: messages.success,
+      error: (err) => {
+        const errorMessage = err?.message || messages.error;
+        return errorMessage;
+      },
+      ...this.defaultOptions,
+      ...options,
+    });
+    
+    return promise;
+  }
+  
+  /**
+   * 로딩 토스트 (커스텀 ID로 업데이트 가능)
+   * @param message 로딩 메시지
+   * @param id 토스트 ID
+   */
+  static loading(message: string, id?: string): string {
+    const toastId = id || `loading-${Date.now()}`;
+    toast.loading(message, { id: toastId });
+    return toastId;
+  }
+  
+  /**
+   * 토스트 업데이트 (ID로 특정)
+   * @param id 토스트 ID
+   * @param message 새 메시지
+   * @param type 토스트 타입
+   */
+  static update(
+    id: string, 
+    message: string, 
+    type: "success" | "error" | "warning" | "info" | "default" = "default"
+  ): void {
+    toast.dismiss(id);
+    
+    switch (type) {
+      case "success":
+        toast.success(message, { id });
+        break;
+      case "error":
+        toast.error(message, { id });
+        break;
+      case "warning":
+        toast.warning(message, { id });
+        break;
+      case "info":
+        toast.info(message, { id });
+        break;
+      default:
+        toast(message, { id });
+    }
+  }
+  
+  /**
+   * 토스트 닫기
+   * @param id 토스트 ID
+   */
+  static dismiss(id?: string): void {
+    if (id) {
+      toast.dismiss(id);
+    } else {
+      toast.dismiss();
+    }
   }
 } 
