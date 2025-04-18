@@ -11,7 +11,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { AddressSearch } from "@/components/address/address-search";
 import { AddressTable } from "@/components/address/address-table";
@@ -29,7 +29,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, Plus } from "lucide-react";
+import { AlertCircle, Plus, RefreshCw } from "lucide-react";
 import useAddressStore from "@/store/address-store";
 
 export default function AddressPage() {
@@ -39,6 +39,8 @@ export default function AddressPage() {
     totalItems,
     currentPage,
     itemsPerPage,
+    searchTerm,
+    selectedType,
     isLoading,
     error,
     fetchAddresses,
@@ -50,6 +52,7 @@ export default function AddressPage() {
     setCurrentPage,
     setSearchTerm,
     setSelectedType,
+    resetState,
   } = useAddressStore();
   
   // 토스트 컴포넌트
@@ -61,6 +64,7 @@ export default function AddressPage() {
   const [isFormSheetOpen, setIsFormSheetOpen] = useState<boolean>(false);
   const [editingAddress, setEditingAddress] = useState<IAddress | undefined>(undefined);
   const [initialFetchDone, setInitialFetchDone] = useState<boolean>(false);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   // 컴포넌트 마운트 시 데이터 로드 - useCallback으로 최적화
   const loadAddresses = useCallback(async () => {
@@ -73,14 +77,34 @@ export default function AddressPage() {
     }
   }, [fetchAddresses]);
 
+  // 데이터 새로고침
+  const refreshAddresses = useCallback(async () => {
+    try {
+      setIsRefreshing(true);
+      await fetchAddresses({
+        page: currentPage,
+        search: searchTerm,
+        type: selectedType as any
+      });
+      toast({
+        title: "새로고침 완료",
+        description: "주소 목록이 업데이트되었습니다.",
+      });
+    } catch (error) {
+      console.error("새로고침 실패:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [currentPage, fetchAddresses, searchTerm, selectedType, toast]);
+
   useEffect(() => {
     loadAddresses();
     
     // 컴포넌트 언마운트 시 선택된 주소 및 필터 초기화를 위한 클린업 함수
     return () => {
-      // 필요한 경우 클린업 작업 추가
+      resetState();
     };
-  }, [loadAddresses]);
+  }, [loadAddresses, resetState]);
   
   // 에러 발생 시 토스트 표시
   useEffect(() => {
@@ -230,8 +254,15 @@ export default function AddressPage() {
     setAddressesToDelete([]);
   }, []);
 
-  // 총 페이지 수 계산
-  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  // 총 페이지 수 계산 - useMemo로 최적화
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(totalItems / itemsPerPage)), [totalItems, itemsPerPage]);
+
+  // 현재 표시 중인 주소 범위 계산 - useMemo로 최적화
+  const addressRange = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage + 1;
+    const end = Math.min(currentPage * itemsPerPage, totalItems);
+    return { start, end };
+  }, [currentPage, itemsPerPage, totalItems]);
 
   // 로딩 컴포넌트
   const renderLoading = () => (
@@ -260,10 +291,21 @@ export default function AddressPage() {
   // 빈 데이터 컴포넌트
   const renderEmptyState = () => (
     <div className="flex flex-col items-center justify-center h-64 p-4 text-center">
-      <p className="text-muted-foreground mb-4">등록된 주소가 없습니다.</p>
-      <Button onClick={() => handleOpenFormSheet()}>
-        <Plus className="mr-2 h-4 w-4" /> 주소 등록
-      </Button>
+      <p className="text-muted-foreground mb-4">
+        {searchTerm || selectedType
+          ? `'${searchTerm}' ${selectedType ? `(${selectedType})` : ''} 검색 결과가 없습니다.`
+          : "등록된 주소가 없습니다."}
+      </p>
+      <div className="flex gap-2">
+        {(searchTerm || selectedType) && (
+          <Button variant="outline" onClick={() => handleSearch("", undefined)}>
+            검색 초기화
+          </Button>
+        )}
+        <Button onClick={() => handleOpenFormSheet()}>
+          <Plus className="mr-2 h-4 w-4" /> 주소 등록
+        </Button>
+      </div>
     </div>
   );
 
@@ -294,14 +336,41 @@ export default function AddressPage() {
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>주소록 관리</CardTitle>
-              <CardDescription>상/하차지 주소록을 관리합니다. 총 {totalItems}개의 주소가 등록되어 있습니다.</CardDescription>
+              <CardDescription>
+                상/하차지 주소록을 관리합니다. 
+                {totalItems > 0 && (
+                  <span className="ml-1">
+                    총 <strong>{totalItems}</strong>개의 주소가 등록되어 있습니다
+                    {addresses.length > 0 && (
+                      <span className="ml-1">
+                        (현재 {addressRange.start}-{addressRange.end}번 표시 중)
+                      </span>
+                    )}
+                  </span>
+                )}
+              </CardDescription>
             </div>
-            <Button onClick={() => handleOpenFormSheet()}>
-              <Plus className="mr-2 h-4 w-4" /> 주소 등록
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={refreshAddresses}
+                disabled={isRefreshing || isLoading}
+                title="새로고침"
+              >
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+              </Button>
+              <Button onClick={() => handleOpenFormSheet()}>
+                <Plus className="mr-2 h-4 w-4" /> 주소 등록
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
-            <AddressSearch onSearch={handleSearch} />
+            <AddressSearch 
+              onSearch={handleSearch} 
+              initialSearchTerm={searchTerm}
+              initialType={selectedType}
+            />
             
             {error && renderError()}
             
