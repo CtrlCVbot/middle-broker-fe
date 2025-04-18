@@ -2098,6 +2098,134 @@ export const swaggerSpec = {
           }
         }
       }
+    },
+    '/api/seed': {
+      get: {
+        summary: '전체 시드 데이터 생성',
+        description: '등록된 모든 시드 데이터를 순차적으로 생성하는 API',
+        tags: ['Seed Data'],
+        responses: {
+          '200': {
+            description: '시드 데이터 생성이 완료됨',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: {
+                      type: 'boolean',
+                      description: '성공 여부'
+                    },
+                    message: {
+                      type: 'string',
+                      description: '처리 결과 메시지'
+                    },
+                    results: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          endpoint: {
+                            type: 'string',
+                            description: '처리된 엔드포인트 이름'
+                          },
+                          success: {
+                            type: 'boolean',
+                            description: '엔드포인트 처리 성공 여부'
+                          },
+                          status: {
+                            type: 'integer',
+                            description: 'HTTP 상태 코드'
+                          },
+                          message: {
+                            type: 'string',
+                            description: '엔드포인트 처리 결과 메시지'
+                          },
+                          count: {
+                            type: 'integer',
+                            description: '처리된 데이터 수'
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          '500': {
+            description: '서버 오류'
+          }
+        }
+      }
+    },
+    '/api/seed/addresses': {
+      get: {
+        summary: '주소 시드 데이터 생성',
+        description: '목업 주소 데이터를 데이터베이스에 추가하는 API',
+        tags: ['Seed Data'],
+        responses: {
+          '200': {
+            description: '주소 시드 데이터가 성공적으로 추가됨',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: {
+                      type: 'boolean',
+                      description: '성공 여부'
+                    },
+                    message: {
+                      type: 'string',
+                      description: '처리 결과 메시지'
+                    },
+                    count: {
+                      type: 'integer',
+                      description: '추가된 주소 데이터 수'
+                    },
+                    insertedIds: {
+                      type: 'array',
+                      items: {
+                        type: 'string',
+                        format: 'uuid'
+                      },
+                      description: '추가된 주소 ID 목록'
+                    }
+                  }
+                }
+              }
+            }
+          },
+          '400': {
+            description: '이미 주소 데이터가 존재함',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: {
+                      type: 'boolean',
+                      description: '성공 여부'
+                    },
+                    message: {
+                      type: 'string',
+                      description: '처리 결과 메시지'
+                    },
+                    count: {
+                      type: 'integer',
+                      description: '기존 주소 데이터 수'
+                    }
+                  }
+                }
+              }
+            }
+          },
+          '500': {
+            description: '서버 오류'
+          }
+        }
+      }
     }
   }
 }; 

@@ -4,7 +4,7 @@ import { IUser } from "@/types/user";
 // 주소록 모킹 데이터
 export const mockAddresses: IAddress[] = [
   {
-    id: "1",
+    //id: "1",
     name: "남산롯데캐슬",
     roadAddress: "서울 중구 회현동1가 208",
     jibunAddress: "서울 중구 회현동1가 208",
@@ -27,7 +27,7 @@ export const mockAddresses: IAddress[] = [
     }
   },
   {
-    id: "2",
+    //id: "2",
     name: "강남스테이션",
     roadAddress: "서울 강남구 역삼동 858",
     jibunAddress: "서울 강남구 역삼동 858",
@@ -50,7 +50,7 @@ export const mockAddresses: IAddress[] = [
     }
   },
   {
-    id: "3",
+    //id: "3",
     name: "부산항만창고",
     roadAddress: "부산 영도구 해양로 45",
     jibunAddress: "부산 영도구 해양로 45",
@@ -73,7 +73,7 @@ export const mockAddresses: IAddress[] = [
     }
   },
   {
-    id: "4",
+    //id: "4",
     name: "인천물류센터",
     roadAddress: "인천 서구 경서동 680-1",
     jibunAddress: "인천 서구 경서동 680-1",
@@ -96,7 +96,7 @@ export const mockAddresses: IAddress[] = [
     }
   },
   {
-    id: "5",
+    //id: "5",
     name: "대전 중앙창고",
     roadAddress: "대전 유성구 대학로 99",
     jibunAddress: "대전 유성구 대학로 99",
@@ -118,7 +118,7 @@ export const mockAddresses: IAddress[] = [
     }
   },
   {
-    id: "6",
+    //id: "6",
     name: "광주 운송센터",
     roadAddress: "광주 광산구 무진대로 251",
     jibunAddress: "광주 광산구 무진대로 251",
@@ -141,7 +141,7 @@ export const mockAddresses: IAddress[] = [
     }
   },
   {
-    id: "7",
+    //id: "7",
     name: "울산항 물류시설",
     roadAddress: "울산 남구 산업로 304",
     jibunAddress: "울산 남구 산업로 304",
@@ -164,7 +164,7 @@ export const mockAddresses: IAddress[] = [
     }
   },
   {
-    id: "8",
+    //id: "8",
     name: "제주 도심물류",
     roadAddress: "제주 제주시 연동 263-15",
     jibunAddress: "제주 제주시 연동 263-15",
@@ -187,7 +187,7 @@ export const mockAddresses: IAddress[] = [
     }
   },
   {
-    id: "9",
+    //id: "9",
     name: "수원 신갈창고",
     roadAddress: "경기 수원시 영통구 신원로 88",
     jibunAddress: "경기 수원시 영통구 신원로 88",
@@ -210,7 +210,7 @@ export const mockAddresses: IAddress[] = [
     }
   },
   {
-    id: "10",
+    //id: "10",
     name: "평택항 국제물류",
     roadAddress: "경기 평택시 포승읍 평택항로 98",
     jibunAddress: "경기 평택시 포승읍 평택항로 98",
@@ -233,7 +233,7 @@ export const mockAddresses: IAddress[] = [
     }
   },
   {
-    id: "11",
+    //id: "11",
     name: "대전 중앙창고",
     roadAddress: "대전 유성구 대학로 99",
     jibunAddress: "대전 유성구 대학로 99",
@@ -255,75 +255,7 @@ export const mockAddresses: IAddress[] = [
       tags: ["창고", "물류"]
     }
   },
-  {
-    id: "12",
-    name: "대전 중앙창고",
-    roadAddress: "대전 유성구 대학로 99",
-    jibunAddress: "대전 유성구 대학로 99",
-    detailAddress: "과학단지 C동",
-    postalCode: "34141",
-    contactName: "최대전",
-    contactPhone: "010-4567-8901",
-    type: "load" as AddressType,
-    isFrequent: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    metadata: {
-      originalInput: "대전 유성구 대학로 99 대전 중앙창고 과학단지 C동",
-      source: "KAKAO",
-      lat: 36.350627,
-      lng: 127.360377,
-      buildingName: "대전 중앙창고",
-      floor: "10",
-      tags: ["창고", "물류"]
-    }
-  },
-  {
-    id: "13",
-    name: "대전 중앙창고",
-    roadAddress: "대전 유성구 대학로 99",
-    jibunAddress: "대전 유성구 대학로 99",
-    detailAddress: "과학단지 C동",
-    postalCode: "34141",
-    contactName: "최대전",
-    contactPhone: "010-4567-8901",
-    type: "load" as AddressType,
-    isFrequent: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    metadata: {
-      originalInput: "대전 유성구 대학로 99 대전 중앙창고 과학단지 C동",
-      source: "KAKAO",
-      lat: 36.350627,
-      lng: 127.360377,
-      buildingName: "대전 중앙창고",
-      floor: "10",
-      tags: ["창고", "물류"]
-    }
-  },
-  {
-    id: "14",
-    name: "대전 중앙창고",      
-    roadAddress: "대전 유성구 대학로 99",
-    jibunAddress: "대전 유성구 대학로 99",
-    detailAddress: "과학단지 C동",
-    postalCode: "34141",
-    contactName: "최대전",
-    contactPhone: "010-4567-8901",
-    type: "load" as AddressType,
-    isFrequent: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    metadata: {
-      originalInput: "대전 유성구 대학로 99 대전 중앙창고 과학단지 C동",
-      source: "KAKAO",
-      lat: 36.350627,
-      lng: 127.360377,
-      buildingName: "대전 중앙창고",
-      floor: "10",
-      tags: ["창고", "물류"]
-    }
-  }
+  
 ];
 
 // 목업 사용자 데이터
