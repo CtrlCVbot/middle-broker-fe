@@ -21,8 +21,7 @@ import * as companyService from '@/services/company-service';
 
 // 필터 요약 문구 생성 함수
 export const getFilterSummaryText = (filter: CompanyFilter): string => {
-  if (!filter.keyword && !filter.type && !filter.status && 
-      !filter.startDate && !filter.endDate) {
+  if (!filter.keyword && !filter.type && !filter.status) {
     return "모든 업체";
   }
   
@@ -39,14 +38,6 @@ export const getFilterSummaryText = (filter: CompanyFilter): string => {
   
   if (filter.status) {
     parts.push(filter.status === 'active' ? '활성 업체' : '비활성 업체');
-  }
-  
-  if (filter.startDate && filter.endDate) {
-    parts.push(`${filter.startDate} ~ ${filter.endDate}`);
-  } else if (filter.startDate) {
-    parts.push(`${filter.startDate} 이후`);
-  } else if (filter.endDate) {
-    parts.push(`${filter.endDate} 이전`);
   }
   
   return parts.join(', ');
@@ -108,9 +99,7 @@ interface ICompanyState {
 const defaultFilter: CompanyFilter = {
   keyword: '',
   type: '',
-  status: '',
-  startDate: null,
-  endDate: null
+  status: ''
 };
 
 // Zustand 스토어 생성

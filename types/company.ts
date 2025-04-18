@@ -97,8 +97,6 @@ export interface CompanyFilter {
   type?: CompanyType | '';
   status?: CompanyStatus | '';
   region?: string;
-  startDate?: string | null;
-  endDate?: string | null;
 }
 
 // 회사 생성/수정 요청 인터페이스

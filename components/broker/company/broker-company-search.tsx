@@ -21,11 +21,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Calendar } from '@/components/ui/calendar';
-import { Search, Filter, X, CalendarIcon } from 'lucide-react';
+import { Search, Filter, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { ko } from 'date-fns/locale';
 // 호환성을 위해 브로커 업체 타입 유지
 import { CompanyType, StatementType, CompanyStatus } from '@/types/broker-company';
 // 새로운 타입 import
@@ -45,14 +42,6 @@ export function BrokerCompanySearch() {
 
   // Popover 상태 관리
   const [open, setOpen] = useState(false);
-  
-  // 날짜 상태 관리
-  const [startDate, setStartDate] = useState<Date | undefined>(
-    tempFilter.startDate ? new Date(tempFilter.startDate) : undefined
-  );
-  const [endDate, setEndDate] = useState<Date | undefined>(
-    tempFilter.endDate ? new Date(tempFilter.endDate) : undefined
-  );
 
   // 검색어 입력 시 필터 업데이트 (keyword로 변경)
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,29 +80,10 @@ export function BrokerCompanySearch() {
       setTempFilter({ status: '' });
     }
   };
-  
-  // 시작일 선택 핸들러
-  const handleStartDateSelect = (date: Date | undefined) => {
-    setStartDate(date);
-    if (date) {
-      setTempFilter({ startDate: format(date, 'yyyy-MM-dd') });
-    } else {
-      setTempFilter({ startDate: null });
-    }
-  };
-  
-  // 종료일 선택 핸들러
-  const handleEndDateSelect = (date: Date | undefined) => {
-    setEndDate(date);
-    if (date) {
-      setTempFilter({ endDate: format(date, 'yyyy-MM-dd') });
-    } else {
-      setTempFilter({ endDate: null });
-    }
-  };
 
   // 필터 적용
   const handleApplyFilter = () => {
+    // 날짜 필터를 제거하여 적용
     applyTempFilter();
     setOpen(false);
   };
@@ -121,16 +91,12 @@ export function BrokerCompanySearch() {
   // 필터 초기화
   const handleResetFilter = () => {
     resetFilter();
-    setStartDate(undefined);
-    setEndDate(undefined);
     setOpen(false);
   };
 
   // 변경 취소
   const handleCancelChanges = () => {
     resetTempFilter();
-    setStartDate(filter.startDate ? new Date(filter.startDate) : undefined);
-    setEndDate(filter.endDate ? new Date(filter.endDate) : undefined);
     setOpen(false);
   };
 
@@ -138,18 +104,14 @@ export function BrokerCompanySearch() {
   const handleOpenChange = (open: boolean) => {
     if (open) {
       resetTempFilter();
-      setStartDate(filter.startDate ? new Date(filter.startDate) : undefined);
-      setEndDate(filter.endDate ? new Date(filter.endDate) : undefined);
     }
     setOpen(open);
   };
 
-  // 필터가 적용되었는지 확인 (필드명 변경: searchTerm -> keyword)
+  // 필터가 적용되었는지 확인
   const hasActiveFilters = !!(
     filter.type || 
-    filter.status ||
-    filter.startDate ||
-    filter.endDate
+    filter.status
   );
 
   // 현재 선택된 필터 요약 텍스트
@@ -185,70 +147,6 @@ export function BrokerCompanySearch() {
           <PopoverContent className="w-[300px] p-4" align="start">
             <div className="space-y-4">
               <h4 className="font-medium text-sm">업체 필터링</h4>
-              
-              {/* 시작일 필터 */}
-              <div className="space-y-2">
-                <Label>시작일</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !startDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {startDate ? (
-                        format(startDate, "yyyy-MM-dd")
-                      ) : (
-                        <span>검색 시작일</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={startDate}
-                      onSelect={handleStartDateSelect}
-                      initialFocus
-                      locale={ko}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              
-              {/* 종료일 필터 */}
-              <div className="space-y-2">
-                <Label>종료일</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !endDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {endDate ? (
-                        format(endDate, "yyyy-MM-dd")
-                      ) : (
-                        <span>검색 종료일</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={endDate}
-                      onSelect={handleEndDateSelect}
-                      initialFocus
-                      locale={ko}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
               
               {/* 업체 구분과 전표 구분 필터 */}
               <div className="space-y-2">
