@@ -11,10 +11,18 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Plus, Edit } from 'lucide-react';
+import { Plus, Edit, Loader2 } from 'lucide-react';
 import { BrokerCompanyForm } from './broker-company-form';
 import { IBrokerCompany } from '@/types/broker-company';
-import { useBrokerCompanyStore } from '@/store/broker-company-store';
+import { 
+  useBrokerCompanyStore, 
+  useBrokerCompanyById 
+} from '@/store/broker-company-store';
+import { 
+  useCreateCompany, 
+  useUpdateCompany 
+} from '@/store/company-store';
+import { convertLegacyToApiCompany } from '@/types/company';
 
 interface BrokerCompanyRegisterSheetProps {
   onRegisterSuccess?: (company: IBrokerCompany) => void;
@@ -36,8 +44,22 @@ export function BrokerCompanyRegisterSheet({
   onOpenChange
 }: BrokerCompanyRegisterSheetProps) {
   const [internalOpen, setInternalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { updateCompany } = useBrokerCompanyStore();
+  
+  // API 훅 사용
+  const createCompanyMutation = useCreateCompany();
+  const updateCompanyMutation = useUpdateCompany();
+  
+  // 편집 모드에서 최신 데이터 조회 (ID가 있는 경우)
+  const companyQuery = useBrokerCompanyById(mode === 'edit' && company ? company.id : '');
+  
+  // 로딩 상태 관리
+  const isLoading = createCompanyMutation.isPending || 
+                    updateCompanyMutation.isPending || 
+                    (mode === 'edit' && companyQuery.isLoading);
+  
+  // 회사 데이터 (최신 데이터 사용)
+  const companyData = mode === 'edit' && companyQuery.data ? companyQuery.data : company;
   
   // 외부에서 제어되는 경우 내부 상태 동기화
   useEffect(() => {
@@ -54,23 +76,57 @@ export function BrokerCompanyRegisterSheet({
     }
   };
 
-  // 업체 등록/수정 완료 핸들러
-  const handleSuccess = (updatedCompany: IBrokerCompany) => {
-    setIsSubmitting(false);
-    handleOpenChange(false);
-    
-    if (mode === 'register') {
-      toast.success(`${updatedCompany.name} 업체가 등록되었습니다.`);
-      if (onRegisterSuccess) {
-        onRegisterSuccess(updatedCompany);
+  // 업체 등록/수정 처리 핸들러
+  const handleSubmit = async (formData: IBrokerCompany) => {
+    try {
+      if (mode === 'register') {
+        // 임시 사용자 ID (실제로는 인증된 사용자 ID를 사용해야 함)
+        const requestUserId = 'system-user-id';
+        
+        // 레거시 타입을 API 요청 포맷으로 변환
+        const apiData = convertLegacyToApiCompany(formData, requestUserId);
+        
+        // API 호출로 업체 생성
+        const result = await createCompanyMutation.mutateAsync(apiData);
+        
+        // 성공 처리
+        toast.success(`${formData.name} 업체가 등록되었습니다.`);
+        
+        // 콜백 실행
+        if (onRegisterSuccess) {
+          onRegisterSuccess(formData);
+        }
+      } else if (mode === 'edit' && formData.id) {
+        // 임시 사용자 ID (실제로는 인증된 사용자 ID를 사용해야 함)
+        const requestUserId = 'system-user-id';
+        
+        // 레거시 타입을 API 요청 포맷으로 변환
+        const apiData = convertLegacyToApiCompany(formData, requestUserId);
+        
+        // API 호출로 업체 수정
+        await updateCompanyMutation.mutateAsync({ 
+          id: formData.id,
+          data: apiData
+        });
+        
+        // 스토어 업데이트
+        updateCompany(formData);
+        
+        // 성공 처리
+        toast.success(`${formData.name} 업체 정보가 수정되었습니다.`);
+        
+        // 콜백 실행
+        if (onUpdateSuccess) {
+          onUpdateSuccess(formData);
+        }
       }
-    } else {
-      toast.success(`${updatedCompany.name} 업체 정보가 수정되었습니다.`);
-      // 스토어 업데이트
-      updateCompany(updatedCompany);
-      if (onUpdateSuccess) {
-        onUpdateSuccess(updatedCompany);
-      }
+      
+      // 시트 닫기
+      handleOpenChange(false);
+    } catch (error) {
+      // 오류 처리
+      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+      toast.error(`업체 ${mode === 'register' ? '등록' : '수정'} 중 오류가 발생했습니다: ${errorMessage}`);
     }
   };
 
@@ -106,18 +162,33 @@ export function BrokerCompanyRegisterSheet({
           </SheetDescription>
         </SheetHeader>
         
-        <BrokerCompanyForm 
-          isSubmitting={isSubmitting}
-          initialData={company}
-          mode={mode}
-          onSubmit={(updatedCompany) => {
-            setIsSubmitting(true);
-            // 실제 API 호출 부분 (현재는 목업 데이터로 대체)
-            setTimeout(() => {
-              handleSuccess(updatedCompany);
-            }, 1000);
-          }}
-        />
+        {/* 로딩 상태 (편집 모드에서 데이터 로딩 중) */}
+        {mode === 'edit' && companyQuery.isLoading && (
+          <div className="flex justify-center items-center h-[calc(100vh-200px)]">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2">업체 정보를 불러오는 중입니다...</span>
+          </div>
+        )}
+        
+        {/* 에러 상태 (편집 모드에서 데이터 로딩 실패) */}
+        {mode === 'edit' && companyQuery.isError && (
+          <div className="flex flex-col justify-center items-center h-[calc(100vh-200px)] text-destructive">
+            <p className="mb-4">업체 정보를 불러오는 중 오류가 발생했습니다.</p>
+            <Button variant="outline" onClick={() => companyQuery.refetch()}>
+              다시 시도
+            </Button>
+          </div>
+        )}
+        
+        {/* 폼 (데이터가 준비되면 표시) */}
+        {(mode === 'register' || (mode === 'edit' && companyData && !companyQuery.isLoading)) && (
+          <BrokerCompanyForm 
+            isSubmitting={isLoading}
+            initialData={companyData}
+            mode={mode}
+            onSubmit={handleSubmit}
+          />
+        )}
       </SheetContent>
     </Sheet>
   );

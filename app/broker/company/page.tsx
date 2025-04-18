@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
@@ -11,26 +10,14 @@ import { BrokerCompanySearch } from '@/components/broker/company/broker-company-
 import { BrokerCompanyPagination } from '@/components/broker/company/broker-company-pagination';
 import { BrokerCompanyActionButtons } from '@/components/broker/company/broker-company-action-buttons';
 import { BrokerCompanyRegisterSheet } from '@/components/broker/company/broker-company-register-sheet';
-import { useBrokerCompanyStore } from '@/store/broker-company-store';
-import { getBrokerCompaniesByPage } from '@/utils/mockdata/mock-broker-companies';
+import { useBrokerCompanyStore, useBrokerCompanyData } from '@/store/broker-company-store';
 import { IBrokerCompany } from '@/types/broker-company';
 import { Home, Building2 } from 'lucide-react';
-
-// 쿼리 결과 타입 정의
-interface CompanyQueryResult {
-  data: IBrokerCompany[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function BrokerCompanyPage() {
   const { 
     viewMode, 
-    filter, 
-    currentPage, 
-    pageSize,
     setViewMode,
     setCurrentPage,
     setPageSize
@@ -40,11 +27,18 @@ export default function BrokerCompanyPage() {
   const [selectedCompany, setSelectedCompany] = useState<IBrokerCompany | null>(null);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   
-  // 업체 데이터 조회
-  const { data, isLoading, isError, refetch } = useQuery<CompanyQueryResult>({
-    queryKey: ['brokerCompanies', filter, currentPage, pageSize],
-    queryFn: () => getBrokerCompaniesByPage(currentPage, pageSize, filter),
-  });
+  // API 데이터 조회 (기존 목업 데이터 대신 API 사용)
+  const { 
+    data, 
+    total, 
+    page, 
+    pageSize, 
+    totalPages,
+    isLoading, 
+    isError, 
+    error, 
+    refetch 
+  } = useBrokerCompanyData();
   
   // 업체 클릭 핸들러
   const handleCompanyClick = (company: IBrokerCompany) => {
@@ -128,15 +122,26 @@ export default function BrokerCompanyPage() {
       
       {/* 데이터 로딩 상태 */}
       {isLoading && (
-        <div className="flex justify-center items-center h-64">
-          <p className="text-gray-500">데이터를 불러오는 중입니다...</p>
+        <div className="space-y-4">
+          {viewMode === 'table' ? (
+            Array(5).fill(0).map((_, index) => (
+              <Skeleton key={index} className="h-14 w-full rounded-md" />
+            ))
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array(6).fill(0).map((_, index) => (
+                <Skeleton key={index} className="h-48 w-full rounded-md" />
+              ))}
+            </div>
+          )}
         </div>
       )}
       
       {/* 에러 상태 */}
       {isError && (
-        <div className="flex justify-center items-center h-64">
-          <p className="text-red-500">데이터를 불러오는 중 오류가 발생했습니다.</p>
+        <div className="flex flex-col justify-center items-center h-64 border rounded-md p-6 bg-red-50">
+          <p className="text-red-500 mb-2">데이터를 불러오는 중 오류가 발생했습니다.</p>
+          <p className="text-sm text-red-400 mb-4">{error instanceof Error ? error.message : '알 수 없는 오류'}</p>
           <Button variant="outline" onClick={() => refetch()} className="ml-2">
             다시 시도
           </Button>
@@ -144,9 +149,9 @@ export default function BrokerCompanyPage() {
       )}
       
       {/* 데이터 없음 상태 */}
-      {!isLoading && !isError && data && data.data && data.data.length === 0 && (
-        <div className="flex flex-col justify-center items-center h-64">
-          <p className="text-gray-500 mb-4">등록된 업체가 없습니다.</p>
+      {!isLoading && !isError && data && data.length === 0 && (
+        <div className="flex flex-col justify-center items-center h-64 border rounded-md p-6">
+          <p className="text-gray-500 mb-4">등록된 업체가 없거나 검색 조건에 맞는 업체가 없습니다.</p>
           <BrokerCompanyRegisterSheet 
             trigger={
               <Button>
@@ -159,12 +164,12 @@ export default function BrokerCompanyPage() {
       )}
       
       {/* 데이터 표시 */}
-      {!isLoading && !isError && data && data.data && data.data.length > 0 && (
+      {!isLoading && !isError && data && data.length > 0 && (
         <>
           {/* 테이블 뷰 */}
           {viewMode === 'table' && (
             <BrokerCompanyTable 
-              companies={data.data} 
+              companies={data} 
               onCompanyClick={handleCompanyClick}
             />
           )}
@@ -172,7 +177,7 @@ export default function BrokerCompanyPage() {
           {/* 카드 뷰 */}
           {viewMode === 'card' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {data.data.map((company) => (
+              {data.map((company) => (
                 <BrokerCompanyCard 
                   key={company.id} 
                   company={company} 
@@ -184,10 +189,10 @@ export default function BrokerCompanyPage() {
           
           {/* 페이지네이션 */}
           <BrokerCompanyPagination 
-            currentPage={data.page} 
-            totalPages={data.totalPages} 
-            totalItems={data.total}
-            pageSize={data.pageSize}
+            currentPage={page} 
+            totalPages={totalPages} 
+            totalItems={total}
+            pageSize={pageSize}
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}
           />

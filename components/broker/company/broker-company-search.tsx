@@ -55,7 +55,16 @@ export function BrokerCompanySearch() {
 
   // 업체 구분 변경 시 임시 필터 업데이트
   const handleTypeChange = (value: string) => {
-    setTempFilter({ type: value === "all" ? '' : value as CompanyType });
+    let apiTypeValue = '';
+    if (value !== 'all') {
+      if (value === '화주') apiTypeValue = 'shipper';
+      else if (value === '운송사') apiTypeValue = 'carrier';
+      else if (value === '주선사') apiTypeValue = 'broker';
+      
+      setTempFilter({ type: value as CompanyType });
+    } else {
+      setTempFilter({ type: '' });
+    }
   };
 
   // 전표 구분 변경 시 임시 필터 업데이트
@@ -65,7 +74,14 @@ export function BrokerCompanySearch() {
 
   // 업체 상태 변경 시 임시 필터 업데이트
   const handleStatusChange = (value: string) => {
-    setTempFilter({ status: value === "all" ? '' : value as CompanyStatus });
+    let apiStatusValue = '';
+    if (value !== 'all') {
+      apiStatusValue = value === '활성' ? 'active' : 'inactive';
+      
+      setTempFilter({ status: value as CompanyStatus });
+    } else {
+      setTempFilter({ status: '' });
+    }
   };
   
   // 시작일 선택 핸들러
