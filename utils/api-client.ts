@@ -26,7 +26,7 @@ interface CacheItem {
  * - 요청 캐싱
  * - 중복 요청 방지
  */
-export default class ApiClient {
+class ApiClient {
   private instance: AxiosInstance;
   private baseConfig: AxiosRequestConfig = {
     baseURL: '/api',
@@ -294,4 +294,10 @@ export default class ApiClient {
     
     return this.instance.delete(url, config);
   }
-} 
+}
+
+// 싱글톤 인스턴스 생성하여 내보내기
+const apiClient = new ApiClient();
+export default apiClient;
+// ApiClient 클래스도 내보내기 (테스트나 특수 목적으로 사용할 때 유용함)
+export { ApiClient }; 

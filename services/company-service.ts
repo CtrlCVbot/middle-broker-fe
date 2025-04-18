@@ -1,4 +1,4 @@
-import ApiClient, { IApiError } from '@/utils/api-client';
+import apiClient, { IApiError } from '@/utils/api-client';
 import { 
   ICompany, 
   CompanyFilter, 
@@ -9,9 +9,6 @@ import {
   CompanyBatchRequest,
   CompanyValidationResponse 
 } from '@/types/company';
-
-// 싱글톤 API 클라이언트 인스턴스 생성
-const apiClient = new ApiClient();
 
 /**
  * 업체 목록 조회
