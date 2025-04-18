@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Building, Grid3x3, ListFilter } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useBrokerCompanyStore } from "@/store/broker-company-store";
-import { getBrokerCompaniesByPage } from "@/utils/mockdata/mock-broker-companies";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useCompanyStore, useCompaniesLegacyFormat } from "@/store/company-store";
 import { BrokerCompanySearch } from "@/components/broker/company/broker-company-search";
 import { BrokerCompanyTable } from "@/components/broker/company/broker-company-table";
 import { BrokerCompanyCard } from "@/components/broker/company/broker-company-card";
@@ -24,51 +24,43 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { IBrokerCompany } from "@/types/broker-company";
+import { ILegacyCompany } from "@/types/company";
 import { toast } from "sonner";
 import { ToggleGroup } from "@/components/ui/toggle-group";
 import { ToggleGroupItem } from "@/components/ui/toggle-group";
-
-// 결과 타입 정의
-interface CompanyQueryResult {
-  data: IBrokerCompany[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
 
 export default function BrokerCompanyPage() {
   // 마지막 새로고침 시간
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
 
-  // Zustand 스토어에서 상태 및 액션 가져오기
+  // 새 스토어에서 상태 및 액션 가져오기
   const {
     viewMode,
     setViewMode,
-    filter,
     currentPage,
     pageSize,
     setCurrentPage,
     setPageSize,
-    //selectedCompanyIds,
-    //clearSelectedCompanyIds,
-  } = useBrokerCompanyStore();
+  } = useCompanyStore();
 
-  // 선택된 업체 상태 관리
-  const [selectedCompany, setSelectedCompany] = useState<IBrokerCompany | null>(null);
+  // 선택된 업체 상태 관리 (타입 확장)
+  const [selectedCompany, setSelectedCompany] = useState<IBrokerCompany | ILegacyCompany | null>(null);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
 
-  // 업체 목록 데이터 조회
-  const { data, isLoading, isError, refetch } = useQuery<CompanyQueryResult>({
-    queryKey: ["brokerCompanies", filter, currentPage, pageSize, lastRefreshed],
-    queryFn: () => getBrokerCompaniesByPage(currentPage, pageSize, filter),
-    staleTime: 1000 * 60 * 5, // 5분
-  });
-
-  // 디버깅을 위한 로그 추가
-  useEffect(() => {
-    console.log('Filter in BrokerCompanyPage:', filter);
-  }, [filter]);
+  // 실제 API로 데이터 조회
+  const {
+    legacyData,
+    isLoading,
+    isError,
+    error,
+    refetch
+  } = useCompaniesLegacyFormat();
+  
+  // legacyData 구조 분해
+  const data = legacyData?.data || [];
+  const total = legacyData?.total || 0;
+  const page = legacyData?.page || 1;
+  const totalPages = legacyData?.totalPages || 1;
 
   // 페이지 변경 핸들러
   const handlePageChange = (page: number) => {
@@ -88,8 +80,8 @@ export default function BrokerCompanyPage() {
     toast.success('업체 목록이 새로고침되었습니다.');
   };
 
-  // 업체 클릭 핸들러
-  const handleCompanyClick = (company: IBrokerCompany) => {
+  // 업체 클릭 핸들러 (타입 확장)
+  const handleCompanyClick = (company: IBrokerCompany | ILegacyCompany) => {
     setSelectedCompany(company);
     setIsEditSheetOpen(true);
   };
@@ -101,19 +93,25 @@ export default function BrokerCompanyPage() {
     toast.success(`업체 정보가 수정되었습니다.`);
   };
 
+  // 업체 등록 완료 핸들러
+  const handleRegisterSuccess = () => {
+    setLastRefreshed(new Date());
+    refetch();
+    toast.success(`업체가 등록되었습니다.`);
+  };
+
   // 활성 및 비활성 업체 수 계산
   const getCompanySummary = () => {
-    if (!data || !data.total) return { total: 0, active: 0, inactive: 0 };
+    if (!data || !data.length) return { total: 0, active: 0, inactive: 0 };
     
-    const activeCount = data.data.filter(company => company.status === '활성').length;
-    //const inactiveCount = data.data.filter(company => company.status === '비활성').length;
+    const activeCount = data.filter(company => company.status === '활성').length;
     
     // 현재 페이지의 활성/비활성 비율을 전체에 적용
-    const estimatedActive = Math.round((activeCount / data.data.length) * data.total);
-    const estimatedInactive = data.total - estimatedActive;
+    const estimatedActive = Math.round((activeCount / data.length) * total);
+    const estimatedInactive = total - estimatedActive;
     
     return {
-      total: data.total,
+      total,
       active: estimatedActive,
       inactive: estimatedInactive,
     };
@@ -157,9 +155,9 @@ export default function BrokerCompanyPage() {
           <div> 
           <CardTitle>업체 관리</CardTitle>
           <CardDescription className="hidden md:block">운송사, 주선사, 화주 등 업체 정보를 관리합니다.
-                {/* <span className="text-xs text-muted-foreground px-4">
+                <span className="text-xs text-muted-foreground px-4">
                   마지막 업데이트: {lastRefreshed.toLocaleTimeString()}
-                </span> */}
+                </span>
           </CardDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -226,42 +224,62 @@ export default function BrokerCompanyPage() {
 
           {/* 로딩 상태 */}
           {isLoading && (
-            <div className="flex justify-center items-center h-40">
-              <div className="text-center">
-                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-                <p className="mt-2 text-muted-foreground">업체 목록을 불러오는 중입니다...</p>
-              </div>
+            <div className="space-y-4">
+              {viewMode === 'table' ? (
+                Array(5).fill(0).map((_, index) => (
+                  <Skeleton key={index} className="h-14 w-full rounded-md" />
+                ))
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {Array(6).fill(0).map((_, index) => (
+                    <Skeleton key={index} className="h-48 w-full rounded-md" />
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
           {/* 에러 상태 */}
           {isError && (
-            <div className="flex justify-center items-center h-40">
-              <div className="text-center text-destructive">
-                <div className="mx-auto">❌</div>
-                <p className="mt-2">업체 목록을 불러오는 도중 오류가 발생했습니다.</p>
-                <button
-                  onClick={() => refetch()}
-                  className="mt-2 text-sm text-primary hover:underline"
-                >
-                  다시 시도
-                </button>
-              </div>
+            <div className="flex flex-col justify-center items-center h-64 border rounded-md p-6 bg-red-50">
+              <p className="text-red-500 mb-2">데이터를 불러오는 중 오류가 발생했습니다.</p>
+              <p className="text-sm text-red-400 mb-4">{error instanceof Error ? error.message : '알 수 없는 오류'}</p>
+              <button
+                onClick={() => refetch()}
+                className="mt-2 text-sm text-primary hover:underline"
+              >
+                다시 시도
+              </button>
+            </div>
+          )}
+
+          {/* 데이터 없음 상태 */}
+          {!isLoading && !isError && data.length === 0 && (
+            <div className="flex flex-col justify-center items-center h-64 border rounded-md p-6">
+              <p className="text-gray-500 mb-4">등록된 업체가 없거나 검색 조건에 맞는 업체가 없습니다.</p>
+              <BrokerCompanyRegisterSheet 
+                trigger={
+                  <button className="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md">
+                    업체 등록하기
+                  </button>
+                }
+                onRegisterSuccess={handleRegisterSuccess}
+              />
             </div>
           )}
 
           {/* 업체 목록 테이블 또는 카드 */}
-          {!isLoading && !isError && data && (
+          {!isLoading && !isError && data.length > 0 && (
             <>
               <div className={cn(viewMode === 'table' ? 'block' : 'hidden')}>
                 <BrokerCompanyTable
-                  companies={data.data}
+                  companies={data}
                   onCompanyClick={handleCompanyClick}
                 />
               </div>
               <div className={cn(viewMode === 'card' ? 'block' : 'hidden')}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {data?.data?.map((company) => (
+                  {data.map((company) => (
                     <BrokerCompanyCard
                       key={company.id}
                       company={company}
@@ -272,12 +290,12 @@ export default function BrokerCompanyPage() {
               </div>
 
               {/* 페이지네이션 */}
-              {data.totalPages > 0 && (
+              {totalPages > 0 && (
                 <BrokerCompanyPagination
-                  currentPage={data.page}
-                  totalPages={data.totalPages}
-                  pageSize={data.pageSize}
-                  totalItems={data.total}
+                  currentPage={page}
+                  totalPages={totalPages}
+                  pageSize={pageSize}
+                  totalItems={total}
                   onPageChange={handlePageChange}
                   onPageSizeChange={handlePageSizeChange}
                 />
@@ -288,10 +306,10 @@ export default function BrokerCompanyPage() {
         </CardContent>
       </Card>
 
-      {/* 마지막 부분에 업체 수정 시트 추가 */}
+      {/* 업체 수정 시트 */}
       {selectedCompany && (
         <BrokerCompanyRegisterSheet
-          company={selectedCompany}
+          company={selectedCompany as IBrokerCompany}
           mode="edit"
           onUpdateSuccess={handleUpdateSuccess}
           trigger={<div className="hidden" />} // 숨겨진 트리거
