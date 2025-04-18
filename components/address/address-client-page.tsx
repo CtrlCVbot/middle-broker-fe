@@ -139,12 +139,18 @@ export default function AddressClientPage() {
       // 주소 수정
       const result = await editAddress(editingAddress.id, { 
         ...data, 
-        isFrequent: editingAddress.isFrequent 
+        isFrequent: editingAddress.isFrequent,
+        createdBy: editingAddress.createdBy || '',
+        updatedBy: ''
       });
       success = !!result;
     } else {
       // 주소 추가
-      const result = await addAddress(data);
+      const result = await addAddress({
+        ...data,
+        createdBy: '',
+        updatedBy: ''
+      });
       success = !!result;
     }
     
