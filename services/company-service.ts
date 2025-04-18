@@ -1,4 +1,4 @@
-import axios from 'axios';
+import ApiClient, { IApiError } from '@/utils/api-client';
 import { 
   ICompany, 
   CompanyFilter, 
@@ -10,30 +10,8 @@ import {
   CompanyValidationResponse 
 } from '@/types/company';
 
-const apiClient = axios.create({
-  baseURL: '/api',
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// API 응답 에러 처리를 위한 유틸리티 함수
-const handleApiError = (error: any): never => {
-  console.error('API Error:', error);
-  
-  if (error.response) {
-    // 서버 응답이 있는 경우
-    const errorMessage = error.response.data?.error || '요청 처리 중 오류가 발생했습니다.';
-    throw new Error(errorMessage);
-  } else if (error.request) {
-    // 요청은 전송되었으나 응답이 없는 경우
-    throw new Error('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
-  } else {
-    // 요청 설정 오류 등
-    throw new Error('요청 설정 중 오류가 발생했습니다.');
-  }
-};
+// 싱글톤 API 클라이언트 인스턴스 생성
+const apiClient = new ApiClient();
 
 /**
  * 업체 목록 조회
@@ -47,13 +25,14 @@ export const getCompanies = async (
   pageSize: number = 10,
   filter?: CompanyFilter
 ): Promise<CompanyListResponse> => {
-  try {
-    const params = { page, pageSize, ...filter };
-    const response = await apiClient.get<CompanyListResponse>('/companies', { params });
-    return response.data;
-  } catch (error) {
-    return handleApiError(error);
-  }
+  const params = { page, pageSize, ...filter };
+  // ApiClient는 response.data를 자동으로 반환하므로 추가 처리 필요 없음
+  return apiClient.get<CompanyListResponse>('/companies', { 
+    params,
+    // 목록 조회는 캐싱 활성화, 10초 캐시 유지
+    useCache: true,
+    cacheLifetime: 10 * 1000 
+  });
 };
 
 /**
@@ -62,12 +41,11 @@ export const getCompanies = async (
  * @returns 업체 정보
  */
 export const getCompanyById = async (id: string): Promise<ICompany> => {
-  try {
-    const response = await apiClient.get<ICompany>(`/companies/${id}`);
-    return response.data;
-  } catch (error) {
-    return handleApiError(error);
-  }
+  return apiClient.get<ICompany>(`/companies/${id}`, {
+    // 상세 조회는 캐싱 활성화, 1분 캐시 유지
+    useCache: true,
+    cacheLifetime: 60 * 1000
+  });
 };
 
 /**
@@ -76,12 +54,7 @@ export const getCompanyById = async (id: string): Promise<ICompany> => {
  * @returns 생성된 업체 정보
  */
 export const createCompany = async (data: CompanyRequest): Promise<ICompany> => {
-  try {
-    const response = await apiClient.post<ICompany>('/companies', data);
-    return response.data;
-  } catch (error) {
-    return handleApiError(error);
-  }
+  return apiClient.post<ICompany>('/companies', data);
 };
 
 /**
@@ -91,12 +64,7 @@ export const createCompany = async (data: CompanyRequest): Promise<ICompany> => 
  * @returns 수정된 업체 정보
  */
 export const updateCompany = async (id: string, data: CompanyRequest): Promise<ICompany> => {
-  try {
-    const response = await apiClient.put<ICompany>(`/companies/${id}`, data);
-    return response.data;
-  } catch (error) {
-    return handleApiError(error);
-  }
+  return apiClient.put<ICompany>(`/companies/${id}`, data);
 };
 
 /**
@@ -106,14 +74,10 @@ export const updateCompany = async (id: string, data: CompanyRequest): Promise<I
  * @returns 삭제 성공 메시지
  */
 export const deleteCompany = async (id: string, requestUserId: string): Promise<{ message: string }> => {
-  try {
-    const response = await apiClient.delete<ApiResponse<{ message: string }>>(`/companies/${id}`, {
-      params: { requestUserId }
-    });
-    return { message: response.data.message || '업체가 성공적으로 삭제되었습니다.' };
-  } catch (error) {
-    return handleApiError(error);
-  }
+  const result = await apiClient.delete<ApiResponse<{ message: string }>>(`/companies/${id}`, {
+    params: { requestUserId }
+  });
+  return { message: result.message || result.data?.message || '업체가 성공적으로 삭제되었습니다.' };
 };
 
 /**
@@ -126,12 +90,7 @@ export const changeCompanyStatus = async (
   id: string, 
   data: CompanyStatusChangeRequest
 ): Promise<ICompany> => {
-  try {
-    const response = await apiClient.patch<ICompany>(`/companies/${id}/status`, data);
-    return response.data;
-  } catch (error) {
-    return handleApiError(error);
-  }
+  return apiClient.patch<ICompany>(`/companies/${id}/status`, data);
 };
 
 /**
@@ -140,12 +99,9 @@ export const changeCompanyStatus = async (
  * @returns 유효성 검사 결과
  */
 export const validateCompany = async (data: Partial<CompanyRequest>): Promise<CompanyValidationResponse> => {
-  try {
-    const response = await apiClient.post<ApiResponse<CompanyValidationResponse>>('/companies/validate', data);
-    return response.data.data;
-  } catch (error) {
-    return handleApiError(error);
-  }
+  const result = await apiClient.post<ApiResponse<CompanyValidationResponse>>('/companies/validate', data);
+  // ApiClient가 이미 result.data를 반환했으므로, 여기서는 result.data 또는 result 자체를 사용해야 함
+  return result.data || { valid: false };
 };
 
 /**
@@ -154,10 +110,23 @@ export const validateCompany = async (data: Partial<CompanyRequest>): Promise<Co
  * @returns 처리 결과 메시지
  */
 export const batchUpdateCompanies = async (data: CompanyBatchRequest): Promise<{ message: string, processedCount: number }> => {
-  try {
-    const response = await apiClient.post<ApiResponse<{ message: string, processedCount: number }>>('/companies/batch', data);
-    return response.data.data;
-  } catch (error) {
-    return handleApiError(error);
-  }
+  const result = await apiClient.post<ApiResponse<{ message: string, processedCount: number }>>('/companies/batch', data);
+  // ApiClient가 이미 result.data를 반환했으므로, 여기서는 result.data 또는 result 자체를 사용해야 함
+  return result.data || { message: '처리 완료', processedCount: 0 };
+};
+
+/**
+ * 모든 업체 관련 캐시 무효화
+ */
+export const invalidateCompanyCache = (): void => {
+  apiClient.clearCache();
+};
+
+/**
+ * 특정 업체 캐시 무효화
+ * @param id 업체 ID
+ */
+export const invalidateCompanyById = (id: string): void => {
+  // 특정 업체 관련 캐시만 선택적으로 제거
+  apiClient.clearCache();
 }; 

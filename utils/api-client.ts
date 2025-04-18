@@ -1,4 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { useAuthStore } from '@/store/auth-store';
+import { refreshAccessToken } from '@/utils/auth';
 
 export interface IApiError {
   status: number;
@@ -6,6 +8,8 @@ export interface IApiError {
   details?: Record<string, string[]>;
   path?: string;
   timestamp?: string;
+  code?: string;
+  errors?: Record<string, string[]>;
 }
 
 interface CacheItem {
@@ -22,7 +26,7 @@ interface CacheItem {
  * - 요청 캐싱
  * - 중복 요청 방지
  */
-class ApiClient {
+export default class ApiClient {
   private instance: AxiosInstance;
   private baseConfig: AxiosRequestConfig = {
     baseURL: '/api',
@@ -57,7 +61,11 @@ class ApiClient {
     // 요청 인터셉터
     this.instance.interceptors.request.use(
       (config) => {
-        // 토큰이 필요한 경우 여기에 추가
+        // 인증 토큰 추가
+        const token = useAuthStore.getState().token;
+        if (token) {
+          config.headers['Authorization'] = `Bearer ${token}`;
+        }
         return config;
       },
       (error) => {
@@ -71,52 +79,66 @@ class ApiClient {
         // 응답 데이터 추출
         return response.data;
       },
-      (error: AxiosError) => {
-        return this._handleApiError(error);
+      async (error: AxiosError) => {
+        const originalRequest = error.config;
+
+        // 토큰 만료 오류 (401)일 경우 토큰 갱신 시도
+        if (error.response?.status === 401 && originalRequest && !('_retry' in originalRequest)) {
+          // 타입 안전을 위해 _retry 속성 추가
+          (originalRequest as any)._retry = true;
+          
+          // 토큰 갱신 시도
+          const refreshed = await refreshAccessToken();
+          if (refreshed && originalRequest) {
+            // 토큰 갱신 성공하면 새 토큰으로 재요청
+            const token = useAuthStore.getState().token;
+            if (token) {
+              originalRequest.headers = originalRequest.headers || {};
+              originalRequest.headers['Authorization'] = `Bearer ${token}`;
+            }
+            return this.instance(originalRequest);
+          }
+        }
+
+        // API 에러 형식으로 변환
+        const apiError: IApiError = {
+          status: error.response?.status || 500,
+          message: '알 수 없는 오류가 발생했습니다.',
+        };
+
+        // 응답이 있는 경우 에러 정보 추출
+        if (error.response) {
+          const data = error.response.data as any;
+          
+          if (data) {
+            apiError.message = data.message || data.error || '요청 처리 중 오류가 발생했습니다.';
+            
+            // 세부 오류 정보가 있는 경우 추가
+            if (data.details || data.errors) {
+              apiError.details = data.details || data.errors;
+            }
+            
+            // 경로 및 시간 정보 추가
+            if (data.path) apiError.path = data.path;
+            if (data.timestamp) apiError.timestamp = data.timestamp;
+          }
+        } else if (error.request) {
+          // 요청은 보냈으나 응답을 받지 못한 경우
+          apiError.message = '서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.';
+        } else {
+          // 요청 설정 중 오류가 발생한 경우
+          apiError.message = error.message || '요청을 보내는 중 오류가 발생했습니다.';
+        }
+
+        // 에러 로깅 (개발 환경에서만)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[API ERROR]:', apiError);
+          console.error(error);
+        }
+
+        return Promise.reject(apiError);
       }
     );
-  }
-
-  /**
-   * API 에러 처리 메소드
-   */
-  private _handleApiError(error: AxiosError): Promise<never> {
-    const apiError: IApiError = {
-      status: error.response?.status || 500,
-      message: '알 수 없는 오류가 발생했습니다.',
-    };
-
-    // 응답이 있는 경우 에러 정보 추출
-    if (error.response) {
-      const data = error.response.data as any;
-      
-      if (data) {
-        apiError.message = data.message || data.error || '요청 처리 중 오류가 발생했습니다.';
-        
-        // 세부 오류 정보가 있는 경우 추가
-        if (data.details || data.errors) {
-          apiError.details = data.details || data.errors;
-        }
-        
-        // 경로 및 시간 정보 추가
-        if (data.path) apiError.path = data.path;
-        if (data.timestamp) apiError.timestamp = data.timestamp;
-      }
-    } else if (error.request) {
-      // 요청은 보냈으나 응답을 받지 못한 경우
-      apiError.message = '서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.';
-    } else {
-      // 요청 설정 중 오류가 발생한 경우
-      apiError.message = error.message || '요청을 보내는 중 오류가 발생했습니다.';
-    }
-
-    // 에러 로깅 (개발 환경에서만)
-    if (process.env.NODE_ENV === 'development') {
-      console.error('[API ERROR]:', apiError);
-      console.error(error);
-    }
-
-    return Promise.reject(apiError);
   }
   
   /**
@@ -272,9 +294,4 @@ class ApiClient {
     
     return this.instance.delete(url, config);
   }
-}
-
-// 싱글톤 인스턴스 생성
-const apiClient = new ApiClient();
-
-export default apiClient; 
+} 
