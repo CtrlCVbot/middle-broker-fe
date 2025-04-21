@@ -134,12 +134,32 @@ export function convertUserToBrokerManager(user: IUser): IBrokerCompanyManager {
 }
 
 /**
- * 프론트엔드 IBrokerCompanyManager 객체를 백엔드 IUser 객체로 변환 (생성/수정용)
+ * 사용자 생성/수정 API 요청 인터페이스
+ * IUser 인터페이스와 구분하여 requestUserId를 포함시킴
+ */
+export interface IBrokerManagerRequest {
+  id?: string;
+  email?: string;
+  password?: string;
+  name?: string;
+  phoneNumber?: string;
+  companyId?: string;
+  department?: string | null;
+  position?: string | null;
+  rank?: string | null;
+  systemAccessLevel?: SystemAccessLevel;
+  status?: UserStatus;
+  domains?: UserDomain[];
+  requestUserId: string;
+}
+
+/**
+ * 프론트엔드 IBrokerCompanyManager 객체를 백엔드 API 요청 객체로 변환 (생성/수정용)
  */
 export function convertBrokerManagerToUser(
   manager: Partial<IBrokerCompanyManager>, 
   requestUserId: string = '00000000-0000-0000-0000-000000000000' // 기본값 제공
-): Partial<IUser> {
+): IBrokerManagerRequest {
   return {
     id: manager.id,
     email: manager.email,
