@@ -1,5 +1,9 @@
 import { create } from 'zustand';
-import { IBrokerCompanyManager, ManagerRole, ManagerStatus } from '@/types/broker-company';
+import { IBrokerCompanyManager, ManagerRole, ManagerStatus, IBrokerManagerFilter } from '@/types/broker-company';
+// API 서비스 임포트 추가
+import { BrokerManagerService } from '@/services/broker-manager-service';
+// 목업 데이터 관련 임포트 주석 처리
+/*
 import { 
   generateRandomManagers, 
   getManagersByCompanyId,
@@ -7,9 +11,11 @@ import {
   updateManager as updateManagerInMock,
   changeManagerStatus as changeStatusInMock
 } from '@/utils/mockdata/mock-broker-company-managers';
+*/
 
+// 목업 데이터 관련 코드 주석 처리
 // 실제 프로젝트에서는 모든 업체의 담당자 데이터를 저장하는 전역 상태
-const mockAllManagersData: Record<string, IBrokerCompanyManager[]> = {};
+// const mockAllManagersData: Record<string, IBrokerCompanyManager[]> = {};
 
 interface BrokerCompanyManagerState {
   // 현재 선택된 업체 ID
@@ -23,11 +29,14 @@ interface BrokerCompanyManagerState {
   error: string | null;
   
   // 필터 상태
-  filter: {
-    searchTerm: string;
-    roles: ManagerRole[];
-    status: ManagerStatus | '';
-    showInactive: boolean;
+  filter: IBrokerManagerFilter;
+  
+  // 페이지네이션 상태 추가
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
   };
   
   // 선택된 담당자 ID 목록
@@ -46,7 +55,7 @@ interface BrokerCompanyManagerState {
   updateManager: (manager: IBrokerCompanyManager) => Promise<IBrokerCompanyManager | null>;
   
   // 액션: 담당자 상태 변경
-  changeManagerStatus: (managerId: string, newStatus: ManagerStatus) => Promise<IBrokerCompanyManager | null>;
+  changeManagerStatus: (managerId: string, newStatus: ManagerStatus, reason?: string) => Promise<IBrokerCompanyManager | null>;
   
   // 액션: 필터링 설정
   setFilter: (filter: Partial<BrokerCompanyManagerState['filter']>) => void;
@@ -55,6 +64,12 @@ interface BrokerCompanyManagerState {
   setSelectedManagerIds: (ids: string[]) => void;
   toggleManagerSelection: (id: string) => void;
   clearSelection: () => void;
+  
+  // 액션: 페이지 변경
+  setPage: (page: number) => void;
+  
+  // 액션: 페이지 크기 변경
+  setPageSize: (pageSize: number) => void;
 }
 
 export const useBrokerCompanyManagerStore = create<BrokerCompanyManagerState>((set, get) => ({
@@ -68,6 +83,14 @@ export const useBrokerCompanyManagerStore = create<BrokerCompanyManagerState>((s
     roles: [],
     status: '',
     showInactive: false,
+    page: 1,
+    pageSize: 10,
+  },
+  pagination: {
+    page: 1,
+    pageSize: 10,
+    total: 0,
+    totalPages: 0,
   },
   selectedManagerIds: [],
   
@@ -82,23 +105,29 @@ export const useBrokerCompanyManagerStore = create<BrokerCompanyManagerState>((s
     set({ isLoading: true, error: null });
     
     try {
-      // 실제 구현에서는 API 호출로 대체
-      // 목업 데이터에 해당 업체의 담당자가 없으면 랜덤으로 생성
-      if (!mockAllManagersData[companyId]) {
-        mockAllManagersData[companyId] = generateRandomManagers(companyId, Math.floor(Math.random() * 5) + 1);
-      }
+      // 필터 정보 가져오기
+      const filter = get().filter;
       
-      const managers = getManagersByCompanyId(companyId, mockAllManagersData);
+      // API 호출로 대체
+      const response = await BrokerManagerService.getManagers(companyId, filter);
       
-      // 비동기 처리를 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      set({ managers, isLoading: false });
+      // 상태 업데이트
+      set({ 
+        managers: response.data,
+        pagination: {
+          page: response.page,
+          pageSize: response.pageSize,
+          total: response.total,
+          totalPages: response.totalPages
+        },
+        isLoading: false 
+      });
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : '담당자 목록을 불러오는 중 오류가 발생했습니다.', 
         isLoading: false 
       });
+      console.error('[담당자 목록 로드 오류]', error);
     }
   },
   
@@ -107,11 +136,8 @@ export const useBrokerCompanyManagerStore = create<BrokerCompanyManagerState>((s
     set({ isLoading: true, error: null });
     
     try {
-      // 실제 구현에서는 API 호출로 대체
-      // 비동기 처리를 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const newManager = addManagerToMock(manager, mockAllManagersData);
+      // API 호출로 대체
+      const newManager = await BrokerManagerService.createManager(manager);
       
       // 현재 업체의 담당자 목록 업데이트
       if (get().currentCompanyId === manager.companyId) {
@@ -129,6 +155,7 @@ export const useBrokerCompanyManagerStore = create<BrokerCompanyManagerState>((s
         error: error instanceof Error ? error.message : '담당자를 추가하는 중 오류가 발생했습니다.', 
         isLoading: false 
       });
+      console.error('[담당자 추가 오류]', error);
       throw error;
     }
   },
@@ -138,15 +165,8 @@ export const useBrokerCompanyManagerStore = create<BrokerCompanyManagerState>((s
     set({ isLoading: true, error: null });
     
     try {
-      // 실제 구현에서는 API 호출로 대체
-      // 비동기 처리를 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const updatedManager = updateManagerInMock(manager, mockAllManagersData);
-      
-      if (!updatedManager) {
-        throw new Error('담당자를 찾을 수 없습니다.');
-      }
+      // API 호출로 대체
+      const updatedManager = await BrokerManagerService.updateManager(manager);
       
       // 현재 업체의 담당자 목록 업데이트
       if (get().currentCompanyId === manager.companyId) {
@@ -164,12 +184,13 @@ export const useBrokerCompanyManagerStore = create<BrokerCompanyManagerState>((s
         error: error instanceof Error ? error.message : '담당자 정보를 업데이트하는 중 오류가 발생했습니다.', 
         isLoading: false 
       });
+      console.error('[담당자 업데이트 오류]', error);
       throw error;
     }
   },
   
   // 액션: 담당자 상태 변경
-  changeManagerStatus: async (managerId, newStatus) => {
+  changeManagerStatus: async (managerId, newStatus, reason) => {
     set({ isLoading: true, error: null });
     
     try {
@@ -179,15 +200,8 @@ export const useBrokerCompanyManagerStore = create<BrokerCompanyManagerState>((s
         throw new Error('선택된 업체가 없습니다.');
       }
       
-      // 실제 구현에서는 API 호출로 대체
-      // 비동기 처리를 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const updatedManager = changeStatusInMock(managerId, companyId, newStatus, mockAllManagersData);
-      
-      if (!updatedManager) {
-        throw new Error('담당자를 찾을 수 없습니다.');
-      }
+      // API 호출로 대체
+      const updatedManager = await BrokerManagerService.changeManagerStatus(managerId, newStatus, reason);
       
       // 현재 업체의 담당자 목록 업데이트
       set(state => ({
@@ -201,6 +215,7 @@ export const useBrokerCompanyManagerStore = create<BrokerCompanyManagerState>((s
         error: error instanceof Error ? error.message : '담당자 상태를 변경하는 중 오류가 발생했습니다.', 
         isLoading: false 
       });
+      console.error('[담당자 상태 변경 오류]', error);
       throw error;
     }
   },
@@ -210,6 +225,16 @@ export const useBrokerCompanyManagerStore = create<BrokerCompanyManagerState>((s
     set(state => ({
       filter: { ...state.filter, ...filter }
     }));
+    
+    // 필터 변경 시 첫 페이지로 초기화하고 데이터 다시 로드
+    const companyId = get().currentCompanyId;
+    if (companyId) {
+      set(state => ({
+        filter: { ...state.filter, page: 1 },
+        pagination: { ...state.pagination, page: 1 }
+      }));
+      get().loadManagers(companyId);
+    }
   },
   
   // 액션: 선택된 담당자 설정
@@ -230,5 +255,33 @@ export const useBrokerCompanyManagerStore = create<BrokerCompanyManagerState>((s
   
   clearSelection: () => {
     set({ selectedManagerIds: [] });
+  },
+  
+  // 액션: 페이지 변경
+  setPage: (page) => {
+    set(state => ({
+      filter: { ...state.filter, page },
+      pagination: { ...state.pagination, page }
+    }));
+    
+    // 페이지 변경 시 데이터 다시 로드
+    const companyId = get().currentCompanyId;
+    if (companyId) {
+      get().loadManagers(companyId);
+    }
+  },
+  
+  // 액션: 페이지 크기 변경
+  setPageSize: (pageSize) => {
+    set(state => ({
+      filter: { ...state.filter, pageSize, page: 1 },
+      pagination: { ...state.pagination, pageSize, page: 1 }
+    }));
+    
+    // 페이지 크기 변경 시 첫 페이지로 초기화하고 데이터 다시 로드
+    const companyId = get().currentCompanyId;
+    if (companyId) {
+      get().loadManagers(companyId);
+    }
   }
 })); 
