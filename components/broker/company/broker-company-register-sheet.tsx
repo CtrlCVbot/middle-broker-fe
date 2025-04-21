@@ -231,7 +231,7 @@ export function BrokerCompanyRegisterSheet({
         {(mode === 'register' || (mode === 'edit' && companyData && !companyQuery.isLoading)) && (
           <BrokerCompanyForm 
             isSubmitting={isLoading}
-            initialData={companyData}
+            initialData={companyData as IBrokerCompany}
             mode={mode}
             onSubmit={handleSubmit}
           />
