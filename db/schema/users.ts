@@ -31,11 +31,11 @@ export const users = pgTable('users', {
   email: varchar('email', { length: 100 }).notNull().unique(),
   password: varchar('password', { length: 255 }), 
   name: varchar('name', { length: 100 }).notNull(),
-  phone_number: varchar('phone_number', { length: 20 }).notNull(),
+  phone_number: varchar('phone_number', { length: 20 }),
   
   company_id: uuid('company_id'), 
   system_access_level: systemAccessLevelEnum('system_access_level').notNull().default('guest'),
-  domains: json('domains').$type<string[]>().notNull().default([]), // 도메인(logistics, settlement, sales, etc) - 다중 선택 가능
+  domains: json('domains').$type<string[]>().notNull().default([USER_DOMAINS[3]]), // 도메인(logistics, settlement, sales, etc) - 다중 선택 가능
   status: userStatusEnum('status').notNull().default('active'),
   
   department: varchar('department', { length: 100 }), // 부서 (선택 사항)
