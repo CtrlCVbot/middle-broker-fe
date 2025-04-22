@@ -212,11 +212,15 @@ export function BrokerCompanyForm({
       // 데이터 정규화 - 다양한 형식의 데이터를 폼에 맞게 변환
       const normalizedData = normalizeCompanyData(initialData);
       
-      // 주의사항 상태 업데이트 - 아직 개발전
-      //setWarnings(normalizedData.warnings || []);
+      // 주의사항 상태 업데이트
+      if (normalizedData.warnings && normalizedData.warnings.length > 0) {
+        setWarnings(normalizedData.warnings);
+      }
       
-      // 파일 상태 업데이트 - 아직 개발전
-      //setFiles(normalizedData.files || []);
+      // 파일 상태 업데이트
+      if (normalizedData.files && normalizedData.files.length > 0) {
+        setFiles(normalizedData.files);
+      }
       
       // 폼 값 재설정 - 정규화된 데이터 사용
       form.reset({
@@ -234,6 +238,9 @@ export function BrokerCompanyForm({
         representative: normalizedData.representative,
         warnings: [],
         files: [],
+      }, {
+        keepDirtyValues: false, // 이 옵션을 false로 설정해 모든 값을 새로 설정
+        keepErrors: false, // 모든 에러 초기화
       });
       
       // 디버깅용 로그 - 폼 값 확인

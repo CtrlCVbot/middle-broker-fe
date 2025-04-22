@@ -54,12 +54,30 @@ export function BrokerCompanyTable({ companies, onCompanyClick }: BrokerCompanyT
   // 회사 클릭 핸들러 - 데이터 로깅 추가
   const handleCompanyClick = (company: IBrokerCompany | ILegacyCompany) => {
     // 데이터 구조 확인을 위한 로깅
-    console.log('Selected company data:', company);
-    console.log('Company type:', company.type);
-    console.log('Company data structure:', Object.keys(company));
+    console.log('Selected company data:', { 
+      id: company.id, 
+      name: company.name,
+      type: company.type,
+      status: company.status 
+    });
     
-    // 원래 기능 유지
-    onCompanyClick(company);
+    // null이나 undefined 체크를 위한, 안전한 데이터 확인
+    const safeCompany = {
+      ...company,
+      // 필요한 속성이 없으면 기본값 제공
+      email: company.email || '',
+      mobileNumber: company.mobileNumber || '',
+      phoneNumber: company.phoneNumber || '',
+      representative: company.representative || '',
+      businessNumber: company.businessNumber || '',
+      code: company.code || '',
+      registeredDate: company.registeredDate || '',
+      type: company.type || '운송사',
+      status: company.status || '활성'
+    };
+    
+    // 원래 기능 유지: 수정된 회사 객체 전달
+    onCompanyClick(safeCompany);
   };
   
   const getStatusBadgeVariant = (status: string) => {

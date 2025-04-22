@@ -26,6 +26,7 @@ import {
 } from '@/store/company-store';
 import { convertLegacyToApiCompany } from '@/types/company';
 import { v4 as uuidv4 } from 'uuid';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface BrokerCompanyRegisterSheetProps {
   onRegisterSuccess?: (company: IBrokerCompany) => void;
@@ -48,6 +49,9 @@ export function BrokerCompanyRegisterSheet({
 }: BrokerCompanyRegisterSheetProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   // const { updateCompany } = useBrokerCompanyStore(); // 기존 스토어 사용 코드 주석 처리
+  
+  // 추가: Query Client 가져오기
+  const queryClient = useQueryClient();
   
   // API 훅 사용
   const createCompanyMutation = useCreateCompany();
@@ -124,13 +128,14 @@ export function BrokerCompanyRegisterSheet({
         
         try {
           // API 호출로 업체 수정
-          await updateCompanyMutation.mutateAsync({ 
+          const updatedCompany = await updateCompanyMutation.mutateAsync({ 
             id: formData.id,
             data: apiData
           });
           
-          // 스토어 업데이트 - 기존 코드 주석 처리
-          // updateCompany(formData);
+          // 수정 후 캐시 강제 무효화 (둘 다 확실히)
+          queryClient.invalidateQueries({ queryKey: ['companies'] });
+          queryClient.invalidateQueries({ queryKey: ['company', formData.id] });
           
           // 성공 처리
           toast.success(`${formData.name} 업체 정보가 수정되었습니다.`);

@@ -208,12 +208,13 @@ class ApiClient {
    * 캐시 항목 삭제
    */
   private _invalidateCache(url: string, method?: string): void {
-    // 특정 URL 패턴에 대한 모든 캐시 삭제
+    // 메서드가 없는 경우 (모든 메서드 대상)
     if (!method) {
-      const urlPattern = new RegExp(`^${method?.toUpperCase() || ''}:${url}`);
-      
+      const urlPattern = url ? new RegExp(`^[A-Z]+:${url}`) : /./;
+
       for (const key of this.cache.keys()) {
         if (urlPattern.test(key)) {
+          console.log(`캐시 무효화: ${key}`);
           this.cache.delete(key);
         }
       }
@@ -224,6 +225,7 @@ class ApiClient {
       
       for (const key of this.cache.keys()) {
         if (key.startsWith(keyPrefix)) {
+          console.log(`캐시 무효화: ${key}`);
           this.cache.delete(key);
         }
       }
@@ -231,10 +233,18 @@ class ApiClient {
   }
   
   /**
-   * 모든 캐시 지우기
+   * 모든 캐시 지우기 또는 특정 URL/메서드 조합의 캐시만 지우기
+   * @param method HTTP 메서드 (GET, POST 등). 생략 시 모든 메서드 대상
+   * @param url URL 패턴. 생략 시 모든 URL 대상
    */
-  public clearCache(): void {
-    this.cache.clear();
+  public clearCache(method?: string, url?: string): void {
+    if (!method && !url) {
+      console.log('모든 캐시 무효화');
+      this.cache.clear();
+      return;
+    }
+    
+    this._invalidateCache(url || '', method);
   }
 
   /**

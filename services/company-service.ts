@@ -141,7 +141,8 @@ export const batchUpdateCompanies = async (data: CompanyBatchRequest): Promise<{
  * 모든 업체 관련 캐시 무효화
  */
 export const invalidateCompanyCache = (): void => {
-  apiClient.clearCache();
+  console.log('모든 업체 관련 캐시 무효화 실행');
+  apiClient.clearCache('GET', '/companies'); // 특정 URL만 명시적으로 삭제
 };
 
 /**
@@ -149,6 +150,6 @@ export const invalidateCompanyCache = (): void => {
  * @param id 업체 ID
  */
 export const invalidateCompanyById = (id: string): void => {
-  // 특정 업체 관련 캐시만 선택적으로 제거
-  apiClient.clearCache();
+  console.log(`특정 업체(${id}) 캐시 무효화 실행`);
+  apiClient.clearCache('GET', `/companies/${id}`); // 특정 업체 URL만 명시적으로 삭제
 }; 
