@@ -98,8 +98,8 @@ export function BrokerCompanyTable({ companies, onCompanyClick }: BrokerCompanyT
             <TableHead>대표자</TableHead>
             <TableHead className="w-[150px]">이메일</TableHead>
             <TableHead>전화번호</TableHead>
-            <TableHead>팩스번호</TableHead>
-            <TableHead>담당자명</TableHead>
+            {/* <TableHead>팩스번호</TableHead> */}
+            {/* <TableHead>담당자명</TableHead> */}
             <TableHead>핸드폰번호</TableHead>
             <TableHead className="w-[110px]">등록일</TableHead>
             <TableHead className="w-[90px]">상태</TableHead>
@@ -151,9 +151,9 @@ export function BrokerCompanyTable({ companies, onCompanyClick }: BrokerCompanyT
                     </a>
                   </TableCell>
                   <TableCell>{company.phoneNumber}</TableCell>
-                  <TableCell>{company.faxNumber}</TableCell>
-                  <TableCell>{company.managerName}</TableCell>
-                  <TableCell>{company.managerPhoneNumber}</TableCell>
+                  {/* <TableCell>{company.faxNumber}</TableCell> */}
+                  {/* <TableCell>{company.managerName}</TableCell> */}
+                  <TableCell>{company.mobileNumber}</TableCell>
                   <TableCell>{company.registeredDate}</TableCell>
                   <TableCell>
                     <Badge variant={getStatusBadgeVariant(company.status as string) as any}>

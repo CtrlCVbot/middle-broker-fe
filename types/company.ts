@@ -150,9 +150,9 @@ export interface ILegacyCompany {
   representative: string;
   email: string;
   phoneNumber: string;
-  faxNumber: string;
-  managerName: string;
-  managerPhoneNumber: string;
+  //faxNumber: string;
+  //managerName: string;
+  mobileNumber: string;
   registeredDate: string;
   status: string;
   warnings?: { id: string; text: string }[];
@@ -172,9 +172,9 @@ export const convertApiToLegacyCompany = (company: ICompany): ILegacyCompany => 
     representative: company.ceoName,
     email: company.contact.email || '',
     phoneNumber: company.contact.tel || '',
-    faxNumber: '',  // API에 없는 필드이므로 빈 값으로 설정
-    managerName: '',  // API에 없는 필드이므로 빈 값으로 설정
-    managerPhoneNumber: company.contact.mobile || '',
+    //faxNumber: '',  // API에 없는 필드이므로 빈 값으로 설정
+    //managerName: '',  // API에 없는 필드이므로 빈 값으로 설정
+    mobileNumber: company.contact.mobile || '',
     registeredDate: company.registeredAt,
     status: COMPANY_STATUS_LABEL[company.status],
     warnings: [],
@@ -209,7 +209,7 @@ export const convertLegacyToApiCompany = (company: ILegacyCompany, requestUserId
   
   // 전화번호 및 모바일 번호 형식 정리
   const tel = company.phoneNumber?.trim() || '';
-  const mobile = company.managerPhoneNumber?.trim() || '';
+  const mobile = company.mobileNumber?.trim() || '';
   
   // 이메일이 없는 경우 빈 문자열로 설정
   const email = company.email?.trim() || '';

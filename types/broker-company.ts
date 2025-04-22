@@ -27,9 +27,9 @@ export interface IBrokerCompany {
   representative: string;
   email: string | '';
   phoneNumber: string;
-  faxNumber: string;
-  managerName: string;
-  managerPhoneNumber: string;
+  //faxNumber: string;
+  //managerName: string;
+  mobileNumber: string;
   registeredDate: string;
   status: CompanyStatus;
   warnings?: { id: string; text: string }[];

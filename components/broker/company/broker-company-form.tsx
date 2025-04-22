@@ -67,10 +67,11 @@ const companyFormSchema = z.object({
   statementType: z.enum(['매입처', '매출처']),
   email: z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }).optional().or(z.literal('')),
   phoneNumber: z.string().min(1, { message: '전화번호는 필수 입력 항목입니다.' }),
-  faxNumber: z.string().optional(),
+  //faxNumber: z.string().optional(),
+  mobileNumber: z.string().optional(),
   status: z.enum(['활성', '비활성']).default('활성'),
-  managerName: z.string().optional(),
-  managerPhoneNumber: z.string().optional(),
+  //managerName: z.string().optional(),
+  //managerPhoneNumber: z.string().optional(),
   representative: z.string().min(1, { message: '대표자명은 필수 입력 항목입니다.' }),
   warnings: z.array(z.object({
     id: z.string(),
@@ -92,6 +93,8 @@ type CompanyFormValues = z.infer<typeof companyFormSchema>;
  */
 function normalizeCompanyData(data: any): Partial<IBrokerCompany> {
   if (!data) return {};
+
+  console.log('data:', data);
   
   // 필드 매핑을 위한 객체
   const normalized = {
@@ -124,11 +127,8 @@ function normalizeCompanyData(data: any): Partial<IBrokerCompany> {
     // 연락처 정보
     email: data.email || (data.contact?.email) || '',
     phoneNumber: data.phoneNumber || (data.contact?.tel) || '',
-    faxNumber: data.faxNumber || '',
-    
-    // 담당자 정보
-    managerName: data.managerName || '',
-    managerPhoneNumber: data.managerPhoneNumber || (data.contact?.mobile) || '',
+    //faxNumber: data.faxNumber || '',    
+    mobileNumber: (data.contact?.mobile) || '',
     
     // 상태 - 영문이나 한글 모두 지원
     status: (
@@ -192,10 +192,11 @@ export function BrokerCompanyForm({
       })() as StatementType,
       email: initialData.email || '',
       phoneNumber: initialData.phoneNumber || '',
-      faxNumber: initialData.faxNumber || '',
+      //faxNumber: initialData.faxNumber || '',
+      mobileNumber: initialData.mobileNumber || '',
       status: (initialData.status as CompanyStatus) || '활성',
-      managerName: initialData.managerName || '',
-      managerPhoneNumber: initialData.managerPhoneNumber || '',
+      //managerName: initialData.managerName || '',
+      //managerPhoneNumber: initialData.managerPhoneNumber || '',
       representative: initialData.representative || '',
       warnings: [],
       files: [],
@@ -225,10 +226,11 @@ export function BrokerCompanyForm({
         statementType: normalizedData.statementType as StatementType,
         email: normalizedData.email,
         phoneNumber: normalizedData.phoneNumber,
-        faxNumber: normalizedData.faxNumber,
+        //faxNumber: normalizedData.faxNumber,
+        mobileNumber: normalizedData.mobileNumber,
         status: normalizedData.status as CompanyStatus,
-        managerName: normalizedData.managerName,
-        managerPhoneNumber: normalizedData.managerPhoneNumber,
+        //managerName: normalizedData.managerName,
+        //managerPhoneNumber: normalizedData.managerPhoneNumber,
         representative: normalizedData.representative,
         warnings: [],
         files: [],
@@ -273,9 +275,10 @@ export function BrokerCompanyForm({
     const newCompany: IBrokerCompany = {
       ...data,
       email: data.email || '',
-      faxNumber: data.faxNumber || '',
-      managerName: data.managerName || '',
-      managerPhoneNumber: data.managerPhoneNumber || '',
+      //faxNumber: data.faxNumber || '',
+      //managerName: data.managerName || '',
+      //managerPhoneNumber: data.managerPhoneNumber || '',
+      mobileNumber: data.mobileNumber || '',
       id: initialData.id || generateId(),
       code: initialData.code || `CM${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`,
       registeredDate: initialData.registeredDate || new Date().toISOString().split('T')[0],
@@ -415,33 +418,7 @@ export function BrokerCompanyForm({
 
                 </div>                
                 
-
-                <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-                  
-                  {/* 로그인 활성화 상태 */}
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                        <div className="space-y-0.5">
-                          <FormLabel>로그인 활성화</FormLabel>
-                          <FormDescription>
-                            비활성화 시 해당 담당자는 로그인할 수 없습니다.
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value === '활성'}
-                            onCheckedChange={(checked) => {
-                              field.onChange(checked ? '활성' : '비활성');
-                            }}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                
               </CardContent>
             </Card>
             
@@ -473,16 +450,16 @@ export function BrokerCompanyForm({
                     )}
                   />
                   
-                  {/* 팩스번호 */}
+                  {/* 담당자 전화번호 */}
                   <FormField
                     control={form.control}
-                    name="faxNumber"
+                    name="mobileNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>팩스번호</FormLabel>
+                        <FormLabel>담당자 전화번호 *</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="02-0000-0000" 
+                            placeholder="010-0000-0000" 
                             {...field} 
                             onChange={(e) => {
                               field.onChange(formatPhoneNumber(e.target.value));
@@ -515,52 +492,35 @@ export function BrokerCompanyForm({
                 />
               </CardContent>
             </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>담당자 정보</CardTitle>
-                <CardDescription>업체 담당자 정보를 입력합니다.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* 담당자명 */}
-                  <FormField
-                    control={form.control}
-                    name="managerName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>담당자명 *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="담당자명을 입력하세요" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                   
-                  {/* 담당자 전화번호 */}
+                  {/* 로그인 활성화 상태 */}
                   <FormField
                     control={form.control}
-                    name="managerPhoneNumber"
+                    name="status"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>담당자 전화번호 *</FormLabel>
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                        <div className="space-y-0.5">
+                          <FormLabel>로그인 활성화</FormLabel>
+                          <FormDescription>
+                            비활성화 시 해당 담당자는 로그인할 수 없습니다.
+                          </FormDescription>
+                        </div>
                         <FormControl>
-                          <Input 
-                            placeholder="010-0000-0000" 
-                            {...field} 
-                            onChange={(e) => {
-                              field.onChange(formatPhoneNumber(e.target.value));
+                          <Switch
+                            checked={field.value === '활성'}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked ? '활성' : '비활성');
                             }}
                           />
                         </FormControl>
-                        <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-              </CardContent>
-            </Card>
+            
+            
           </TabsContent>
           
           <TabsContent value="warning" className="space-y-4">

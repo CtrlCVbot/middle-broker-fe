@@ -24,7 +24,7 @@ export async function PATCH(
 ) {
   try {
     // Next.js 13.4.19 이상에서는 params를 비동기적으로 처리해야 함
-    const { companyId } = params;
+    const { companyId } = await params;
 
     // UUID 검증
     if (!isValidUUID(companyId)) {
