@@ -90,7 +90,7 @@ export default function BrokerCompanyPage() {
   }, [refetch, queryClient]);
 
   // 업체 등록 완료 핸들러
-  const handleRegisterSuccess = useCallback((company) => {
+  const handleRegisterSuccess = useCallback((company: IBrokerCompany) => {
     console.log('✨ 새 업체 등록됨:', company.name);
     setLastRefreshed(new Date());
     
@@ -111,7 +111,7 @@ export default function BrokerCompanyPage() {
   };
 
   // 회사가 수정된 후 호출할 함수
-  const handleCompanyUpdate = useCallback((updatedCompany) => {
+  const handleCompanyUpdate = useCallback((updatedCompany: IBrokerCompany) => {
     console.log('🔶 업체 수정 완료 이벤트 발생', {
       id: updatedCompany.id,
       name: updatedCompany.name,

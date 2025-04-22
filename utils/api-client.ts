@@ -330,7 +330,7 @@ class ApiClient {
     }
     
     // 패치 요청 전송
-    return this.instance.patch(url, data, config)
+    return this.instance.patch<T>(url, data, config)
       .then(response => {
         console.log(`✅ PATCH 요청 성공: ${url}`);
         
@@ -344,7 +344,7 @@ class ApiClient {
           console.log(`🔄 PATCH 이후 캐시 재무효화 완료: ${url}`);
         }, 100);
         
-        return response;
+        return response.data;
       });
   }
 
