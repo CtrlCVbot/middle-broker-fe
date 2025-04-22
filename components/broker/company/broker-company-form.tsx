@@ -334,7 +334,13 @@ export function BrokerCompanyForm({
                     name="businessNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>사업자번호 *</FormLabel>
+                        <FormLabel>
+                          사업자번호 *
+                          <FormDescription>
+                          (하이픈(-) 포함하여 입력 가능)
+                        </FormDescription>
+
+                        </FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="000-00-00000" 
@@ -347,9 +353,7 @@ export function BrokerCompanyForm({
                             }}
                           />
                         </FormControl>
-                        <FormDescription>
-                          하이픈(-) 포함하여 입력 가능
-                        </FormDescription>
+                        
                         <FormMessage />
                       </FormItem>
                     )}
@@ -370,31 +374,8 @@ export function BrokerCompanyForm({
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
+                  />                  
                   
-                  {/* 업체 상태 */}
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>업체 상태</FormLabel>
-                        <div className="flex items-center space-x-2">
-                          <Switch
-                            checked={field.value === '활성'}
-                            onCheckedChange={(checked) => {
-                              field.onChange(checked ? '활성' : '비활성');
-                            }}
-                          />
-                          <span>{field.value === '활성' ? '활성' : '비활성'}</span>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* 업체 구분 */}
                   <FormField
                     control={form.control}
@@ -423,32 +404,32 @@ export function BrokerCompanyForm({
                       </FormItem>
                     )}
                   />
+
+                </div>                
+                
+
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                   
-                  {/* 전표 구분 */}
+                  {/* 로그인 활성화 상태 */}
                   <FormField
                     control={form.control}
-                    name="statementType"
+                    name="status"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>전표 구분 *</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="전표 구분을 선택하세요" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {STATEMENT_TYPE_OPTIONS.map((statementType) => (
-                              <SelectItem key={statementType} value={statementType}>
-                                {statementType}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                        <div className="space-y-0.5">
+                          <FormLabel>로그인 활성화</FormLabel>
+                          <FormDescription>
+                            비활성화 시 해당 담당자는 로그인할 수 없습니다.
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value === '활성'}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked ? '활성' : '비활성');
+                            }}
+                          />
+                        </FormControl>
                       </FormItem>
                     )}
                   />
