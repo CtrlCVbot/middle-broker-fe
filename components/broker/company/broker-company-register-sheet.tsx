@@ -100,18 +100,32 @@ export function BrokerCompanyRegisterSheet({
         // 변환된 API 데이터 로깅
         console.log('등록 - 변환된 API 데이터:', apiData);
         
-        // API 호출로 업체 생성
-        const result = await createCompanyMutation.mutateAsync(apiData);
-        
-        // 성공 처리
-        toast.success(`${formData.name} 업체가 등록되었습니다.`);
-        
-        // 콜백 실행
-        if (onRegisterSuccess) {
-          onRegisterSuccess(formData);
+        try {
+          // API 호출로 업체 생성
+          const result = await createCompanyMutation.mutateAsync(apiData);
+          
+          // 성공 처리
+          toast.success(`${formData.name} 업체가 등록되었습니다.`);
+          
+          // 콜백 실행
+          if (onRegisterSuccess) {
+            onRegisterSuccess(formData);
+          }
+          
+          // 작업 완료 후 명시적으로 시트 닫기
+          console.log('업체 등록 완료, 시트 닫기 예약');
+          // 이벤트 루프의 다음 틱으로 지연시켜 닫기
+          setTimeout(() => {
+            console.log('업체 등록 완료, 지연 후 시트 닫기 실행');
+            handleOpenChange(false);
+          }, 100);
+        } catch (registerError) {
+          console.error('업체 등록 오류:', registerError);
+          const errorMessage = registerError instanceof Error ? registerError.message : '알 수 없는 오류';
+          toast.error(`업체 등록 중 오류가 발생했습니다: ${errorMessage}`);
+          // 오류 발생 시 시트를 닫지 않음
         }
       } else if (mode === 'edit' && formData.id) {
-        
         
         // 디버깅용 로그 추가
         console.log('✏️ 수정 시작 - 원본 폼 데이터:', {
@@ -167,6 +181,14 @@ export function BrokerCompanyRegisterSheet({
           if (onUpdateSuccess) {
             onUpdateSuccess(formData);
           }
+          
+          // 작업 완료 후 명시적으로 시트 닫기
+          console.log('업체 수정 완료, 시트 닫기 예약');
+          // 이벤트 루프의 다음 틱으로 지연시켜 닫기
+          setTimeout(() => {
+            console.log('업체 수정 완료, 지연 후 시트 닫기 실행');
+            handleOpenChange(false);
+          }, 100);
         } catch (updateError) {
           // 업데이트 특정 오류 처리
           console.error('업체 수정 오류:', updateError);
@@ -186,22 +208,18 @@ export function BrokerCompanyRegisterSheet({
             const errorMessage = updateError instanceof Error ? updateError.message : '알 수 없는 오류';
             toast.error(`업체 수정 중 오류가 발생했습니다: ${errorMessage}`);
           }
-          
-          // 오류 전파
-          throw updateError;
+          // 오류 발생 시 시트를 닫지 않음
         }
       }
-      
-      // 시트 닫기
-      handleOpenChange(false);
     } catch (error) {
-      // 전역 오류 처리 (이미 구체적인 오류가 처리되지 않은 경우)
+      // 전역 오류 처리 (위에서 각각의 특정 오류가 처리되지 않은 경우만 실행됨)
       console.error('API 요청 중 전역 오류:', error);
       
       if (!(error && typeof error === 'object' && 'response' in error)) {
         const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
         toast.error(`업체 ${mode === 'register' ? '등록' : '수정'} 중 오류가 발생했습니다: ${errorMessage}`);
       }
+      // 전역 오류 발생 시 시트를 닫지 않음
     }
   };
 
@@ -227,7 +245,14 @@ export function BrokerCompanyRegisterSheet({
           {trigger}
         </SheetTrigger>
       )}
-      <SheetContent side="right" className="w-full sm:max-w-xl md:max-w-2xl lg:max-w-3xl overflow-y-auto">
+      <SheetContent 
+        side="right" 
+        className="w-full sm:max-w-xl md:max-w-2xl lg:max-w-3xl overflow-y-auto"
+        onPointerDownCapture={(e) => {
+          // 시트 내부 클릭 이벤트가 상위로 전파되지 않도록 방지
+          e.stopPropagation();
+        }}
+      >
         <SheetHeader className="mb-5">
           <SheetTitle>{title}</SheetTitle>
           <SheetDescription>

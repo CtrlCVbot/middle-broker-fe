@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { BrokerCompanyManagerForm } from './broker-company-manager-form';
+import { BrokerCompanyManagerDialog } from './broker-company-manager-dialog';
 import { 
   Pagination, 
   PaginationContent, 
@@ -44,9 +44,6 @@ interface BrokerCompanyManagerListProps {
 }
 
 export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerListProps) {
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [managerToEdit, setManagerToEdit] = useState<IBrokerCompanyManager | null>(null);
-  
   const { 
     managers, 
     isLoading, 
@@ -66,27 +63,47 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
   // 초기 로딩
   useEffect(() => {
     setCurrentCompanyId(companyId);
-  }, [companyId, setCurrentCompanyId]);
+    
+    // 디버깅용 로그 추가
+    console.log('🔍 담당자 목록 컴포넌트 마운트, 회사 ID:', companyId);
+    
+    // 초기 데이터 로딩
+    loadManagers(companyId);
+    
+    // 30초마다 자동 새로고침
+    const intervalId = setInterval(() => {
+      console.log('⏰ 담당자 목록 데이터 자동 새로고침');
+      loadManagers(companyId);
+    }, 30000);
+    
+    return () => {
+      console.log('🧹 담당자 목록 컴포넌트 언마운트');
+      clearInterval(intervalId);
+    };
+  }, [companyId, setCurrentCompanyId, loadManagers]);
   
   // 담당자 추가 완료 핸들러
-  const handleAddComplete = () => {
-    setShowAddForm(false);
-    toast.success('담당자가 등록되었습니다.');
+  const handleAddSuccess = (manager: IBrokerCompanyManager) => {
+    console.log('✅ 담당자 추가 완료:', manager.name);
+    // 이미 Dialog 컴포넌트에서 toast와 loadManagers가 실행되므로 추가 작업 불필요
   };
   
   // 담당자 수정 완료 핸들러
-  const handleEditComplete = () => {
-    setManagerToEdit(null);
-    toast.success('담당자 정보가 수정되었습니다.');
+  const handleUpdateSuccess = (manager: IBrokerCompanyManager) => {
+    console.log('✅ 담당자 수정 완료:', manager.name);
+    // 이미 Dialog 컴포넌트에서 toast와 loadManagers가 실행되므로 추가 작업 불필요
   };
   
   // 담당자 활성화/비활성화 핸들러
   const handleToggleStatus = async (manager: IBrokerCompanyManager) => {
     try {
       const newStatus = manager.status === '활성' ? '비활성' : '활성';
+      console.log(`🔄 담당자 상태 변경 시도: ${manager.name} => ${newStatus}`);
+      
       await changeManagerStatus(manager.id, newStatus);
-      toast.success(`담당자 상태가 ${newStatus}으로 변경되었습니다.`);
+      toast.success(`${manager.name} 담당자 상태가 ${newStatus}으로 변경되었습니다.`);
     } catch (error) {
+      console.error('❌ 담당자 상태 변경 오류:', error);
       toast.error('상태 변경 중 오류가 발생했습니다.');
     }
   };
@@ -243,41 +260,6 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
         </Alert>
       )}
       
-      {/* 담당자 추가 폼 */}
-      {showAddForm && (
-        <div className="mb-6 border rounded-lg p-4 bg-muted/10">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium">새 담당자 등록</h3>
-            <Button variant="ghost" size="sm" onClick={() => setShowAddForm(false)}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          <BrokerCompanyManagerForm 
-            companyId={companyId}
-            onComplete={handleAddComplete}
-            onCancel={() => setShowAddForm(false)}
-          />
-        </div>
-      )}
-      
-      {/* 담당자 수정 폼 */}
-      {managerToEdit && (
-        <div className="mb-6 border rounded-lg p-4 bg-muted/10">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium">담당자 정보 수정</h3>
-            <Button variant="ghost" size="sm" onClick={() => setManagerToEdit(null)}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          <BrokerCompanyManagerForm 
-            companyId={companyId}
-            manager={managerToEdit}
-            onComplete={handleEditComplete}
-            onCancel={() => setManagerToEdit(null)}
-          />
-        </div>
-      )}
-      
       {/* 툴바: 검색 및 필터링 */}
       <div className="flex flex-col gap-2 md:flex-row md:justify-between md:items-center">
         <div className="flex-1 flex items-center gap-2">
@@ -395,14 +377,11 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
             </span>
           )}
           
-          <Button
-            onClick={() => setShowAddForm(true)}
-            disabled={showAddForm}
-            className="flex items-center gap-1"
-          >
-            <UserPlus className="h-4 w-4" />
-            <span>담당자 추가</span>
-          </Button>
+          <BrokerCompanyManagerDialog
+            companyId={companyId}
+            mode="add"
+            onSuccess={handleAddSuccess}
+          />
         </div>
       </div>
       
@@ -547,13 +526,12 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
                     />
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => setManagerToEdit(manager)}
-                    >
-                      수정
-                    </Button>
+                    <BrokerCompanyManagerDialog
+                      companyId={companyId}
+                      manager={manager}
+                      mode="edit"
+                      onSuccess={handleUpdateSuccess}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
@@ -563,16 +541,20 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
       ) : (
         <div className="flex flex-col items-center justify-center py-8 border rounded-md">
           <p className="text-muted-foreground mb-4">등록된 담당자가 없습니다.</p>
-          {!showAddForm && (
-            <Button 
-              variant="outline" 
-              onClick={() => setShowAddForm(true)}
-              className="flex items-center gap-1"
-            >
-              <UserPlus className="h-4 w-4" />
-              <span>담당자 추가</span>
-            </Button>
-          )}
+          <BrokerCompanyManagerDialog
+            companyId={companyId}
+            mode="add"
+            onSuccess={handleAddSuccess}
+            trigger={
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-1"
+              >
+                <UserPlus className="h-4 w-4" />
+                <span>담당자 추가</span>
+              </Button>
+            }
+          />
         </div>
       )}
       

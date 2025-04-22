@@ -274,7 +274,12 @@ export function BrokerCompanyForm({
   };
 
   // 폼 제출 핸들러
-  const handleSubmit = (data: CompanyFormValues) => {
+  const handleSubmit = (data: CompanyFormValues, e?: React.BaseSyntheticEvent) => {
+    // 기본 제출 동작 방지
+    if (e) {
+      e.preventDefault();
+    }
+    
     // 현재 로그인된 사용자 정보 가져오기
     const currentUser = getCurrentUser();
     
@@ -312,7 +317,12 @@ export function BrokerCompanyForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation(); // 이벤트 버블링 방지
+        console.log('폼 제출 이벤트 발생, 기본 동작 및 버블링 방지');
+        form.handleSubmit(handleSubmit)(e);
+      }} className="space-y-6">
         <Tabs defaultValue="basic" className="w-full px-6">
           <TabsList className="grid grid-cols-4 mb-4">
             <TabsTrigger value="basic">기본 정보</TabsTrigger>

@@ -22,12 +22,15 @@ import { IBrokerCompanyManager } from '@/types/broker-company';
 import { MANAGER_ROLES } from '@/utils/mockdata/mock-broker-company-managers';
 import { useBrokerCompanyManagerStore } from '@/store/broker-company-manager-store';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { v4 as uuidv4 } from 'uuid';
 
 interface BrokerCompanyManagerFormProps {
   companyId: string;
   manager?: IBrokerCompanyManager;
-  onComplete: () => void;
-  onCancel: () => void;
+  onSubmit: (formData: IBrokerCompanyManager) => void;
+  isSubmitting?: boolean;
+  globalError?: string | null;
+  onCancel?: () => void;
 }
 
 // 담당자 등록/수정 폼 스키마 정의
@@ -49,12 +52,12 @@ type ManagerFormValues = z.infer<typeof managerFormSchema>;
 export function BrokerCompanyManagerForm({ 
   companyId, 
   manager, 
-  onComplete, 
-  onCancel 
+  onSubmit,
+  isSubmitting = false,
+  globalError = null,
+  onCancel
 }: BrokerCompanyManagerFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
   
   const { addManager, updateManager } = useBrokerCompanyManagerStore();
   
@@ -84,73 +87,85 @@ export function BrokerCompanyManagerForm({
   };
   
   // 폼 제출 핸들러
-  const handleSubmit = async (data: ManagerFormValues) => {
-    setIsSubmitting(true);
-    setFormError(null);
+  const handleSubmit = async (data: ManagerFormValues, e?: React.BaseSyntheticEvent) => {
+    // 기본 제출 동작 방지
+    if (e) {
+      e.preventDefault();
+    }
     
-    try {
-      // 수정 모드인 경우
-      if (manager) {
-        // 비밀번호가 입력되지 않은 경우 기존 비밀번호 유지
-        const updatedManager: IBrokerCompanyManager = {
-          ...manager,
-          name: data.name,
-          email: data.email,
-          phoneNumber: data.phoneNumber,
-          department: data.department,
-          position: data.position,
-          rank: data.rank,
-          status: data.status,
-          roles: data.roles,
-        };
-        
-        // 비밀번호가 입력된 경우에만 업데이트
-        if (data.password) {
-          updatedManager.password = data.password;
-        }
-        
-        await updateManager(updatedManager);
-      } 
-      // 신규 등록 모드인 경우
-      else {
-        const newManager = {
-          managerId: data.managerId,
-          password: data.password || 'password123', // 기본 비밀번호 설정
-          name: data.name,
-          email: data.email,
-          phoneNumber: data.phoneNumber,
-          department: data.department,
-          position: data.position,
-          rank: data.rank,
-          status: data.status,
-          roles: data.roles,
-          companyId: companyId
-        };
-        
-        await addManager(newManager);
+    console.log('📝 폼 데이터 제출:', { 
+      name: data.name,
+      email: data.email,
+      managerId: data.managerId,
+      roles: data.roles
+    });
+    
+    // 수정 모드인 경우
+    if (manager) {
+      // 비밀번호가 입력되지 않은 경우 기존 비밀번호 유지
+      const updatedManager: IBrokerCompanyManager = {
+        ...manager,
+        name: data.name,
+        email: data.email,
+        phoneNumber: data.phoneNumber,
+        department: data.department,
+        position: data.position,
+        rank: data.rank,
+        status: data.status,
+        roles: data.roles,
+      };
+      
+      // 비밀번호가 입력된 경우에만 업데이트
+      if (data.password) {
+        updatedManager.password = data.password;
       }
       
-      onComplete();
-    } catch (error) {
-      // 에러 메시지 설정
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : '담당자 등록/수정 중 오류가 발생했습니다.';
+      onSubmit(updatedManager);
+    } 
+    // 신규 등록 모드인 경우
+    else {
+      if (!data.managerId) {
+        console.error('❌ managerId가 없습니다. 유효성 검사가 제대로 작동하지 않습니다.');
+        form.setError('managerId', {
+          type: 'manual',
+          message: 'ID는 필수 입력 항목입니다.'
+        });
+        return;
+      }
+
+      const newManager = {
+        id: uuidv4(), // 클라이언트에서 임시 ID 생성
+        managerId: data.managerId,
+        password: data.password || 'password1234', // 기본 비밀번호 설정
+        name: data.name,
+        email: data.email,
+        phoneNumber: data.phoneNumber,
+        department: data.department || '',
+        position: data.position || '',
+        rank: data.rank || '',
+        status: data.status,
+        roles: data.roles,
+        companyId: companyId,
+        registeredDate: new Date().toISOString() // 현재 날짜를 등록일로 설정
+      };
       
-      setFormError(errorMessage);
-      console.error('담당자 등록/수정 중 오류가 발생했습니다.', error);
-    } finally {
-      setIsSubmitting(false);
+      console.log('📤 폼에서 생성된 신규 담당자 데이터:', newManager);
+      onSubmit(newManager);
     }
   };
   
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        {formError && (
+      <form id="manager-form" onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation(); // 이벤트 버블링 방지
+        console.log('담당자 폼 제출 이벤트 발생, 기본 동작 및 버블링 방지');
+        form.handleSubmit(handleSubmit)(e);
+      }} className="space-y-4">
+        {globalError && (
           <Alert variant="destructive" className="mb-4">
             <AlertTitle>오류 발생</AlertTitle>
-            <AlertDescription>{formError}</AlertDescription>
+            <AlertDescription>{globalError}</AlertDescription>
           </Alert>
         )}
         
@@ -382,22 +397,6 @@ export function BrokerCompanyManagerForm({
             </FormItem>
           )}
         />
-        
-        {/* 버튼 영역 */}
-        <div className="flex justify-end gap-2 pt-4">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
-            취소
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {manager ? '수정하기' : '등록하기'}
-          </Button>
-        </div>
       </form>
     </Form>
   );

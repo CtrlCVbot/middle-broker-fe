@@ -131,7 +131,7 @@ const CreateCompanySchema = z.object({
     mobile: z.string().optional(),
     email: z.string().email('올바른 이메일 형식이 아닙니다.').optional()
   }),
-  requestUserId: z.string().uuid('잘못된 요청 사용자 ID 형식입니다.')
+  //requestUserId: z.string().uuid('잘못된 요청 사용자 ID 형식입니다.')
 });
 
 export async function POST(request: NextRequest) {
