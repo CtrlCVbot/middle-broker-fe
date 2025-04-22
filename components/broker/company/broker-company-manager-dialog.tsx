@@ -96,13 +96,15 @@ export function BrokerCompanyManagerDialog({
         // 기존 담당자 정보 업데이트
         const updatedManager = {
           ...manager,
-          ...formData
+          ...formData,
+          companyId: companyId
         };
         
         console.log('📤 담당자 수정 요청 데이터:', {
           id: updatedManager.id,
           name: updatedManager.name,
-          changes: Object.keys(formData)
+          changes: Object.keys(formData),
+          updateManager: updatedManager
         });
         
         // 실제 API 요청이 완료될 때까지 기다립니다

@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { users } from '@/db/schema/users';
@@ -9,12 +9,8 @@ import { USER_DOMAINS, SYSTEM_ACCESS_LEVELS, USER_STATUSES, type UserDomain, typ
 
 // 필드 값 검증을 위한 Zod 스키마
 const FieldUpdateSchema = z.object({
-  
-  fields: z.array(z.object({
-    field: z.enum(['status', 'system_access_level', 'name', 'phone_number', 'email', 'domains']),
-    value: z.any(),
-    reason: z.string().optional()
-  }))
+  fields: z.record(z.string(), z.any()),
+  reason: z.string().optional(),
 });
 
 interface RouteContext {
@@ -42,16 +38,16 @@ export async function PATCH(
     // 요청 body 검증
     const validationResult = FieldUpdateSchema.safeParse(body);
     if (!validationResult.success) {
-      return new Response(
-        JSON.stringify({ 
+      return NextResponse.json(
+        { 
           error: '잘못된 요청 형식입니다.',
-          details: validationResult.error.errors 
-        }),
+          details: validationResult.error?.errors 
+        },
         { status: 400 }
       );
     }
 
-    const { fields } = validationResult.data;
+    const { fields, reason } = validationResult.data;
     const requestUserId = request.headers.get('x-user-id') || '';
 
     // 요청 사용자 정보 조회
@@ -60,9 +56,34 @@ export async function PATCH(
     });
 
     if (!requestUser) {
-      return new Response(
-        JSON.stringify({ error: '요청 사용자를 찾을 수 없습니다.' }),
+      return NextResponse.json(
+        { error: '요청 사용자를 찾을 수 없습니다.' },
         { status: 404 }
+      );
+    }
+
+    // 업데이트 가능한 필드 목록
+    const allowedFields = [
+      'name',
+      'email',
+      'phoneNumber',
+      'password',
+      'status',
+      'domains',      
+      'department',
+      'position',
+      'rank',
+    ];
+
+    // 업데이트할 필드 검증
+    const invalidFields = Object.keys(fields).filter(
+      (field) => !allowedFields.includes(field)
+    );
+
+    if (invalidFields.length > 0) {
+      return NextResponse.json(
+        { error: '업데이트 불가능한 필드가 포함되어 있습니다.', fields: invalidFields },
+        { status: 400 }
       );
     }
 
@@ -78,83 +99,11 @@ export async function PATCH(
       );
     }
 
-    // 업데이트할 필드 데이터 준비
-    const now = new Date();
-    // UTC+9 시간을 계산
-    const kstOffset = 9 * 60 * 60 * 1000; // 9시간을 밀리초로 변환
-    const kstDate = new Date(now.getTime() + kstOffset);
-    
-    const updateData: Partial<IUser> & { updated_at: Date; updated_by: string } = {      
-      //updated_at: now, // DB에는 UTC 시간으로 저장
-      updated_at: kstDate, // DB에는 kst 시간으로 저장
-      updated_by: requestUserId
+    // 업데이트 데이터 준비
+    const updateData = {
+      ...fields,
+      updated_at: new Date(),
     };
-    const reasons: Record<string, string> = {};
-    
-    // 로그에는 KST로 표시
-    console.log('[UPDATE] 한국 시간:', kstDate.toLocaleString('ko-KR'));
-    console.log('[UPDATE] DB 저장 시간 (UTC):', now.toISOString());
-    for (const { field, value, reason } of fields) {
-      switch (field) {
-        case 'status':
-          if (!['active', 'inactive', 'locked'].includes(value)) {
-            return new Response(
-              JSON.stringify({ error: '잘못된 상태값입니다.' }),
-              { status: 400 }
-            );
-          }
-          updateData.status = value;
-          if (reason) reasons['status'] = reason;
-          break;
-          
-        case 'system_access_level':
-          if (!['platform_admin', 'broker_admin', 'shipper_admin', 'broker_member', 'shipper_member', 'viewer', 'guest'].includes(value)) {
-            return new Response(
-              JSON.stringify({ error: '잘못된 접근 권한입니다.' }),
-              { status: 400 }
-            );
-          }
-          updateData.systemAccessLevel = value;
-          if (reason) reasons['system_access_level'] = reason;
-          break;
-          
-        case 'email':
-          // 이메일 중복 검사
-          const existingEmail = await db.query.users.findFirst({
-            where: eq(users.email, value)
-          });
-          if (existingEmail && existingEmail.id !== userId) {
-            return new Response(
-              JSON.stringify({ error: '이미 사용 중인 이메일입니다.' }),
-              { status: 400 }
-            );
-          }
-          updateData.email = value;
-          if (reason) reasons['email'] = reason;
-          break;
-          
-        case 'phone_number':
-          updateData.phoneNumber = value;
-          if (reason) reasons['phone_number'] = reason;
-          break;
-
-        case 'name':
-          updateData.name = value;
-          if (reason) reasons['name'] = reason;
-          break;
-
-        case 'domains':
-          if (!Array.isArray(value) || !value.every(domain => USER_DOMAINS.includes(domain as UserDomain))) {
-            return new Response(
-              JSON.stringify({ error: '잘못된 도메인 값입니다.' }),
-              { status: 400 }
-            );
-          }
-          updateData.domains = value as UserDomain[];
-          if (reason) reasons['domains'] = reason;
-          break;
-      }
-    }
 
     // 업데이트 실행
     const [updatedUser] = await db
@@ -172,17 +121,18 @@ export async function PATCH(
       changedByAccessLevel: requestUser.system_access_level,
       changeType: 'update',
       oldData: existingUser,
-      newData: updateData,
-      reason: Object.entries(reasons)
-        .map(([field, reason]) => `${field}: ${reason}`)
-        .join(', ')
+      newData: updateData as Partial<IUser>,
+      reason: reason ?? null,
     });
 
     // 비밀번호 필드 제외하고 응답
     const { password, ...userInfo } = updatedUser;
     
-    return new Response(
-      JSON.stringify(userInfo),
+    return NextResponse.json(
+      { 
+        message: '사용자 정보가 성공적으로 업데이트되었습니다.',
+        data: userInfo,
+      },
       { status: 200 }
     );
 

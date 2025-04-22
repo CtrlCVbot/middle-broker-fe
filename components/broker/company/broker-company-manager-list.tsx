@@ -109,7 +109,6 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
     // 검색어 필터링
     if (filter.searchTerm && 
         !manager.name.toLowerCase().includes(filter.searchTerm.toLowerCase()) &&
-        //!manager.managerId.toLowerCase().includes(filter.searchTerm.toLowerCase()) &&
         !manager.email.toLowerCase().includes(filter.searchTerm.toLowerCase())) {
       return false;
     }

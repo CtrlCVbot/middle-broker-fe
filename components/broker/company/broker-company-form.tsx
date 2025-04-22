@@ -45,6 +45,7 @@ import { getCurrentUser } from '@/utils/auth';
 
 // 상수 배열 추가
 const COMPANY_TYPE_OPTIONS = ['화주', '운송사', '주선사'] as const;
+type CompanyTypeOption = typeof COMPANY_TYPE_OPTIONS[number];
 
 
 interface BrokerCompanyFormProps {
@@ -63,7 +64,7 @@ const generateId = () => {
 const companyFormSchema = z.object({
   name: z.string().min(1, { message: '업체명은 필수 입력 항목입니다.' }).max(50, { message: '업체명은 최대 50자까지 입력 가능합니다.' }),
   businessNumber: z.string().min(10, { message: '사업자번호는 10자리 숫자로 입력해주세요.' }).max(12, { message: '사업자번호는 최대 12자리까지 입력 가능합니다.' }),
-  type: z.enum(['화주', '운송사', '주선사']),
+  type: z.enum(COMPANY_TYPE_OPTIONS),
   statementType: z.enum(['매입처', '매출처']),
   email: z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }).optional().or(z.literal('')),
   phoneNumber: z.string().min(1, { message: '전화번호는 필수 입력 항목입니다.' }),
@@ -111,7 +112,7 @@ function normalizeCompanyData(data: any): Partial<IBrokerCompany> {
       if (t === 'shipper' || t === '화주') return '화주';
       if (t === 'carrier' || t === '운송사') return '운송사';
       return '운송사'; // fallback
-    })() as CompanyType,
+    })() as CompanyTypeOption,
     
     // 전표 타입
     statementType: (() => {
@@ -182,7 +183,7 @@ export function BrokerCompanyForm({
         if (t === 'shipper' || t === '화주') return '화주';
         if (t === 'carrier' || t === '운송사') return '운송사';
         return '운송사';
-      })() as CompanyType,
+      })() as CompanyTypeOption,
       statementType: (() => {
         if (!initialData.statementType) return '매입처';
         const t = (initialData.statementType as string).toLowerCase();
@@ -226,7 +227,7 @@ export function BrokerCompanyForm({
       form.reset({
         name: normalizedData.name,
         businessNumber: normalizedData.businessNumber,
-        type: normalizedData.type as CompanyType,
+        type: normalizedData.type as CompanyTypeOption,
         statementType: normalizedData.statementType as StatementType,
         email: normalizedData.email,
         phoneNumber: normalizedData.phoneNumber,
@@ -402,26 +403,23 @@ export function BrokerCompanyForm({
                     )}
                   />                  
                   
-                  {/* 업체 구분 */}
+                  {/* 업체 타입 */}
                   <FormField
                     control={form.control}
                     name="type"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>업체 구분 *</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          value={field.value}
-                        >
+                        <FormLabel>업체 타입 *</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="업체 구분을 선택하세요" />
+                              <SelectValue placeholder="업체 타입을 선택하세요" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {COMPANY_TYPE_OPTIONS.map((companyType) => (
-                              <SelectItem key={companyType} value={companyType}>
-                                {companyType}
+                            {COMPANY_TYPE_OPTIONS.map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type}
                               </SelectItem>
                             ))}
                           </SelectContent>

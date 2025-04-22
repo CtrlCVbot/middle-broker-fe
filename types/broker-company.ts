@@ -40,7 +40,6 @@ export interface IBrokerCompany {
 // 담당자 정보 인터페이스
 export interface IBrokerCompanyManager {
   id: string;
-  //managerId: string; // 로그인 ID
   password?: string; // 실제 구현에서는 해시 처리된 값
   name: string;
   email: string;
@@ -120,7 +119,6 @@ export function convertUserToBrokerManager(user: IUser): IBrokerCompanyManager {
   return {
     id: user.id,
     companyId: user.companyId || '',
-    //managerId: user.email.split('@')[0], // 이메일에서 ID 부분 추출
     name: user.name,
     email: user.email,
     phoneNumber: user.phoneNumber,
