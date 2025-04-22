@@ -28,6 +28,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { BrokerCompanyManagerForm } from './broker-company-manager-form';
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious,
+  PaginationEllipsis
+} from '@/components/ui/pagination';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface BrokerCompanyManagerListProps {
   companyId: string;
@@ -48,6 +58,9 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
     loadManagers,
     setCurrentCompanyId,
     changeManagerStatus,
+    pagination,
+    setPage,
+    error,
   } = useBrokerCompanyManagerStore();
   
   // 초기 로딩
@@ -152,6 +165,65 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
     });
   };
   
+  // 페이지네이션 링크 렌더링 함수 추가
+  const renderPaginationLinks = () => {
+    const { page, totalPages } = pagination;
+    const items = [];
+    
+    // 처음 페이지
+    if (totalPages > 3 && page > 2) {
+      items.push(
+        <PaginationItem key="first">
+          <PaginationLink onClick={() => setPage(1)} isActive={page === 1}>
+            1
+          </PaginationLink>
+        </PaginationItem>
+      );
+      
+      // 처음 페이지와 현재 페이지 사이에 많은 페이지가 있으면 생략 표시
+      if (page > 3) {
+        items.push(
+          <PaginationItem key="ellipsis-1">
+            <PaginationEllipsis />
+          </PaginationItem>
+        );
+      }
+    }
+    
+    // 이전 페이지, 현재 페이지, 다음 페이지 렌더링
+    for (let i = Math.max(1, page - 1); i <= Math.min(totalPages, page + 1); i++) {
+      items.push(
+        <PaginationItem key={i}>
+          <PaginationLink onClick={() => setPage(i)} isActive={page === i}>
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+    
+    // 마지막 페이지
+    if (totalPages > 3 && page < totalPages - 1) {
+      // 현재 페이지와 마지막 페이지 사이에 많은 페이지가 있으면 생략 표시
+      if (page < totalPages - 2) {
+        items.push(
+          <PaginationItem key="ellipsis-2">
+            <PaginationEllipsis />
+          </PaginationItem>
+        );
+      }
+      
+      items.push(
+        <PaginationItem key="last">
+          <PaginationLink onClick={() => setPage(totalPages)} isActive={page === totalPages}>
+            {totalPages}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+    
+    return items;
+  };
+  
   // 담당자 없음 또는 로딩 표시
   if (isLoading) {
     return (
@@ -163,6 +235,14 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
   
   return (
     <div className="space-y-4">
+      {/* 에러 처리 추가 */}
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>오류 발생</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
       {/* 담당자 추가 폼 */}
       {showAddForm && (
         <div className="mb-6 border rounded-lg p-4 bg-muted/10">
@@ -493,6 +573,33 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
               <span>담당자 추가</span>
             </Button>
           )}
+        </div>
+      )}
+      
+      {/* 페이지네이션 추가 */}
+      {pagination.totalPages > 1 && (
+        <div className="mt-4 flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setPage(Math.max(1, pagination.page - 1))}
+                  aria-disabled={pagination.page === 1}
+                  className={pagination.page === 1 ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+              
+              {renderPaginationLinks()}
+              
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => setPage(Math.min(pagination.totalPages, pagination.page + 1))}
+                  aria-disabled={pagination.page === pagination.totalPages}
+                  className={pagination.page === pagination.totalPages ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
       )}
     </div>
