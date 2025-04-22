@@ -70,15 +70,11 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
     // 초기 데이터 로딩
     loadManagers(companyId);
     
-    // 30초마다 자동 새로고침
-    const intervalId = setInterval(() => {
-      console.log('⏰ 담당자 목록 데이터 자동 새로고침');
-      loadManagers(companyId);
-    }, 30000);
+    
     
     return () => {
       console.log('🧹 담당자 목록 컴포넌트 언마운트');
-      clearInterval(intervalId);
+      
     };
   }, [companyId, setCurrentCompanyId, loadManagers]);
   
@@ -113,7 +109,7 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
     // 검색어 필터링
     if (filter.searchTerm && 
         !manager.name.toLowerCase().includes(filter.searchTerm.toLowerCase()) &&
-        !manager.managerId.toLowerCase().includes(filter.searchTerm.toLowerCase()) &&
+        //!manager.managerId.toLowerCase().includes(filter.searchTerm.toLowerCase()) &&
         !manager.email.toLowerCase().includes(filter.searchTerm.toLowerCase())) {
       return false;
     }
@@ -473,8 +469,7 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
                     aria-label="모든 담당자 선택"
                   />
                 </TableHead>
-                <TableHead>이름</TableHead>
-                <TableHead>ID</TableHead>
+                <TableHead>이름</TableHead>                
                 <TableHead>이메일</TableHead>
                 <TableHead>연락처</TableHead>
                 <TableHead>역할</TableHead>
@@ -496,8 +491,7 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
                       aria-label={`${manager.name} 선택`}
                     />
                   </TableCell>
-                  <TableCell className="font-medium">{manager.name}</TableCell>
-                  <TableCell>{manager.managerId}</TableCell>
+                  <TableCell className="font-medium">{manager.name}</TableCell>                  
                   <TableCell>
                     <a 
                       href={`mailto:${manager.email}`} 

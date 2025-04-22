@@ -89,16 +89,16 @@ export async function GET(request: NextRequest) {
 // 사용자 생성 요청 스키마
 const CreateUserSchema = z.object({
   email: z.string().email('올바른 이메일 형식이 아닙니다.'),
-  password: z.string().min(8, '비밀번호는 최소 8자 이상이어야 합니다.'),
+  password: z.string().min(8, '비밀번호는 최소 8자 이상이어야 합니다.').optional(),
   name: z.string().min(2, '이름은 최소 2자 이상이어야 합니다.'),
   phone_number: z.string().min(10, '올바른 전화번호 형식이 아닙니다.'),
-  company_id: z.string().uuid().optional(),
+  company_id: z.string().uuid(),
   system_access_level: z.enum(['platform_admin', 'broker_admin', 'shipper_admin', 'broker_member', 'shipper_member', 'viewer', 'guest']),
   domains: z.array(z.enum(USER_DOMAINS)),
   department: z.string().optional(),
   position: z.string().optional(),
   rank: z.string().optional(),
-  requestUserId: z.string().uuid('잘못된 요청 사용자 ID 형식입니다.')
+  //requestUserId: z.string().uuid('잘못된 요청 사용자 ID 형식입니다.')
 });
 
 export async function POST(request: NextRequest) {
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 비밀번호 해시화
-    const hashedPassword = await hash(password, 10);
+    //const hashedPassword = await hash(password, 10);
 
     // 현재 시간
     const now = new Date();
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
       .insert(users)
       .values({
         ...userData,
-        password: hashedPassword,
+        //password: hashedPassword,
         status: 'active' as const,
         created_by: requestUserId,
         updated_by: requestUserId,

@@ -35,8 +35,7 @@ interface BrokerCompanyManagerFormProps {
 
 // 담당자 등록/수정 폼 스키마 정의
 const managerFormSchema = z.object({
-  name: z.string().min(1, { message: '이름은 필수 입력 항목입니다.' }),
-  managerId: z.string().min(4, { message: 'ID는 4자 이상이어야 합니다.' }),
+  name: z.string().min(1, { message: '이름은 필수 입력 항목입니다.' }),  
   password: z.string().min(8, { message: '비밀번호는 8자리 이상이어야 합니다.' }).optional(),
   email: z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }),
   phoneNumber: z.string().min(1, { message: '연락처는 필수 입력 항목입니다.' }),
@@ -65,8 +64,7 @@ export function BrokerCompanyManagerForm({
   const form = useForm<ManagerFormValues>({
     resolver: zodResolver(managerFormSchema),
     defaultValues: {
-      name: manager?.name || '',
-      managerId: manager?.managerId || '',
+      name: manager?.name || '',      
       password: '', // 수정 시 비밀번호는 비워두고 변경할 때만 입력
       email: manager?.email || '',
       phoneNumber: manager?.phoneNumber || '',
@@ -95,8 +93,7 @@ export function BrokerCompanyManagerForm({
     
     console.log('📝 폼 데이터 제출:', { 
       name: data.name,
-      email: data.email,
-      managerId: data.managerId,
+      email: data.email,      
       roles: data.roles
     });
     
@@ -124,9 +121,9 @@ export function BrokerCompanyManagerForm({
     } 
     // 신규 등록 모드인 경우
     else {
-      if (!data.managerId) {
-        console.error('❌ managerId가 없습니다. 유효성 검사가 제대로 작동하지 않습니다.');
-        form.setError('managerId', {
+      if (!data.email) {
+        console.error('❌ email가 없습니다. 유효성 검사가 제대로 작동하지 않습니다.');
+        form.setError('email', {
           type: 'manual',
           message: 'ID는 필수 입력 항목입니다.'
         });
@@ -135,7 +132,6 @@ export function BrokerCompanyManagerForm({
 
       const newManager = {
         id: uuidv4(), // 클라이언트에서 임시 ID 생성
-        managerId: data.managerId,
         password: data.password || 'password1234', // 기본 비밀번호 설정
         name: data.name,
         email: data.email,
@@ -185,27 +181,21 @@ export function BrokerCompanyManagerForm({
             )}
           />
           
-          {/* 로그인 ID */}
+          {/* 이메일 */}
           <FormField
             control={form.control}
-            name="managerId"
+            name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>로그인 ID *</FormLabel>
+                <FormLabel>이메일 *</FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder="로그인 시 사용할 ID" 
-                    {...field} 
-                    disabled={!!manager} // 수정 모드에서는 ID 변경 불가
-                  />
+                  <Input placeholder="이메일 주소" type="email" {...field} />
                 </FormControl>
-                {manager && (
-                  <FormDescription>ID는 변경할 수 없습니다.</FormDescription>
-                )}
                 <FormMessage />
               </FormItem>
             )}
           />
+          
         </div>
         
         {/* 비밀번호 */}
@@ -244,20 +234,7 @@ export function BrokerCompanyManagerForm({
         />
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* 이메일 */}
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>이메일 *</FormLabel>
-                <FormControl>
-                  <Input placeholder="이메일 주소" type="email" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          
           
           {/* 전화번호 */}
           <FormField

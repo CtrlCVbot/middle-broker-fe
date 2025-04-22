@@ -29,7 +29,7 @@ export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),  
   
   email: varchar('email', { length: 100 }).notNull().unique(),
-  password: varchar('password', { length: 255 }).notNull(), // 해시 처리된 비밀번호
+  password: varchar('password', { length: 255 }), // 해시 처리된 비밀번호
   name: varchar('name', { length: 100 }).notNull(),
   phone_number: varchar('phone_number', { length: 20 }).notNull(),
   

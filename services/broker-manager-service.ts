@@ -10,6 +10,7 @@ import {
 } from '@/types/broker-company';
 import { IUser } from '@/types/user';
 import { getCurrentUser } from '@/utils/auth';
+import { fileURLToPath } from 'url';
 
 /**
  * 응답 데이터 인터페이스
@@ -102,7 +103,7 @@ export class BrokerManagerService {
       const currentUser = getCurrentUser();
       
       // 프론트엔드 데이터를 백엔드 형식으로 변환
-      const userData = convertBrokerManagerToUser(manager, currentUser?.id);
+      const userData = convertBrokerManagerToUser(manager);
       
       // API 호출
       const response = await apiClient.post<IUser>('/users', userData);
@@ -123,17 +124,16 @@ export class BrokerManagerService {
    */
   static async updateManager(manager: IBrokerCompanyManager): Promise<IBrokerCompanyManager> {
     try {
-      // 현재 사용자 정보 가져오기
-      const currentUser = getCurrentUser();
-      
+            
       // 프론트엔드 데이터를 백엔드 형식으로 변환
-      const userData = convertBrokerManagerToUser(manager, currentUser?.id);
+      const userData = convertBrokerManagerToUser(manager);
       
       // ID 분리 (URL에 사용)
       const { id, ...updateData } = userData;
       
+      console.log('🔄 담당자 수정 데이터111:', updateData);
       // API 호출
-      const response = await apiClient.put<IUser>(`/users/${id}`, updateData);
+      const response = await apiClient.patch<IUser>(`/users/${id}/fields`, updateData);
       
       // 캐시 무효화
       apiClient.clearCache();

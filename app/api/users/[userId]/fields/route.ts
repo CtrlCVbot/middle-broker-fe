@@ -9,7 +9,7 @@ import { USER_DOMAINS, SYSTEM_ACCESS_LEVELS, USER_STATUSES, type UserDomain, typ
 
 // 필드 값 검증을 위한 Zod 스키마
 const FieldUpdateSchema = z.object({
-  requestUserId: z.string().uuid('잘못된 요청 사용자 ID 형식입니다.'),
+  
   fields: z.array(z.object({
     field: z.enum(['status', 'system_access_level', 'name', 'phone_number', 'email', 'domains']),
     value: z.any(),
