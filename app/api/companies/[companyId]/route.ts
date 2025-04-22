@@ -41,13 +41,14 @@ const UpdateCompanyStatusSchema = z.object({
 });
 
 // GET /api/companies/[companyId] - 업체 상세 조회
+//params는 context에서 전달되는 두 번째 인자이고, App Router에서는 다음과 같이 함수 인자에서 받아올 수 있습니다.
 export async function GET(
   request: NextRequest,
   { params }: { params: { companyId: string } }
 ) {
   try {
     // params 객체를 비동기적으로 처리
-    const { companyId } = params;
+    const { companyId } = await params;
     console.log('companyId', companyId);
 
     // UUID 형식 검증
