@@ -152,6 +152,9 @@ export async function POST(request: NextRequest) {
 
     const { requestUserId, ...companyData } = validationResult.data;
 
+    console.log('requestUserId', requestUserId);
+    console.log('users.id', users.id);
+
     // 요청 사용자 정보 조회
     const [requestUser] = await db
       .select()
@@ -162,7 +165,7 @@ export async function POST(request: NextRequest) {
 
     if (!requestUser) {
       return new Response(
-        JSON.stringify({ error: '요청 사용자를 찾을 수 없습니다.' }),
+        JSON.stringify({ error: '요청 사용자를 찾을 수 없습니다."/"'+ users.id + "=" + requestUserId }),
         { status: 404 }
       );
     }

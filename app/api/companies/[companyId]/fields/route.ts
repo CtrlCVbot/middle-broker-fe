@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { companies } from '@/db/schema/companies';
 import { z } from 'zod';
 import { logCompanyChange } from '@/utils/company-change-logger';
+import { v4 as uuidv4 } from 'uuid';
 
 // UUID 검증을 위한 유틸리티 함수
 function isValidUUID(uuid: string) {
@@ -23,7 +24,7 @@ export async function PATCH(
 ) {
   try {
     // Next.js 13.4.19 이상에서는 params를 비동기적으로 처리해야 함
-    const companyId = params.companyId;
+    const { companyId } = params;
 
     // UUID 검증
     if (!isValidUUID(companyId)) {
@@ -101,7 +102,7 @@ export async function PATCH(
     // 변경 이력 기록
     await logCompanyChange({
       companyId,
-      changedBy: request.headers.get('x-user-id') || 'system',
+      changedBy: request.headers.get('x-user-id') || uuidv4(),
       changedByName: request.headers.get('x-user-name') || 'System',
       changedByEmail: request.headers.get('x-user-email') || 'system@example.com',
       changedByAccessLevel: request.headers.get('x-user-access-level') || 'system',

@@ -47,7 +47,7 @@ export async function GET(
 ) {
   try {
     // params 객체를 비동기적으로 처리
-    const companyId = params.companyId;
+    const { companyId } = params;
     console.log('companyId', companyId);
 
     // UUID 형식 검증
@@ -112,7 +112,7 @@ export async function PUT(
 ) {
   try {
     // params 객체를 비동기적으로 처리
-    const companyId = params.companyId;
+    const { companyId } = params;
 
     // UUID 형식 검증
     if (!isValidUUID(companyId)) {
@@ -306,7 +306,7 @@ export async function DELETE(
 ) {
   try {
     // params 객체를 비동기적으로 처리
-    const companyId = params.companyId;
+    const { companyId } = params;
 
     // UUID 형식 검증
     if (!isValidUUID(companyId)) {

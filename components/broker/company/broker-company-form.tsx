@@ -68,8 +68,8 @@ const companyFormSchema = z.object({
   phoneNumber: z.string().min(1, { message: '전화번호는 필수 입력 항목입니다.' }),
   faxNumber: z.string().optional(),
   status: z.enum(['활성', '비활성']).default('활성'),
-  managerName: z.string().min(1, { message: '담당자명은 필수 입력 항목입니다.' }),
-  managerPhoneNumber: z.string().min(1, { message: '담당자 전화번호는 필수 입력 항목입니다.' }),
+  managerName: z.string().optional(),
+  managerPhoneNumber: z.string().optional(),
   representative: z.string().min(1, { message: '대표자명은 필수 입력 항목입니다.' }),
   warnings: z.array(z.object({
     id: z.string(),
@@ -268,8 +268,10 @@ export function BrokerCompanyForm({
     // ID 추가 (실제 구현에서는 백엔드에서 생성된 ID를 사용)
     const newCompany: IBrokerCompany = {
       ...data,
-      email: data.email || '', // undefined인 경우 빈 문자열로 변환
-      faxNumber: data.faxNumber || '', // undefined인 경우 빈 문자열로 변환
+      email: data.email || '',
+      faxNumber: data.faxNumber || '',
+      managerName: data.managerName || '',
+      managerPhoneNumber: data.managerPhoneNumber || '',
       id: initialData.id || generateId(),
       code: initialData.code || `CM${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`,
       registeredDate: initialData.registeredDate || new Date().toISOString().split('T')[0],

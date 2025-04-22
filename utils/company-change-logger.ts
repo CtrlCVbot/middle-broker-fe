@@ -20,11 +20,12 @@ interface ILogCompanyChangeParams {
  */
 export async function logCompanyChange(params: ILogCompanyChangeParams) {
   try {
-    // changedBy가 'system' 또는 'system-user-id'와 같은 값이면 UUIDv4로 변환
+    // changedBy가 유효하지 않은 경우 UUIDv4로 변환
     const changedBy = 
+      !params.changedBy || 
       params.changedBy === 'system' || 
       params.changedBy === 'system-user-id' || 
-      !params.changedBy ? 
+      (params.changedBy && params.changedBy.trim() === '') ? 
       uuidv4() : params.changedBy;
 
     // 변경된 데이터 생성
@@ -53,7 +54,7 @@ export async function logCompanyChange(params: ILogCompanyChangeParams) {
     await db.insert(companyChangeLogs).values({
       id: uuidv4(),
       companyId: params.companyId,
-      changedById: changedBy,
+      changedBy: changedBy,
       changedByName: params.changedByName || 'System',
       changedByEmail: params.changedByEmail || 'system@example.com',
       changedByAccessLevel: params.changedByAccessLevel || 'system',
