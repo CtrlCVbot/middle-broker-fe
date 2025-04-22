@@ -221,18 +221,16 @@ export function BrokerCompanyRegisterSheet({
       <Plus className="h-4 w-4" />
       <span>신규 등록</span>
     </Button>
-  ) : (
-    <Button variant="outline" className="flex items-center gap-1">
-      <Edit className="h-4 w-4" />
-      <span>수정</span>
-    </Button>
-  );
+  ) : null; // 수정 모드일 때는 기본 트리거 버튼을 표시하지 않음
 
   return (
     <Sheet open={open !== undefined ? open : internalOpen} onOpenChange={handleOpenChange}>
-      <SheetTrigger asChild>
-        {trigger || defaultTrigger}
-      </SheetTrigger>
+      {/* trigger가 제공된 경우에만 SheetTrigger를 표시 */}
+      {trigger && (
+        <SheetTrigger asChild>
+          {trigger}
+        </SheetTrigger>
+      )}
       <SheetContent side="right" className="w-full sm:max-w-xl md:max-w-2xl lg:max-w-3xl overflow-y-auto">
         <SheetHeader className="mb-5">
           <SheetTitle>{title}</SheetTitle>

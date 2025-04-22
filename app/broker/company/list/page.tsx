@@ -106,8 +106,9 @@ export default function BrokerCompanyPage() {
 
   // 업체 클릭 핸들러 (타입 확장)
   const handleCompanyClick = (company: IBrokerCompany | ILegacyCompany) => {
+    console.log('업체 클릭:', company.name);
     setSelectedCompany(company);
-    setIsEditSheetOpen(true);
+    setIsEditSheetOpen(true); // 바로 시트만 열기
   };
 
   // 회사가 수정된 후 호출할 함수
@@ -339,7 +340,7 @@ export default function BrokerCompanyPage() {
         </CardContent>
       </Card>
 
-      {/* 업체 수정 시트 */}
+      {/* 업체 수정 시트 - 항상 선택된 업체가 있을 때만 렌더링 */}
       {selectedCompany && (
         <BrokerCompanyRegisterSheet
           company={selectedCompany as IBrokerCompany}
