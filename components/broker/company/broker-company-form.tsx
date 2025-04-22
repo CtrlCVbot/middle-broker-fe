@@ -39,8 +39,12 @@ import {
   StatementType, 
   CompanyStatus 
 } from '@/types/broker-company';
-import { COMPANY_TYPES, STATEMENT_TYPES } from '@/utils/mockdata/mock-broker-companies';
+
 import { BrokerCompanyManagerList } from './broker-company-manager-list';
+
+// 상수 배열 추가
+const COMPANY_TYPE_OPTIONS = ['화주', '운송사', '주선사'] as const;
+const STATEMENT_TYPE_OPTIONS = ['매입처', '매출처'] as const;
 
 interface BrokerCompanyFormProps {
   isSubmitting?: boolean;
@@ -97,18 +101,21 @@ function normalizeCompanyData(data: any): Partial<IBrokerCompany> {
     businessNumber: data.businessNumber || '',
     
     // 타입 필드 - 영문이나 한글 모두 지원
-    type: (
-      data.type === 'broker' || data.type === '주선사'
-        ? '주선사'
-        : data.type === 'shipper' || data.type === '화주'
-        ? '화주'
-        : data.type === 'carrier' || data.type === '운송사'
-        ? '운송사'
-        : '운송사'
-    ) as CompanyType,
+    type: (() => {
+      const t = (data.type || '').toLowerCase();
+      if (t === 'broker' || t === '주선사') return '주선사';
+      if (t === 'shipper' || t === '화주') return '화주';
+      if (t === 'carrier' || t === '운송사') return '운송사';
+      return '운송사'; // fallback
+    })() as CompanyType,
     
     // 전표 타입
-    statementType: data.statementType || '매출처',
+    statementType: (() => {
+      const t = (data.statementType || '').toLowerCase();
+      if (t === 'purchase' || t === '매입처') return '매입처';
+      if (t === 'sales' || t === '매출처') return '매출처';
+      return '매출처'; // 기본값
+    })() as StatementType,
     
     // 대표자명 - 필드명이 다른 경우를 모두 지원
     representative: data.representative || data.ceoName || '',
@@ -167,8 +174,21 @@ export function BrokerCompanyForm({
     defaultValues: {
       name: initialData.name || '',
       businessNumber: initialData.businessNumber || '',
-      type: (initialData.type as CompanyType) || '운송사',
-      statementType: (initialData.statementType as StatementType) || '매입처',
+      type: (() => {
+        if (!initialData.type) return '운송사';
+        const t = (initialData.type as string).toLowerCase();
+        if (t === 'broker' || t === '주선사') return '주선사';
+        if (t === 'shipper' || t === '화주') return '화주';
+        if (t === 'carrier' || t === '운송사') return '운송사';
+        return '운송사';
+      })() as CompanyType,
+      statementType: (() => {
+        if (!initialData.statementType) return '매입처';
+        const t = (initialData.statementType as string).toLowerCase();
+        if (t === 'purchase' || t === '매입처') return '매입처';
+        if (t === 'sales' || t === '매출처') return '매출처';
+        return '매입처';
+      })() as StatementType,
       email: initialData.email || '',
       phoneNumber: initialData.phoneNumber || '',
       faxNumber: initialData.faxNumber || '',
@@ -384,7 +404,7 @@ export function BrokerCompanyForm({
                         <FormLabel>업체 구분 *</FormLabel>
                         <Select 
                           onValueChange={field.onChange} 
-                          defaultValue={field.value}
+                          value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -392,9 +412,9 @@ export function BrokerCompanyForm({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {COMPANY_TYPES.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
+                            {COMPANY_TYPE_OPTIONS.map((companyType) => (
+                              <SelectItem key={companyType} value={companyType}>
+                                {companyType}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -413,7 +433,7 @@ export function BrokerCompanyForm({
                         <FormLabel>전표 구분 *</FormLabel>
                         <Select 
                           onValueChange={field.onChange} 
-                          defaultValue={field.value}
+                          value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -421,9 +441,9 @@ export function BrokerCompanyForm({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {STATEMENT_TYPES.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
+                            {STATEMENT_TYPE_OPTIONS.map((statementType) => (
+                              <SelectItem key={statementType} value={statementType}>
+                                {statementType}
                               </SelectItem>
                             ))}
                           </SelectContent>
