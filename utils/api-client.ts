@@ -76,8 +76,13 @@ class ApiClient {
           
           // 한글 등 비 ASCII 문자가 포함될 수 있는 필드는 Base64로 인코딩
           if (currentUser.name) {
-            const encodedName = btoa(unescape(encodeURIComponent(currentUser.name)));
-            config.headers['x-user-name'] = `base64:${encodedName}`;
+            try {
+              const encodedName = btoa(unescape(encodeURIComponent(currentUser.name)));
+              config.headers['x-user-name'] = `base64:${encodedName}`;
+            } catch (e) {
+              console.error('사용자 이름 인코딩 오류:', e);
+              config.headers['x-user-name'] = 'System';
+            }
           }
           
           config.headers['x-user-email'] = currentUser.email;
