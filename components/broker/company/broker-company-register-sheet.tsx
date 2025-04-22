@@ -27,6 +27,7 @@ import {
 import { convertLegacyToApiCompany } from '@/types/company';
 import { v4 as uuidv4 } from 'uuid';
 import { useQueryClient } from '@tanstack/react-query';
+import { updateCompanyAndInvalidateCache } from '@/services/company-service';
 
 interface BrokerCompanyRegisterSheetProps {
   onRegisterSuccess?: (company: IBrokerCompany) => void;
@@ -113,32 +114,58 @@ export function BrokerCompanyRegisterSheet({
           onRegisterSuccess(formData);
         }
       } else if (mode === 'edit' && formData.id) {
-        // 임시 사용자 ID (실제로는 인증된 사용자 ID를 사용해야 함)
-        // const requestUserId = 'system-user-id';
+        // 임시 사용자 ID
         const requestUserId = uuidv4(); // 유효한 UUID 생성
         
         // 디버깅용 로그 추가
-        console.log('수정 - 원본 폼 데이터:', formData);
+        console.log('✏️ 수정 시작 - 원본 폼 데이터:', {
+          id: formData.id,
+          name: formData.name,
+          type: formData.type
+        });
         
         // 레거시 타입을 API 요청 포맷으로 변환
         const apiData = convertLegacyToApiCompany(formData, requestUserId);
         
-        // 변환된 API 데이터 로깅
-        console.log('수정 - 변환된 API 데이터:', apiData);
+        // 변환된 API 데이터 요약 로깅
+        console.log('📝 수정 - 변환된 API 데이터 요약:', {
+          id: formData.id,
+          name: apiData.name,
+          type: apiData.type
+        });
         
         try {
-          // API 호출로 업체 수정
-          const updatedCompany = await updateCompanyMutation.mutateAsync({ 
-            id: formData.id,
-            data: apiData
+          // 직접 서비스 함수 호출 (뮤테이션 대신)
+          console.log('🔄 업체 수정 및 캐시 무효화 함수 호출');
+          const { company: updatedCompany, cacheInvalidated } = 
+            await updateCompanyAndInvalidateCache(formData.id, apiData);
+          
+          console.log('✅ 업데이트 완료!', {
+            id: updatedCompany.id, 
+            name: updatedCompany.name,
+            cacheInvalidated
           });
           
-          // 수정 후 캐시 강제 무효화 (둘 다 확실히)
-          queryClient.invalidateQueries({ queryKey: ['companies'] });
-          queryClient.invalidateQueries({ queryKey: ['company', formData.id] });
+          // 캐시 무효화 결과에 따른 추가 조치
+          if (!cacheInvalidated) {
+            console.log('⚠️ 캐시 무효화가 제대로 작동하지 않았습니다. 추가 캐시 무효화 진행...');
+            // 1. React Query 캐시 무효화
+            await queryClient.invalidateQueries({ queryKey: ['companies'] });
+            await queryClient.invalidateQueries({ queryKey: ['company', formData.id] });
+            
+            // 2. 캐시된 데이터 리셋
+            queryClient.setQueryData(['company', formData.id], null);
+            
+            // 3. 캐시 무효화 후 강제 리로드
+            setTimeout(() => {
+              companyQuery.refetch();
+              queryClient.refetchQueries({ queryKey: ['companies'] });
+              console.log('♻️ 데이터 강제 리로드 요청');
+            }, 300);
+          }
           
           // 성공 처리
-          toast.success(`${formData.name} 업체 정보가 수정되었습니다.`);
+          toast.success(`${formData.name} 업체 정보가 수정되었습니다. 캐시가 업데이트되었습니다.`);
           
           // 콜백 실행
           if (onUpdateSuccess) {

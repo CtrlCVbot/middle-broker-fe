@@ -311,11 +311,41 @@ class ApiClient {
    * PATCH 요청 (write 작업이므로 관련 GET 캐시 무효화)
    */
   public patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    // URL 패턴 기반으로 관련 GET 캐시 무효화
-    this._invalidateCache(url.split('?')[0]);
-    this._invalidateCache(url.split('?')[0].split('/').slice(0, -1).join('/'));
+    const baseUrl = url.split('?')[0];
+    const resourcePath = baseUrl.split('/').slice(0, -1).join('/');
     
-    return this.instance.patch(url, data, config);
+    console.log(`📝 PATCH 요청 실행: ${url}`);
+    console.log(`🧹 무효화 대상:`, {
+      specific: baseUrl,
+      collection: resourcePath
+    });
+    
+    // 특정 리소스 캐시 무효화
+    this._invalidateCache(baseUrl);
+    // 리소스 컬렉션 캐시 무효화
+    this._invalidateCache(resourcePath);
+    // 전체 companies 경로 캐시도 무효화 (ID 관계없이)
+    if (baseUrl.includes('/companies/')) {
+      this._invalidateCache('companies');
+    }
+    
+    // 패치 요청 전송
+    return this.instance.patch(url, data, config)
+      .then(response => {
+        console.log(`✅ PATCH 요청 성공: ${url}`);
+        
+        // 추가적인 캐시 무효화 (응답 성공 후)
+        setTimeout(() => {
+          this._invalidateCache(baseUrl);
+          this._invalidateCache(resourcePath);
+          if (baseUrl.includes('/companies/')) {
+            this._invalidateCache('companies');
+          }
+          console.log(`🔄 PATCH 이후 캐시 재무효화 완료: ${url}`);
+        }, 100);
+        
+        return response;
+      });
   }
 
   /**

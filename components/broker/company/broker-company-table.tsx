@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -95,6 +95,21 @@ export function BrokerCompanyTable({ companies, onCompanyClick }: BrokerCompanyT
         return "secondary";
     }
   };
+
+  // 데이터 변경 감지를 위한 디버깅
+  useEffect(() => {
+    if (companies && companies.length > 0) {
+      console.log(`📋 테이블 렌더링: ${companies.length}개 업체 데이터`, {
+        firstCompany: companies[0].name,
+        lastCompany: companies[companies.length-1].name,
+        timestamp: new Date().toISOString()
+      });
+      
+      // 모든 회사 ID를 로깅 (디버깅용)
+      const companyIds = companies.map(c => c.id);
+      console.log('🔍 현재 테이블에 표시된 업체 ID 목록:', companyIds);
+    }
+  }, [companies]);
 
   return (
     <div className="rounded-md border">

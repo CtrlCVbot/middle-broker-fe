@@ -18,6 +18,7 @@ import {
   CompanyListResponse
 } from '@/types/company';
 import * as companyService from '@/services/company-service';
+import React from 'react';
 
 // 필터 요약 문구 생성 함수
 export const getFilterSummaryText = (filter: CompanyFilter): string => {
@@ -348,12 +349,44 @@ export const useCompanyStore = create<ICompanyState>()(
 export const useCompanies = () => {
   const { filter, currentPage, pageSize } = useCompanyStore();
   
-  return useQuery<CompanyListResponse, Error, CompanyListResponse, [string, CompanyFilter, number, number]>({
+  const result = useQuery<CompanyListResponse, Error, CompanyListResponse, [string, CompanyFilter, number, number]>({
     queryKey: ['companies', filter, currentPage, pageSize],
-    queryFn: () => companyService.getCompanies(currentPage, pageSize, filter),
-    staleTime: 30 * 1000, // 30초 동안 데이터 캐싱
-    placeholderData: (oldData) => oldData, // 새 데이터 로드 중 이전 데이터 유지 (keepPreviousData 대체)
+    queryFn: async () => {
+      console.log('🔍 업체 목록 조회 요청', {
+        page: currentPage,
+        pageSize,
+        filter: filter ? { ...filter } : 'none',
+        timestamp: new Date().toISOString()
+      });
+      
+      const data = await companyService.getCompanies(currentPage, pageSize, filter);
+      
+      console.log(`✅ 업체 목록 조회 성공: ${data.data.length}개 항목`);
+      return data;
+    },
+    staleTime: 10 * 1000, // 10초만 캐시 유효 (원래는 30초)
+    gcTime: 60 * 1000,    // 1분 동안 가비지 컬렉션에서 제외
+    refetchOnWindowFocus: true, // 창 포커스 시 새로고침
+    refetchOnMount: true,     // 컴포넌트 마운트 시 항상 새로고침
+    placeholderData: (oldData) => {
+      if (oldData) {
+        console.log('🔄 이전 데이터 사용 중', {
+          count: oldData.data.length,
+          timestamp: new Date().toISOString()
+        });
+      }
+      return oldData;
+    }
   });
+  
+  // 데이터가 변경될 때마다 로그 출력
+  React.useEffect(() => {
+    if (result.data) {
+      console.log(`📊 업체 목록 데이터 갱신됨: ${result.data.data.length}개`);
+    }
+  }, [result.data]);
+  
+  return result;
 };
 
 // 특정 업체 조회
@@ -386,11 +419,57 @@ export const useUpdateCompany = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: CompanyRequest }) => 
       companyService.updateCompany(id, data),
-    onSuccess: (_, variables) => {
-      // 성공 시 업체 목록 및 상세 정보 쿼리 무효화하여 자동 갱신
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
-      queryClient.invalidateQueries({ queryKey: ['company', variables.id] });
+    onMutate: async (variables) => {
+      // 낙관적 업데이트를 위한 이전 쿼리 데이터 백업
+      const prevCompanyData = queryClient.getQueryData(['company', variables.id]);
+      const prevCompaniesData = queryClient.getQueryData(['companies']);
+      
+      console.log('🔄 업체 수정 뮤테이션 시작', {
+        id: variables.id,
+        timestamp: new Date().toISOString()
+      });
+      
+      return { prevCompanyData, prevCompaniesData };
     },
+    onSuccess: (result, variables) => {
+      console.log('✅ 업체 수정 성공, 캐시 무효화 시작', { 
+        id: variables.id,
+        name: result.name
+      });
+      
+      // 강력한 캐시 무효화
+      queryClient.removeQueries({ queryKey: ['company', variables.id] });
+      queryClient.removeQueries({ queryKey: ['companies'] });
+      
+      // 캐시 무효화
+      queryClient.invalidateQueries({ 
+        queryKey: ['companies'],
+        refetchType: 'all' 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['company', variables.id],
+        refetchType: 'all'
+      });
+      
+      // 변경된 데이터 즉시 반영
+      queryClient.setQueryData(['company', variables.id], result);
+      
+      // 추가로 지연된 캐시 재무효화 (때로는 첫 무효화가 충분히 반영되지 않음)
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['companies'] });
+        queryClient.invalidateQueries({ queryKey: ['company', variables.id] });
+        console.log('🔄 지연된 캐시 무효화 완료');
+      }, 300);
+    },
+    onError: (error, variables, context) => {
+      console.error('❌ 업체 수정 실패:', error);
+      
+      // 오류 발생 시 백업 데이터로 복원
+      if (context) {
+        queryClient.setQueryData(['company', variables.id], context.prevCompanyData);
+        queryClient.setQueryData(['companies'], context.prevCompaniesData);
+      }
+    }
   });
 };
 

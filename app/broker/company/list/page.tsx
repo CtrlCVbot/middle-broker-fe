@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useEffect, useState, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { 
   Breadcrumb, 
   BreadcrumbItem, 
@@ -56,6 +56,8 @@ export default function BrokerCompanyPage() {
     refetch
   } = useCompaniesLegacyFormat();
   
+  const queryClient = useQueryClient();
+  
   // legacyData 구조 분해
   const data = legacyData?.data || [];
   const total = legacyData?.total || 0;
@@ -74,11 +76,33 @@ export default function BrokerCompanyPage() {
   };
 
   // 수동 새로고침 핸들러
-  const handleManualRefresh = () => {
+  const handleManualRefresh = useCallback(() => {
     setLastRefreshed(new Date());
+    
+    console.log('🔄 수동 새로고침 요청됨');
+    
+    // 모든 관련 쿼리 강제 리로드
     refetch();
-    toast.success('업체 목록이 새로고침되었습니다.');
-  };
+    queryClient.resetQueries({ queryKey: ['companies'] });
+    queryClient.invalidateQueries({ queryKey: ['companies'] });
+    
+    toast.success('데이터가 새로고침되었습니다.');
+  }, [refetch, queryClient]);
+
+  // 업체 등록 완료 핸들러
+  const handleRegisterSuccess = useCallback((company) => {
+    console.log('✨ 새 업체 등록됨:', company.name);
+    setLastRefreshed(new Date());
+    
+    // 약간의 지연 후 데이터 강제 리로드
+    setTimeout(() => {
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      console.log('🔄 업체 목록 강제 리로드 (등록 후)');
+    }, 500);
+    
+    toast.success(`업체 "${company.name}"가 등록되었습니다.`);
+  }, [refetch, queryClient]);
 
   // 업체 클릭 핸들러 (타입 확장)
   const handleCompanyClick = (company: IBrokerCompany | ILegacyCompany) => {
@@ -86,19 +110,28 @@ export default function BrokerCompanyPage() {
     setIsEditSheetOpen(true);
   };
 
-  // 업체 수정 완료 핸들러
-  const handleUpdateSuccess = () => {
-    setLastRefreshed(new Date());
-    refetch();
-    toast.success(`업체 정보가 수정되었습니다.`);
-  };
-
-  // 업체 등록 완료 핸들러
-  const handleRegisterSuccess = () => {
-    setLastRefreshed(new Date());
-    refetch();
-    toast.success(`업체가 등록되었습니다.`);
-  };
+  // 회사가 수정된 후 호출할 함수
+  const handleCompanyUpdate = useCallback((updatedCompany) => {
+    console.log('🔶 업체 수정 완료 이벤트 발생', {
+      id: updatedCompany.id,
+      name: updatedCompany.name,
+      timestamp: new Date().toISOString()
+    });
+    
+    // 약간의 지연 후 데이터 강제 리로드
+    setTimeout(() => {
+      refetch();
+      queryClient.refetchQueries({ queryKey: ['companies'] });
+      console.log('🔄 업체 목록 강제 리로드');
+    }, 500);
+  }, [refetch, queryClient]);
+  
+  // 데이터 변경 감지를 위한 디버깅 코드
+  useEffect(() => {
+    if (legacyData?.data?.length > 0) {
+      console.log(`📊 업체 목록 데이터 갱신됨 (${legacyData.data.length}개)`);
+    }
+  }, [legacyData]);
 
   // 활성 및 비활성 업체 수 계산
   const getCompanySummary = () => {
@@ -311,10 +344,9 @@ export default function BrokerCompanyPage() {
         <BrokerCompanyRegisterSheet
           company={selectedCompany as IBrokerCompany}
           mode="edit"
-          onUpdateSuccess={handleUpdateSuccess}
-          trigger={<div className="hidden" />} // 숨겨진 트리거
           open={isEditSheetOpen}
           onOpenChange={setIsEditSheetOpen}
+          onUpdateSuccess={handleCompanyUpdate}
         />
       )}
     </main>

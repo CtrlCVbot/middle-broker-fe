@@ -12,7 +12,7 @@ import {
 import { getCurrentUser } from '@/utils/auth';
 
 /**
- * 업체 목록 조회
+ * 업체 목록 조회 - 캐시 관리 강화 버전
  * @param page 페이지 번호 (1부터 시작)
  * @param pageSize 페이지 당 항목 수
  * @param filter 검색 필터
@@ -24,13 +24,40 @@ export const getCompanies = async (
   filter?: CompanyFilter
 ): Promise<CompanyListResponse> => {
   const params = { page, pageSize, ...filter };
-  // ApiClient는 response.data를 자동으로 반환하므로 추가 처리 필요 없음
-  return apiClient.get<CompanyListResponse>('/companies', { 
-    params,
-    // 목록 조회는 캐싱 활성화, 10초 캐시 유지
-    useCache: true,
-    cacheLifetime: 10 * 1000 
+  const cacheKey = `companies-${page}-${pageSize}-${JSON.stringify(filter || {})}`;
+  
+  console.log(`📞 업체 목록 조회 요청`, {
+    page, 
+    pageSize,
+    filterKeys: filter ? Object.keys(filter) : 'none',
+    cacheKey
   });
+  
+  try {
+    // ApiClient는 response.data를 자동으로 반환하므로 추가 처리 필요 없음
+    const data = await apiClient.get<CompanyListResponse>('/companies', { 
+      params,
+      // 데이터 갱신 문제 해결을 위해 캐싱 비활성화
+      useCache: false, // 타임스탬프가 다른 경우 캐시 히트가 다를 수 있음
+    });
+    
+    // 일관성을 위해 항상 원본 데이터 반환
+    console.log(`✅ 업체 목록 조회 성공`, {
+      total: data.total,
+      page: data.page,
+      count: data.data.length,
+      requestTime: new Date().toISOString()
+    });
+    
+    return data;
+  } catch (error) {
+    console.error('❌ 업체 목록 조회 오류:', error);
+    // error 객체를 일관된 구조로 변환하여 전달
+    if (error instanceof Error) {
+      throw new Error(`업체 목록 조회 실패: ${error.message}`);
+    }
+    throw error;
+  }
 };
 
 /**
@@ -152,4 +179,47 @@ export const invalidateCompanyCache = (): void => {
 export const invalidateCompanyById = (id: string): void => {
   console.log(`특정 업체(${id}) 캐시 무효화 실행`);
   apiClient.clearCache('GET', `/companies/${id}`); // 특정 업체 URL만 명시적으로 삭제
+};
+
+/**
+ * 업체 수정 및 캐시 무효화 (보강된 버전)
+ * @param id 업체 ID
+ * @param data 수정할 업체 데이터
+ * @returns 수정된 업체 정보와 캐시 무효화 결과
+ */
+export const updateCompanyAndInvalidateCache = async (id: string, data: CompanyRequest): Promise<{
+  company: ICompany;
+  cacheInvalidated: boolean;
+}> => {
+  console.log('🔄 업체 수정 및 캐시 무효화 시작:', id);
+  
+  try {
+    // 업체 데이터 업데이트
+    const updatedCompany = await updateCompany(id, data);
+    
+    // 캐시 무효화 (여러 방법으로 시도)
+    try {
+      // 1. 해당 업체 데이터 캐시 삭제
+      apiClient.clearCache('GET', `/companies/${id}`);
+      
+      // 2. 업체 목록 캐시 삭제
+      apiClient.clearCache('GET', '/companies');
+      
+      // 3. 모든 관련 캐시 삭제 시도
+      setTimeout(() => {
+        apiClient.clearCache('GET', `/companies/${id}`);
+        apiClient.clearCache('GET', '/companies');
+        console.log('🧹 지연된 캐시 무효화 완료:', id);
+      }, 300);
+      
+      console.log('✅ 캐시 무효화 성공:', id);
+      return { company: updatedCompany, cacheInvalidated: true };
+    } catch (cacheError) {
+      console.error('❌ 캐시 무효화 실패:', cacheError);
+      return { company: updatedCompany, cacheInvalidated: false };
+    }
+  } catch (error) {
+    console.error('❌ 업체 수정 실패:', error);
+    throw error;
+  }
 }; 
