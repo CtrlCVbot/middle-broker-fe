@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -81,6 +81,58 @@ const companyFormSchema = z.object({
 
 type CompanyFormValues = z.infer<typeof companyFormSchema>;
 
+/**
+ * 다양한 회사 데이터 형식을 폼 데이터 형식으로 정규화하는 함수
+ * ILegacyCompany나 IBrokerCompany 등 여러 타입을 지원
+ */
+function normalizeCompanyData(data: any) {
+  if (!data) return {};
+  
+  // 필드 매핑을 위한 객체
+  const normalized = {
+    // 기본 필드들
+    id: data.id || '',
+    code: data.code || '',
+    name: data.name || '',
+    businessNumber: data.businessNumber || '',
+    
+    // 타입 필드 - 영문이나 한글 모두 지원
+    type: (data.type === 'broker' || data.type === '주선사') ? '주선사' : 
+          (data.type === 'shipper' || data.type === '화주') ? '화주' : 
+          (data.type === 'carrier' || data.type === '운송사') ? '운송사' : '운송사',
+    
+    // 전표 타입
+    statementType: data.statementType || '매출처',
+    
+    // 대표자명 - 필드명이 다른 경우를 모두 지원
+    representative: data.representative || data.ceoName || '',
+    
+    // 연락처 정보
+    email: data.email || (data.contact?.email) || '',
+    phoneNumber: data.phoneNumber || (data.contact?.tel) || '',
+    faxNumber: data.faxNumber || '',
+    
+    // 담당자 정보
+    managerName: data.managerName || '',
+    managerPhoneNumber: data.managerPhoneNumber || (data.contact?.mobile) || '',
+    
+    // 상태 - 영문이나 한글 모두 지원
+    status: (data.status === 'active' || data.status === '활성') ? '활성' : 
+            (data.status === 'inactive' || data.status === '비활성') ? '비활성' : '활성',
+    
+    // 등록일
+    registeredDate: data.registeredDate || data.registeredAt || '',
+    
+    // 추가 데이터
+    warnings: data.warnings || [],
+    files: data.files || [],
+    managers: data.managers || [],
+  };
+  
+  console.log('정규화된 회사 데이터:', normalized);
+  return normalized;
+}
+
 export function BrokerCompanyForm({ 
   isSubmitting = false, 
   onSubmit, 
@@ -117,6 +169,43 @@ export function BrokerCompanyForm({
       files: [],
     },
   });
+  
+  // initialData가 변경될 때 폼 값을 업데이트하기 위한 useEffect 추가
+  useEffect(() => {
+    // 회사 데이터가 있을 때만 폼을 재설정
+    if (initialData && Object.keys(initialData).length > 0) {
+      console.log('초기 데이터 로드:', initialData);
+      
+      // 데이터 정규화 - 다양한 형식의 데이터를 폼에 맞게 변환
+      const normalizedData = normalizeCompanyData(initialData);
+      
+      // 주의사항 상태 업데이트
+      setWarnings(normalizedData.warnings || []);
+      
+      // 파일 상태 업데이트
+      setFiles(normalizedData.files || []);
+      
+      // 폼 값 재설정 - 정규화된 데이터 사용
+      form.reset({
+        name: normalizedData.name,
+        businessNumber: normalizedData.businessNumber,
+        type: normalizedData.type as CompanyType,
+        statementType: normalizedData.statementType as StatementType,
+        email: normalizedData.email,
+        phoneNumber: normalizedData.phoneNumber,
+        faxNumber: normalizedData.faxNumber,
+        status: normalizedData.status as CompanyStatus,
+        managerName: normalizedData.managerName,
+        managerPhoneNumber: normalizedData.managerPhoneNumber,
+        representative: normalizedData.representative,
+        warnings: [],
+        files: [],
+      });
+      
+      // 디버깅용 로그 - 폼 값 확인
+      console.log('폼 값 설정 완료:', form.getValues());
+    }
+  }, [initialData, form]);
 
   // 전화번호 자동 하이픈 추가 함수
   const formatPhoneNumber = (value: string) => {

@@ -51,11 +51,16 @@ export function BrokerCompanyTable({ companies, onCompanyClick }: BrokerCompanyT
     }
   };
   
-  // 개별 선택 핸들러
-  // const handleSelectCompany = (e: React.MouseEvent, companyId: string) => {
-  //   e.stopPropagation();
-  //   toggleCompanySelection(companyId);
-  // };
+  // 회사 클릭 핸들러 - 데이터 로깅 추가
+  const handleCompanyClick = (company: IBrokerCompany | ILegacyCompany) => {
+    // 데이터 구조 확인을 위한 로깅
+    console.log('Selected company data:', company);
+    console.log('Company type:', company.type);
+    console.log('Company data structure:', Object.keys(company));
+    
+    // 원래 기능 유지
+    onCompanyClick(company);
+  };
   
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -116,7 +121,7 @@ export function BrokerCompanyTable({ companies, onCompanyClick }: BrokerCompanyT
                     company.status === '비활성' && "bg-gray-50",
                     selectedCompanyIds.includes(company.id) && "bg-primary/5"
                   )}
-                  onClick={() => onCompanyClick(company)}
+                  onClick={() => handleCompanyClick(company)}
                 >
                   <TableCell className="py-2">
                     <Checkbox 

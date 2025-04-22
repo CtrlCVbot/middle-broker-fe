@@ -21,6 +21,7 @@ import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { IBrokerCompanyManager } from '@/types/broker-company';
 import { MANAGER_ROLES } from '@/utils/mockdata/mock-broker-company-managers';
 import { useBrokerCompanyManagerStore } from '@/store/broker-company-manager-store';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface BrokerCompanyManagerFormProps {
   companyId: string;
@@ -53,6 +54,7 @@ export function BrokerCompanyManagerForm({
 }: BrokerCompanyManagerFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   
   const { addManager, updateManager } = useBrokerCompanyManagerStore();
   
@@ -84,6 +86,7 @@ export function BrokerCompanyManagerForm({
   // 폼 제출 핸들러
   const handleSubmit = async (data: ManagerFormValues) => {
     setIsSubmitting(true);
+    setFormError(null);
     
     try {
       // 수정 모드인 경우
@@ -129,6 +132,12 @@ export function BrokerCompanyManagerForm({
       
       onComplete();
     } catch (error) {
+      // 에러 메시지 설정
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : '담당자 등록/수정 중 오류가 발생했습니다.';
+      
+      setFormError(errorMessage);
       console.error('담당자 등록/수정 중 오류가 발생했습니다.', error);
     } finally {
       setIsSubmitting(false);
@@ -138,6 +147,13 @@ export function BrokerCompanyManagerForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        {formError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>오류 발생</AlertTitle>
+            <AlertDescription>{formError}</AlertDescription>
+          </Alert>
+        )}
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* 이름 */}
           <FormField

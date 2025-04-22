@@ -23,7 +23,7 @@ export async function GET(
   { params }: { params: { companyId: string } }
 ) {
   try {
-    const { companyId } = params;
+    const companyId = params.companyId;
 
     // UUID 검증
     if (!isValidUUID(companyId)) {

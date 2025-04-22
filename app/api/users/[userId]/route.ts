@@ -9,17 +9,12 @@ import { validate as uuidValidate } from 'uuid';
 // UUID 형식 검증을 위한 정규식
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-interface RouteContext {
-  params: Promise<{ userId: string }>;
-}
-
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  { params }: { params: { userId: string } }
 ): Promise<NextResponse> {
   try {
-    const params = await context.params;
-    const { userId } = params;
+    const userId = params.userId;
 
     // userId 파라미터 검증
     if (!userId) {
@@ -70,11 +65,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  context: RouteContext
+  { params }: { params: { userId: string } }
 ) {
   try {
-    const params = await context.params;
-    const { userId } = params;
+    const userId = params.userId;
     const body = await request.json();
 
     // UUID 형식 검증
@@ -151,11 +145,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  context: RouteContext
+  { params }: { params: { userId: string } }
 ) {
   try {
-    const params = await context.params;
-    const { userId } = params;
+    const userId = params.userId;
 
     // UUID 형식 검증
     if (!UUID_REGEX.test(userId)) {
