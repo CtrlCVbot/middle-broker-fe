@@ -150,8 +150,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { requestUserId, ...companyData } = validationResult.data;
-
+    
+    const { ...companyData } = validationResult.data;
+    const requestUserId = request.headers.get('x-user-id') || '';
     
 
     // 요청 사용자 정보 조회
@@ -164,7 +165,7 @@ export async function POST(request: NextRequest) {
 
     if (!requestUser) {
       return new Response(
-        JSON.stringify({ error: '요청 사용자를 찾을 수 없습니다."/"'+ "users.id=" + users.id + "/requestUserId=" + requestUserId }),
+        JSON.stringify({ error: '요청 사용자를 찾을 수 없습니다."/"'+ "/requestUserId=" + request.headers.get('x-user-id') }),
         { status: 404 }
       );
     }

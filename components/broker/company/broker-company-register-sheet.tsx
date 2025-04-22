@@ -90,15 +90,12 @@ export function BrokerCompanyRegisterSheet({
   const handleSubmit = async (formData: IBrokerCompany) => {
     try {
       if (mode === 'register') {
-        // 임시 사용자 ID (실제로는 인증된 사용자 ID를 사용해야 함)
-        // const requestUserId = 'system-user-id';
-        const requestUserId = uuidv4(); // 유효한 UUID 생성
         
         // 디버깅용 로그 추가
         console.log('등록 - 원본 폼 데이터:', formData);
         
         // 레거시 타입을 API 요청 포맷으로 변환
-        const apiData = convertLegacyToApiCompany(formData, requestUserId);
+        const apiData = convertLegacyToApiCompany(formData);
         
         // 변환된 API 데이터 로깅
         console.log('등록 - 변환된 API 데이터:', apiData);
@@ -114,8 +111,7 @@ export function BrokerCompanyRegisterSheet({
           onRegisterSuccess(formData);
         }
       } else if (mode === 'edit' && formData.id) {
-        // 임시 사용자 ID
-        const requestUserId = uuidv4(); // 유효한 UUID 생성
+        
         
         // 디버깅용 로그 추가
         console.log('✏️ 수정 시작 - 원본 폼 데이터:', {
@@ -125,7 +121,7 @@ export function BrokerCompanyRegisterSheet({
         });
         
         // 레거시 타입을 API 요청 포맷으로 변환
-        const apiData = convertLegacyToApiCompany(formData, requestUserId);
+        const apiData = convertLegacyToApiCompany(formData);
         
         // 변환된 API 데이터 요약 로깅
         console.log('📝 수정 - 변환된 API 데이터 요약:', {

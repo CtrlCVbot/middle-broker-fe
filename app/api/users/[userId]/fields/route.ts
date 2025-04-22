@@ -51,7 +51,8 @@ export async function PATCH(
       );
     }
 
-    const { requestUserId, fields } = validationResult.data;
+    const { fields } = validationResult.data;
+    const requestUserId = request.headers.get('x-user-id') || '';
 
     // 요청 사용자 정보 조회
     const requestUser = await db.query.users.findFirst({
@@ -113,7 +114,7 @@ export async function PATCH(
               { status: 400 }
             );
           }
-          updateData.system_access_level = value;
+          updateData.systemAccessLevel = value;
           if (reason) reasons['system_access_level'] = reason;
           break;
           
@@ -133,7 +134,7 @@ export async function PATCH(
           break;
           
         case 'phone_number':
-          updateData.phone_number = value;
+          updateData.phoneNumber = value;
           if (reason) reasons['phone_number'] = reason;
           break;
 

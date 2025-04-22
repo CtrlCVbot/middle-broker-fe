@@ -292,8 +292,6 @@ export function BrokerCompanyForm({
       warnings,
       files,
       managers: initialData.managers || [],
-      // 사용자 ID 정보 추가
-      requestUserId: currentUser?.id
     };
     
     onSubmit(newCompany);

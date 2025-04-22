@@ -137,7 +137,8 @@ export async function PUT(
       );
     }
 
-    const { requestUserId, ...updateData } = validationResult.data;
+    const { ...updateData } = validationResult.data;
+    const requestUserId = request.headers.get('x-user-id') || '';
 
     // 요청 사용자 정보 조회
     const [requestUser] = await db
@@ -319,7 +320,7 @@ export async function DELETE(
 
     // 요청 파라미터 파싱
     const searchParams = request.nextUrl.searchParams;
-    const requestUserId = searchParams.get('requestUserId');
+    const requestUserId = request.headers.get('x-user-id') || '';
     const reason = searchParams.get('reason') || '업체 삭제';
 
     // 요청 사용자 ID 검증

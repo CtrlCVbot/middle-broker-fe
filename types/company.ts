@@ -116,14 +116,12 @@ export interface CompanyRequest {
     mobile?: string;
     email?: string;
   };
-  requestUserId: string;
 }
 
 // 회사 상태 변경 요청 인터페이스
 export interface CompanyStatusChangeRequest {
   status: CompanyStatus;
   reason?: string;
-  requestUserId: string;
 }
 
 // 회사 배치 처리 요청 인터페이스
@@ -183,7 +181,7 @@ export const convertApiToLegacyCompany = (company: ICompany): ILegacyCompany => 
 };
 
 // 레거시 형식 데이터를 API 요청 형식으로 변환하는 유틸리티 함수
-export const convertLegacyToApiCompany = (company: ILegacyCompany, requestUserId: string): CompanyRequest => {
+export const convertLegacyToApiCompany = (company: ILegacyCompany): CompanyRequest => {
   // 업체 타입 변환 (한글 -> 영문)
   let apiType: CompanyType;
   
@@ -237,6 +235,6 @@ export const convertLegacyToApiCompany = (company: ILegacyCompany, requestUserId
       mobile: mobile,
       email: email,
     },
-    requestUserId,
+    
   };
 };

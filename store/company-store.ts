@@ -216,7 +216,7 @@ export const useCompanyStore = create<ICompanyState>()(
         
         try {
           // 레거시 형식을 API 요청 형식으로 변환
-          const requestData = convertLegacyToApiCompany(company, 'system-user-id'); // TODO: 실제 인증된 사용자 ID로 대체
+          const requestData = convertLegacyToApiCompany(company); // TODO: 실제 인증된 사용자 ID로 대체
           
           const createdCompany = await companyService.createCompany(requestData);
           set({ isLoading: false });
@@ -237,7 +237,7 @@ export const useCompanyStore = create<ICompanyState>()(
         
         try {
           // 레거시 형식을 API 요청 형식으로 변환
-          const requestData = convertLegacyToApiCompany(company, 'system-user-id'); // TODO: 실제 인증된 사용자 ID로 대체
+          const requestData = convertLegacyToApiCompany(company); // TODO: 실제 인증된 사용자 ID로 대체
           
           const updatedCompany = await companyService.updateCompany(company.id, requestData);
           set({ isLoading: false });
@@ -257,7 +257,7 @@ export const useCompanyStore = create<ICompanyState>()(
         set({ isLoading: true, error: null });
         
         try {
-          await companyService.deleteCompany(id, 'system-user-id'); // TODO: 실제 인증된 사용자 ID로 대체
+          await companyService.deleteCompany(id); // TODO: 실제 인증된 사용자 ID로 대체
           set({ isLoading: false });
           
           // 선택된 업체 목록에서 제거
@@ -281,8 +281,7 @@ export const useCompanyStore = create<ICompanyState>()(
         try {
           const requestData: CompanyStatusChangeRequest = {
             status,
-            reason,
-            requestUserId: 'system-user-id' // TODO: 실제 인증된 사용자 ID로 대체
+            reason
           };
           
           await companyService.changeCompanyStatus(id, requestData);
@@ -479,8 +478,8 @@ export const useDeleteCompany = () => {
   const { clearSelectedCompanyIds } = useCompanyStore();
   
   return useMutation({
-    mutationFn: ({ id, requestUserId }: { id: string; requestUserId: string }) => 
-      companyService.deleteCompany(id, requestUserId),
+    mutationFn: ({ id }: { id: string;  }) => 
+      companyService.deleteCompany(id),
     onSuccess: () => {
       // 성공 시 업체 목록 쿼리 무효화하여 자동 갱신 및 선택 항목 초기화
       queryClient.invalidateQueries({ queryKey: ['companies'] });

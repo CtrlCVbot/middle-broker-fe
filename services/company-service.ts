@@ -91,7 +91,7 @@ export const createCompany = async (data: CompanyRequest): Promise<ICompany> => 
 export const updateCompany = async (id: string, data: CompanyRequest): Promise<ICompany> => {
   // 현재 로그인된 사용자 정보 가져오기
   const currentUser = getCurrentUser();
-  const userId = currentUser?.id || data.requestUserId || ''; // 로그인된 사용자 ID 우선 사용, 없으면 전달받은 ID 사용
+  const userId = currentUser?.id || ''; // 로그인된 사용자 ID 우선 사용, 없으면 전달받은 ID 사용
   
   // PATCH 방식으로 변경: /companies/:id/fields 엔드포인트 사용
   // 먼저 데이터 형식을 fields API에 맞게 변환
@@ -122,10 +122,8 @@ export const updateCompany = async (id: string, data: CompanyRequest): Promise<I
  * @param requestUserId 요청 사용자 ID
  * @returns 삭제 성공 메시지
  */
-export const deleteCompany = async (id: string, requestUserId: string): Promise<{ message: string }> => {
-  const result = await apiClient.delete<ApiResponse<{ message: string }>>(`/companies/${id}`, {
-    params: { requestUserId }
-  });
+export const deleteCompany = async (id: string): Promise<{ message: string }> => {
+    const result = await apiClient.delete<ApiResponse<{ message: string }>>(`/companies/${id}`);
   return { message: result.message || result.data?.message || '업체가 성공적으로 삭제되었습니다.' };
 };
 

@@ -117,7 +117,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { password, requestUserId, ...userData } = validationResult.data;
+    const { password, ...userData } = validationResult.data;
+    const requestUserId = request.headers.get('x-user-id') || '';
 
     // 요청 사용자 정보 조회
     const requestUser = await db.query.users.findFirst({

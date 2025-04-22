@@ -35,7 +35,6 @@ export interface IBrokerCompany {
   warnings?: { id: string; text: string }[];
   files?: { id: string; name: string; url: string; type: string }[];
   managers?: IBrokerCompanyManager[]; // 담당자 목록 추가
-  requestUserId?: string; // 요청 사용자 ID 추가
 }
 
 // 담당자 정보 인터페이스
@@ -151,15 +150,14 @@ export interface IBrokerManagerRequest {
   systemAccessLevel?: SystemAccessLevel;
   status?: UserStatus;
   domains?: UserDomain[];
-  requestUserId: string;
 }
 
 /**
  * 프론트엔드 IBrokerCompanyManager 객체를 백엔드 API 요청 객체로 변환 (생성/수정용)
  */
 export function convertBrokerManagerToUser(
-  manager: Partial<IBrokerCompanyManager>, 
-  requestUserId: string = '00000000-0000-0000-0000-000000000000' // 기본값 제공
+  manager: Partial<IBrokerCompanyManager> 
+  
 ): IBrokerManagerRequest {
   return {
     id: manager.id,
@@ -174,8 +172,7 @@ export function convertBrokerManagerToUser(
     systemAccessLevel: 'broker_member' as SystemAccessLevel, // 기본값
     status: manager.status ? STATUS_MAP[manager.status] : 'active',
     domains: manager.roles ? manager.roles.map(role => ROLE_TO_DOMAIN_MAP[role]).filter(Boolean) : [],
-    // 요청자 정보
-    requestUserId: requestUserId
+    
   };
 }
 
