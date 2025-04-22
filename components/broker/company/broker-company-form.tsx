@@ -85,7 +85,7 @@ type CompanyFormValues = z.infer<typeof companyFormSchema>;
  * 다양한 회사 데이터 형식을 폼 데이터 형식으로 정규화하는 함수
  * ILegacyCompany나 IBrokerCompany 등 여러 타입을 지원
  */
-function normalizeCompanyData(data: any) {
+function normalizeCompanyData(data: any): Partial<IBrokerCompany> {
   if (!data) return {};
   
   // 필드 매핑을 위한 객체
@@ -97,9 +97,15 @@ function normalizeCompanyData(data: any) {
     businessNumber: data.businessNumber || '',
     
     // 타입 필드 - 영문이나 한글 모두 지원
-    type: (data.type === 'broker' || data.type === '주선사') ? '주선사' : 
-          (data.type === 'shipper' || data.type === '화주') ? '화주' : 
-          (data.type === 'carrier' || data.type === '운송사') ? '운송사' : '운송사',
+    type: (
+      data.type === 'broker' || data.type === '주선사'
+        ? '주선사'
+        : data.type === 'shipper' || data.type === '화주'
+        ? '화주'
+        : data.type === 'carrier' || data.type === '운송사'
+        ? '운송사'
+        : '운송사'
+    ) as CompanyType,
     
     // 전표 타입
     statementType: data.statementType || '매출처',
@@ -117,8 +123,13 @@ function normalizeCompanyData(data: any) {
     managerPhoneNumber: data.managerPhoneNumber || (data.contact?.mobile) || '',
     
     // 상태 - 영문이나 한글 모두 지원
-    status: (data.status === 'active' || data.status === '활성') ? '활성' : 
-            (data.status === 'inactive' || data.status === '비활성') ? '비활성' : '활성',
+    status: (
+      data.status === 'active' || data.status === '활성'
+        ? '활성'
+        : data.status === 'inactive' || data.status === '비활성'
+        ? '비활성'
+        : '활성'
+    ) as CompanyStatus,
     
     // 등록일
     registeredDate: data.registeredDate || data.registeredAt || '',
@@ -179,11 +190,11 @@ export function BrokerCompanyForm({
       // 데이터 정규화 - 다양한 형식의 데이터를 폼에 맞게 변환
       const normalizedData = normalizeCompanyData(initialData);
       
-      // 주의사항 상태 업데이트
-      setWarnings(normalizedData.warnings || []);
+      // 주의사항 상태 업데이트 - 아직 개발전
+      //setWarnings(normalizedData.warnings || []);
       
-      // 파일 상태 업데이트
-      setFiles(normalizedData.files || []);
+      // 파일 상태 업데이트 - 아직 개발전
+      //setFiles(normalizedData.files || []);
       
       // 폼 값 재설정 - 정규화된 데이터 사용
       form.reset({
