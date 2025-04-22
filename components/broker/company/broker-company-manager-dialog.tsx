@@ -46,6 +46,12 @@ export function BrokerCompanyManagerDialog({
       timestamp: new Date().toISOString()
     });
     
+    // 사용자 확인 메시지 표시
+    const actionText = mode === 'add' ? '등록' : '수정';
+    if (!window.confirm(`${formData.name} 담당자를 ${actionText}하시겠습니까?`)) {
+      return; // 사용자가 취소한 경우
+    }
+    
     setIsProcessing(true);
     setError(null);
     
@@ -103,8 +109,7 @@ export function BrokerCompanyManagerDialog({
         console.log('📤 담당자 수정 요청 데이터:', {
           id: updatedManager.id,
           name: updatedManager.name,
-          changes: Object.keys(formData),
-          updateManager: updatedManager
+          changes: Object.keys(formData)
         });
         
         // 실제 API 요청이 완료될 때까지 기다립니다

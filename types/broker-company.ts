@@ -141,13 +141,15 @@ export interface IBrokerManagerRequest {
   password?: string;
   name?: string;
   phoneNumber?: string;
-  companyId?: string;
+  companyId?: string; // 프론트엔드 필드명
+  company_id?: string; // 백엔드 필드명 (API 호환성)
   department?: string | null;
   position?: string | null;
   rank?: string | null;
   systemAccessLevel?: SystemAccessLevel;
   status?: UserStatus;
   domains?: UserDomain[];
+  reason?: string;
 }
 
 /**
@@ -155,12 +157,10 @@ export interface IBrokerManagerRequest {
  */
 export function convertBrokerManagerToUser(
   manager: Partial<IBrokerCompanyManager> 
-  
 ): IBrokerManagerRequest {
-  return {
+  const userData: IBrokerManagerRequest = {
     id: manager.id,
     email: manager.email,
-    password: manager.password,
     name: manager.name,
     phoneNumber: manager.phoneNumber,
     companyId: manager.companyId,
@@ -170,8 +170,14 @@ export function convertBrokerManagerToUser(
     systemAccessLevel: 'broker_member' as SystemAccessLevel, // 기본값
     status: manager.status ? STATUS_MAP[manager.status] : 'active',
     domains: manager.roles ? manager.roles.map(role => ROLE_TO_DOMAIN_MAP[role]).filter(Boolean) : [],
-    
   };
+  
+  // 비밀번호가 제공된 경우에만 추가 (빈 문자열인 경우 제외)
+  if (manager.password && manager.password.trim() !== '') {
+    userData.password = manager.password;
+  }
+  
+  return userData;
 }
 
 /**

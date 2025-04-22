@@ -105,13 +105,34 @@ export class BrokerManagerService {
       // 프론트엔드 데이터를 백엔드 형식으로 변환
       const userData = convertBrokerManagerToUser(manager);
       
+      // 필수 필드 확인
+      if (!userData.email || !userData.name) {
+        throw new Error('이메일과 이름은 필수 입력 항목입니다.');
+      }
+      
+      // 비밀번호가 없는 경우 기본값 설정
+      if (!userData.password) {
+        userData.password = 'password1234'; // 기본 비밀번호 설정
+      }
+      
+      // company_id 필드명 수정
+      const apiData = {
+        ...userData,
+        company_id: userData.companyId, // company_id로 필드명 변경
+      };
+      
+      // companyId 필드 제거 (중복 방지)
+      delete apiData.companyId;
+      
+      console.log('📤 담당자 생성 데이터:', apiData);
+      
       // API 호출
-      const response = await apiClient.post<IUser>('/users', userData);
+      const response = await apiClient.post<IUser>('/users', apiData);
       
       // 캐시 무효화
       apiClient.clearCache();
       
-      return convertUserToBrokerManager(response);
+      return convertUserToBrokerManager(response.data || response);
     } catch (error) {
       console.error('[BrokerManagerService] 담당자 생성 중 오류 발생:', error);
       throw error;
@@ -123,22 +144,36 @@ export class BrokerManagerService {
    * @param manager 수정할 담당자 정보
    */
   static async updateManager(manager: IBrokerCompanyManager): Promise<IBrokerCompanyManager> {
-    try {
-            
+    try {            
       // 프론트엔드 데이터를 백엔드 형식으로 변환
       const userData = convertBrokerManagerToUser(manager);
       
       // ID 분리 (URL에 사용)
       const { id, ...updateData } = userData;
       
-      console.log('🔄 담당자 수정 데이터111:', updateData);
-      // API 호출
-      const response = await apiClient.patch<IUser>(`/users/${id}/fields`, updateData);
+      console.log('🔄 담당자 수정 데이터:', updateData);
+      
+      // API 호출 - fields 엔드포인트로 요청 형식 수정
+      const response = await apiClient.patch<IUser>(`/users/${id}/fields`, {
+        fields: {
+          name: updateData.name,
+          email: updateData.email,
+          phoneNumber: updateData.phoneNumber,
+          department: updateData.department,
+          position: updateData.position,
+          rank: updateData.rank,
+          password: updateData.password,
+          status: updateData.status,
+          domains: updateData.domains,
+          company_id: updateData.companyId // company_id 필드명 맞춤
+        },
+        reason: '담당자 정보 업데이트'
+      });
       
       // 캐시 무효화
       apiClient.clearCache();
       
-      return convertUserToBrokerManager(response);
+      return convertUserToBrokerManager(response.data || response);
     } catch (error) {
       console.error(`[BrokerManagerService] 담당자 수정 중 오류 발생 (ID: ${manager.id}):`, error);
       throw error;

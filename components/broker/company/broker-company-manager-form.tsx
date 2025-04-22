@@ -105,9 +105,9 @@ export function BrokerCompanyManagerForm({
         name: data.name,
         email: data.email,
         phoneNumber: data.phoneNumber,
-        department: data.department,
-        position: data.position,
-        rank: data.rank,
+        department: data.department || '',
+        position: data.position || '',
+        rank: data.rank || '',
         status: data.status,
         roles: data.roles,
       };
@@ -130,9 +130,8 @@ export function BrokerCompanyManagerForm({
         return;
       }
 
-      const newManager = {
+      const newManager: IBrokerCompanyManager = {
         id: uuidv4(), // 클라이언트에서 임시 ID 생성
-        password: data.password || 'password1234', // 기본 비밀번호 설정
         name: data.name,
         email: data.email,
         phoneNumber: data.phoneNumber,
@@ -145,7 +144,17 @@ export function BrokerCompanyManagerForm({
         registeredDate: new Date().toISOString() // 현재 날짜를 등록일로 설정
       };
       
-      console.log('📤 폼에서 생성된 신규 담당자 데이터:', newManager);
+      // 비밀번호가 입력된 경우에만 추가
+      if (data.password) {
+        newManager.password = data.password;
+      }
+      
+      console.log('📤 폼에서 생성된 신규 담당자 데이터:', {
+        name: newManager.name,
+        email: newManager.email,
+        roles: newManager.roles
+      });
+      
       onSubmit(newManager);
     }
   };
