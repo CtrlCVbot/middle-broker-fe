@@ -222,19 +222,21 @@ export const useBrokerCompanyManagerStore = create<BrokerCompanyManagerState>((s
   
   // 액션: 필터링 설정
   setFilter: (filter) => {
-    set(state => ({
-      filter: { ...state.filter, ...filter }
-    }));
-    
-    // 필터 변경 시 첫 페이지로 초기화하고 데이터 다시 로드
-    const companyId = get().currentCompanyId;
-    if (companyId) {
-      set(state => ({
-        filter: { ...state.filter, page: 1 },
-        pagination: { ...state.pagination, page: 1 }
-      }));
-      get().loadManagers(companyId);
-    }
+    set((state) => {
+      // roles가 undefined로 들어오면 빈 배열로 대체
+      const nextRoles = filter.roles === undefined ? state.filter.roles : filter.roles ?? [];
+      return {
+        filter: {
+          ...state.filter,
+          ...filter,
+          roles: nextRoles,
+        },
+        pagination: {
+          ...state.pagination,
+          page: 1, // 필터 변경 시 1페이지로 이동
+        },
+      };
+    });
   },
   
   // 액션: 선택된 담당자 설정

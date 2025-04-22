@@ -89,8 +89,8 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
     }
     
     // 역할 필터링
-    if (filter.roles.length > 0 && 
-        !manager.roles.some(role => filter.roles.includes(role))) {
+    if ((filter.roles ?? []).length > 0 && 
+        !manager.roles.some(role => (filter.roles ?? []).includes(role))) {
       return false;
     }
     
@@ -225,37 +225,37 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
               <DropdownMenuGroup>
                 <DropdownMenuLabel className="text-xs">역할</DropdownMenuLabel>
                 <DropdownMenuItem onClick={() => {
-                  const updatedRoles: ManagerRole[] = filter.roles.includes('배차') 
-                    ? filter.roles.filter(r => r !== '배차')
-                    : [...filter.roles, '배차'];
+                  const updatedRoles: ManagerRole[] = (filter.roles ?? []).includes('배차') 
+                    ? (filter.roles ?? []).filter(r => r !== '배차')
+                    : [...(filter.roles ?? []), '배차'];
                   setFilter({ roles: updatedRoles });
                 }}>
                   <Checkbox
-                    checked={filter.roles.includes('배차')}
+                    checked={(filter.roles ?? []).includes('배차')}
                     className="mr-2 h-4 w-4"
                   />
                   배차
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => {
-                  const updatedRoles: ManagerRole[] = filter.roles.includes('정산') 
-                    ? filter.roles.filter(r => r !== '정산')
-                    : [...filter.roles, '정산'];
+                  const updatedRoles: ManagerRole[] = (filter.roles ?? []).includes('정산') 
+                    ? (filter.roles ?? []).filter(r => r !== '정산')
+                    : [...(filter.roles ?? []), '정산'];
                   setFilter({ roles: updatedRoles });
                 }}>
                   <Checkbox
-                    checked={filter.roles.includes('정산')}
+                    checked={(filter.roles ?? []).includes('정산')}
                     className="mr-2 h-4 w-4"
                   />
                   정산
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => {
-                  const updatedRoles: ManagerRole[] = filter.roles.includes('관리') 
-                    ? filter.roles.filter(r => r !== '관리')
-                    : [...filter.roles, '관리'];
+                  const updatedRoles: ManagerRole[] = (filter.roles ?? []).includes('관리') 
+                    ? (filter.roles ?? []).filter(r => r !== '관리')
+                    : [...(filter.roles ?? []), '관리'];
                   setFilter({ roles: updatedRoles });
                 }}>
                   <Checkbox
-                    checked={filter.roles.includes('관리')}
+                    checked={(filter.roles ?? []).includes('관리')}
                     className="mr-2 h-4 w-4"
                   />
                   관리
@@ -327,7 +327,7 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
       </div>
       
       {/* 담당자 필터 표시 */}
-      {(filter.searchTerm || filter.roles.length > 0 || filter.status || filter.showInactive) && (
+      {(filter.searchTerm || (filter.roles ?? []).length > 0 || filter.status || filter.showInactive) && (
         <div className="flex flex-wrap gap-2 my-2">
           {filter.searchTerm && (
             <Badge variant="outline" className="bg-muted/50">
@@ -343,7 +343,7 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
             </Badge>
           )}
           
-          {filter.roles.map(role => (
+          {(filter.roles ?? []).map(role => (
             <Badge key={role} variant="outline" className="bg-muted/50">
               역할: {role}
               <Button
@@ -351,7 +351,7 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
                 size="sm"
                 className="h-4 w-4 ml-1 p-0"
                 onClick={() => setFilter({ 
-                  roles: filter.roles.filter(r => r !== role) 
+                  roles: (filter.roles ?? []).filter(r => r !== role) 
                 })}
               >
                 <X className="h-3 w-3" />
