@@ -15,6 +15,28 @@ interface ILogCompanyChangeParams {
 }
 
 /**
+ * Base64로 인코딩된 문자열을 디코딩
+ * @param encodedStr Base64로 인코딩된 문자열
+ * @returns 디코딩된 문자열
+ */
+function decodeBase64IfNeeded(encodedStr: string | null): string {
+  if (!encodedStr) return 'System';
+  
+  // base64: 접두사가 있는 경우 디코딩
+  if (encodedStr.startsWith('base64:')) {
+    try {
+      const base64Value = encodedStr.substring(7); // 'base64:' 제거
+      return decodeURIComponent(escape(atob(base64Value)));
+    } catch (error) {
+      console.error('Base64 디코딩 오류:', error);
+      return 'System';
+    }
+  }
+  
+  return encodedStr;
+}
+
+/**
  * 업체 정보 변경 로그를 기록하는 함수
  * @param params 변경 로그 데이터
  */
@@ -27,6 +49,9 @@ export async function logCompanyChange(params: ILogCompanyChangeParams) {
       params.changedBy === 'system-user-id' || 
       (params.changedBy && params.changedBy.trim() === '') ? 
       uuidv4() : params.changedBy;
+    
+    // Base64로 인코딩된 사용자 이름 디코딩
+    const changedByName = decodeBase64IfNeeded(params.changedByName || null);
 
     // 변경된 데이터 생성
     const diff: Record<string, [any, any]> = {};
@@ -55,7 +80,7 @@ export async function logCompanyChange(params: ILogCompanyChangeParams) {
       id: uuidv4(),
       companyId: params.companyId,
       changedBy: changedBy,
-      changedByName: params.changedByName || 'System',
+      changedByName: changedByName || 'System',
       changedByEmail: params.changedByEmail || 'system@example.com',
       changedByAccessLevel: params.changedByAccessLevel || 'system',
       changeType: params.changeType,

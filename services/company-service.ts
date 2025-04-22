@@ -9,6 +9,7 @@ import {
   CompanyBatchRequest,
   CompanyValidationResponse 
 } from '@/types/company';
+import { getCurrentUser } from '@/utils/auth';
 
 /**
  * 업체 목록 조회
@@ -61,8 +62,9 @@ export const createCompany = async (data: CompanyRequest): Promise<ICompany> => 
  * @returns 수정된 업체 정보
  */
 export const updateCompany = async (id: string, data: CompanyRequest): Promise<ICompany> => {
-  // PUT 방식 코드 주석 처리
-  // return apiClient.put<ICompany>(`/companies/${id}`, data);
+  // 현재 로그인된 사용자 정보 가져오기
+  const currentUser = getCurrentUser();
+  const userId = currentUser?.id || data.requestUserId || ''; // 로그인된 사용자 ID 우선 사용, 없으면 전달받은 ID 사용
   
   // PATCH 방식으로 변경: /companies/:id/fields 엔드포인트 사용
   // 먼저 데이터 형식을 fields API에 맞게 변환
@@ -81,7 +83,7 @@ export const updateCompany = async (id: string, data: CompanyRequest): Promise<I
       contactMobile: data.contact?.mobile || '',
       contactEmail: data.contact?.email || '',
     },
-    reason: `관리자에 의해 수정됨 (사용자 ID: ${data.requestUserId})`,
+    reason: `관리자에 의해 수정됨 (사용자 ID: ${userId})`,
   };
   
   return apiClient.patch<ICompany>(`/companies/${id}/fields`, fieldsData);

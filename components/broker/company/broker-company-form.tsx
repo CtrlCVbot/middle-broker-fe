@@ -41,10 +41,11 @@ import {
 } from '@/types/broker-company';
 
 import { BrokerCompanyManagerList } from './broker-company-manager-list';
+import { getCurrentUser } from '@/utils/auth';
 
 // 상수 배열 추가
 const COMPANY_TYPE_OPTIONS = ['화주', '운송사', '주선사'] as const;
-const STATEMENT_TYPE_OPTIONS = ['매입처', '매출처'] as const;
+
 
 interface BrokerCompanyFormProps {
   isSubmitting?: boolean;
@@ -265,6 +266,9 @@ export function BrokerCompanyForm({
 
   // 폼 제출 핸들러
   const handleSubmit = (data: CompanyFormValues) => {
+    // 현재 로그인된 사용자 정보 가져오기
+    const currentUser = getCurrentUser();
+    
     // ID 추가 (실제 구현에서는 백엔드에서 생성된 ID를 사용)
     const newCompany: IBrokerCompany = {
       ...data,
@@ -277,7 +281,9 @@ export function BrokerCompanyForm({
       registeredDate: initialData.registeredDate || new Date().toISOString().split('T')[0],
       warnings,
       files,
-      managers: initialData.managers || []
+      managers: initialData.managers || [],
+      // 사용자 ID 정보 추가
+      requestUserId: currentUser?.id
     };
     
     onSubmit(newCompany);

@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { useAuthStore } from '@/store/auth-store';
-import { refreshAccessToken } from '@/utils/auth';
+import { refreshAccessToken, getCurrentUser } from '@/utils/auth';
 
 export interface IApiError {
   status: number;
@@ -66,9 +66,28 @@ class ApiClient {
         if (token) {
           config.headers['Authorization'] = `Bearer ${token}`;
         }
+
+        // 현재 로그인된 사용자 정보 가져오기
+        const currentUser = getCurrentUser();
+        
+        // 사용자 정보가 있으면 헤더에 추가 (UTF-8 문자 이슈 해결을 위해 Base64 인코딩 적용)
+        if (currentUser) {
+          config.headers['x-user-id'] = currentUser.id;
+          
+          // 한글 등 비 ASCII 문자가 포함될 수 있는 필드는 Base64로 인코딩
+          if (currentUser.name) {
+            const encodedName = btoa(unescape(encodeURIComponent(currentUser.name)));
+            config.headers['x-user-name'] = `base64:${encodedName}`;
+          }
+          
+          config.headers['x-user-email'] = currentUser.email;
+          config.headers['x-user-access-level'] = currentUser.systemAccessLevel;
+        }
+
         return config;
       },
       (error) => {
+        console.log('요청 및 응답 인터셉터 초기화 error', error);
         return Promise.reject(error);
       }
     );
