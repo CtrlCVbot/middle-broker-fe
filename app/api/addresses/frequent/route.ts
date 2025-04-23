@@ -8,32 +8,14 @@ import { logAddressChange } from '@/utils/address-change-logger';
 // 주소 목록 조회
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const page = Number(searchParams.get('page')) || 1;
-    const limit = Number(searchParams.get('limit')) || 10;
-    const search = searchParams.get('search') || '';
-    const type = searchParams.get('type');
-
-    const offset = (page - 1) * limit;
-
+    
     // 검색 조건 구성
     const whereConditions = [];
-    if (search) {
-      whereConditions.push(
-        or(
-          ilike(addresses.name, `%${search}%`),
-          ilike(addresses.roadAddress, `%${search}%`),
-          ilike(addresses.jibunAddress, `%${search}%`),
-          ilike(addresses.contactName, `%${search}%`)
-        ),
-        and(
-          eq(addresses.isFrequent, true)
-        )
-      );
-    }
-    if (type) {
-      whereConditions.push(eq(addresses.type, type));
-    }
+    whereConditions.push(
+      and(
+        eq(addresses.isFrequent, true)
+      )
+    );
 
     // 전체 개수 조회
     const totalCount = await db
@@ -46,16 +28,12 @@ export async function GET(req: NextRequest) {
     const items = await db.query.addresses.findMany({
       where: and(...whereConditions),
       orderBy: [desc(addresses.updatedAt)],
-      offset,
-      limit,
     });
 
     return NextResponse.json({
       data: items,
       pagination: {
         total: totalCount[0].count,
-        page,
-        limit,
       },
     });
   } catch (error) {

@@ -252,7 +252,7 @@ export default function AddressClientPage() {
           </div>
           
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader >
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                 <div>
                   <CardTitle>상/하차지 주소록</CardTitle>

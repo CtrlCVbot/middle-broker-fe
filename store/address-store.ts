@@ -133,10 +133,6 @@ const useAddressStore = create<AddressState>()(
         
         try {
           const frequentAddresses = await AddressService.getFrequentAddresses({
-            page: 1,
-            limit: 10,
-            search: '',
-            type: 'load'
           });
           set({ frequentAddresses: frequentAddresses.data, isLoadingFrequent: false });
         } catch (error: any) {
