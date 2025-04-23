@@ -65,7 +65,7 @@ export async function PATCH(
     // 업데이트 가능한 필드 목록
     const allowedFields = [
       'name',
-      'email',
+      //'email',
       'phoneNumber',
       'password',
       'status',
@@ -81,11 +81,22 @@ export async function PATCH(
     );
 
     if (invalidFields.length > 0) {
-      return NextResponse.json(
-        { error: '업데이트 불가능한 필드가 포함되어 있습니다.', fields: invalidFields },
-        { status: 400 }
-      );
+      // return NextResponse.json(
+      //   { error: '업데이트 불가능한 필드가 포함되어 있습니다.' + "/n" + "invalidFields :" + invalidFields.toString(), fields: invalidFields },
+      //   { status: 400 }
+      // );
+      console.log('업데이트 불가능한 필드가 포함되어 있습니다.' + "/n" + "invalidFields :" + invalidFields.toString(), );
     }
+
+    // 유효한 필드만 추출
+    const validUpdateFields = Object.entries(fields).reduce((acc, [key, value]) => {
+      if (allowedFields.includes(key)) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {} as Record<string, any>);
+
+    
 
     // 대상 사용자 존재 여부 확인
     const existingUser = await db.query.users.findFirst({
@@ -101,7 +112,7 @@ export async function PATCH(
 
     // 업데이트 데이터 준비
     const updateData = {
-      ...fields,
+      ...validUpdateFields,
       updated_at: new Date(),
     };
 
@@ -114,7 +125,7 @@ export async function PATCH(
 
     // 변경 이력 기록
     await logUserChange({
-      userId: userId,
+      userId: existingUser.id,
       changedBy: requestUserId,
       changedByName: requestUser.name,
       changedByEmail: requestUser.email,

@@ -132,7 +132,7 @@ export class BrokerManagerService {
       // 캐시 무효화
       apiClient.clearCache();
       
-      return convertUserToBrokerManager(response.data || response);
+      return convertUserToBrokerManager(response);
     } catch (error) {
       console.error('[BrokerManagerService] 담당자 생성 중 오류 발생:', error);
       throw error;
@@ -144,7 +144,7 @@ export class BrokerManagerService {
    * @param manager 수정할 담당자 정보
    */
   static async updateManager(manager: IBrokerCompanyManager): Promise<IBrokerCompanyManager> {
-    try {            
+    try {
       // 프론트엔드 데이터를 백엔드 형식으로 변환
       const userData = convertBrokerManagerToUser(manager);
       
@@ -164,8 +164,7 @@ export class BrokerManagerService {
           rank: updateData.rank,
           password: updateData.password,
           status: updateData.status,
-          domains: updateData.domains,
-          company_id: updateData.companyId // company_id 필드명 맞춤
+          domains: updateData.domains
         },
         reason: '담당자 정보 업데이트'
       });
@@ -173,7 +172,7 @@ export class BrokerManagerService {
       // 캐시 무효화
       apiClient.clearCache();
       
-      return convertUserToBrokerManager(response.data || response);
+      return convertUserToBrokerManager(response);
     } catch (error) {
       console.error(`[BrokerManagerService] 담당자 수정 중 오류 발생 (ID: ${manager.id}):`, error);
       throw error;

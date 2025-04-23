@@ -3,20 +3,27 @@ import { userChangeLogs } from '@/db/schema/users';
 import { type IUser, type IUserChangeLog } from '@/types/user';
 
 type LogUserChangeParams = Omit<IUserChangeLog, 'id' | 'created_at' | 'diff'> & {
+  userId: string;
+  changedBy: string;
+  changedByName: string;
+  changedByEmail: string;
+  changedByAccessLevel: string | null;
+  changeType: 'create' | 'update' | 'status_change' | 'delete';
   oldData?: Partial<IUser>;
   newData: Partial<IUser>;
+  reason?: string | null;
 };
 
 /**
  * 사용자 변경 이력을 기록하는 함수
  */
 export async function logUserChange({
-  user_id,
-  changed_by,
-  changed_by_name,
-  changed_by_email,
-  changed_by_access_level,
-  change_type,
+  userId,
+  changedBy,
+  changedByName,
+  changedByEmail,
+  changedByAccessLevel,
+  changeType,
   oldData,
   newData,
   reason
@@ -42,14 +49,14 @@ export async function logUserChange({
 
     // 변경 이력 기록
     await db.insert(userChangeLogs).values({
-      user_id,
-      changed_by,
-      changed_by_name,
-      changed_by_email,
-      changed_by_access_level,
-      change_type,
+      user_id: userId,
+      changed_by: changedBy,
+      changed_by_name: changedByName,
+      changed_by_email: changedByEmail,
+      changed_by_access_level: changedByAccessLevel,
+      change_type: changeType,
       diff,
-      reason: reason || `사용자 ${change_type === 'create' ? '생성' : '정보 변경'}`,
+      reason: reason || `사용자 ${changeType === 'create' ? '생성' : '정보 변경'}`,
       created_at: new Date()
     });
 

@@ -22,6 +22,8 @@ import { IBrokerCompanyManager } from '@/types/broker-company';
 import { MANAGER_ROLES } from '@/utils/mockdata/mock-broker-company-managers';
 import { useBrokerCompanyManagerStore } from '@/store/broker-company-manager-store';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+// 백엔드 타입 참조를 위한 임포트 추가
+import { IUser, UserDomain, UserStatus, SystemAccessLevel } from '@/types/user';
 import { v4 as uuidv4 } from 'uuid';
 
 interface BrokerCompanyManagerFormProps {
@@ -141,6 +143,7 @@ export function BrokerCompanyManagerForm({
         status: data.status,
         roles: data.roles,
         companyId: companyId,
+        systemAccessLevel: 'broker_member',
         registeredDate: new Date().toISOString() // 현재 날짜를 등록일로 설정
       };
       

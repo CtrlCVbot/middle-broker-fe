@@ -50,6 +50,7 @@ export interface IBrokerCompanyManager {
   rank?: string; // 직급 (선택 사항)
   status: ManagerStatus; // 활성 상태
   companyId: string; // 소속 업체 ID
+  systemAccessLevel: SystemAccessLevel; // 시스템 접근 레벨
   registeredDate: string | Date;
 }
 
@@ -127,6 +128,7 @@ export function convertUserToBrokerManager(user: IUser): IBrokerCompanyManager {
     rank: user.rank || '',
     status: REVERSE_STATUS_MAP[user.status] || '비활성',
     roles: (user.domains || []).map(domain => DOMAIN_TO_ROLE_MAP[domain]).filter(Boolean),
+    systemAccessLevel: user.systemAccessLevel || 'guest',
     registeredDate: user.createdAt
   };
 }
