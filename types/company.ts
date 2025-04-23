@@ -1,10 +1,29 @@
 import { companies, companyChangeLogs } from '@/db/schema/companies';
+import { companyWarnings } from '@/db/schema/companyWarnings';
+import { companyWarningLogs } from '@/db/schema/companyWarningLogs';
 
 // Drizzle 스키마에서 타입 생성
 export type Company = typeof companies.$inferSelect;
 export type NewCompany = typeof companies.$inferInsert;
 export type CompanyChangeLog = typeof companyChangeLogs.$inferSelect;
 export type NewCompanyChangeLog = typeof companyChangeLogs.$inferInsert;
+
+// 업체 주의사항 타입
+export type CompanyWarning = typeof companyWarnings.$inferSelect;
+export type NewCompanyWarning = typeof companyWarnings.$inferInsert;
+
+// 업체 주의사항 로그 타입
+export type CompanyWarningLog = typeof companyWarningLogs.$inferSelect;
+export type NewCompanyWarningLog = typeof companyWarningLogs.$inferInsert;
+
+// 업체 주의사항 인터페이스 (클라이언트용)
+export interface ICompanyWarning {
+  id: string;
+  text: string;
+  category?: string;
+  sortOrder?: number;
+  createdAt?: string;
+}
 
 // 회사 상태 타입
 export const COMPANY_STATUSES = [
