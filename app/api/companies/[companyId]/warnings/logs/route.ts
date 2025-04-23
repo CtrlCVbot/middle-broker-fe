@@ -41,17 +41,15 @@ export async function GET(
     const url = new URL(request.url);
     const warningId = url.searchParams.get('warningId');
 
-    // 쿼리 조건 구성
-    let query = eq(companyWarningLogs.companyId, companyId);
-    
-    // 특정 주의사항에 대한 로그만 조회하는 경우
+    // 쿼리 조건 배열로 변경
+    const conditions = [eq(companyWarningLogs.companyId, companyId)];
     if (warningId) {
-      query = and(query, eq(companyWarningLogs.warningId, warningId));
+      conditions.push(eq(companyWarningLogs.warningId, warningId));
     }
 
     // 로그 조회 (최신순)
     const logs = await db.query.companyWarningLogs.findMany({
-      where: query,
+      where: conditions.length > 1 ? and(...conditions) : conditions[0],
       orderBy: [desc(companyWarningLogs.createdAt)],
       with: {
         // User 정보가 필요한 경우 추가할 수 있음
