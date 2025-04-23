@@ -115,14 +115,13 @@ export class BrokerManagerService {
         userData.password = 'password1234'; // 기본 비밀번호 설정
       }
       
-      // company_id 필드명 수정
+      // DB 스키마와 프론트엔드 필드 이름이 다르므로 명시적 매핑
       const apiData = {
         ...userData,
-        company_id: userData.companyId, // company_id로 필드명 변경
+        // 필수 필드가 누락되지 않게 확인
+        phone_number: userData.phone_number || '',
+        system_access_level: userData.system_access_level || 'broker_member',
       };
-      
-      // companyId 필드 제거 (중복 방지)
-      delete apiData.companyId;
       
       console.log('📤 담당자 생성 데이터:', apiData);
       
@@ -154,17 +153,18 @@ export class BrokerManagerService {
       console.log('🔄 담당자 수정 데이터:', updateData);
       
       // API 호출 - fields 엔드포인트로 요청 형식 수정
+      // 백엔드 필드 이름 형식에 맞게 변환 (fields 엔드포인트는 일부 필드가 camelCase 사용)
       const response = await apiClient.patch<IUser>(`/users/${id}/fields`, {
         fields: {
           name: updateData.name,
-          email: updateData.email,
-          phoneNumber: updateData.phoneNumber,
+          // 백엔드 필드 엔드포인트는 camelCase를 사용
+          phoneNumber: updateData.phone_number,
           department: updateData.department,
           position: updateData.position,
           rank: updateData.rank,
           password: updateData.password,
           status: updateData.status,
-          domains: updateData.domains
+          domains: updateData.domains,
         },
         reason: '담당자 정보 업데이트'
       });

@@ -27,8 +27,6 @@ export interface IBrokerCompany {
   representative: string;
   email: string | '';
   phoneNumber: string;
-  //faxNumber: string;
-  //managerName: string;
   mobileNumber: string;
   registeredDate: string;
   status: CompanyStatus;
@@ -50,7 +48,7 @@ export interface IBrokerCompanyManager {
   rank?: string; // 직급 (선택 사항)
   status: ManagerStatus; // 활성 상태
   companyId: string; // 소속 업체 ID
-  systemAccessLevel: SystemAccessLevel; // 시스템 접근 레벨
+  systemAccessLevel?: SystemAccessLevel; // 시스템 접근 레벨 (선택 사항, API에선 자동 처리)
   registeredDate: string | Date;
 }
 
@@ -135,20 +133,24 @@ export function convertUserToBrokerManager(user: IUser): IBrokerCompanyManager {
 
 /**
  * 사용자 생성/수정 API 요청 인터페이스
- * IUser 인터페이스와 구분하여 requestUserId를 포함시킴
+ * 백엔드 API 요청 형식에 맞춰 snake_case 필드명 사용
  */
 export interface IBrokerManagerRequest {
+  // 공통 필드
   id?: string;
   email?: string;
   password?: string;
   name?: string;
-  phoneNumber?: string;
-  companyId?: string; // 프론트엔드 필드명
-  company_id?: string; // 백엔드 필드명 (API 호환성)
+  
+  // 백엔드 필드명 (snake_case)
+  phone_number?: string;
+  company_id?: string;
+  system_access_level?: SystemAccessLevel;
+  
+  // 기타 필드
   department?: string | null;
   position?: string | null;
   rank?: string | null;
-  systemAccessLevel?: SystemAccessLevel;
   status?: UserStatus;
   domains?: UserDomain[];
   reason?: string;
@@ -160,18 +162,22 @@ export interface IBrokerManagerRequest {
 export function convertBrokerManagerToUser(
   manager: Partial<IBrokerCompanyManager> 
 ): IBrokerManagerRequest {
+  // 백엔드 필드 형식에 맞게 변환
   const userData: IBrokerManagerRequest = {
     id: manager.id,
     email: manager.email,
     name: manager.name,
-    phoneNumber: manager.phoneNumber,
-    companyId: manager.companyId,
+    phone_number: manager.phoneNumber || '',
+    company_id: manager.companyId,
     department: manager.department || null,
     position: manager.position || null,
     rank: manager.rank || null,
-    systemAccessLevel: 'broker_member' as SystemAccessLevel, // 기본값
+    system_access_level: 'broker_member',
+    domains: manager.roles
+      ? manager.roles.map(role => ROLE_TO_DOMAIN_MAP[role]) as UserDomain[]
+      : ['etc'] as UserDomain[],
     status: manager.status ? STATUS_MAP[manager.status] : 'active',
-    domains: manager.roles ? manager.roles.map(role => ROLE_TO_DOMAIN_MAP[role]).filter(Boolean) : [],
+    password: manager.password || ''
   };
   
   // 비밀번호가 제공된 경우에만 추가 (빈 문자열인 경우 제외)

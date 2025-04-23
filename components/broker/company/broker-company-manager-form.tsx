@@ -40,7 +40,7 @@ const managerFormSchema = z.object({
   name: z.string().min(1, { message: '이름은 필수 입력 항목입니다.' }),  
   password: z.string().min(8, { message: '비밀번호는 8자리 이상이어야 합니다.' }).optional(),
   email: z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }),
-  phoneNumber: z.string().min(1, { message: '연락처는 필수 입력 항목입니다.' }),
+  phoneNumber: z.string().min(1, { message: '연락처는 필수 입력 항목입니다.' }).optional(),
   department: z.string().optional(),
   position: z.string().optional(),
   rank: z.string().optional(),
@@ -106,7 +106,7 @@ export function BrokerCompanyManagerForm({
         ...manager,
         name: data.name,
         email: data.email,
-        phoneNumber: data.phoneNumber,
+        phoneNumber: data.phoneNumber || '',
         department: data.department || '',
         position: data.position || '',
         rank: data.rank || '',
@@ -136,14 +136,14 @@ export function BrokerCompanyManagerForm({
         id: uuidv4(), // 클라이언트에서 임시 ID 생성
         name: data.name,
         email: data.email,
-        phoneNumber: data.phoneNumber,
+        phoneNumber: data.phoneNumber || '',
         department: data.department || '',
         position: data.position || '',
         rank: data.rank || '',
         status: data.status,
         roles: data.roles,
         companyId: companyId,
-        systemAccessLevel: 'broker_member',
+        systemAccessLevel: 'broker_member' as SystemAccessLevel,
         registeredDate: new Date().toISOString() // 현재 날짜를 등록일로 설정
       };
       

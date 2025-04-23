@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { eq, and, ilike, or, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { users } from '@/db/schema/users';
-import { IUserFilter, SystemAccessLevel, UserStatus, UserDomain, USER_DOMAINS, IUser } from '@/types/user';
+import { IUserFilter, SystemAccessLevel, UserStatus, UserDomain, USER_DOMAINS, IUser, SYSTEM_ACCESS_LEVELS } from '@/types/user';
 import { z } from 'zod';
 import { hash } from 'bcrypt';
 import { logUserChange } from '@/utils/user-change-logger';
@@ -88,12 +88,12 @@ export async function GET(request: NextRequest) {
 
 // 사용자 생성 요청 스키마
 const CreateUserSchema = z.object({
-  email: z.string().email('올바른 이메일 형식이 아닙니다.'),
-  password: z.string().min(8, '비밀번호는 최소 8자 이상이어야 합니다.').optional(),
-  name: z.string().min(2, '이름은 최소 2자 이상이어야 합니다.'),
-  phone_number: z.string().min(10, '올바른 전화번호 형식이 아닙니다.'),
+  email: z.string(),
+  password: z.string(),
+  name: z.string(),
+  phone_number: z.string(),
   company_id: z.string().uuid(),
-  system_access_level: z.enum(['platform_admin', 'broker_admin', 'shipper_admin', 'broker_member', 'shipper_member', 'viewer', 'guest']),
+  system_access_level: z.enum(SYSTEM_ACCESS_LEVELS),
   domains: z.array(z.enum(USER_DOMAINS)),
   department: z.string().optional(),
   position: z.string().optional(),
@@ -101,13 +101,23 @@ const CreateUserSchema = z.object({
   //requestUserId: z.string().uuid('잘못된 요청 사용자 ID 형식입니다.')
 });
 
+// 필드 값 검증을 위한 Zod 스키마
+// const FieldCreateSchema = z.object({
+//   fields: z.record(z.string(), z.any()),
+//   reason: z.string().optional(),
+// });
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
+    
+
     // 요청 데이터 검증
-    const validationResult = CreateUserSchema.safeParse(body);
+    const validationResult = CreateUserSchema.safeParse(body);  
+    
     if (!validationResult.success) {
+      
       return new Response(
         JSON.stringify({
           error: '잘못된 요청 형식입니다.',
@@ -117,7 +127,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { password, ...userData } = validationResult.data;
+    const { ...userData } = validationResult.data;
     const requestUserId = request.headers.get('x-user-id') || '';
 
     // 요청 사용자 정보 조회
