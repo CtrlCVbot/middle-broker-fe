@@ -115,21 +115,31 @@ export const REVERSE_STATUS_MAP: Record<UserStatus, ManagerStatus> = {
  * 백엔드 IUser 객체를 프론트엔드 IBrokerCompanyManager 객체로 변환
  */
 export function convertUserToBrokerManager(user: IUser): IBrokerCompanyManager {
+  // 필드가 다양한 형태로 존재할 수 있으므로 모든 가능한 형태 확인
+  const phoneNumber = user.phoneNumber || user.phone_number || '';
+  const companyId = user.companyId || user.company_id || '';
+  const registeredDate = user.createdAt || user.created_at || new Date().toISOString();
+  
+  console.log('🔍 변환 중 필드 확인:', { 
+    원본전화번호: user.phoneNumber || user.phone_number,
+    원본회사ID: user.companyId || user.company_id,
+    원본등록일: user.createdAt || user.created_at
+  });
   
   return {
     id: user.id,
     password: user.password || '',
-    companyId: user.companyId,
+    companyId: companyId,
     name: user.name,
     email: user.email,
-    phoneNumber: user.phoneNumber || '',
+    phoneNumber: phoneNumber,
     department: user.department || '',
     position: user.position || '',
     rank: user.rank || '',
     status: REVERSE_STATUS_MAP[user.status] || '비활성',
     roles: (user.domains || []).map(domain => DOMAIN_TO_ROLE_MAP[domain]).filter(Boolean),
     systemAccessLevel: user.systemAccessLevel || 'guest',
-    registeredDate: user.createdAt
+    registeredDate: registeredDate
   };
 }
 

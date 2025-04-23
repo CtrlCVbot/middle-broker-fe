@@ -45,21 +45,23 @@ export type UserStatus = typeof USER_STATUSES[number];
 export interface IUser {
   id: string;
   email: string;
-  password?: string;
   name: string;
-  phoneNumber: string;
-  companyId: string;
-  systemAccessLevel: SystemAccessLevel;
-  domains: UserDomain[];
+  password?: string;
+  phoneNumber?: string;
+  companyId?: string;
+  domains?: UserDomain[];
   status: UserStatus;
-  department?: string | null;
-  position?: string | null;
-  rank?: string | null;
-  lastLoginAt?: Date | null;
-  createdBy?: string | null;
-  updatedBy?: string | null;
-  createdAt: Date;
-  updatedAt: Date;
+  systemAccessLevel?: SystemAccessLevel;
+  department?: string;
+  position?: string;
+  rank?: string;
+  createdAt?: string;
+  
+  // 백엔드에서 스네이크케이스로 반환될 수 있는 필드 추가
+  phone_number?: string;
+  company_id?: string;
+  created_at?: string;
+  system_access_level?: SystemAccessLevel;
 }
 
 // 사용자 필터 인터페이스
