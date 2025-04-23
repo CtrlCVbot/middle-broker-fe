@@ -27,6 +27,8 @@ export async function GET(
   try {
     const { companyId } = params;
 
+    console.log('companyId', companyId);
+
     // 업체 존재 여부 확인
     const companyExists = await db.query.companies.findFirst({
       where: eq(companies.id, companyId),

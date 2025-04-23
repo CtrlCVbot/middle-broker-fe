@@ -11,7 +11,7 @@ import {
   updateWarning,
   deleteWarning,
   updateWarningSort
-} from '@/services/broker-warning-service';
+} from '@/services/broker-company-warning-service';
 import { ICompanyWarning, ICompanyWarningSortRequest } from '@/types/company-warning';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
@@ -142,11 +142,13 @@ export function BrokerCompanyWarning({ companyId }: BrokerCompanyWarningProps) {
 
   // 주의사항 목록 불러오기
   const loadWarnings = async () => {
+    console.log('loadWarnings', companyId);
     if (!companyId) return;
     
     setIsLoading(true);
     try {
       const data = await fetchWarnings(companyId);
+      console.log('data', data);
       setWarnings(data);
     } catch (error) {
       toast({
