@@ -18,5 +18,5 @@ export const companyWarnings = pgTable('company_warnings', {
   createdBy: uuid('created_by'),
   updatedBy: uuid('updated_by'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow()
 }); 

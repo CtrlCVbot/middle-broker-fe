@@ -60,20 +60,23 @@ export async function PATCH(
   { params }: { params: { companyId: string; warningId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json(
-        { message: '인증되지 않은 사용자입니다.' },
-        { status: 401 }
-      );
-    }
+    // const session = await getServerSession(authOptions);
+    // if (!session?.user) {
+    //   return NextResponse.json(
+    //     { message: '인증되지 않은 사용자입니다.' },
+    //     { status: 401 }
+    //   );
+    // }
 
     const { companyId, warningId } = params;
     const body = await request.json();
 
     // 요청 검증
     const validationResult = warningUpdateSchema.safeParse(body);
+    const requestUserId = request.headers.get('x-user-id');
+    console.log('requestUserId', requestUserId);
     
+
     if (!validationResult.success) {
       return NextResponse.json(
         { message: '입력 데이터가 유효하지 않습니다.', errors: validationResult.error.errors },
@@ -100,7 +103,7 @@ export async function PATCH(
 
     // 업데이트할 필드 설정
     const updateData: any = {
-      updatedBy: session.user.id,
+      updatedBy: requestUserId,
       updatedAt: new Date(),
     };
 
@@ -133,7 +136,7 @@ export async function PATCH(
       action: 'update',
       previousData: existingWarning,
       newData: updateData,
-      createdBy: session.user.id,
+      createdBy: requestUserId || '',
       reason: reason || null,
     });
 
@@ -158,19 +161,23 @@ export async function DELETE(
   { params }: { params: { companyId: string; warningId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json(
-        { message: '인증되지 않은 사용자입니다.' },
-        { status: 401 }
-      );
-    }
+    // const session = await getServerSession(authOptions);
+    // if (!session?.user) {
+    //   return NextResponse.json(
+    //     { message: '인증되지 않은 사용자입니다.' },
+    //     { status: 401 }
+    //   );
+    // }
 
     const { companyId, warningId } = params;
+    console.log('companyId', companyId);
+    console.log('warningId', warningId);
     
     // URL에서 reason 쿼리 파라미터 추출
     const url = new URL(request.url);
     const reason = url.searchParams.get('reason');
+    const requestUserId = request.headers.get('x-user-id');
+    console.log('requestUserId', requestUserId);
 
     // 주의사항 존재 확인
     const existingWarning = await db.query.companyWarnings.findFirst({
@@ -193,7 +200,7 @@ export async function DELETE(
       warningId,
       action: 'delete',
       previousData: existingWarning,
-      createdBy: session.user.id,
+      createdBy: requestUserId || '',
       reason: reason || null,
     });
 

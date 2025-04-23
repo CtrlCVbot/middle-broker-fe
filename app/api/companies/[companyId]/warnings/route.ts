@@ -66,19 +66,22 @@ export async function POST(
   { params }: { params: { companyId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json(
-        { message: '인증되지 않은 사용자입니다.' },
-        { status: 401 }
-      );
-    }
+    // const session = await getServerSession(authOptions);
+    // console.log('session', session);
+    // if (!session?.user) {
+    //   return NextResponse.json(
+    //     { message: '인증되지 않은 사용자입니다.' },
+    //     { status: 401 }
+    //   );
+    // }
 
     const { companyId } = params;
     const body = await request.json();
 
     // 요청 검증
     const validationResult = warningCreateSchema.safeParse(body);
+    const requestUserId = request.headers.get('x-user-id');
+    console.log('requestUserId', requestUserId);
     
     if (!validationResult.success) {
       return NextResponse.json(
@@ -107,8 +110,8 @@ export async function POST(
       text,
       category: category || '기타',
       sortOrder: sortOrder || 0,
-      createdBy: session.user.id,
-      updatedBy: session.user.id,
+      createdBy: requestUserId,
+      updatedBy: requestUserId,
     }).returning();
 
     // 변경 로그 기록
@@ -117,7 +120,7 @@ export async function POST(
       warningId: newWarning.id,
       action: 'create',
       newData: newWarning,
-      createdBy: session.user.id,
+      createdBy: requestUserId || '',
       reason: reason || null,
     });
 

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { IBrokerCompanyManager, ManagerRole, ManagerStatus, IBrokerManagerFilter } from '@/types/broker-company';
 // API 서비스 임포트 추가
-import { BrokerManagerService } from '@/services/broker-manager-service';
+import { BrokerManagerService } from '@/services/broker-company-manager-service';
 // 목업 데이터 관련 임포트 주석 처리
 /*
 import { 
