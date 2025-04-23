@@ -194,17 +194,7 @@ export async function DELETE(
       );
     }
 
-    // 변경 로그 기록 (삭제 전에 기록)
-    await logWarningChange({
-      companyId,
-      warningId,
-      action: 'delete',
-      previousData: existingWarning,
-      createdBy: requestUserId || '',
-      reason: reason || null,
-    });
-
-    // 주의사항 삭제
+    // 주의사항 삭제 - 로그를 먼저 저장하는 대신 삭제를 먼저 실행
     await db.delete(companyWarnings)
       .where(
         and(
@@ -212,6 +202,21 @@ export async function DELETE(
           eq(companyWarnings.companyId, companyId)
         )
       );
+
+    // 변경 로그 기록 (삭제 성공 후 기록)
+    try {
+      await logWarningChange({
+        companyId,
+        warningId,
+        action: 'delete',
+        previousData: existingWarning,
+        createdBy: requestUserId || '',
+        reason: reason || null,
+      });
+    } catch (logError) {
+      // 로그 저장 실패는 주요 기능에 영향을 주지 않도록 함
+      console.error('주의사항 삭제 로그 기록 중 오류 발생:', logError);
+    }
 
     return NextResponse.json(
       { message: '주의사항이 삭제되었습니다.', success: true }

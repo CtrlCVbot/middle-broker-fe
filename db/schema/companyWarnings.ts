@@ -11,7 +11,7 @@ import { companies } from './companies';
 // 업체 주의사항 테이블
 export const companyWarnings = pgTable('company_warnings', {
   id: uuid('id').defaultRandom().primaryKey(),
-  companyId: uuid('company_id').notNull().references(() => companies.id),
+  companyId: uuid('company_id'),
   text: text('text').notNull(),
   category: varchar('category', { length: 50 }).default('기타'),
   sortOrder: integer('sort_order').default(0),

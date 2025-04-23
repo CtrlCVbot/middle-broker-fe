@@ -217,6 +217,8 @@ export function BrokerCompanyWarning({ companyId }: BrokerCompanyWarningProps) {
   // 주의사항 삭제
   const handleDeleteWarning = async (id: string) => {
     setIsLoading(true);
+    console.log('handleDeleteWarning', id);
+    console.log('companyId', companyId);
     try {
       await deleteWarning(companyId, id);
       await loadWarnings();

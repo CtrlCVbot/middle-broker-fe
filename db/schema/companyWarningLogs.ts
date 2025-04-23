@@ -12,8 +12,8 @@ import { companyWarnings } from './companyWarnings';
 // 업체 주의사항 변경 로그 테이블
 export const companyWarningLogs = pgTable('company_warning_logs', {
   id: uuid('id').defaultRandom().primaryKey(),
-  companyId: uuid('company_id').notNull().references(() => companies.id),
-  warningId: uuid('warning_id').notNull().references(() => companyWarnings.id),
+  companyId: uuid('company_id'),
+  warningId: uuid('warning_id'),
   action: varchar('action', { length: 20 }).notNull(), // create, update, delete
   previousData: jsonb('previous_data'), // 이전 데이터 (수정/삭제 시)
   newData: jsonb('new_data'), // 새 데이터 (생성/수정 시)
