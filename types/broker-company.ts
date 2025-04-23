@@ -38,7 +38,7 @@ export interface IBrokerCompany {
 // 담당자 정보 인터페이스
 export interface IBrokerCompanyManager {
   id: string;
-  password: string; // 실제 구현에서는 해시 처리된 값
+  password: string; 
   name: string;
   email: string;
   phoneNumber: string;
@@ -116,11 +116,13 @@ export const REVERSE_STATUS_MAP: Record<UserStatus, ManagerStatus> = {
  */
 export function convertUserToBrokerManager(user: IUser): IBrokerCompanyManager {
   // 필드가 다양한 형태로 존재할 수 있으므로 모든 가능한 형태 확인
+  const password = user.password || '';
   const phoneNumber = user.phoneNumber || user.phone_number || '';
   const companyId = user.companyId || user.company_id || '';
   const registeredDate = user.createdAt || user.created_at || new Date().toISOString();
   
   console.log('🔍 변환 중 필드 확인:', { 
+    원본비밀번호: user.password,
     원본전화번호: user.phoneNumber || user.phone_number,
     원본회사ID: user.companyId || user.company_id,
     원본등록일: user.createdAt || user.created_at
@@ -128,7 +130,7 @@ export function convertUserToBrokerManager(user: IUser): IBrokerCompanyManager {
   
   return {
     id: user.id,
-    password: user.password || '',
+    password: password || '',
     companyId: companyId,
     name: user.name,
     email: user.email,

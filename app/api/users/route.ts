@@ -67,11 +67,12 @@ export async function GET(request: NextRequest) {
         .then(res => Number(res[0].count))
     ]);
 
-    // 비밀번호 필드 제외
-    const usersWithoutPassword = result.map(({ password, ...user }) => user);
+    // 비밀번호 필드 제외 - 나중에 추후개발에 추가
+    //const usersWithoutPassword = result.map(({ password, ...user }) => user);
 
     return NextResponse.json({
-      data: usersWithoutPassword,
+      //data: usersWithoutPassword,
+      data: result,
       total,
       page,
       pageSize,
