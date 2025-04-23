@@ -1,47 +1,46 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
+import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Form } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from '@/components/ui/form';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
-import { 
   IBrokerCompany, 
-  CompanyType, 
-  StatementType, 
-  CompanyStatus 
+  COMPANY_TYPE_OPTIONS, 
+  COMPANY_STATUS_OPTIONS,
+  CompanyTypeOption,
+  CompanyStatus,
+  StatementType,
+  STATEMENT_TYPE_OPTIONS
 } from '@/types/broker-company';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+import { FileUpload } from './file-upload';
+import { SaveButton } from '@/components/ui/save-button';
 import { BrokerCompanyManagerList } from './broker-company-manager-list';
 import { getCurrentUser } from '@/utils/auth';
+import { BrokerCompanyWarning } from './broker-company-warning';
+import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
 
 // 상수 배열 추가
 const COMPANY_TYPE_OPTIONS = ['화주', '운송사', '주선사'] as const;
@@ -74,10 +73,6 @@ const companyFormSchema = z.object({
   //managerName: z.string().optional(),
   //managerPhoneNumber: z.string().optional(),
   representative: z.string().min(1, { message: '대표자명은 필수 입력 항목입니다.' }),
-  warnings: z.array(z.object({
-    id: z.string(),
-    text: z.string().min(1).max(500)
-  })).optional(),
   files: z.array(z.object({
     id: z.string(),
     name: z.string(),
@@ -144,7 +139,6 @@ function normalizeCompanyData(data: any): Partial<IBrokerCompany> {
     registeredDate: data.registeredDate || data.registeredAt || '',
     
     // 추가 데이터
-    warnings: data.warnings || [],
     files: data.files || [],
     managers: data.managers || [],
   };
@@ -159,12 +153,6 @@ export function BrokerCompanyForm({
   initialData = {},
   mode = 'register'
 }: BrokerCompanyFormProps) {
-  // 주의사항 관리 상태
-  const [warnings, setWarnings] = useState<{ id: string; text: string }[]>(
-    initialData.warnings || []
-  );
-  const [newWarning, setNewWarning] = useState('');
-  
   // 파일 업로드 상태
   const [files, setFiles] = useState<{ id: string; name: string; url: string; type: string }[]>(
     initialData.files || []
@@ -199,7 +187,6 @@ export function BrokerCompanyForm({
       //managerName: initialData.managerName || '',
       //managerPhoneNumber: initialData.managerPhoneNumber || '',
       representative: initialData.representative || '',
-      warnings: [],
       files: [],
     },
   });
@@ -212,11 +199,6 @@ export function BrokerCompanyForm({
       
       // 데이터 정규화 - 다양한 형식의 데이터를 폼에 맞게 변환
       const normalizedData = normalizeCompanyData(initialData);
-      
-      // 주의사항 상태 업데이트
-      if (normalizedData.warnings && normalizedData.warnings.length > 0) {
-        setWarnings(normalizedData.warnings);
-      }
       
       // 파일 상태 업데이트
       if (normalizedData.files && normalizedData.files.length > 0) {
@@ -237,7 +219,6 @@ export function BrokerCompanyForm({
         //managerName: normalizedData.managerName,
         //managerPhoneNumber: normalizedData.managerPhoneNumber,
         representative: normalizedData.representative,
-        warnings: [],
         files: [],
       }, {
         keepDirtyValues: false, // 이 옵션을 false로 설정해 모든 값을 새로 설정
@@ -255,23 +236,6 @@ export function BrokerCompanyForm({
     if (numbers.length <= 3) return numbers;
     if (numbers.length <= 7) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
     return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
-  };
-
-  // 주의사항 추가 핸들러
-  const handleAddWarning = () => {
-    if (newWarning.trim()) {
-      const warning = {
-        id: generateId(),
-        text: newWarning.trim()
-      };
-      setWarnings([...warnings, warning]);
-      setNewWarning('');
-    }
-  };
-
-  // 주의사항 삭제 핸들러
-  const handleDeleteWarning = (id: string) => {
-    setWarnings(warnings.filter(warning => warning.id !== id));
   };
 
   // 폼 제출 핸들러
@@ -295,7 +259,6 @@ export function BrokerCompanyForm({
       id: initialData.id || generateId(),
       code: initialData.code || `CM${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`,
       registeredDate: initialData.registeredDate || new Date().toISOString().split('T')[0],
-      warnings,
       files,
       managers: initialData.managers || [],
     };
@@ -543,50 +506,11 @@ export function BrokerCompanyForm({
                 <CardDescription>해당 업체에 대한 주의사항을 등록합니다. 여러 개의 주의사항을 추가할 수 있습니다.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Input
-                    value={newWarning}
-                    onChange={(e) => setNewWarning(e.target.value)}
-                    placeholder="주의사항을 입력하세요"
-                    className="flex-1"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleAddWarning();
-                      }
-                    }}
-                  />
-                  <Button 
-                    type="button" 
-                    onClick={handleAddWarning}
-                    variant="secondary"
-                  >
-                    추가
-                  </Button>
-                </div>
-                
-                {warnings.length > 0 ? (
-                  <div className="space-y-2 mt-4">
-                    {warnings.map((warning) => (
-                      <div 
-                        key={warning.id} 
-                        className="flex items-center p-2 rounded border border-gray-200 bg-gray-50"
-                      >
-                        <span className="flex-1">{warning.text}</span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteWarning(warning.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
+                {initialData.id ? (
+                  <BrokerCompanyWarning companyId={initialData.id} />
                 ) : (
                   <div className="text-center py-6 text-muted-foreground">
-                    등록된 주의사항이 없습니다. 주의사항을 추가해주세요.
+                    업체를 등록한 후 주의사항을 관리할 수 있습니다.
                   </div>
                 )}
               </CardContent>
