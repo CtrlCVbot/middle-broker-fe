@@ -38,7 +38,7 @@ export interface IBrokerCompany {
 // 담당자 정보 인터페이스
 export interface IBrokerCompanyManager {
   id: string;
-  password?: string; // 실제 구현에서는 해시 처리된 값
+  password: string; // 실제 구현에서는 해시 처리된 값
   name: string;
   email: string;
   phoneNumber: string;
@@ -115,12 +115,14 @@ export const REVERSE_STATUS_MAP: Record<UserStatus, ManagerStatus> = {
  * 백엔드 IUser 객체를 프론트엔드 IBrokerCompanyManager 객체로 변환
  */
 export function convertUserToBrokerManager(user: IUser): IBrokerCompanyManager {
+  
   return {
     id: user.id,
-    companyId: user.companyId || '',
+    password: user.password || '',
+    companyId: user.companyId,
     name: user.name,
     email: user.email,
-    phoneNumber: user.phoneNumber,
+    phoneNumber: user.phoneNumber || '',
     department: user.department || '',
     position: user.position || '',
     rank: user.rank || '',

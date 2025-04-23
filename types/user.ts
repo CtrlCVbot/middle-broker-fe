@@ -48,7 +48,7 @@ export interface IUser {
   password?: string;
   name: string;
   phoneNumber: string;
-  companyId: string | null;
+  companyId: string;
   systemAccessLevel: SystemAccessLevel;
   domains: UserDomain[];
   status: UserStatus;

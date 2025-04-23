@@ -61,6 +61,7 @@ export function BrokerCompanyManagerForm({
   const [showPassword, setShowPassword] = useState(false);
   
   const { addManager, updateManager } = useBrokerCompanyManagerStore();
+  console.log('manager :', manager);
   
   // 폼 설정
   const form = useForm<ManagerFormValues>({
@@ -137,6 +138,7 @@ export function BrokerCompanyManagerForm({
         name: data.name,
         email: data.email,
         phoneNumber: data.phoneNumber || '',
+        password: data.password || '',
         department: data.department || '',
         position: data.position || '',
         rank: data.rank || '',
@@ -258,10 +260,10 @@ export function BrokerCompanyManagerForm({
                 <FormControl>
                   <Input 
                     placeholder="010-0000-0000" 
-                    {...field} 
                     onChange={(e) => {
                       field.onChange(formatPhoneNumber(e.target.value));
                     }}
+                    value={field.value}
                   />
                 </FormControl>
                 <FormMessage />

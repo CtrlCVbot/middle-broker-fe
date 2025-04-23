@@ -55,10 +55,14 @@ export class BrokerManagerService {
         cacheLifetime: 10 * 1000 // 10초 캐싱
       });
       
+      console.log('🔍 변환 전 response:', response);
+      
       // 백엔드 데이터를 프론트엔드 형식으로 변환
       const managers: IBrokerCompanyManager[] = response.data.map((user: IUser) => 
         convertUserToBrokerManager(user)
       );
+      
+      console.log('🔍 변환 후 managers:', managers);
       
       return {
         data: managers,

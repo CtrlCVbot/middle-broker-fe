@@ -66,6 +66,7 @@ export function BrokerCompanyManagerList({ companyId }: BrokerCompanyManagerList
     
     // 디버깅용 로그 추가
     console.log('🔍 담당자 목록 컴포넌트 마운트, 회사 ID:', companyId);
+    console.log('🔍 담당자 목록 컴포넌트 마운트, 담당자 목록:', managers);
     
     // 초기 데이터 로딩
     loadManagers(companyId);

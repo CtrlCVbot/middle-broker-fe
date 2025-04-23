@@ -61,6 +61,7 @@ export function BrokerCompanyTable({ companies, onCompanyClick }: BrokerCompanyT
       status: company.status 
     });
     
+    //console.log('company :', company);
     // null이나 undefined 체크를 위한, 안전한 데이터 확인
     const safeCompany = {
       ...company,
