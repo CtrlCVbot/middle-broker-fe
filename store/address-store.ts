@@ -24,7 +24,7 @@ interface AddressState {
   fetchAddresses: (params?: Partial<IAddressSearchParams>) => Promise<void>;
   fetchAddress: (id: string) => Promise<IAddress | null>;
   fetchFrequentAddresses: () => Promise<void>;
-  addAddress: (address: Omit<IAddress, 'id' | 'createdAt' | 'updatedAt'>) => Promise<IAddress>;
+  addAddress: (address: Omit<IAddress, 'id' | 'createdAt' | 'updatedAt' | 'isFrequent' | 'createdBy' | 'updatedBy'>) => Promise<IAddress>;
   editAddress: (id: string, address: Omit<IAddress, 'id' | 'createdAt' | 'updatedAt'>) => Promise<IAddress>;
   removeAddress: (id: string) => Promise<void>;
   batchRemoveAddresses: (ids: string[]) => Promise<void>;
@@ -132,8 +132,13 @@ const useAddressStore = create<AddressState>()(
         set({ isLoadingFrequent: true });
         
         try {
-          const frequentAddresses = await AddressService.getFrequentAddresses();
-          set({ frequentAddresses, isLoadingFrequent: false });
+          const frequentAddresses = await AddressService.getFrequentAddresses({
+            page: 1,
+            limit: 10,
+            search: '',
+            type: 'load'
+          });
+          set({ frequentAddresses: frequentAddresses.data, isLoadingFrequent: false });
         } catch (error: any) {
           console.error("[AddressStore] 자주 사용하는 주소 목록 조회 실패:", error);
           set({ isLoadingFrequent: false });
@@ -148,7 +153,9 @@ const useAddressStore = create<AddressState>()(
           const tempId = `temp-${Date.now()}`;
           
           // API 호출
-          const newAddress = await AddressService.createAddress(address);
+          const newAddress = await AddressService.createAddress({
+            ...address
+          });
           
           // 성공 메시지
           toast.success("주소가 추가되었습니다.");

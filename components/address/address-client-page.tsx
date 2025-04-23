@@ -147,9 +147,7 @@ export default function AddressClientPage() {
     } else {
       // 주소 추가
       const result = await addAddress({
-        ...data,
-        createdBy: '',
-        updatedBy: ''
+        ...data
       });
       success = !!result;
     }

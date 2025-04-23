@@ -71,15 +71,40 @@ export class AddressService {
   /**
    * 자주 사용하는 주소 목록 조회 (캐싱 적용)
    */
-  static async getFrequentAddresses(): Promise<IAddress[]> {
+  // static async getFrequentAddresses(): Promise<IAddress[]> {
+  //   try {
+  //     // 자주 사용 주소는 변경이 적고 중요하므로 더 오래 캐싱
+  //     return await apiClient.get<IAddress[]>('/addresses/frequent', {
+  //       useCache: true,
+  //       cacheLifetime: 15 * 60 * 1000 // 15분 캐싱
+  //     });
+  //   } catch (error) {
+  //     console.error('[AddressService] 자주 사용 주소 목록 조회 실패:', error);
+  //     throw error;
+  //   }
+  // }
+
+  static async getFrequentAddresses(params: IAddressSearchParams): Promise<IAddressResponse> {
+    const { page = 1, limit = 10, search = '', type = '' } = params;
+    const queryParams = new URLSearchParams();
+    
+    queryParams.append('page', page.toString());
+    queryParams.append('limit', limit.toString());
+    
+    if (search) queryParams.append('search', search);
+    if (type) queryParams.append('type', type);
+    
+    // 검색어가 없고 첫 페이지인 경우 더 오래 캐싱
+    const useCache = !search;
+    const cacheLifetime = !search && page === 1 ? 5 * 60 * 1000 : undefined; // 5분 캐싱
+    
     try {
-      // 자주 사용 주소는 변경이 적고 중요하므로 더 오래 캐싱
-      return await apiClient.get<IAddress[]>('/addresses/frequent', {
-        useCache: true,
-        cacheLifetime: 15 * 60 * 1000 // 15분 캐싱
-      });
+      return await apiClient.get<IAddressResponse>(
+        `/addresses?${queryParams.toString()}`, 
+        { useCache, cacheLifetime }
+      );
     } catch (error) {
-      console.error('[AddressService] 자주 사용 주소 목록 조회 실패:', error);
+      console.error('[AddressService] 주소 목록 조회 실패:', error);
       throw error;
     }
   }
@@ -88,7 +113,7 @@ export class AddressService {
    * 주소 생성
    * @param address 생성할 주소 데이터
    */
-  static async createAddress(address: Omit<IAddress, 'id' | 'createdAt' | 'updatedAt'>): Promise<IAddress> {
+  static async createAddress(address: Omit<IAddress, 'id' | 'createdAt' | 'updatedAt' | 'isFrequent' | 'createdBy' | 'updatedBy'>): Promise<IAddress> {
     try {
       const result = await apiClient.post<IAddress>('/addresses', address);
       // 관련 캐시 무효화 (apiClient에서 처리하지만 명시적으로 호출)
