@@ -24,19 +24,13 @@ import {
 } from '@/components/ui/select';
 import { 
   IBrokerCompany, 
-  COMPANY_TYPE_OPTIONS, 
-  COMPANY_STATUS_OPTIONS,
-  CompanyTypeOption,
   CompanyStatus,
-  StatementType,
-  STATEMENT_TYPE_OPTIONS
+  StatementType
 } from '@/types/broker-company';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { FileUpload } from './file-upload';
-import { SaveButton } from '@/components/ui/save-button';
 import { BrokerCompanyManagerList } from './broker-company-manager-list';
 import { getCurrentUser } from '@/utils/auth';
 import { BrokerCompanyWarning } from './broker-company-warning';
