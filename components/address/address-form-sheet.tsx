@@ -338,8 +338,7 @@ export function AddressFormSheet({
                 </div>
               </div>
 
-              {/* 주소 정보 영역 */}
-              
+              {/* 주소 정보 영역 */}              
               <div className="border rounded-lg p-4 bg-muted/30">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2 text-primary">

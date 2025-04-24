@@ -41,6 +41,7 @@ import {
   //searchAddress 
 } from "@/utils/mockdata/mock-register";
 import { LocationForm } from "@/components/order/register-location-form";
+import { LocationFormVer01 } from "@/components/order/register-location-form-ver01";
 import { OptionSelector } from "./register-option-selector";
 import { TruckIcon, MapPinIcon, Settings2 as OptionsIcon, Calculator as CalculatorIcon, ChevronDown, ChevronUp, PencilIcon, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -486,6 +487,89 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="departureCopy" className="pt-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center">
+                  <MapPinIcon className="h-5 w-5 mr-2 text-blue-500" />
+                  출발지 정보 복사
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <LocationFormVer01
+                    type="departure"
+                    locationInfo={registerData.departure}
+                    onChange={(info) => setDeparture(info as any)}
+                    title="출발지 정보"
+                    disabled={editMode && !isEditable('departure')}
+                    onDisabledClick={() => handleDisabledFieldClick('departure')}
+                  />
+                  
+                  <div className="flex justify-between mt-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setActiveTab("vehicle")}
+                    >
+                      이전
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => setActiveTab("destination")}
+                    >
+                      다음: 도착지 정보
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="destinationCopy">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center">
+                  <MapPinIcon className="h-5 w-5 mr-2 text-red-500" />
+                  도착지 정보
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <LocationForm
+                    type="destination"
+                    locationInfo={registerData.destination}
+                    onChange={(info) => setDestination(info as any)}
+                    title="도착지 정보"
+                    disabled={editMode && !isEditable('destination')}
+                    onDisabledClick={() => handleDisabledFieldClick('destination')}
+                  />
+                  
+                  <div className="flex justify-between mt-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setActiveTab("departure")}
+                    >
+                      이전
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        const isValid = validateForm();
+                        if (isValid) {
+                          onSubmit();
+                        }
+                      }}
+                    >
+                      화물 등록
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
         
         {/* 모바일에서도 예상 정보 카드 표시 */}
@@ -693,8 +777,8 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
 
           {/* 중간: 출발지/도착지 정보 카드 */}
           <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* 출발지 정보 */}
-            <Card>
+            {/* 출발지 정보 - 임시 주석*/}
+            {/* <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center">
                   <MapPinIcon className="h-5 w-5 mr-2 text-blue-500" />
@@ -711,10 +795,10 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                   onDisabledClick={() => handleDisabledFieldClick('departure')}
                 />
               </CardContent>
-            </Card>
+            </Card> */}
             
-            {/* 도착지 정보 */}
-            <Card>
+            {/* 도착지 정보 - 임시 주석*/}
+            {/* <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center">
                   <MapPinIcon className="h-5 w-5 mr-2 text-red-500" />
@@ -723,6 +807,46 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
               </CardHeader>
               <CardContent>
                 <LocationForm
+                  type="destination"
+                  locationInfo={registerData.destination}
+                  onChange={(info) => setDestination(info as any)}
+                  compact={true}
+                  disabled={editMode && !isEditable('destination')}
+                  onDisabledClick={() => handleDisabledFieldClick('destination')}
+                />
+              </CardContent>
+            </Card> */}
+
+            {/* 출발지 정보 Copy*/}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center">
+                  <MapPinIcon className="h-5 w-5 mr-2 text-bule-500" />
+                  출발지 정보 복사
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <LocationFormVer01
+                  type="departure"
+                  locationInfo={registerData.departure}
+                  onChange={(info) => setDestination(info as any)}
+                  compact={true}
+                  disabled={editMode && !isEditable('departure')}
+                  onDisabledClick={() => handleDisabledFieldClick('departure')}
+                />
+              </CardContent>
+            </Card>
+
+            {/* 도착지 정보 Copy*/}
+            <Card>
+            <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center">
+                  <MapPinIcon className="h-5 w-5 mr-2 text-red-500" />
+                  도착지 정보 복사
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <LocationFormVer01
                   type="destination"
                   locationInfo={registerData.destination}
                   onChange={(info) => setDestination(info as any)}
