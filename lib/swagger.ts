@@ -2226,6 +2226,41 @@ export const swaggerSpec = {
           }
         }
       }
-    }
+    },
+    "/api/external/kakao/local/search-address": {
+      get: {
+        summary: "🔍 카카오 주소 검색",
+        tags: ["Kakao"],
+        parameters: [
+          {
+            name: "query",
+            in: "query",
+            required: true,
+            description: "검색할 주소 (예: 서울특별시 강남구 테헤란로 10)",
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "성공적으로 주소 검색 결과 반환",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    documents: {
+                      type: "array",
+                      items: { type: "object" },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   }
 }; 

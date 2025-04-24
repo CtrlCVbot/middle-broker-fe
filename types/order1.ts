@@ -72,6 +72,17 @@ export interface IUserSnapshot {
   position?: string;
 }
 
+// 가격 스냅샷 인터페이스
+export interface IPriceSnapshot {
+  basicAmount: number;
+  surchargeAmount: number;
+  totalAmount: number; 
+  surcharges?: {
+    label: string;                  // 항목 명칭 (예: '야간비', '심야추가', '고속도로비용')
+    amount: number;                 // 금액
+  }[];   
+}
+
 // 주소 스냅샷 인터페이스
 export interface IAddressSnapshot {
   name: string;              // 장소명

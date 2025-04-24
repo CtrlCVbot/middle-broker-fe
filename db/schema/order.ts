@@ -2,7 +2,7 @@ import { pgTable, uuid, varchar, numeric, integer, boolean, timestamp, date, jso
 import { companies } from '@/db/schema/companies';
 import { users } from '@/db/schema/users';
 import { addresses } from '@/db/schema/addresses';
-import { IAddressSnapshot, IUserSnapshot } from '@/types/order1';
+import { IAddressSnapshot, IPriceSnapshot, IUserSnapshot } from '@/types/order1';
 
 // 화물 상태 Enum 정의
 export const orderFlowStatusEnum = pgEnum('order_flow_status', [
@@ -49,12 +49,12 @@ export const orders = pgTable('orders', {
 
   // 차량 정보
   vehicleType: varchar('vehicle_type', { length: 50 }),
-  vehicleCount: integer('vehicle_count'),
 
   // 가격 정보
   priceAmount: numeric('price_amount', { precision: 12, scale: 2 }),
   priceType: varchar('price_type', { length: 20 }),
   taxType: varchar('tax_type', { length: 20 }),
+  priceSnapshot: json('price_snapshot').$type<IPriceSnapshot>(),
 
   // 주소 정보
   pickupAddressId: uuid('pickup_address_id'),
