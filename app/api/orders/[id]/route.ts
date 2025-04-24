@@ -118,94 +118,49 @@ export async function PUT(
 
     // 3. 요청 데이터 파싱 및 검증
     const body = await request.json();
-    const validatedData = orderUpdateSchema.parse(body);
+        
 
-    // 4. 주소 정보 업데이트
-    await Promise.all([
-      // 출발지 주소 업데이트
-      db.update(addresses)
-        .set({
-          name: validatedData.departure.company,
-          roadAddress: validatedData.departure.address,
-          jibunAddress: validatedData.departure.address,
-          detailAddress: validatedData.departure.detailedAddress,
-          contactName: validatedData.departure.name,
-          contactPhone: validatedData.departure.contact,
-          metadata: {
-            latitude: validatedData.departure.latitude,
-            longitude: validatedData.departure.longitude,
-          },
-          updatedBy: userId,
-          updatedAt: new Date(),
-        })
-        .where(eq(addresses.id, existingOrder.pickupAddressId || '')),
-
-      // 도착지 주소 업데이트
-      db.update(addresses)
-        .set({
-          name: validatedData.destination.company,
-          roadAddress: validatedData.destination.address,
-          jibunAddress: validatedData.destination.address,
-          detailAddress: validatedData.destination.detailedAddress,
-          contactName: validatedData.destination.name,
-          contactPhone: validatedData.destination.contact,
-          metadata: {
-            latitude: validatedData.destination.latitude,
-            longitude: validatedData.destination.longitude,
-          },
-          updatedBy: userId,
-          updatedAt: new Date(),
-        })
-        .where(eq(addresses.id, existingOrder.deliveryAddressId || '')),
-    ]);
-
-    // 5. 화물 정보 업데이트
+    // 4. 화물 정보 업데이트
     const updatedOrder = await db
       .update(orders)
       .set({
-        // 화물 정보
-        cargoName: validatedData.cargoType,
-        vehicleType: validatedData.vehicleType,
-        memo: validatedData.remark,
+        //상태
+        flowStatus: body.flowStatus,
 
-        // 주소 스냅샷 업데이트
-        pickupSnapshot: {
-          address: validatedData.departure.address,
-          detailedAddress: validatedData.departure.detailedAddress,
-          contactName: validatedData.departure.name,
-          contactCompany: validatedData.departure.company,
-          contactPhone: validatedData.departure.contact,
-          latitude: validatedData.departure.latitude,
-          longitude: validatedData.departure.longitude,
-        },
-        deliverySnapshot: {
-          address: validatedData.destination.address,
-          detailedAddress: validatedData.destination.detailedAddress,
-          contactName: validatedData.destination.name,
-          contactCompany: validatedData.destination.company,
-          contactPhone: validatedData.destination.contact,
-          latitude: validatedData.destination.latitude,
-          longitude: validatedData.destination.longitude,
-        },
+        //화물 정보
+        cargoName: body.cargo.name,
+        cargoWeight: body.cargo.weight,
+        cargoUnit: body.cargo.unit,
+        cargoQuantity: body.cargo.quantity,
+        packagingType: body.cargo.packagingType,
 
-        // 일정 정보
-        pickupDate: new Date(validatedData.departure.date),
-        deliveryDate: new Date(validatedData.destination.date),
+        //차량 정보
+        vehicleType: body.vehicle.type,
+        vehicleCount: body.vehicle.count,
 
-        // 가격 정보 (수정 가능한 경우에만)
-        ...(existingOrder.flowStatus === "등록" && {
-          priceAmount: validatedData.estimatedAmount || existingOrder.priceAmount,
-        }),
+        //가격 정보
+        priceAmount: body.price.amount,
+        priceType: body.price.type,
+        taxType: body.price.taxType,
 
-        // 수정 정보
+        //주소 정보
+        pickupAddressId: body.route.pickupAddressId,
+        deliveryAddressId: body.route.deliveryAddressId,
+        pickupSnapshot: body.route.pickupSnapshot,
+        deliverySnapshot: body.route.deliverySnapshot,
+
+        //일정 정보
+        pickupDate: body.route.pickupDate,
+        deliveryDate: body.route.deliveryDate,
+
+        //상태 및 메모
+        isCanceled: body.isCanceled,
+        memo: body.memo,
+
+        //생성/수정 정보
         updatedBy: userId,
         updatedAt: new Date(),
-        updatedBySnapshot: {
-          id: userId,
-          name: encodedName,
-          email: userEmail,
-          phone: userPhone,
-        },
+        updatedBySnapshot: body.updatedBySnapshot,
       })
       .where(eq(orders.id, params.id))
       .returning();
@@ -253,10 +208,9 @@ export async function DELETE(
         updatedBy: userId,
         updatedAt: new Date(),
         updatedBySnapshot: {
-          id: userId,
           name: encodedName,
           email: userEmail,
-          phone: userPhone,
+          mobile: userPhone,
         },
       })
       .where(

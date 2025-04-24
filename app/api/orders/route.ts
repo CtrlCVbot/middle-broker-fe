@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
 
-    // 4. 화물 정보 저장
+    // 3. 화물 정보 저장
     const [newOrder] = await db
     .insert(orders)
     .values({      
