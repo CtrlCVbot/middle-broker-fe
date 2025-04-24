@@ -12,7 +12,33 @@ export interface IKakaoAddressResult {
   place_url: string;
   category_name: string;
   address_name: string;
-  road_address_name: string;
+  address_type: string;
+  address?:{
+    address_name: string;
+    b_code: string;
+    h_code: string;
+    main_address_no: string;
+    mountain_yn: string;
+    region_1depth_name: string;
+    region_2depth_name: string;
+    region_3depth_name: string;
+    sub_address_no: string;
+    x: string;
+    y: string;
+  }
+  road_address?: {
+    address_name: string;
+    building_name: string;
+    region_1depth_name: string;
+    region_2depth_name: string;
+    region_3depth_name: string;
+    road_name: string;
+    main_building_no: string;
+    sub_building_no: string;
+    under_ground_yn: string;
+    x: string;
+    y: string;
+  }
   id: string;
   phone: string;
   category_group_code: string;
@@ -97,20 +123,21 @@ export function SearchLocationDialog({ open, onOpenChange, onSelect }: ISearchLo
                     <div className="flex flex-col gap-1 w-full">
                       <div className="flex items-start">
                         <Building className="h-4 w-4 mr-2 shrink-0 mt-0.5 text-primary" />
-                        <span className="font-medium">{result.place_name || result.address_name}</span>
+                        <span className="font-medium">{result.road_address?.address_name || result.address?.address_name}</span>
                       </div>
-                      {result.road_address_name && (
+                      {(result.address_type === 'REGION' || result.address_type === 'REGION_ADDR') && (
                         <div className="flex items-start text-sm text-muted-foreground pl-6">
                           <MapPin className="h-3.5 w-3.5 mr-2 shrink-0 mt-0.5" />
-                          <span>{result.road_address_name}</span>
+                          <span>도로명: {result.road_address?.address_name}</span>
                         </div>
                       )}
-                      {result.address_name && result.road_address_name !== result.address_name && (
+                      {(result.address_type === 'ROAD' || result.address_type === 'ROAD_ADDR') && (
                         <div className="flex items-start text-sm text-muted-foreground pl-6">
                           <MapPin className="h-3.5 w-3.5 mr-2 shrink-0 mt-0.5" />
-                          <span>{result.address_name}</span>
+                          <span>지번: {result.address?.address_name}</span>
                         </div>
                       )}
+                      
                       {result.phone && (
                         <div className="text-sm text-muted-foreground pl-6">
                           연락처: {result.phone}

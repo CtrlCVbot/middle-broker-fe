@@ -12,6 +12,7 @@ import {
   SheetTitle,
   SheetDescription,
   SheetFooter,
+  SheetClose,
 } from "@/components/ui/sheet";
 import {
   Form,
@@ -38,12 +39,12 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, X, Map, Phone, Building2, Info, ChevronLeft, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import useAddressStore from "@/store/address-store";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search as SearchIcon, MapPin, Building, Loader2 } from 'lucide-react';
+import { Search as SearchIcon } from 'lucide-react';
 import { SearchLocationDialog, IKakaoAddressResult } from './search-location-dialog';
 
 // 폼 유효성 검증을 위한 스키마 - 강화된 버전
@@ -99,10 +100,11 @@ export function AddressFormSheet({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
+  
+  // 주소 검색 여부 체크 (검색 결과가 있는지)
+  const [hasSearchedAddress, setHasSearchedAddress] = useState(!!defaultValues?.id);
 
-  // 주소 유효성 검사 함수 가져오기
-  //const { validateAddressData } = useAddressStore();
-
+  
   const form = useForm<AddressFormValues>({
     resolver: zodResolver(addressFormSchema),
     defaultValues: defaultValues ? {
@@ -127,6 +129,7 @@ export function AddressFormSheet({
   // useEffect 추가하여 defaultValues가 변경될 때 폼 값 업데이트
   useEffect(() => {
     if (defaultValues && isOpen) {
+      setHasSearchedAddress(true);
       form.reset({
         name: defaultValues.name,
         roadAddress: defaultValues.roadAddress,
@@ -141,6 +144,7 @@ export function AddressFormSheet({
       });
       setValidationError(null);
     } else if (!defaultValues && isOpen) {
+      setHasSearchedAddress(false);
       form.reset({
         type: "load",
         metadata: {
@@ -193,17 +197,41 @@ export function AddressFormSheet({
   // 주소 검색 결과 선택 시 폼에 반영
   const handleSelectLocation = (result: IKakaoAddressResult) => {
     form.setValue('name', result.place_name || '');
-    form.setValue('roadAddress', result.road_address_name || '');
-    form.setValue('jibunAddress', result.address_name || '');
+    form.setValue('roadAddress', result.road_address?.address_name || '');
+    form.setValue('jibunAddress', result.address?.address_name || '');
     form.setValue('contactPhone', result.phone || '');
     form.setValue('metadata', {
       ...form.getValues('metadata'),
       lat: parseFloat(result.y),
       lng: parseFloat(result.x),
-      originalInput: result.road_address_name || result.address_name,
+      originalInput: result.road_address?.address_name || result.address?.address_name,
       source: 'kakao',
       buildingName: result.place_name,
     });
+    setHasSearchedAddress(true);
+  };
+
+  // 전화번호 자동 포맷팅 함수
+  const formatPhoneNumber = (value: string) => {
+    // 숫자와 하이픈만 남기기
+    const cleaned = value.replace(/[^\d-]/g, '');
+    // 하이픈 제거
+    const numbersOnly = cleaned.replace(/-/g, '');
+    
+    // 전화번호 형식에 맞게 하이픈 추가
+    if (numbersOnly.length <= 3) {
+      return numbersOnly;
+    } else if (numbersOnly.length <= 7) {
+      return `${numbersOnly.slice(0, 3)}-${numbersOnly.slice(3)}`;
+    } else {
+      return `${numbersOnly.slice(0, 3)}-${numbersOnly.slice(3, 7)}-${numbersOnly.slice(7, 11)}`;
+    }
+  };
+
+  // 전화번호 변경 시 자동 포맷팅 적용
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>, onChange: (...event: any[]) => void) => {
+    const formattedValue = formatPhoneNumber(e.target.value);
+    onChange(formattedValue);
   };
 
   // 시트가 닫힐 때 폼 초기화
@@ -213,130 +241,189 @@ export function AddressFormSheet({
     onClose();
   };
 
+  
+
   return (
     <Sheet open={isOpen} onOpenChange={handleSheetClose}>
       <SheetContent 
         side="right" 
         className="w-full sm:max-w-xl md:max-w-2xl lg:max-w-3xl overflow-y-auto"
         onPointerDownCapture={(e) => {
-          // 시트 내부 클릭 이벤트가 상위로 전파되지 않도록 방지
           e.stopPropagation();
         }}
       >
-        <SheetHeader className="mb-5">
-          <SheetTitle>{title}</SheetTitle>
-          <SheetDescription>
-            상/하차지 주소 정보를 입력해주세요. *표시는 필수 입력 항목입니다.
-          </SheetDescription>
-        </SheetHeader>
+        <div className="flex justify-between items-center">
+          <SheetHeader className="mb-5">
+            <SheetTitle>{title}</SheetTitle>
+            <SheetDescription>
+              상/하차지 주소 정보를 입력해주세요. <span className="text-destructive">*</span> 표시는 필수 입력 항목입니다.
+            </SheetDescription>
+          </SheetHeader>
+          {/* <SheetClose asChild>
+            <Button type="button" variant="ghost" size="icon" className="rounded-full">
+              <X className="h-4 w-4" />
+              <span className="sr-only">닫기</span>
+            </Button>
+          </SheetClose> */}
+        </div>
 
         <Form {...form}>
           <form onSubmit={(e) => {
             e.preventDefault();
-            e.stopPropagation(); // 이벤트 버블링 방지
-            console.log('폼 제출 이벤트 발생, 기본 동작 및 버블링 방지');
+            e.stopPropagation();
             form.handleSubmit(handleSubmit)(e);
           }} className="space-y-6">
             {validationError && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
+              <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-md mb-4">
                 <p className="text-sm font-medium">유효성 검사 오류</p>
                 <p className="text-sm mt-1 whitespace-pre-line">{validationError}</p>
               </div>
             )}
 
-            <div className="space-x-4 px-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>유형 *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="유형을 선택하세요" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="load">상차지</SelectItem>
-                          <SelectItem value="drop">하차지</SelectItem>
-                          <SelectItem value="any">상/하차지</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        화물의 상차/하차 위치 유형을 선택하세요
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            <div className="px-6 space-y-6">
+              {/* 기본 정보 영역 */}
+              <div className="border rounded-lg p-4 bg-muted/30">
+                <div className="flex items-center gap-2 mb-4 text-primary">
+                  <Building2 className="h-5 w-5" />
+                  <h3 className="font-medium">기본 정보</h3>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          유형 <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="유형을 선택하세요" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="load">상차지</SelectItem>
+                            <SelectItem value="drop">하차지</SelectItem>
+                            <SelectItem value="any">상/하차지</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          화물의 상차/하차 위치 유형을 선택하세요
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>상/하차지명 *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="상/하차지명을 입력하세요" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        회사명, 창고명 등 장소를 식별할 수 있는 이름
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          상/하차지명 <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder="상/하차지명을 입력하세요" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          회사명, 창고명 등 장소를 식별할 수 있는 이름
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
-              <Accordion type="multiple" defaultValue={["addresses"]} className="w-full">
-                <AccordionItem value="addresses">
-                  <AccordionTrigger className="text-sm font-medium">주소 정보</AccordionTrigger>
-                  <AccordionContent className="space-y-4 pt-4">
-                    <div className="flex justify-end mb-2">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setIsSearchDialogOpen(true)}
-                      >
-                        <SearchIcon className="h-4 w-4 mr-2" />
-                        주소 검색
-                      </Button>
+              {/* 주소 정보 영역 */}
+              
+              <div className="border rounded-lg p-4 bg-muted/30">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2 text-primary">
+                    <Map className="h-5 w-5" />
+                    <h3 className="font-medium">주소 정보</h3>
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setIsSearchDialogOpen(true)}
+                  >
+                    <SearchIcon className="h-4 w-4 mr-2" />
+                    주소 검색
+                  </Button>
+                </div>
+
+                {hasSearchedAddress ? (
+                  <>
+                    {/* 도로명/지번 주소 표시 영역 */}
+                    <div className="mb-4 space-y-4">
+
+                    <div className="flex items-center justify-between border p-4 rounded bg-muted">
+                      <div className="flex flex-col text-sm">
+                        <div className="font-medium text-base text-primary">
+                          도로명: {form.getValues('roadAddress')}
+                        </div>
+                        <div className="text-muted-foreground text-sm mt-1">
+                          지번: {form.getValues('jibunAddress')}
+                        </div>
+                      </div>
                     </div>
 
-                    
-                  
-                    <FormField
-                      control={form.control}
-                      name="roadAddress"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>도로명 주소 *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="도로명 주소를 입력하세요" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                      {/* <FormField
+                        control={form.control}
+                        name="roadAddress"
+                        render={({ field }) => (
+                          <div className="space-y-2">
+                            <FormLabel>
+                              도로명 주소 <span className="text-destructive">*</span>
+                            </FormLabel>
+                            <div className="border p-3 rounded-md bg-background">
+                              <p className="font-medium text-base">{field.value || '주소를 검색해주세요'}</p>
+                            </div>
+                            <input type="hidden" {...field} />
+                            <FormMessage />                            
+                          </div>
+                        )}
+                      />
 
-                    <FormField
-                      control={form.control}
-                      name="jibunAddress"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>지번 주소 *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="지번 주소를 입력하세요" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                      <FormField
+                        control={form.control}
+                        name="jibunAddress"
+                        render={({ field }) => (
+                          <div className="space-y-2">
+                            <FormLabel>
+                              지번 주소 <span className="text-destructive">*</span>
+                            </FormLabel>
+                            <div className="border p-3 rounded-md bg-background/50 text-muted-foreground">
+                              <p>{field.value || '주소를 검색해주세요'}</p>
+                            </div>
+                            <input type="hidden" {...field} />
+                            <FormMessage />
+                          </div>
+                        )}
+                      /> */}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-8 border border-dashed rounded-md">
+                    <Map className="h-10 w-10 text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground mb-4">주소를 먼저 검색해주세요</p>
+                    <Button 
+                      type="button" 
+                      onClick={() => setIsSearchDialogOpen(true)}
+                    >
+                      <SearchIcon className="h-4 w-4 mr-2" />
+                      주소 검색하기
+                    </Button>
+                  </div>
+                )}
 
+                {hasSearchedAddress && (
+                  <div className="space-y-4 mt-4">
                     <FormField
                       control={form.control}
                       name="detailAddress"
@@ -366,86 +453,108 @@ export function AddressFormSheet({
                               {...field} 
                               value={field.value || ''} 
                               maxLength={5}
+                              className="max-w-[200px]"
                             />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                  </AccordionContent>
-                </AccordionItem>
+                  </div>
+                )}
+              </div>
 
-                <AccordionItem value="contact">
-                  <AccordionTrigger className="text-sm font-medium">연락처 정보</AccordionTrigger>
-                  <AccordionContent className="space-y-4 pt-4">
-                    <FormField
-                      control={form.control}
-                      name="contactName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>담당자명</FormLabel>
-                          <FormControl>
-                            <Input placeholder="담당자명을 입력하세요" {...field} value={field.value || ''} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              {/* 연락처 정보 영역 */}
+              <div className="border rounded-lg p-4 bg-muted/30">
+                <div className="flex items-center gap-2 mb-4 text-primary">
+                  <User className="h-5 w-5" />
+                  <h3 className="font-medium">연락처 정보</h3>
+                </div>
 
-                    <FormField
-                      control={form.control}
-                      name="contactPhone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>연락처 *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="연락처를 입력하세요" {...field} />
-                          </FormControl>
-                          <FormDescription>
-                            숫자와 하이픈(-)만 입력 가능합니다 (예: 010-1234-5678)
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </AccordionContent>
-                </AccordionItem>
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="contactName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>담당자명</FormLabel>
+                        <FormControl>
+                          <Input placeholder="담당자명을 입력하세요" {...field} value={field.value || ''} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <AccordionItem value="additional">
-                  <AccordionTrigger className="text-sm font-medium">추가 정보</AccordionTrigger>
-                  <AccordionContent className="space-y-4 pt-4">
-                    <FormField
-                      control={form.control}
-                      name="memo"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>메모</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="배송이나 위치에 관한 추가 정보" 
-                              className="resize-none min-h-[100px]" 
-                              {...field} 
+                  <FormField
+                    control={form.control}
+                    name="contactPhone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          연락처 <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                              placeholder="연락처를 입력하세요" 
+                              className="pl-10" 
                               value={field.value || ''} 
+                              onChange={(e) => handlePhoneChange(e, field.onChange)}
                             />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+                          </div>
+                        </FormControl>
+                        <FormDescription>
+                          숫자와 하이픈(-)만 입력 가능합니다 (예: 010-1234-5678)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
 
+              {/* 추가 정보 영역 */}
+              <div className="border rounded-lg p-4 bg-muted/30">
+                <div className="flex items-center gap-2 mb-4 text-primary">
+                  <Info className="h-5 w-5" />
+                  <h3 className="font-medium">추가 정보</h3>
+                </div>
+
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="memo"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>메모</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="배송이나 위치에 관한 추가 정보" 
+                            className="resize-none min-h-[100px]" 
+                            {...field} 
+                            value={field.value || ''} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
             </div>
 
-            <SheetFooter className="pt-4 px-6">
+            <SheetFooter className="px-6 py-4 border-t mt-6 flex gap-2 sm:gap-0">
               <Button 
                 type="button" 
                 variant="outline" 
                 onClick={handleSheetClose}
                 disabled={isSubmitting}
+                className="gap-1"
               >
-                취소
+                <ChevronLeft className="h-4 w-4" />
+                목록으로
               </Button>
               <Button 
                 type="submit" 
@@ -455,10 +564,10 @@ export function AddressFormSheet({
                 {isSubmitting ? (
                   <>
                     <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                    {defaultValues ? "수정 중..." : "등록 중..."}
+                    {defaultValues ? "주소 수정 중..." : "주소 등록 중..."}
                   </>
                 ) : (
-                  defaultValues ? "수정" : "등록"
+                  defaultValues ? "주소 수정" : "주소 등록"
                 )}
               </Button>
             </SheetFooter>
