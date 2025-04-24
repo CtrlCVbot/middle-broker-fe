@@ -17,10 +17,25 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ILocationInfo } from '@/types/order';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { CalendarIcon, Search as SearchIcon } from 'lucide-react';
+import { CalendarIcon, Search as SearchIcon, MapPin, Building, Loader2 } from 'lucide-react';
 import { useOrderRegisterStore } from '@/store/order-register-store';
 import { cn } from '@/lib/utils';
 import { RECENT_LOCATIONS } from '@/utils/mockdata/mock-register';
+
+interface IKakaoAddressResult {
+  place_name: string;
+  distance: string;
+  place_url: string;
+  category_name: string;
+  address_name: string;
+  road_address_name: string;
+  id: string;
+  phone: string;
+  category_group_code: string;
+  category_group_name: string;
+  x: string;
+  y: string;
+}
 
 interface LocationFormProps {
   type: 'departure' | 'destination';
@@ -30,6 +45,7 @@ interface LocationFormProps {
   compact?: boolean;
   disabled?: boolean;
   onDisabledClick?: () => void;
+  onSelectLocation?: (location: any) => void;
 }
 
 export const LocationForm: React.FC<LocationFormProps> = ({ 
@@ -39,7 +55,8 @@ export const LocationForm: React.FC<LocationFormProps> = ({
   //title = type === 'departure' ? '출발지 정보' : '도착지 정보',
   compact = false,
   disabled = false,
-  onDisabledClick
+  onDisabledClick,
+  onSelectLocation
 }) => {
   const { useRecentLocation } = useOrderRegisterStore();
   
@@ -60,31 +77,76 @@ export const LocationForm: React.FC<LocationFormProps> = ({
   
   // 주소 검색 관련 상태
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [searchResults, setSearchResults] = useState<IKakaoAddressResult[]>([]);
   const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   
   // 주소 검색 함수
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     
     setSearching(true);
-    // 검색 시뮬레이션
-    setTimeout(() => {
-      const results = [
-        `${searchQuery} 1번지`,
-        `${searchQuery} 중앙로 123`,
-        `${searchQuery} 산업단지 A블록`,
-        `${searchQuery} 주택단지 101동`,
-        `${searchQuery} 상가 지하 1층`
-      ];
-      setSearchResults(results);
+    setSearchError(null);
+    
+    try {
+      const response = await fetch(`/api/external/kakao/local/search-address?query=${encodeURIComponent(searchQuery.trim())}`);
+      
+      if (!response.ok) {
+        throw new Error('주소 검색 중 오류가 발생했습니다.');
+      }
+      
+      const data = await response.json();
+      
+      if (data.documents && Array.isArray(data.documents)) {
+        setSearchResults(data.documents);
+      } else {
+        setSearchResults([]);
+        setSearchError('검색 결과가 없습니다.');
+      }
+    } catch (error) {
+      console.error('주소 검색 오류:', error);
+      setSearchError('주소 검색 중 오류가 발생했습니다.');
+      setSearchResults([]);
+    } finally {
       setSearching(false);
-    }, 500);
+    }
   };
   
   // 주소 선택 함수
-  const handleSelectAddress = (address: string) => {
-    onChange({ address });
+  const handleSelectAddress = (result: IKakaoAddressResult) => {
+    const locationData = {
+      address: result.road_address_name || result.address_name,
+      detailedAddress: '',
+      name: result.place_name || '',
+      company: result.place_name || '',
+      contact: result.phone || '',
+      // 위도, 경도 정보로 추가 데이터 활용 가능
+      metadata: {
+        lat: parseFloat(result.y),
+        lng: parseFloat(result.x),
+        originalInput: searchQuery,
+        source: 'kakao',
+        buildingName: result.place_name || '',
+      }
+    };
+    
+    onChange(locationData);
+    
+    if (onSelectLocation) {
+      onSelectLocation({
+        roadAddress: result.road_address_name,
+        jibunAddress: result.address_name,
+        name: result.place_name,
+        contactPhone: result.phone,
+        metadata: {
+          lat: parseFloat(result.y),
+          lng: parseFloat(result.x),
+          originalInput: searchQuery,
+          source: 'kakao',
+          buildingName: result.place_name,
+        }
+      });
+    }
   };
   
   // 날짜 변경 함수
@@ -157,11 +219,11 @@ export const LocationForm: React.FC<LocationFormProps> = ({
                   검색
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle>주소 검색</DialogTitle>
                   <DialogDescription>
-                    찾으시는 주소의 동/읍/면 이름을 입력하세요
+                    찾으시는 주소의 도로명, 지번, 건물명을 입력하세요
                   </DialogDescription>
                 </DialogHeader>
                 
@@ -169,7 +231,7 @@ export const LocationForm: React.FC<LocationFormProps> = ({
                   <Input
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="예: 강남구 역삼동"
+                    placeholder="예: 강남구 역삼동, 테헤란로 152"
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                   />
                   <Button 
@@ -177,28 +239,55 @@ export const LocationForm: React.FC<LocationFormProps> = ({
                     onClick={handleSearch}
                     disabled={searching}
                   >
-                    {searching ? '검색 중...' : '검색'}
+                    {searching ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <SearchIcon className="h-4 w-4 mr-2" />}
+                    {searching ? '검색 중' : '검색'}
                   </Button>
                 </div>
                 
+                {searchError && (
+                  <div className="text-sm text-red-500 p-2 rounded-md bg-red-50 mb-2">
+                    {searchError}
+                  </div>
+                )}
+                
                 {searchResults.length > 0 && (
-                  <ScrollArea className="h-60">
-                    <div className="space-y-2">
-                      {searchResults.map((address, i) => (
-                        <div 
-                          key={i}
-                          className="p-2 cursor-pointer border rounded hover:bg-accent"
-                        >
-                          <DialogClose asChild>
-                            <Button
-                              variant="ghost"
-                              className="w-full justify-start text-left p-2"
-                              onClick={() => handleSelectAddress(address)}
-                            >
-                              {address}
-                            </Button>
-                          </DialogClose>
-                        </div>
+                  <ScrollArea className="h-[350px] rounded-md border border-input p-1">
+                    <div className="space-y-1">
+                      {searchResults.map((result) => (
+                        <DialogClose key={result.id} asChild>
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start text-left p-3 h-auto"
+                            onClick={() => handleSelectAddress(result)}
+                          >
+                            <div className="flex flex-col gap-1 w-full">
+                              <div className="flex items-start">
+                                <Building className="h-4 w-4 mr-2 shrink-0 mt-0.5 text-primary" />
+                                <span className="font-medium">{result.place_name || result.address_name}</span>
+                              </div>
+                              
+                              {result.road_address_name && (
+                                <div className="flex items-start text-sm text-muted-foreground pl-6">
+                                  <MapPin className="h-3.5 w-3.5 mr-2 shrink-0 mt-0.5" />
+                                  <span>{result.road_address_name}</span>
+                                </div>
+                              )}
+                              
+                              {result.address_name && result.road_address_name !== result.address_name && (
+                                <div className="flex items-start text-sm text-muted-foreground pl-6">
+                                  <MapPin className="h-3.5 w-3.5 mr-2 shrink-0 mt-0.5" />
+                                  <span>{result.address_name}</span>
+                                </div>
+                              )}
+                              
+                              {result.phone && (
+                                <div className="text-sm text-muted-foreground pl-6">
+                                  연락처: {result.phone}
+                                </div>
+                              )}
+                            </div>
+                          </Button>
+                        </DialogClose>
                       ))}
                     </div>
                   </ScrollArea>
@@ -253,83 +342,77 @@ export const LocationForm: React.FC<LocationFormProps> = ({
         <Input
           value={locationInfo.contact || ''}
           onChange={(e) => onChange({ contact: e.target.value })}
-          placeholder="예: 010-1234-5678"
+          placeholder="연락처를 입력하세요"
           disabled={disabled}
           className={disabled ? 'bg-gray-100' : ''}
           onClick={handleDisabledClick}
         />
       </div>
       
-      {/* 날짜 / 시간 */}
-      <div className={cn("grid gap-3", compact ? "grid-cols-2" : "grid-cols-1")}>
-        {/* 날짜 선택 */}
-        <div>
-          <FormLabel>{type === 'departure' ? '출발일' : '도착일'}</FormLabel>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !date && "text-muted-foreground",
-                  disabled && "bg-gray-100 cursor-not-allowed"
-                )}
-                disabled={disabled}
-                onClick={disabled ? handleDisabledClick : undefined}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? format(date, 'PPP', { locale: ko }) : <span>날짜 선택</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={handleDateChange}
-                initialFocus
-                locale={ko}
-              />
-            </PopoverContent>
-          </Popover>
+      {/* 날짜/시간 입력 (그리드 레이아웃) */}
+      {!compact && (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <FormLabel>일자</FormLabel>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left",
+                    !date && "text-muted-foreground",
+                    disabled && "bg-gray-100"
+                  )}
+                  disabled={disabled}
+                  onClick={disabled ? handleDisabledClick : undefined}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, 'PPP', { locale: ko }) : "날짜 선택"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={handleDateChange}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          
+          <div>
+            <FormLabel>시간</FormLabel>
+            <Input
+              value={locationInfo.time || ''}
+              onChange={(e) => onChange({ time: e.target.value })}
+              placeholder="시간을 입력하세요 (예: 14:00)"
+              disabled={disabled}
+              className={disabled ? 'bg-gray-100' : ''}
+              onClick={handleDisabledClick}
+            />
+          </div>
         </div>
-        
-        {/* 시간 선택 */}
-        <div>
-          <FormLabel>{type === 'departure' ? '출발 시간' : '도착 시간'}</FormLabel>
-          <Input
-            type="time"
-            value={locationInfo.time || ''}
-            onChange={(e) => onChange({ time: e.target.value })}
-            placeholder="시간 선택"
-            disabled={disabled}
-            className={disabled ? 'bg-gray-100' : ''}
-            onClick={handleDisabledClick}
-          />
-        </div>
-      </div>
+      )}
       
-      {/* 최근 사용 주소 */}
-      {!compact && RECENT_LOCATIONS && RECENT_LOCATIONS.length > 0 && (
+      {/* 최근 사용한 주소 목록 (Dialog에 추가) */}
+      {useRecentLocation && (
         <div className="mt-4">
-          <FormLabel className="mb-2 block">최근 사용 주소</FormLabel>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {RECENT_LOCATIONS.slice(0, 4).map((location, idx) => (
-              <Button
-                key={idx}
-                variant="outline"
-                className="h-auto py-2 justify-start text-left"
+          <h3 className="text-sm font-medium mb-2">최근 사용한 주소</h3>
+          <div className="space-y-2">
+            {RECENT_LOCATIONS.slice(0, 3).map((location, index) => (
+              <div
+                key={index}
+                className="p-2 border rounded-md cursor-pointer hover:bg-accent"
                 onClick={() => handleRecentLocationClick(location)}
-                disabled={disabled}
               >
-                <div className="flex-1 truncate">
-                  <p className="text-sm font-medium">{location.address}</p>
-                  <p className="text-xs text-muted-foreground truncate">{location.company}</p>
-                </div>
-              </Button>
+                <div className="font-medium">{location.company}</div>
+                <div className="text-sm text-muted-foreground">{location.address}</div>
+              </div>
             ))}
           </div>
         </div>
       )}
     </div>
   );
-}; 
+} 
