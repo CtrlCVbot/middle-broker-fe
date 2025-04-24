@@ -117,6 +117,7 @@ export async function PUT(
     const requestUserId = request.headers.get('x-user-id');
     const requestUserName = request.headers.get('x-user-name');
     const decodedName = requestUserName ? decodeBase64String(requestUserName) : '';
+    const companyId = request.headers.get('x-user-company-id');
 
     // 주소 업데이트
     const [updatedAddress] = await db
@@ -134,6 +135,8 @@ export async function PUT(
         isFrequent: body.isFrequent ?? false,
         metadata: body.metadata || {},
         updatedAt: new Date(),
+        updatedBy: requestUserId || null,
+        companyId: companyId || null
       })
       .where(eq(addresses.id, id))
       .returning();

@@ -16,9 +16,22 @@ export async function GET(req: NextRequest) {
     const type = searchParams.get('type');
 
     const offset = (page - 1) * limit;
-
+    const companyId = req.headers.get('x-user-company-id');
+    if(!companyId) {
+      return NextResponse.json(
+        { error: 'Company ID is required' },
+        { status: 401 }
+      );
+    }
+    console.log('companyId', companyId);
     // 검색 조건 구성
     const whereConditions = [];
+    if(companyId) {
+      whereConditions.push(eq(addresses.companyId, companyId));
+    }
+    if (type) {
+      whereConditions.push(eq(addresses.type, type));
+    }
     if (search) {
       whereConditions.push(
         or(
@@ -29,9 +42,7 @@ export async function GET(req: NextRequest) {
         )
       );
     }
-    if (type) {
-      whereConditions.push(eq(addresses.type, type));
-    }
+    
 
     // 전체 개수 조회
     const totalCount = await db
@@ -114,8 +125,14 @@ export async function POST(req: NextRequest) {
     }
 
     const requestUserId = req.headers.get('x-user-id');
+    if (!requestUserId) {
+      return NextResponse.json(
+        { error: 'User ID is required' },
+        { status: 401 }
+      );
+    }
     const encodedName = btoa(unescape(decodeURIComponent(req.headers.get('x-user-name') || '')));
-    console.log('encodedName', encodedName);
+    const companyId = req.headers.get('x-user-company-id');
 
     // 주소 생성
     const [newAddress] = await db.insert(addresses).values({
@@ -132,12 +149,13 @@ export async function POST(req: NextRequest) {
       metadata: body.metadata || {},
       createdBy: requestUserId || null,
       updatedBy: requestUserId || null,
+      companyId: companyId || null,
     }).returning();
 
     // 변경 이력 기록
     await logAddressChange({
       addressId: newAddress.id,
-      changedBy: req.headers.get('x-user-id') || 'system',
+      changedBy: requestUserId,
       changedByName: encodedName || '',
       changedByEmail: req.headers.get('x-user-email') || 'system',
       changedByAccessLevel: req.headers.get('x-user-access-level') || 'system',

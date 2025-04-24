@@ -88,6 +88,7 @@ class ApiClient {
           
           config.headers['x-user-email'] = currentUser.email;
           config.headers['x-user-access-level'] = currentUser.systemAccessLevel;
+          config.headers['x-user-company-id'] = currentUser.companyId;
         }
 
         return config;

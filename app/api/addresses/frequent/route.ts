@@ -4,16 +4,28 @@ import { addresses } from '@/db/schema/addresses';
 import { desc, eq, ilike, and, or, sql } from 'drizzle-orm';
 import { IAddressSearchParams, AddressType, IAddress } from '@/types/address';
 import { logAddressChange } from '@/utils/address-change-logger';
-
+import { decodeBase64String } from '@/utils/format';
 // 주소 목록 조회
 export async function GET(req: NextRequest) {
   try {
-    
+
+   
+
+    // 헤더에서 회사 ID 가져오기
+    const companyId = req.headers.get('x-user-company-id');
+    if(!companyId) {
+      return NextResponse.json(
+        { error: 'Company ID is required' },
+        { status: 401 }
+      );
+    }
+
     // 검색 조건 구성
     const whereConditions = [];
     whereConditions.push(
       and(
-        eq(addresses.isFrequent, true)
+        eq(addresses.isFrequent, true),
+        eq(addresses.companyId, companyId)
       )
     );
 
@@ -108,11 +120,20 @@ export async function POST(req: NextRequest) {
       metadata: body.metadata || {},
     }).returning();
 
+
+    const userId = req.headers.get('x-user-id');
+    if(!userId) {
+      return NextResponse.json(
+        { error: 'User ID is required' },
+        { status: 401 }
+      );
+    }
+    const encodedName = decodeBase64String(req.headers.get('x-user-name') || '');
     // 변경 이력 기록
     await logAddressChange({
       addressId: newAddress.id,
-      changedBy: req.headers.get('x-user-id') || 'system',
-      changedByName: req.headers.get('x-user-name') || 'system',
+      changedBy: userId,
+      changedByName: encodedName || 'system',
       changedByEmail: req.headers.get('x-user-email') || 'system',
       changedByAccessLevel: req.headers.get('x-user-access-level') || 'system',
       changeType: 'create',

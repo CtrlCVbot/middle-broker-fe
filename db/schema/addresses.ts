@@ -12,6 +12,7 @@ import {
 export const addresses = pgTable('addresses', {
   // 기본 정보
   id: uuid('id').primaryKey().defaultRandom(),
+  companyId: uuid('company_id'),
   name: varchar('name', { length: 100 }).notNull(),           // 장소명
   type: varchar('type', { length: 10 }).notNull(),            // 상/하차지 구분 (load, drop, any)
   
