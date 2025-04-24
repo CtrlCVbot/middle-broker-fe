@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { orders } from "@/db/schema/orders";
+import { orders } from "@/db/schema/order";
 import { addresses } from "@/db/schema/addresses";
-import { auth } from "@/lib/auth";
+//import { auth } from "@/lib/auth";
 import { z } from "zod";
 import { eq, and } from "drizzle-orm";
+import { decodeBase64String } from "@/utils/format";
 
 // 화물 수정 요청 데이터 검증 스키마
 const orderUpdateSchema = z.object({
@@ -51,15 +52,15 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const companyId = request.headers.get('x-user-company-id');
+    if(!companyId) {
+      return NextResponse.json({ error: "Company ID is required" }, { status: 401 });
     }
 
     const order = await db.query.orders.findFirst({
       where: and(
         eq(orders.id, params.id),
-        eq(orders.companyId, session.user.companyId)
+        eq(orders.companyId, companyId)
       ),
     });
 
@@ -87,16 +88,24 @@ export async function PUT(
 ) {
   try {
     // 1. 인증 확인
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const userId = request.headers.get('x-user-id');
+    if(!userId) {
+      return NextResponse.json({ error: "User ID is required" }, { status: 401 });
+    }
+    const encodedName = decodeBase64String(request.headers.get('x-user-name') || '');
+    const userEmail = request.headers.get('x-user-email') || '';
+    const userPhone = request.headers.get('x-user-phone') || '';
+    
+    const companyId = request.headers.get('x-user-company-id');
+    if(!companyId) {
+      return NextResponse.json({ error: "Company ID is required" }, { status: 401 });
     }
 
     // 2. 기존 화물 조회
     const existingOrder = await db.query.orders.findFirst({
       where: and(
         eq(orders.id, params.id),
-        eq(orders.companyId, session.user.companyId)
+        eq(orders.companyId, companyId)
       ),
     });
 
@@ -116,32 +125,38 @@ export async function PUT(
       // 출발지 주소 업데이트
       db.update(addresses)
         .set({
-          address: validatedData.departure.address,
-          detailedAddress: validatedData.departure.detailedAddress,
-          latitude: validatedData.departure.latitude,
-          longitude: validatedData.departure.longitude,
+          name: validatedData.departure.company,
+          roadAddress: validatedData.departure.address,
+          jibunAddress: validatedData.departure.address,
+          detailAddress: validatedData.departure.detailedAddress,
           contactName: validatedData.departure.name,
-          contactCompany: validatedData.departure.company,
           contactPhone: validatedData.departure.contact,
-          updatedBy: session.user.id,
+          metadata: {
+            latitude: validatedData.departure.latitude,
+            longitude: validatedData.departure.longitude,
+          },
+          updatedBy: userId,
           updatedAt: new Date(),
         })
-        .where(eq(addresses.id, existingOrder.pickupAddressId)),
+        .where(eq(addresses.id, existingOrder.pickupAddressId || '')),
 
       // 도착지 주소 업데이트
       db.update(addresses)
         .set({
-          address: validatedData.destination.address,
-          detailedAddress: validatedData.destination.detailedAddress,
-          latitude: validatedData.destination.latitude,
-          longitude: validatedData.destination.longitude,
+          name: validatedData.destination.company,
+          roadAddress: validatedData.destination.address,
+          jibunAddress: validatedData.destination.address,
+          detailAddress: validatedData.destination.detailedAddress,
           contactName: validatedData.destination.name,
-          contactCompany: validatedData.destination.company,
           contactPhone: validatedData.destination.contact,
-          updatedBy: session.user.id,
+          metadata: {
+            latitude: validatedData.destination.latitude,
+            longitude: validatedData.destination.longitude,
+          },
+          updatedBy: userId,
           updatedAt: new Date(),
         })
-        .where(eq(addresses.id, existingOrder.deliveryAddressId)),
+        .where(eq(addresses.id, existingOrder.deliveryAddressId || '')),
     ]);
 
     // 5. 화물 정보 업데이트
@@ -183,13 +198,13 @@ export async function PUT(
         }),
 
         // 수정 정보
-        updatedBy: session.user.id,
+        updatedBy: userId,
         updatedAt: new Date(),
         updatedBySnapshot: {
-          id: session.user.id,
-          name: session.user.name,
-          email: session.user.email,
-          phone: session.user.phone,
+          id: userId,
+          name: encodedName,
+          email: userEmail,
+          phone: userPhone,
         },
       })
       .where(eq(orders.id, params.id))
@@ -217,9 +232,17 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const userId = request.headers.get('x-user-id');
+    if(!userId) {
+      return NextResponse.json({ error: "User ID is required" }, { status: 401 });
+    }
+    const encodedName = decodeBase64String(request.headers.get('x-user-name') || '');
+    const userEmail = request.headers.get('x-user-email') || '';
+    const userPhone = request.headers.get('x-user-phone') || '';
+    
+    const companyId = request.headers.get('x-user-company-id');
+    if(!companyId) {
+      return NextResponse.json({ error: "Company ID is required" }, { status: 401 });
     }
 
     // 화물 상태를 '취소'로 변경
@@ -227,19 +250,19 @@ export async function DELETE(
       .update(orders)
       .set({
         flowStatus: "취소",
-        updatedBy: session.user.id,
+        updatedBy: userId,
         updatedAt: new Date(),
         updatedBySnapshot: {
-          id: session.user.id,
-          name: session.user.name,
-          email: session.user.email,
-          phone: session.user.phone,
+          id: userId,
+          name: encodedName,
+          email: userEmail,
+          phone: userPhone,
         },
       })
       .where(
         and(
           eq(orders.id, params.id),
-          eq(orders.companyId, session.user.companyId),
+          eq(orders.companyId, companyId),
           eq(orders.flowStatus, "등록") // 등록 상태인 경우에만 취소 가능
         )
       )

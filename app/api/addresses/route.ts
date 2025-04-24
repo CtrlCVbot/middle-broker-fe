@@ -4,7 +4,7 @@ import { addresses } from '@/db/schema/addresses';
 import { desc, eq, ilike, and, or, sql } from 'drizzle-orm';
 import { IAddressSearchParams, AddressType, IAddress } from '@/types/address';
 import { logAddressChange } from '@/utils/address-change-logger';
-import { decodeBase64 } from 'bcryptjs';
+
 
 // 주소 목록 조회
 export async function GET(req: NextRequest) {

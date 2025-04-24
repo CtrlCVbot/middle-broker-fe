@@ -33,13 +33,9 @@ export const orders = pgTable('orders', {
   id: uuid('id').defaultRandom().primaryKey(),
 
   // 화주 정보
-  companyId: uuid('company_id').notNull().references(() => companies.id),
-  orderContactId: uuid('order_contact_id').references(() => users.id),
+  companyId: uuid('company_id').notNull(),
+  orderContactId: uuid('order_contact_id').notNull(),
   orderContactSnapshot: json('order_contact_snapshot').$type<IUserSnapshot>(),
-
-  // 기본 정보
-  //orderNumber: varchar('order_number', { length: 30 }).notNull().unique(),  //업애자! 주문번호 없어도 됨
-  //orderName: varchar('order_name', { length: 100 }).notNull(),  //화물 이름
 
   // 상태
   flowStatus: orderFlowStatusEnum('flow_status').notNull().default('등록'),
@@ -61,8 +57,8 @@ export const orders = pgTable('orders', {
   taxType: varchar('tax_type', { length: 20 }),
 
   // 주소 정보
-  pickupAddressId: uuid('pickup_address_id').references(() => addresses.id),
-  deliveryAddressId: uuid('delivery_address_id').references(() => addresses.id),
+  pickupAddressId: uuid('pickup_address_id'),
+  deliveryAddressId: uuid('delivery_address_id'),
   pickupSnapshot: json('pickup_snapshot').$type<IAddressSnapshot>(),
   deliverySnapshot: json('delivery_snapshot').$type<IAddressSnapshot>(),
 
@@ -76,14 +72,12 @@ export const orders = pgTable('orders', {
 
   // 생성/수정 정보
   createdBy: uuid('created_by')
-    .notNull()
-    .references(() => users.id, { onDelete: 'set null' }),
+    .notNull(),
   createdBySnapshot: json('created_by_snapshot').$type<IUserSnapshot>(),
   createdAt: timestamp('created_at').defaultNow(),
 
   updatedBy: uuid('updated_by')
-    .notNull()
-    .references(() => users.id, { onDelete: 'set null' }),
+    .notNull(),
   updatedBySnapshot: json('updated_by_snapshot').$type<IUserSnapshot>(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
