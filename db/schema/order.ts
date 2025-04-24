@@ -38,8 +38,8 @@ export const orders = pgTable('orders', {
   orderContactSnapshot: json('order_contact_snapshot').$type<IUserSnapshot>(),
 
   // 기본 정보
-  orderNumber: varchar('order_number', { length: 30 }).notNull().unique(),
-  orderName: varchar('order_name', { length: 100 }).notNull(),
+  //orderNumber: varchar('order_number', { length: 30 }).notNull().unique(),  //업애자! 주문번호 없어도 됨
+  //orderName: varchar('order_name', { length: 100 }).notNull(),  //화물 이름
 
   // 상태
   flowStatus: orderFlowStatusEnum('flow_status').notNull().default('등록'),
