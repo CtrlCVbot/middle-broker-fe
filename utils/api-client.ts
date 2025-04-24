@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { useAuthStore } from '@/store/auth-store';
 import { refreshAccessToken, getCurrentUser } from '@/utils/auth';
+import { encodeBase64String, decodeBase64String } from '@/utils/format';
 
 export interface IApiError {
   status: number;
@@ -77,8 +78,8 @@ class ApiClient {
           // 한글 등 비 ASCII 문자가 포함될 수 있는 필드는 Base64로 인코딩
           if (currentUser.name) {
             try {
-              const encodedName = btoa(unescape(encodeURIComponent(currentUser.name)));
-              config.headers['x-user-name'] = `base64:${encodedName}`;
+              const encodedName = encodeBase64String(currentUser.name);
+              config.headers['x-user-name'] = encodedName;
             } catch (e) {
               console.error('사용자 이름 인코딩 오류:', e);
               config.headers['x-user-name'] = 'System';

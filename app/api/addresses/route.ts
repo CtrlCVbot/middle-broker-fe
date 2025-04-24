@@ -4,6 +4,7 @@ import { addresses } from '@/db/schema/addresses';
 import { desc, eq, ilike, and, or, sql } from 'drizzle-orm';
 import { IAddressSearchParams, AddressType, IAddress } from '@/types/address';
 import { logAddressChange } from '@/utils/address-change-logger';
+import { decodeBase64 } from 'bcryptjs';
 
 // 주소 목록 조회
 export async function GET(req: NextRequest) {
@@ -112,6 +113,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const requestUserId = req.headers.get('x-user-id');
+    const encodedName = btoa(unescape(decodeURIComponent(req.headers.get('x-user-name') || '')));
+    console.log('encodedName', encodedName);
+
     // 주소 생성
     const [newAddress] = await db.insert(addresses).values({
       name: body.name,
@@ -125,13 +130,15 @@ export async function POST(req: NextRequest) {
       memo: body.memo || null,
       isFrequent: body.isFrequent ?? false,
       metadata: body.metadata || {},
+      createdBy: requestUserId || null,
+      updatedBy: requestUserId || null,
     }).returning();
 
     // 변경 이력 기록
     await logAddressChange({
       addressId: newAddress.id,
       changedBy: req.headers.get('x-user-id') || 'system',
-      changedByName: req.headers.get('x-user-name') || 'system',
+      changedByName: encodedName || '',
       changedByEmail: req.headers.get('x-user-email') || 'system',
       changedByAccessLevel: req.headers.get('x-user-access-level') || 'system',
       changeType: 'create',

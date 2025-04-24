@@ -3,9 +3,8 @@ import { addresses } from './addresses';
 
 export const addressChangeLogs = pgTable('address_change_logs', {
   id: uuid('id').primaryKey().defaultRandom(),
-  addressId: uuid('address_id').notNull().references(() => addresses.id),
-  userId: uuid('user_id'),
-  changedBy: varchar('changed_by', { length: 255 }).notNull(),
+  addressId: uuid('address_id').notNull().references(() => addresses.id),  
+  changedBy: uuid('changed_by').notNull(),
   changedByName: varchar('changed_by_name', { length: 100 }).notNull(),
   changedByEmail: varchar('changed_by_email', { length: 255 }).notNull(),
   changedByAccessLevel: varchar('changed_by_access_level', { length: 50 }),
