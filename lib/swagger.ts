@@ -292,6 +292,7 @@ export const swaggerSpec = {
     }
   },
   paths: {
+    // 사용자 관련 API
     '/api/users': {
       get: {
         summary: '사용자 목록 조회',
@@ -786,6 +787,8 @@ export const swaggerSpec = {
         }
       }
     },
+
+    // 업체 관련 API
     '/api/companies': {
       get: {
         summary: '업체 목록 조회',
@@ -2227,6 +2230,8 @@ export const swaggerSpec = {
         }
       }
     },
+
+    // 카카오 주소 검색 API
     "/api/external/kakao/local/search-address": {
       get: {
         summary: "🔍 카카오 주소 검색",
