@@ -2,7 +2,7 @@ import { pgTable, uuid, varchar, numeric, integer, boolean, timestamp, date, jso
 import { companies } from '@/db/schema/companies';
 import { users } from '@/db/schema/users';
 import { addresses } from '@/db/schema/addresses';
-import { IAddressSnapshot, IUserSnapshot } from '../../types/order1';
+import { IAddressSnapshot, IUserSnapshot } from '@/types/order1';
 
 // 화물 상태 Enum 정의
 export const orderFlowStatusEnum = pgEnum('order_flow_status', [

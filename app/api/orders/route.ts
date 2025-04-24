@@ -71,19 +71,17 @@ export async function POST(request: NextRequest) {
       companyId: userCompanyId,
       orderContactId: userId,
       orderContactSnapshot: {
-        id: userId,
         name: encodedName,
         email: userEmail,
-        phone: userPhone,
+        mobile: userPhone,
       },
-
-      // 상태
+      //상태
       flowStatus: body.flowStatus,
 
       // 화물 정보
-      cargoName: body.cargoType,
-      cargoWeight: body.weightType,
-      cargoUnit: body.cargoType,
+      cargoName: body.cargoName,
+      cargoWeight: body.cargoWeight,
+      cargoUnit: body.cargoUnit,
       cargoQuantity: body.cargoQuantity,
       packagingType: body.packagingType,
 
@@ -92,54 +90,32 @@ export async function POST(request: NextRequest) {
       vehicleCount: body.vehicleCount,
 
       // 가격 정보
-      priceAmount: body.estimatedAmount || 0,
+      priceAmount: body.priceAmount,
       priceType: body.priceType,
       taxType: body.taxType,
 
       // 주소 정보
-      pickupAddressId: pickupAddress[0].id,
-      deliveryAddressId: deliveryAddress[0].id,
-      pickupSnapshot: {
-        address: body.departure.address,
-        detailedAddress: body.departure.detailedAddress,
-        contactName: body.departure.name,
-        contactCompany: body.departure.company,
-        contactPhone: body.departure.contact,
-        latitude: body.departure.latitude,
-        longitude: body.departure.longitude,
-      },
-      deliverySnapshot: {
-        address: body.destination.address,
-        detailedAddress: body.destination.detailedAddress,
-        contactName: body.destination.name,
-        contactCompany: body.destination.company,
-        contactPhone: body.destination.contact,
-        latitude: body.destination.latitude,
-        longitude: body.destination.longitude,
-      },
+      pickupAddressId: body.pickupAddressId,
+      deliveryAddressId: body.deliveryAddressId,
+      pickupSnapshot: body.pickupSnapshot,
+      deliverySnapshot: body.deliverySnapshot,
 
       // 일정 정보
-      pickupDate: new Date(body.departure.date),
-      deliveryDate: new Date(body.destination.date),
-      
-      // 상태 및 메모
-      isCanceled: false,
-      memo: body.remark,
+      pickupDate: body.pickupDate,
+      deliveryDate: body.deliveryDate,
 
       // 생성/수정 정보
       createdBy: userId,
-      updatedBy: userId,
       createdBySnapshot: {
-        id: userId,
         name: encodedName,
         email: userEmail,
-        phone: userPhone,
+        mobile: userPhone,
       },
+      updatedBy: userId,
       updatedBySnapshot: {
-        id: userId,
         name: encodedName,
         email: userEmail,
-        phone: userPhone,
+        mobile: userPhone,
       },
     }).returning();
 
