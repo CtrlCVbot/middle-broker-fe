@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FormLabel } from "@/components/ui/form";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { 
@@ -38,8 +37,8 @@ interface IKakaoAddressResult {
 }
 
 interface LocationFormProps {
-  type: 'departure' | 'destination';
-  locationInfo: ILocationInfo;
+  type: 'departure' | 'destination' | 'any';
+  locationInfo: Partial<ILocationInfo>;
   onChange: (info: Partial<ILocationInfo>) => void;
   title?: string;
   compact?: boolean;
@@ -50,7 +49,7 @@ interface LocationFormProps {
 
 export const LocationForm: React.FC<LocationFormProps> = ({ 
   type, 
-  locationInfo, 
+  locationInfo = {},
   onChange, 
   //title = type === 'departure' ? '출발지 정보' : '도착지 정보',
   compact = false,
@@ -196,7 +195,7 @@ export const LocationForm: React.FC<LocationFormProps> = ({
     <div className="space-y-3">
       {/* 주소 검색 */}
       <div className="space-y-2">
-        <FormLabel>주소</FormLabel>
+        <div className="text-sm font-medium">주소</div>
         <div>
           <div className="flex gap-2">
             <Input
@@ -312,7 +311,7 @@ export const LocationForm: React.FC<LocationFormProps> = ({
       {/* 회사명 / 담당자 */}
       <div className={cn("grid gap-3", compact ? "grid-cols-2" : "grid-cols-1")}>
         <div>
-          <FormLabel>회사명</FormLabel>
+          <div className="text-sm font-medium">회사명</div>
           <Input
             value={locationInfo.company || ''}
             onChange={(e) => onChange({ company: e.target.value })}
@@ -324,7 +323,7 @@ export const LocationForm: React.FC<LocationFormProps> = ({
         </div>
         
         <div>
-          <FormLabel>담당자</FormLabel>
+          <div className="text-sm font-medium">담당자</div>
           <Input
             value={locationInfo.name || ''}
             onChange={(e) => onChange({ name: e.target.value })}
@@ -338,7 +337,7 @@ export const LocationForm: React.FC<LocationFormProps> = ({
       
       {/* 연락처 */}
       <div>
-        <FormLabel>연락처</FormLabel>
+        <div className="text-sm font-medium">연락처</div>
         <Input
           value={locationInfo.contact || ''}
           onChange={(e) => onChange({ contact: e.target.value })}
@@ -353,7 +352,7 @@ export const LocationForm: React.FC<LocationFormProps> = ({
       {!compact && (
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <FormLabel>일자</FormLabel>
+            <div className="text-sm font-medium">일자</div>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -382,7 +381,7 @@ export const LocationForm: React.FC<LocationFormProps> = ({
           </div>
           
           <div>
-            <FormLabel>시간</FormLabel>
+            <div className="text-sm font-medium">시간</div>
             <Input
               value={locationInfo.time || ''}
               onChange={(e) => onChange({ time: e.target.value })}
@@ -391,25 +390,6 @@ export const LocationForm: React.FC<LocationFormProps> = ({
               className={disabled ? 'bg-gray-100' : ''}
               onClick={handleDisabledClick}
             />
-          </div>
-        </div>
-      )}
-      
-      {/* 최근 사용한 주소 목록 (Dialog에 추가) */}
-      {useRecentLocation && (
-        <div className="mt-4">
-          <h3 className="text-sm font-medium mb-2">최근 사용한 주소</h3>
-          <div className="space-y-2">
-            {RECENT_LOCATIONS.slice(0, 3).map((location, index) => (
-              <div
-                key={index}
-                className="p-2 border rounded-md cursor-pointer hover:bg-accent"
-                onClick={() => handleRecentLocationClick(location)}
-              >
-                <div className="font-medium">{location.company}</div>
-                <div className="text-sm text-muted-foreground">{location.address}</div>
-              </div>
-            ))}
           </div>
         </div>
       )}
