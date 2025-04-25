@@ -216,21 +216,27 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
     if (departure.address && destination.address) {
       const calculateDistanceAndAmount = async () => {
         setIsCalculating(true);
-        
         try {
           // 거리 계산
           const distance = await calculateDistance(departure.address, destination.address);
-          
           // 금액 계산
           const amount = await calculateAmount(distance, weightType, selectedOptions);
+
+          // 계산 결과를 store에 반영
+          if (editMode) {
+            editStore.setRegisterData({
+              estimatedDistance: distance,
+              estimatedAmount: amount,
+            });
+          } else {
+            registerStore.setEstimatedInfo(distance, amount);
+          }
         } catch (error) {
           console.error("계산 중 오류 발생:", error);
         } finally {
           setIsCalculating(false);
         }
       };
-      
-      // 계산 실행
       calculateDistanceAndAmount();
     }
   }, [
