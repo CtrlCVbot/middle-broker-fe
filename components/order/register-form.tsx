@@ -492,37 +492,19 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center">
-                  <MapPinIcon className="h-5 w-5 mr-2 text-blue-500" />
+                  <MapPinIcon className="h-5 w-5 mr-2 text-bule-500" />
                   출발지 정보 복사
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <LocationFormVer01
-                    type="departure"
-                    locationInfo={registerData.departure}
-                    onChange={(info) => setDeparture(info as any)}
-                    title="출발지 정보"
-                    disabled={editMode && !isEditable('departure')}
-                    onDisabledClick={() => handleDisabledFieldClick('departure')}
-                  />
-                  
-                  <div className="flex justify-between mt-6">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setActiveTab("vehicle")}
-                    >
-                      이전
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={() => setActiveTab("destination")}
-                    >
-                      다음: 도착지 정보
-                    </Button>
-                  </div>
-                </div>
+                <LocationFormVer01
+                  type="departure"
+                  locationInfo={registerData.departure}
+                  onChange={(info) => setDeparture(info as any)}
+                  compact={true}
+                  disabled={editMode && !isEditable('departure')}
+                  onDisabledClick={() => handleDisabledFieldClick('departure')}
+                />
               </CardContent>
             </Card>
           </TabsContent>
@@ -829,7 +811,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                 <LocationFormVer01
                   type="departure"
                   locationInfo={registerData.departure}
-                  onChange={(info) => setDestination(info as any)}
+                  onChange={(info) => setDeparture(info as any)}
                   compact={true}
                   disabled={editMode && !isEditable('departure')}
                   onDisabledClick={() => handleDisabledFieldClick('departure')}
