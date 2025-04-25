@@ -744,7 +744,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                   type="departure"
                   locationInfo={registerData.departure}
                   onChange={(info) => setDeparture(info as any)}
-                  compact={true}
+                  compact={false}
                   disabled={editMode && !isEditable('departure')}
                   onDisabledClick={() => handleDisabledFieldClick('departure')}
                 />
@@ -764,7 +764,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                   type="destination"
                   locationInfo={registerData.destination}
                   onChange={(info) => setDestination(info as any)}
-                  compact={true}
+                  compact={false}
                   disabled={editMode && !isEditable('destination')}
                   onDisabledClick={() => handleDisabledFieldClick('destination')}
                 />
