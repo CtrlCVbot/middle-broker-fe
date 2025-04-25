@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,9 +48,26 @@ export function BrokerOrderSearch() {
     tempFilter.endDate ? new Date(tempFilter.endDate) : undefined
   );
 
+  // 검색어 상태 추가 (컴포넌트 내부 상태)
+  const [searchInputValue, setSearchInputValue] = useState<string>(filter.searchTerm || '');
+  // 디바운스 타이머 참조 추가
+  const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // 검색어 입력 시 필터 업데이트
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilter({ searchTerm: e.target.value });
+    const value = e.target.value;
+    // 로컬 상태 즉시 업데이트
+    setSearchInputValue(value);
+    
+    // 이전 타이머 취소
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
+    }
+    
+    // 디바운스: 500ms 후에 필터 업데이트
+    searchTimerRef.current = setTimeout(() => {
+      setFilter({ ...filter, searchTerm: value });
+    }, 500);
   };
 
   // 출발지 도시 변경 시 임시 필터 업데이트
@@ -444,15 +461,18 @@ export function BrokerOrderSearch() {
           type="search"
           placeholder="화물번호, 출발지, 도착지, 차주명 검색"
           className="w-full pl-8"
-          value={filter.searchTerm || ""}
+          value={searchInputValue}
           onChange={handleSearchChange}
         />
-        {filter.searchTerm && (
+        {searchInputValue && (
           <Button
             variant="ghost"
             size="sm"
             className="absolute right-0 top-0 h-9 px-2"
-            onClick={() => setFilter({ searchTerm: "" })}
+            onClick={() => {
+              setSearchInputValue("");
+              setFilter({ ...filter, searchTerm: "" });
+            }}
           >
             <X className="h-4 w-4" />
           </Button>
