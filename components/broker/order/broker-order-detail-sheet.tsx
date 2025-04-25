@@ -97,21 +97,24 @@ export function BrokerOrderDetailSheet() {
       if (!selectedOrderId) {
         throw new Error("화물 ID가 없습니다.");
       }
-      
+      console.log("selectedOrderId1 => ", selectedOrderId);
       try {
         // ID가 실제 존재하는지 확인
+        console.log("selectedOrderId2 => ", selectedOrderId);
         const data = await getBrokerOrderDetailById(selectedOrderId);
         return data;
       } catch (err) {
         console.error(`화물 정보 조회 실패 (ID: ${selectedOrderId}):`, err);
         
         // 개발 환경에서는 오류가 발생했을 때 첫 번째 목업 데이터를 반환
-        if (process.env.NODE_ENV === 'development') {
-          // 첫 번째 유효한 데이터를 반환 (fallback 처리)
-          const fallbackId = "BRO-001001";
-          console.warn(`개발 환경 - 폴백 데이터를 사용합니다. (ID: ${fallbackId})`);
-          return getBrokerOrderDetailById(fallbackId);
-        }
+        // if (process.env.NODE_ENV === 'development') {
+        //   // 첫 번째 유효한 데이터를 반환 (fallback 처리)
+        //   const randomNumber = Math.floor(Math.random() * 8) + 1; // 1~8
+        //   const fallbackId = `BRO-001${String(randomNumber).padStart(3, '0')}`;
+        //   // const fallbackId = "BRO-001001";
+        //   console.warn(`개발 환경 - 폴백 데이터를 사용합니다. (ID: ${fallbackId})`);
+        //   return getBrokerOrderDetailById(fallbackId);
+        // }
         throw err;
       }
     },
@@ -131,6 +134,8 @@ export function BrokerOrderDetailSheet() {
     }
     
     if (orderData) {
+      console.log("orderData => ", orderData.orderNumber);
+      console.log("orderData => ", orderData.vehicle.driver?.name);
       setOrderDetail(orderData);
     }
   }, [orderData, isLoading, isError, error, setLoading, setError, setOrderDetail]);
@@ -140,7 +145,7 @@ export function BrokerOrderDetailSheet() {
   
   // 배차완료 여부 확인
   const isAssigned = orderData?.status === "배차완료" || orderData?.status === "운송중" || orderData?.status === "상차완료" || orderData?.status === "하차완료" || orderData?.status === "운송마감";
-  
+  console.log(orderData);
   // 편집 모드 설정 핸들러
   const handleSetEditMode = (mode: EditMode) => {
     setEditMode(mode);

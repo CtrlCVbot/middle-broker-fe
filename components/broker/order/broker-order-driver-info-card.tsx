@@ -64,6 +64,8 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
   
   // 배차 전 상태인지 확인 (배차대기 상태이고 차주 정보가 없는 경우)
   const isBeforeAssignment = status === '배차대기' || !vehicle.driver;
+
+  //console.log(vehicle.driver);
   
   // 배차 알림 전송 함수
   const handleSendAlert = () => {
