@@ -17,7 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ILocationInfo } from '@/types/order';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { CalendarIcon, Search as SearchIcon, Map, Phone, Building2, User, Loader2, MapPin, Building } from 'lucide-react';
+import { CalendarIcon, Search as SearchIcon, Map, Phone, Building2, User, Loader2, MapPin, Building, Clock, Pin } from 'lucide-react';
 import { useOrderRegisterStore } from '@/store/order-register-store';
 import { cn } from '@/lib/utils';
 import { RECENT_LOCATIONS } from '@/utils/mockdata/mock-register';
@@ -252,7 +252,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-primary">
             <Map className={`h-5 w-5 ${type === 'departure' ? 'text-red-500' : 'text-blue-500'}`} />
-            <h3 className="font-medium">{type === 'departure' ? '상차 정보' : '하차 정보'}</h3>
+            <h3 className="text-lg font-bold">{type === 'departure' ? '상차 정보' : '하차 정보'}</h3>
           </div>
           {/* <Button 
             type="button" 
@@ -291,7 +291,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
         {!hasSearchedAddress && (compact && RECENT_LOCATIONS && RECENT_LOCATIONS.length > 0) && (
           <div className="border rounded-lg p-4 bg-muted/30 mb-4">
             <div className="flex items-center gap-2 mb-4 text-primary">
-              <Building2 className="h-5 w-5" />
+              <Pin className="h-5 w-5" />
               <h3 className="font-medium">최근 사용 주소</h3>
             </div>
             
@@ -305,8 +305,8 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                   disabled={disabled}
                 >
                   <div className="flex-1 truncate">
-                    <p className="text-sm font-medium">{location.address}</p>
-                    <p className="text-xs text-muted-foreground truncate">{location.company}</p>
+                    <p className="text-sm font-medium">{location.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{location.address}</p>
                   </div>
                 </Button>
               ))}
@@ -334,7 +334,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
             
             {/* 상세 주소 입력 */}
             <div className="mb-4">
-              <div className="text-sm font-medium mb-2">상세 주소</div>
+              <div className="text-sm font-medium mb-2">상세 주소 :</div>
               <Input
                 value={locationInfo.detailedAddress || ''}
                 onChange={(e) => onChange({ detailedAddress: e.target.value })}
@@ -364,16 +364,19 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
       {/* 연락처 정보 영역 */}
       {hasSearchedAddress && (
       <div className="border rounded-lg p-4 bg-muted/30">
-        <div className="flex items-center gap-2 mb-4 text-primary">
+        {/* <div className="flex items-center gap-2 mb-4 text-primary">
           <User className="h-5 w-5" />
           <h3 className="font-medium">{type === 'departure' ? '상차 담당자' : '하차 담당자'} 정보</h3>
-        </div>
+        </div> */}
 
         <div className="space-y-4">
           {/* 회사명 / 담당자 */}
           <div className={cn("grid gap-4", compact ? "grid-cols-2" : "grid-cols-1 md:grid-cols-2")}>
             <div>
-              <div className="text-sm font-medium mb-2">회사명</div>
+              <div className="flex items-center gap-2">
+                <Building className="h-5 w-5 mb-2" />
+                <div className="text-sm font-medium mb-2">회사명</div>
+              </div>
               <Input
                 value={locationInfo.company || ''}
                 onChange={(e) => onChange({ company: e.target.value })}
@@ -385,7 +388,10 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
             </div>
             
             <div>
-              <div className="text-sm font-medium mb-2">담당자</div>
+              <div className="flex items-center gap-2">
+                <User className="h-5 w-5 mb-2" />
+                <div className="text-sm font-medium mb-2">담당자</div>
+              </div>
               <Input
                 value={locationInfo.name || ''}
                 onChange={(e) => onChange({ name: e.target.value })}
@@ -422,14 +428,19 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
       {/* 일정 정보 영역 */}
       {hasSearchedAddress && (
       <div className="border rounded-lg p-4 bg-muted/30">
-        <div className="flex items-center gap-2 mb-4 text-primary">
+        {/* <div className="flex items-center gap-2 mb-4 text-primary">
           <CalendarIcon className="h-5 w-5" />
           <h3 className="font-medium">{type === 'departure' ? '상차 일정' : '하차 일정'} 정보</h3>
-        </div>
+        </div> */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <div className="text-sm font-medium mb-2">{type === 'departure' ? '출발일' : '도착일'}</div>
+            <div className="flex items-center gap-2">
+              {/* <CalendarIcon className="h-5 w-5 mb-2" /> */}
+              <div className="text-sm font-medium mb-2">
+                {type === 'departure' ? '출발일' : '도착일'} <span className="text-destructive">*</span>
+              </div>
+            </div>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -459,7 +470,12 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
           </div>
           
           <div>
-            <div className="text-sm font-medium mb-2">{type === 'departure' ? '출발 시간' : '도착 시간'}</div>
+            <div className="flex items-center gap-2">
+              {/* <Clock className="h-5 w-5 mb-2" /> */}
+              <div className="text-sm font-medium mb-2">
+                {type === 'departure' ? '출발 시간' : '도착 시간'} <span className="text-destructive">*</span>
+              </div>
+            </div>
             <Input
               type="time"
               value={locationInfo.time || ''}

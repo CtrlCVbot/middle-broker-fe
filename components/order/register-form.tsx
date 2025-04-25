@@ -43,7 +43,7 @@ import {
 import { LocationForm } from "@/components/order/register-location-form";
 import { LocationFormVer01 } from "@/components/order/register-location-form-ver01";
 import { OptionSelector } from "./register-option-selector";
-import { TruckIcon, MapPinIcon, Settings2 as OptionsIcon, Calculator as CalculatorIcon, ChevronDown, ChevronUp, PencilIcon, Info } from "lucide-react";
+import { TruckIcon, MapPinIcon, Settings2 as OptionsIcon, Calculator as CalculatorIcon, ChevronDown, ChevronUp, PencilIcon, Info, Weight, Truck, Container } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -59,8 +59,8 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
   const [activeTab, setActiveTab] = useState<string>("vehicle");
   const [isCalculating, setIsCalculating] = useState(false);
   const [showRemark, setShowRemark] = useState<boolean>(false);
-  const [showOptions, setShowOptions] = useState<boolean>(true);
-  const [showCargoInfo, setShowCargoInfo] = useState<boolean>(true);
+  const [showOptions, setShowOptions] = useState<boolean>(false);
+  const [showCargoInfo, setShowCargoInfo] = useState<boolean>(false);
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   
   // Zustand 스토어에서 상태와 액션 가져오기
@@ -609,216 +609,32 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
   
   // 데스크톱 환경에서는 2단 컬럼 레이아웃으로 표시
   return (
+    
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* 왼쪽: 화물 정보 카드 */}
-          <Card className="lg:col-span-3">
-            <CardHeader className="pb-3 relative">
-              <div className="flex flex-col space-y-1">
-                <CardTitle className="text-lg flex items-center">
-                  <TruckIcon className="h-5 w-5 mr-2" />
-                  {editMode  ? (
-                    <>화물 수정 - #{orderNumber}  </> 
-                  ) : (
-                    <>화물 등록</>
-                  )}
-                  {editMode && originalData && (
-                      <>  
-                      <StatusFlow currentStatus={originalData.status} />
-                      </>               
-                  )}
-                </CardTitle>
-                <CardDescription>
-                  {editMode ? (
-                    <>화물 정보를 수정하세요. 배차 상태에 따라 수정 가능한 항목이 제한될 수 있습니다.</>
-                  ) : (
-                    <>운송할 화물 정보를 입력하고 등록해주세요.</>
-                  )}
-                </CardDescription>
-                {/*{editMode && originalData && (
-                <div className="mt-4 pb-2">
-                  <div className="text-sm font-medium text-muted-foreground mb-2">배차 진행 상태</div>
-                  <StatusFlow currentStatus={originalData.status} />
-                </div>
-              )}*/}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-12 gap-4">
-                {/* 차량 종류 */}
-                <div className="col-span-12 md:col-span-2">
-                  {/* <FormLabel>차량 종류</FormLabel>
-                  <Select
-                    value={registerData.vehicleType}
-                    onValueChange={(value) => setVehicleType(value as any)}
-                    disabled={editMode && !isEditable('vehicleType')}
-                  >
-                    <SelectTrigger 
-                      onClick={() => handleDisabledFieldClick('vehicleType')}
-                      className={editMode && !isEditable('vehicleType') ? 'bg-gray-100' : ''}
-                    >
-                      <SelectValue placeholder="차량 종류 선택" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {VEHICLE_TYPES.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select> */}
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-0">
 
-                  <div>
-                    <div className="text-sm font-medium mb-2">차량 종류</div>
-                    <Select
-                      value={registerData.vehicleType}
-                      onValueChange={(value) => setVehicleType(value as any)}
-                      disabled={editMode && !isEditable('vehicleType')}
-                    >
-                      <SelectTrigger 
-                        onClick={() => handleDisabledFieldClick('vehicleType')}
-                        className={editMode && !isEditable('vehicleType') ? 'bg-gray-100' : ''}
-                      >
-                        <SelectValue placeholder="차량 종류 선택" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {VEHICLE_TYPES.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                {/* 차량 중량 */}
-                <div className="col-span-12 md:col-span-2">
-                  {/* <FormLabel>중량</FormLabel>
-                  <Select
-                    value={registerData.weightType}
-                    onValueChange={(value) => setWeightType(value as any)}
-                    disabled={editMode && !isEditable('weightType')}
-                  >
-                    <SelectTrigger 
-                      onClick={() => handleDisabledFieldClick('weightType')}
-                      className={editMode && !isEditable('weightType') ? 'bg-gray-100' : ''}
-                    >
-                      <SelectValue placeholder="중량 선택" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {WEIGHT_TYPES.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select> */}
-                  <div>
-                    <div className="text-sm font-medium mb-2">중량</div>
-                    <Select
-                      value={registerData.weightType}
-                      onValueChange={(value) => setWeightType(value as any)}
-                      disabled={editMode && !isEditable('weightType')}
-                    >
-                      <SelectTrigger 
-                        onClick={() => handleDisabledFieldClick('weightType')}
-                        className={editMode && !isEditable('weightType') ? 'bg-gray-100' : ''}
-                      >
-                        <SelectValue placeholder="중량 선택" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {WEIGHT_TYPES.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+        <div className="flex items-center justify-between py-4 grid grid-rows-2 gap-0">
+          <h1 className="text-2xl font-semibold">{editMode  ? (
+                  <>화물 수정 - #{orderNumber}  </> 
+                ) : (
+                  <>화물 등록</>
+                )}
+          </h1>
+          
+          {editMode ? (
+            <div className="text-sm text-muted-foreground">화물 정보를 수정하세요. 배차 상태에 따라 수정 가능한 항목이 제한될 수 있습니다.</div>
+          ) : (
+            <div className="text-sm text-muted-foreground">운송할 화물 정보를 입력하고 등록해주세요.</div>
+          )}
 
-                {/* 화물 품목 */}
-                <div className="col-span-12 md:col-span-8 flex items-end gap-2">
-                  {/* <div className="flex-1">
-                    <FormLabel>화물 품목</FormLabel>
-                    <Input
-                      placeholder="화물 품목을 입력하세요 (최대 38자)"
-                      maxLength={38}
-                      value={registerData.cargoType}
-                      onChange={(e) => setCargoType(e.target.value)}
-                      disabled={editMode && !isEditable('cargoType')}
-                      className={editMode && !isEditable('cargoType') ? 'bg-gray-100' : ''}
-                      onClick={() => handleDisabledFieldClick('cargoType')}
-                    />
-                    <p className="text-xs text-right text-muted-foreground mt-1">
-                      {registerData.cargoType.length}/38자
-                    </p>
-                  </div> */}
-                  <div className="flex-1">
-                    <div className="text-sm font-medium mb-2">화물 품목</div>
-                    <Input
-                      placeholder="화물 품목을 입력하세요 (최대 38자)"
-                      maxLength={38}
-                      value={registerData.cargoType}
-                      onChange={(e) => setCargoType(e.target.value)}
-                      disabled={editMode && !isEditable('cargoType')}
-                      className={editMode && !isEditable('cargoType') ? 'bg-gray-100' : ''}
-                      onClick={() => handleDisabledFieldClick('cargoType')}
-                    />
-                    <p className="text-xs text-right text-muted-foreground mt-1">
-                      {registerData.cargoType.length}/38자
-                    </p>
-                  </div>
-                  
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          size="icon" 
-                          className="mb-5"
-                          onClick={() => setShowRemark(!showRemark)}
-                          disabled={editMode && !isEditable('remark')}
-                        >
-                          {showRemark ? <ChevronUp className="h-4 w-4" /> : <PencilIcon className="h-4 w-4" />}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>비고 입력란 {showRemark ? '숨기기' : '표시하기'}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-              </div>
-              
-              {/* 비고 - 조건부 렌더링 */}
-              {(showRemark || (editMode && registerData.remark)) && (
-                <div className="animate-in fade-in-50 duration-200">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium mb-2">비고</div>
-                    {editMode && isEditable('remark') && (
-                      <div className="flex items-center text-xs text-green-600">
-                        <Info className="h-3 w-3 mr-1" />
-                        편집 가능
-                      </div>
-                    )}
-                  </div>
-                  <Textarea
-                    placeholder="비고 (선택사항)"
-                    value={registerData.remark || ''}
-                    onChange={(e) => setRemark(e.target.value)}
-                    className={cn("resize-none h-20", editMode && !isEditable('remark') ? 'bg-gray-100' : '')}
-                    disabled={editMode && !isEditable('remark')}
-                    onClick={() => handleDisabledFieldClick('remark')}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {editMode && originalData && (
+            <div className="flex items-center mt-4">  
+              <StatusFlow currentStatus={originalData.status} />
+            </div>               
+          )}
+        </div>
 
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">              
           {/* 중간: 출발지/도착지 정보 카드 */}
           <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* 출발지 정보 - 임시 주석*/}
@@ -902,143 +718,162 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
             </Card>
           </div>
           
-          {/* 오른쪽: 예상 정보 및 옵션 카드 */}
+          {/* 오른쪽: 화물 정보 카드 */}
           <div className="lg:col-span-1 space-y-4">
             {/* 화물 정보 카드 */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-lg flex items-center">
-                  <TruckIcon className="h-5 w-5 mr-2" />
-                  <span className="text-gray-600">화물 정보</span>
+                  <Container className="h-5 w-5 mr-2" />
+                  <div className="flex items-center">
+                    화물 정보 <span className="text-destructive">*</span>
+                  </div>
                 </CardTitle>
-                
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowCargoInfo((prev) => !prev)}
+                > 
+                  {showCargoInfo ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </Button>
+
               </CardHeader>
-              {showCargoInfo && (
-                <CardContent>
-                  <div className="space-y-4">
-                    {/* 회사명 / 담당자 */}
-                    <div className="grid grid-cols-1 md:grid-cols-2">
-                      <div>
-                        <div className="text-sm font-medium mb-2">차량 종류</div>
-                        <Select
-                          value={registerData.vehicleType}
-                          onValueChange={(value) => setVehicleType(value as any)}
-                          disabled={editMode && !isEditable('vehicleType')}
-                        >
-                          <SelectTrigger 
-                            onClick={() => handleDisabledFieldClick('vehicleType')}
-                            className={editMode && !isEditable('vehicleType') ? 'bg-gray-100' : ''}
-                          >
-                            <SelectValue placeholder="차량 종류 선택" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {VEHICLE_TYPES.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+             
+              <CardContent>
+                <div className="space-y-4">
+                  {/* 회사명 / 담당자 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2">
+
+                    <div>
+                      <div className="text-sm font-medium mb-2 flex items-center">
+                        <Weight className="h-4 w-4 mr-2 text-muted-foreground" />중량
                       </div>
-                      
-                      <div>
-                        <div className="text-sm font-medium mb-2">중량</div>
-                        <Select
-                          value={registerData.weightType}
-                          onValueChange={(value) => setWeightType(value as any)}
-                          disabled={editMode && !isEditable('weightType')}
+                      <Select
+                        value={registerData.weightType}
+                        onValueChange={(value) => setWeightType(value as any)}
+                        disabled={editMode && !isEditable('weightType')}
+                      >
+                        <SelectTrigger 
+                          onClick={() => handleDisabledFieldClick('weightType')}
+                          className={editMode && !isEditable('weightType') ? 'bg-gray-100' : ''}
                         >
-                          <SelectTrigger 
-                            onClick={() => handleDisabledFieldClick('weightType')}
-                            className={editMode && !isEditable('weightType') ? 'bg-gray-100' : ''}
-                          >
-                            <SelectValue placeholder="중량 선택" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {WEIGHT_TYPES.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    
-                    {/* 화물 품목 */}
-                    <div className="col-span-12 md:col-span-10 flex items-end gap-2">
-                        <div className="flex-1">
-                          <div className="text-sm font-medium mb-2">화물 품목</div>
-                          <Input
-                            placeholder="화물 품목을 입력하세요 (최대 38자)"
-                            maxLength={38}
-                            value={registerData.cargoType}
-                            onChange={(e) => setCargoType(e.target.value)}
-                            disabled={editMode && !isEditable('cargoType')}
-                            className={editMode && !isEditable('cargoType') ? 'bg-gray-100' : ''}
-                            onClick={() => handleDisabledFieldClick('cargoType')}
-                          />
-                          <p className="text-xs text-right text-muted-foreground mt-1">
-                            {registerData.cargoType.length}/38자
-                          </p>
-                        </div>
-                        
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button 
-                                type="button" 
-                                variant="outline" 
-                                size="icon" 
-                                className="mb-5"
-                                onClick={() => setShowRemark(!showRemark)}
-                                disabled={editMode && !isEditable('remark')}
-                              >
-                                {showRemark ? <ChevronUp className="h-4 w-4" /> : <PencilIcon className="h-4 w-4" />}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>비고 입력란 {showRemark ? '숨기기' : '표시하기'}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                        <SelectValue placeholder="차량 중량 선택" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {WEIGHT_TYPES.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {type}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
-                    {/* 비고 - 조건부 렌더링 */}
-                    {(showRemark || (editMode && registerData.remark)) && (
-                      <div className="animate-in fade-in-50 duration-200">
-                        <div className="flex items-center justify-between">
-                          <FormLabel>비고</FormLabel>
-                          {editMode && isEditable('remark') && (
-                            <div className="flex items-center text-xs text-green-600">
-                              <Info className="h-3 w-3 mr-1" />
-                              편집 가능
-                            </div>
-                          )}
-                        </div>
-                        <Textarea
-                          placeholder="비고 (선택사항)"
-                          value={registerData.remark || ''}
-                          onChange={(e) => setRemark(e.target.value)}
-                          className={cn("resize-none h-20", editMode && !isEditable('remark') ? 'bg-gray-100' : '')}
-                          disabled={editMode && !isEditable('remark')}
-                          onClick={() => handleDisabledFieldClick('remark')}
-                        />
+                    <div>
+                      <div className="text-sm font-medium mb-2 flex items-center">
+                        <Truck className="h-4 w-4 mr-2 text-muted-foreground" />종류
                       </div>
-                    )}
+                      <Select
+                        value={registerData.vehicleType}
+                        onValueChange={(value) => setVehicleType(value as any)}
+                        disabled={editMode && !isEditable('vehicleType')}
+                      >
+                        <SelectTrigger 
+                          onClick={() => handleDisabledFieldClick('vehicleType')}
+                          className={editMode && !isEditable('vehicleType') ? 'bg-gray-100' : ''}
+                        >
+                          <SelectValue placeholder="차량 종류 선택" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {VEHICLE_TYPES.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {type}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
                   </div>
                   
-                </CardContent>
-              )}
+                  {/* 화물 품목 */}
+                  <div className="col-span-12 md:col-span-10 flex items-end gap-2">
+                      <div className="flex-1">
+                        <div className="text-sm font-medium mb-2 flex items-center">
+                          화물 품목
+                        </div>
+                        <Input
+                          placeholder="화물 품목을 입력하세요 (최대 38자)"
+                          maxLength={38}
+                          value={registerData.cargoType}
+                          onChange={(e) => setCargoType(e.target.value)}
+                          disabled={editMode && !isEditable('cargoType')}
+                          className={editMode && !isEditable('cargoType') ? 'bg-gray-100' : ''}
+                          onClick={() => handleDisabledFieldClick('cargoType')}
+                        />
+                        <p className="text-xs text-right text-muted-foreground mt-1">
+                          {registerData.cargoType.length}/38자
+                        </p>
+                      </div>
+                      
+                      {/* <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              size="icon" 
+                              className="mb-5"
+                              onClick={() => setShowRemark(!showRemark)}
+                              disabled={editMode && !isEditable('remark')}
+                            >
+                              {showRemark ? <ChevronUp className="h-4 w-4" /> : <PencilIcon className="h-4 w-4" />}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>비고 입력란 {showRemark ? '숨기기' : '표시하기'}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider> */}
+                  </div>
+
+                  {/* 비고 - 조건부 렌더링 */}
+                  {showCargoInfo && (
+                    <div className="animate-in fade-in-50 duration-200">
+                      <div className="flex items-center justify-between">
+                        <FormLabel>비고</FormLabel>
+                        {editMode && isEditable('remark') && (
+                          <div className="flex items-center text-xs text-green-600">
+                            <Info className="h-3 w-3 mr-1" />
+                            편집 가능
+                          </div>
+                        )}
+                      </div>
+                      <Textarea
+                        placeholder="비고 (선택사항)"
+                        value={registerData.remark || ''}
+                        onChange={(e) => setRemark(e.target.value)}
+                        className={cn("resize-none h-20", editMode && !isEditable('remark') ? 'bg-gray-100' : '')}
+                        disabled={editMode && !isEditable('remark')}
+                        onClick={() => handleDisabledFieldClick('remark')}
+                      />
+                    </div>
+                  )}
+                </div>
+                
+              </CardContent>
+              
             </Card>
 
             {/* 운송 옵션 카드 */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <div className="flex items-center">
+                <CardTitle className="text-md flex items-center">
                   <OptionsIcon className="h-5 w-5 mr-2" />
-                  운송 옵션
-                </div>
+                  <span className="">운송 옵션</span>
+                </CardTitle>
                 <Button
                   type="button"
                   variant="ghost"
@@ -1066,7 +901,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center">
                   <CalculatorIcon className="h-5 w-5 mr-2" />
-                  <span className="text-gray-600">{editMode ? '정산 정보' : '예상 정보'}</span>
+                  <span className="">{editMode ? '정산 정보' : '예상 정보'}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
