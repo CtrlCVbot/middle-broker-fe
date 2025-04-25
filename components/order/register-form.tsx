@@ -48,11 +48,40 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/components/ui/use-toast";
 
+
+
 interface OrderRegisterFormProps {
   onSubmit: () => void;
   editMode?: boolean;
   orderNumber?: string;
 }
+
+interface AnimatedNumberProps {
+  number: number;
+  duration?: number; // 기본 애니메이션 시간
+  suffix?: string;   // "km", "원" 등 단위
+}
+
+export function AnimatedNumber({ number, duration = 500, suffix = '' }: AnimatedNumberProps) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const start = performance.now();
+    const from = display;
+
+    const step = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const nextValue = Math.floor(from + (number - from) * progress);
+      setDisplay(nextValue);
+      if (progress < 1) requestAnimationFrame(step);
+    };
+
+    requestAnimationFrame(step);
+  }, [number]);
+
+  return <span>{display.toLocaleString()}{suffix}</span>;
+}
+
 
 export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: OrderRegisterFormProps) {
   const [activeTab, setActiveTab] = useState<string>("vehicle");
@@ -69,6 +98,9 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
   const { 
     registerData,
   } = store;
+  
+
+
   
   // 필요한 액션 함수들 (타입 단언 사용)
   const setVehicleType = editMode 
@@ -777,14 +809,21 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                       {isCalculating ? (
                         <span className="animate-pulse">계산 중...</span>
                       ) : (
-                        <span>
-                          {typeof registerData.estimatedDistance === 'number' ? 
-                            `${registerData.estimatedDistance.toLocaleString()}km` : 
-                            editMode && originalData ? 
-                              `${0}km` : 
-                              '0km'
-                          }
-                        </span>
+                        // <span>
+                        //   {typeof registerData.estimatedDistance === 'number' ? 
+                        //     `${registerData.estimatedDistance.toLocaleString()}km` : 
+                        //     editMode && originalData ? 
+                        //       `${0}km` : 
+                        //       '0km'
+                        //   }
+                        // </span>
+                        typeof registerData.estimatedDistance === 'number' ? (
+                          <AnimatedNumber number={registerData.estimatedDistance} suffix="km" />
+                        ) : editMode && originalData ? (
+                          <AnimatedNumber number={0} suffix="km" />
+                        ) : (
+                          '0km'
+                        )
                       )}
                     </span>
                   </div>
@@ -797,14 +836,21 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                       {isCalculating ? (
                         <span className="animate-pulse">계산 중...</span>
                       ) : (
-                        <span>
-                          {typeof registerData.estimatedAmount === 'number' ? 
-                            `${registerData.estimatedAmount.toLocaleString()}원` : 
-                            editMode && originalData ? 
-                              originalData.amount : 
-                              '0원'
-                          }
-                        </span>
+                        // <span>
+                        //   {typeof registerData.estimatedAmount === 'number' ? 
+                        //     `${registerData.estimatedAmount.toLocaleString()}원` : 
+                        //     editMode && originalData ? 
+                        //       originalData.amount : 
+                        //       '0원'
+                        //   }
+                        // </span>
+                        typeof registerData.estimatedAmount === 'number' ? (
+                          <AnimatedNumber number={registerData.estimatedAmount} suffix="원" />
+                        ) : editMode && originalData ? (
+                          <AnimatedNumber number={Number(originalData.amount ?? 0)} suffix="원" />
+                        ) : (
+                          '0원'
+                        )
                       )}
                     </span>
                   </div>
