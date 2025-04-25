@@ -646,7 +646,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
               <div className="grid md:grid-cols-12 gap-4">
                 {/* 차량 종류 */}
                 <div className="col-span-12 md:col-span-2">
-                  <FormLabel>차량 종류</FormLabel>
+                  {/* <FormLabel>차량 종류</FormLabel>
                   <Select
                     value={registerData.vehicleType}
                     onValueChange={(value) => setVehicleType(value as any)}
@@ -665,12 +665,35 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                         </SelectItem>
                       ))}
                     </SelectContent>
-                  </Select>
+                  </Select> */}
+
+                  <div>
+                    <div className="text-sm font-medium mb-2">차량 종류</div>
+                    <Select
+                      value={registerData.vehicleType}
+                      onValueChange={(value) => setVehicleType(value as any)}
+                      disabled={editMode && !isEditable('vehicleType')}
+                    >
+                      <SelectTrigger 
+                        onClick={() => handleDisabledFieldClick('vehicleType')}
+                        className={editMode && !isEditable('vehicleType') ? 'bg-gray-100' : ''}
+                      >
+                        <SelectValue placeholder="차량 종류 선택" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {VEHICLE_TYPES.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 
                 {/* 차량 중량 */}
                 <div className="col-span-12 md:col-span-2">
-                  <FormLabel>중량</FormLabel>
+                  {/* <FormLabel>중량</FormLabel>
                   <Select
                     value={registerData.weightType}
                     onValueChange={(value) => setWeightType(value as any)}
@@ -689,13 +712,50 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                         </SelectItem>
                       ))}
                     </SelectContent>
-                  </Select>
+                  </Select> */}
+                  <div>
+                    <div className="text-sm font-medium mb-2">중량</div>
+                    <Select
+                      value={registerData.weightType}
+                      onValueChange={(value) => setWeightType(value as any)}
+                      disabled={editMode && !isEditable('weightType')}
+                    >
+                      <SelectTrigger 
+                        onClick={() => handleDisabledFieldClick('weightType')}
+                        className={editMode && !isEditable('weightType') ? 'bg-gray-100' : ''}
+                      >
+                        <SelectValue placeholder="중량 선택" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {WEIGHT_TYPES.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 {/* 화물 품목 */}
                 <div className="col-span-12 md:col-span-8 flex items-end gap-2">
-                  <div className="flex-1">
+                  {/* <div className="flex-1">
                     <FormLabel>화물 품목</FormLabel>
+                    <Input
+                      placeholder="화물 품목을 입력하세요 (최대 38자)"
+                      maxLength={38}
+                      value={registerData.cargoType}
+                      onChange={(e) => setCargoType(e.target.value)}
+                      disabled={editMode && !isEditable('cargoType')}
+                      className={editMode && !isEditable('cargoType') ? 'bg-gray-100' : ''}
+                      onClick={() => handleDisabledFieldClick('cargoType')}
+                    />
+                    <p className="text-xs text-right text-muted-foreground mt-1">
+                      {registerData.cargoType.length}/38자
+                    </p>
+                  </div> */}
+                  <div className="flex-1">
+                    <div className="text-sm font-medium mb-2">화물 품목</div>
                     <Input
                       placeholder="화물 품목을 입력하세요 (최대 38자)"
                       maxLength={38}
@@ -736,7 +796,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
               {(showRemark || (editMode && registerData.remark)) && (
                 <div className="animate-in fade-in-50 duration-200">
                   <div className="flex items-center justify-between">
-                    <FormLabel>비고</FormLabel>
+                    <div className="text-sm font-medium mb-2">비고</div>
                     {editMode && isEditable('remark') && (
                       <div className="flex items-center text-xs text-green-600">
                         <Info className="h-3 w-3 mr-1" />
@@ -801,12 +861,12 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
 
             {/* 출발지 정보 Copy*/}
             <Card>
-              <CardHeader className="pb-3">
+              {/* <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center">
                   <MapPinIcon className="h-5 w-5 mr-2 text-bule-500" />
-                  출발지 정보 복사
+                  상차 정보
                 </CardTitle>
-              </CardHeader>
+              </CardHeader> */}
               <CardContent>
                 <LocationFormVer01
                   type="departure"
@@ -821,12 +881,12 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
 
             {/* 도착지 정보 Copy*/}
             <Card>
-            <CardHeader className="pb-3">
+              {/* <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center">
                   <MapPinIcon className="h-5 w-5 mr-2 text-red-500" />
-                  도착지 정보 복사
+                  하차 정보
                 </CardTitle>
-              </CardHeader>
+              </CardHeader> */}
               <CardContent>
                 <LocationFormVer01
                   type="destination"
@@ -834,7 +894,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                   onChange={(info) => setDestination(info as any)}
                   compact={true}
                   disabled={editMode && !isEditable('destination')}
-                  onDisabledClick={() => handleDisabledFieldClick('destination')}
+                  onDisabledClick={() => handleDisabledFieldClick('destination')}                  
                 />
               </CardContent>
             </Card>

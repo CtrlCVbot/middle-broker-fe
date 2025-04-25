@@ -221,17 +221,40 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
     const formattedValue = formatPhoneNumber(e.target.value);
     onChange({ contact: formattedValue });
   };
+
+   // 데이터 초기화 함수 추가: 폼 데이터를 초기 상태로 리셋합니다.
+   const handleReset = () => {
+    onChange({
+      address: '',
+      roadAddress: '',
+      jibunAddress: '',
+      latitude: 0,
+      longitude: 0,
+      detailedAddress: '',
+      name: '',
+      company: '',
+      contact: '',
+      date: '',
+      time: '',
+    });
+    setDate(undefined);
+    setHasSearchedAddress(false);
+    setSearchQuery('');
+    setSearchResults([]);
+    setSearchError(null);
+  };
   
   return (
     <div className="space-y-6">
       {/* 주소 정보 영역 */}
-      <div className="border rounded-lg p-4 bg-muted/30">
+      {/* <div className="border rounded-lg p-4 bg-muted/30"> */}
+      <div className="">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-primary">
-            <Map className="h-5 w-5" />
-            <h3 className="font-medium">{type === 'departure' ? '출발지 정보' : '도착지 정보'}</h3>
+            <Map className={`h-5 w-5 ${type === 'departure' ? 'text-red-500' : 'text-blue-500'}`} />
+            <h3 className="font-medium">{type === 'departure' ? '상차 정보' : '하차 정보'}</h3>
           </div>
-          <Button 
+          {/* <Button 
             type="button" 
             variant="outline" 
             size="sm"
@@ -240,14 +263,62 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
           >
             <SearchIcon className="h-4 w-4 mr-2" />
             주소 검색
-          </Button>
+          </Button> */}
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsSearchDialogOpen(true)}
+              disabled={disabled}
+            >
+              <SearchIcon className="h-4 w-4 mr-2" />
+              주소 검색
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleReset}
+              disabled={disabled}
+            >
+              초기화
+            </Button>
+          </div>
         </div>
+
+        {/* 최근 사용 주소 */}
+        {!hasSearchedAddress && (compact && RECENT_LOCATIONS && RECENT_LOCATIONS.length > 0) && (
+          <div className="border rounded-lg p-4 bg-muted/30 mb-4">
+            <div className="flex items-center gap-2 mb-4 text-primary">
+              <Building2 className="h-5 w-5" />
+              <h3 className="font-medium">최근 사용 주소</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {RECENT_LOCATIONS.slice(0, 4).map((location, idx) => (
+                <Button
+                  key={idx}
+                  variant="outline"
+                  className="h-auto py-2 justify-start text-left"
+                  onClick={() => handleRecentLocationClick(location)}
+                  disabled={disabled}
+                >
+                  <div className="flex-1 truncate">
+                    <p className="text-sm font-medium">{location.address}</p>
+                    <p className="text-xs text-muted-foreground truncate">{location.company}</p>
+                  </div>
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {hasSearchedAddress ? (
           <>
             {/* 주소 표시 영역 */}
             <div className="mb-4">
-              <div className="flex items-center justify-between border p-4 rounded bg-background">
+              <div className="flex items-center justify-between border p-4 rounded bg-background bg-muted/30">
                 <div className="flex flex-col text-sm">
                   <div className="font-medium text-base text-primary">
                     {locationInfo.address || '주소를 검색해주세요'}
@@ -275,7 +346,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
             </div>
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center py-8 border border-dashed rounded-md">
+          <div className="flex flex-col items-center justify-center py-8 border border-dashed rounded-md bg-muted/30">
             <Map className="h-10 w-10 text-muted-foreground mb-2" />
             <p className="text-sm text-muted-foreground mb-4">{type === 'departure' ? '출발지' : '도착지'} 주소를 검색해주세요</p>
             <Button 
@@ -291,10 +362,11 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
       </div>
       
       {/* 연락처 정보 영역 */}
+      {hasSearchedAddress && (
       <div className="border rounded-lg p-4 bg-muted/30">
         <div className="flex items-center gap-2 mb-4 text-primary">
           <User className="h-5 w-5" />
-          <h3 className="font-medium">담당자 정보</h3>
+          <h3 className="font-medium">{type === 'departure' ? '상차 담당자' : '하차 담당자'} 정보</h3>
         </div>
 
         <div className="space-y-4">
@@ -345,12 +417,14 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
           </div>
         </div>
       </div>
+      )}
       
       {/* 일정 정보 영역 */}
+      {hasSearchedAddress && (
       <div className="border rounded-lg p-4 bg-muted/30">
         <div className="flex items-center gap-2 mb-4 text-primary">
           <CalendarIcon className="h-5 w-5" />
-          <h3 className="font-medium">일정 정보</h3>
+          <h3 className="font-medium">{type === 'departure' ? '상차 일정' : '하차 일정'} 정보</h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -398,33 +472,9 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
           </div>
         </div>
       </div>
-      
-      {/* 최근 사용 주소 */}
-      {!compact && RECENT_LOCATIONS && RECENT_LOCATIONS.length > 0 && (
-        <div className="border rounded-lg p-4 bg-muted/30">
-          <div className="flex items-center gap-2 mb-4 text-primary">
-            <Building2 className="h-5 w-5" />
-            <h3 className="font-medium">최근 사용 주소</h3>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {RECENT_LOCATIONS.slice(0, 4).map((location, idx) => (
-              <Button
-                key={idx}
-                variant="outline"
-                className="h-auto py-2 justify-start text-left"
-                onClick={() => handleRecentLocationClick(location)}
-                disabled={disabled}
-              >
-                <div className="flex-1 truncate">
-                  <p className="text-sm font-medium">{location.address}</p>
-                  <p className="text-xs text-muted-foreground truncate">{location.company}</p>
-                </div>
-              </Button>
-            ))}
-          </div>
-        </div>
       )}
+      
+      
 
       {/* 주소 검색 다이얼로그 */}
       <Dialog open={isSearchDialogOpen} onOpenChange={setIsSearchDialogOpen}>
