@@ -21,44 +21,8 @@ import { CalendarIcon, Search as SearchIcon, Map, Phone, Building2, User, Loader
 import { useOrderRegisterStore } from '@/store/order-register-store';
 import { cn } from '@/lib/utils';
 import { RECENT_LOCATIONS } from '@/utils/mockdata/mock-register';
+import { IKakaoAddressResult } from '@/types/address';
 
-// 카카오 주소 검색 결과 인터페이스
-interface IKakaoAddressResult {
-  place_name: string;
-  distance: string;
-  place_url: string;
-  category_name: string;
-  address_name: string;
-  road_address_name?: string;
-  road_address?: {
-    address_name: string;
-    region_1depth_name: string;
-    region_2depth_name: string;
-    region_3depth_name: string;
-    road_name: string;
-    underground_yn: string;
-    main_building_no: string;
-    sub_building_no: string;
-    building_name: string;
-    zone_no: string;
-  };
-  address?: {
-    address_name: string;
-    region_1depth_name: string;
-    region_2depth_name: string;
-    region_3depth_name: string;
-    mountain_yn: string;
-    main_address_no: string;
-    sub_address_no: string;
-    zip_code: string;
-  };
-  id: string;
-  phone: string;
-  category_group_code: string;
-  category_group_name: string;
-  x: string;
-  y: string;
-}
 
 interface LocationFormProps {
   type: 'departure' | 'destination';

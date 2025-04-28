@@ -200,6 +200,7 @@ export function AddressFormSheet({
     form.setValue('roadAddress', result.road_address?.address_name || '');
     form.setValue('jibunAddress', result.address?.address_name || '');
     form.setValue('contactPhone', result.phone || '');
+    form.setValue('postalCode', result.road_address?.zone_no || '');
     form.setValue('metadata', {
       ...form.getValues('metadata'),
       lat: parseFloat(result.y),
@@ -283,12 +284,15 @@ export function AddressFormSheet({
             <div className="px-6 space-y-6">
               {/* 기본 정보 영역 */}
               <div className="border rounded-lg p-4 bg-muted/30">
+
                 <div className="flex items-center gap-2 mb-4 text-primary">
                   <Building2 className="h-5 w-5" />
                   <h3 className="font-medium">기본 정보</h3>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                  {/* 유형 영역 */}
                   <FormField
                     control={form.control}
                     name="type"
@@ -317,6 +321,7 @@ export function AddressFormSheet({
                     )}
                   />
 
+                  {/* 상/하차지명 영역 */}
                   <FormField
                     control={form.control}
                     name="name"
@@ -336,11 +341,14 @@ export function AddressFormSheet({
                     )}
                   />
                 </div>
+
               </div>
 
               {/* 주소 정보 영역 */}              
               <div className="border rounded-lg p-4 bg-muted/30">
+
                 <div className="flex items-center justify-between mb-4">
+
                   <div className="flex items-center gap-2 text-primary">
                     <Map className="h-5 w-5" />
                     <h3 className="font-medium">주소 정보</h3>
@@ -359,52 +367,57 @@ export function AddressFormSheet({
                 {hasSearchedAddress ? (
                   <>
                     {/* 도로명/지번 주소 표시 영역 */}
-                    <div className="mb-4 space-y-4">
-
-                    <div className="flex items-center justify-between border p-4 rounded bg-muted">
-                      <div className="flex flex-col text-sm">
-                        <div className="font-medium text-base text-primary">
-                          도로명: {form.getValues('roadAddress')}
+                    <div className="mb-6 space-y-4">
+                      <div className="p-4 rounded-lg shadow-md bg-background border bg-muted">
+                        <div className="text-primary font-semibold text-lg mb-1">
+                          {form.getValues('roadAddress') || '주소를 입력하세요'}
                         </div>
-                        <div className="text-muted-foreground text-sm mt-1">
-                          지번: {form.getValues('jibunAddress')}
+                        <div className="text-muted-foreground text-sm">
+                          (지번) {form.getValues('jibunAddress') || '지번 주소 없음'}
                         </div>
                       </div>
                     </div>
 
-                      {/* <FormField
+                    {/* 상세 주소 및 우편번호 입력 */}
+                    <div className="space-y-4">
+                      <FormField
                         control={form.control}
-                        name="roadAddress"
+                        name="detailAddress"
                         render={({ field }) => (
-                          <div className="space-y-2">
-                            <FormLabel>
-                              도로명 주소 <span className="text-destructive">*</span>
-                            </FormLabel>
-                            <div className="border p-3 rounded-md bg-background">
-                              <p className="font-medium text-base">{field.value || '주소를 검색해주세요'}</p>
-                            </div>
-                            <input type="hidden" {...field} />
-                            <FormMessage />                            
-                          </div>
+                          <FormItem>
+                            <FormLabel>상세 주소</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="상세 주소를 입력하세요" 
+                                {...field} 
+                                value={field.value || ''}
+                              />
+                            </FormControl>
+                            <FormDescription>건물명, 동/호수 등 세부 위치정보를 입력하세요.</FormDescription>
+                            <FormMessage />
+                          </FormItem>
                         )}
                       />
 
                       <FormField
                         control={form.control}
-                        name="jibunAddress"
+                        name="postalCode"
                         render={({ field }) => (
-                          <div className="space-y-2">
-                            <FormLabel>
-                              지번 주소 <span className="text-destructive">*</span>
-                            </FormLabel>
-                            <div className="border p-3 rounded-md bg-background/50 text-muted-foreground">
-                              <p>{field.value || '주소를 검색해주세요'}</p>
-                            </div>
-                            <input type="hidden" {...field} />
+                          <FormItem>
+                            <FormLabel>우편번호</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="우편번호 5자리" 
+                                {...field} 
+                                value={field.value || ''}
+                                maxLength={5}
+                                className="max-w-[200px]"
+                              />
+                            </FormControl>
                             <FormMessage />
-                          </div>
+                          </FormItem>
                         )}
-                      /> */}
+                      />
                     </div>
                   </>
                 ) : (
@@ -421,46 +434,9 @@ export function AddressFormSheet({
                   </div>
                 )}
 
-                {hasSearchedAddress && (
-                  <div className="space-y-4 mt-4">
-                    <FormField
-                      control={form.control}
-                      name="detailAddress"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>상세 주소</FormLabel>
-                          <FormControl>
-                            <Input placeholder="상세 주소를 입력하세요" {...field} value={field.value || ''} />
-                          </FormControl>
-                          <FormDescription>
-                            건물명, 동/호수 등 세부 위치정보
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
 
-                    <FormField
-                      control={form.control}
-                      name="postalCode"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>우편번호</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="우편번호 5자리" 
-                              {...field} 
-                              value={field.value || ''} 
-                              maxLength={5}
-                              className="max-w-[200px]"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                )}
+                
+
               </div>
 
               {/* 연락처 정보 영역 */}

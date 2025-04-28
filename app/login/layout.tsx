@@ -25,7 +25,7 @@ export default function LoginLayout({
   return (
     //<html lang="ko">
       <div
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}        
       >
         {children}
       </div>

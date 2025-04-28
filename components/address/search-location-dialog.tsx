@@ -38,6 +38,7 @@ export interface IKakaoAddressResult {
     under_ground_yn: string;
     x: string;
     y: string;
+    zone_no: string;
   }
   id: string;
   phone: string;

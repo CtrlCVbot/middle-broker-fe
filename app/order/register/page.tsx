@@ -61,7 +61,7 @@ export default function OrderRegisterPage() {
         </div>
       </header>
       
-      <main className="flex flex-1 flex-col p-4 pt-0">
+      <main className="min-h-screen flex flex-col items-center pt-4">
         <div className="container">
           <div className="flex flex-col space-y-4">
             {/* 화물 등록 타이틀 */}
