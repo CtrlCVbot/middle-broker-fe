@@ -36,11 +36,18 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
+import { getCurrentUser } from "@/utils/auth"
+
+const user = getCurrentUser();
+
+
 export const data = {
+
+
   user: {
-    name: "홍길동",
-    email: "user@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    name: user?.name || "",
+    email: user?.email || "",
+    avatar: null,
   },
   navMain: [
     {
