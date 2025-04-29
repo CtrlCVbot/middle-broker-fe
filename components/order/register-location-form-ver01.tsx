@@ -124,10 +124,10 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
       address: address.roadAddress || address.jibunAddress,
       detailedAddress: address.detailAddress || '',
       name: address.name || '',
-      company: address.company || '',
+      company: address.name || '',
       contact: address.contactPhone || '',
-      latitude: address.latitude,
-      longitude: address.longitude
+      latitude: address.metadata?.lat || 0,
+      longitude: address.metadata?.lng || 0
     });
     
     setHasSearchedAddress(true);
