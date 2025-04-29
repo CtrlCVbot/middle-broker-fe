@@ -20,7 +20,7 @@ import { ko } from 'date-fns/locale';
 import { CalendarIcon, Search as SearchIcon, Map, Phone, Building2, User, Loader2, MapPin, Building, Clock, Pin } from 'lucide-react';
 import { useOrderRegisterStore } from '@/store/order-register-store';
 import { cn } from '@/lib/utils';
-import { RECENT_LOCATIONS } from '@/utils/mockdata/mock-register';
+import { RECENT_LOCATIONS, MOCK_RECENT_LOCATIONS_ADDRESS } from '@/utils/mockdata/mock-register';
 import { IKakaoAddressResult, IAddress } from '@/types/address';
 import { SearchAddressDialog } from '@/components/address/search-address-dialog';
 
@@ -123,7 +123,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
     onChange({
       address: address.roadAddress || address.jibunAddress,
       detailedAddress: address.detailAddress || '',
-      name: address.name || '',
+      name: address.contactName || '',
       company: address.name || '',
       contact: address.contactPhone || '',
       latitude: address.metadata?.lat || 0,
@@ -176,6 +176,18 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
       contact: location.contact,
       date: location.date,
       time: location.time
+    });
+    setHasSearchedAddress(true);
+  };
+  const handleRecentLocationClickVer1 = (location: IAddress) => {
+    onChange({
+      address: location.roadAddress || location.jibunAddress,
+      detailedAddress: location.detailAddress || '',
+      name: location.contactName || '',
+      company: location.name || '',
+      contact: location.contactPhone || '',
+      latitude: location.metadata?.lat || 0,
+      longitude: location.metadata?.lng || 0
     });
     setHasSearchedAddress(true);
   };
@@ -246,7 +258,8 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
             주소 검색
           </Button> */}
           <div className="flex gap-2">
-            <Button
+            {/* 주소 검색 버튼 주석 처리 - 나중에 사용할지도. 삭제하지 말자!*/}
+            {/* <Button
               type="button"
               variant="outline"
               size="sm"
@@ -255,7 +268,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
             >
               <SearchIcon className="h-4 w-4 mr-2" />
               주소 검색
-            </Button>
+            </Button> */}
             <Button
               type="button"
               variant="outline"
@@ -279,7 +292,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
         </div>
 
         {/* 최근 사용 주소 */}
-        {!hasSearchedAddress && (compact && RECENT_LOCATIONS && RECENT_LOCATIONS.length > 0) && (
+        {!hasSearchedAddress && (compact && MOCK_RECENT_LOCATIONS_ADDRESS && MOCK_RECENT_LOCATIONS_ADDRESS.length > 0) && (
           <div className="border rounded-lg p-4 bg-muted/30 mb-4">
             <div className="flex items-center gap-2 mb-4 text-primary">
               <Pin className="h-5 w-5" />
@@ -287,17 +300,17 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {RECENT_LOCATIONS.slice(0, 4).map((location, idx) => (
+              {MOCK_RECENT_LOCATIONS_ADDRESS.slice(0, 4).map((location, idx) => (
                 <Button
                   key={idx}
                   variant="outline"
                   className="h-auto py-2 justify-start text-left"
-                  onClick={() => handleRecentLocationClick(location)}
+                  onClick={() => handleRecentLocationClickVer1(location)}
                   disabled={disabled}
                 >
                   <div className="flex-1 truncate">
                     <p className="text-sm font-medium">{location.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{location.address}</p>
+                    <p className="text-xs text-muted-foreground truncate">{location.roadAddress}</p>
                   </div>
                 </Button>
               ))}
@@ -341,14 +354,15 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
             <Map className="h-10 w-10 text-muted-foreground mb-2" />
             <p className="text-sm text-muted-foreground mb-4">{type === 'departure' ? '출발지' : '도착지'} 주소를 검색해주세요</p>
             <div className="flex gap-2">
-              <Button 
+              {/* 주소 검색 버튼 주석 처리 - 나중에 사용할지도. 삭제하지 말자!*/}
+              {/* <Button 
                 type="button" 
                 onClick={() => setIsSearchDialogOpen(true)}
                 disabled={disabled}
               >
                 <SearchIcon className="h-4 w-4 mr-2" />
                 주소 검색하기
-              </Button>
+              </Button> */}
               <Button 
                 type="button" 
                 onClick={() => setIsAddressDialogOpen(true)}

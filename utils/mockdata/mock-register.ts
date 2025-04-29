@@ -1,5 +1,6 @@
+import { IAddress } from "@/types/address";
 import { ILocationInfo, WeightType } from "@/types/order";
-
+import { v4 as uuidv4 } from 'uuid';
 /**
  * 두 주소 간의 예상 거리를 계산합니다.
  * @param departureAddress 출발지 주소
@@ -221,6 +222,73 @@ export const RECENT_LOCATIONS: ILocationInfo[] = [
     time: "16:45",
     createdAt: "2024-02-15T07:45:00.000Z"
   }
+];
+
+export const MOCK_RECENT_LOCATIONS_ADDRESS: IAddress[] = [
+  {
+    id: uuidv4(),
+    name: "강남 물류센터",
+    type: "load",
+    roadAddress: "서울특별시 강남구 테헤란로 152 (역삼동)",
+    jibunAddress: "서울특별시 강남구 역삼동 737",
+    detailAddress: "강남파이낸스센터 12층",
+    postalCode: "12345",
+    metadata: {
+      lat: 37.5012,
+      lng: 127.0396
+    },
+    contactName: "화물맨 로지스틱스",
+    contactPhone: "02-1234-5678",
+    memo: "최근 사용 주소",
+    isFrequent: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    createdBy: "admin",
+    updatedBy: "admin"
+  },
+  {
+    id: uuidv4(),
+    name: "판교 물류센터",
+    type: "load",
+    roadAddress: "경기도 성남시 분당구 판교로 242 (삼평동)",
+    jibunAddress: "경기도 성남시 분당구 삼평동 625",
+    detailAddress: "판교제2테크노밸리 3층",
+    postalCode: "12345",
+    metadata: {
+      lat: 37.4021,
+      lng: 127.1087
+    },  
+    contactName: "더유",
+    contactPhone: "031-789-1234",
+    memo: "최근 사용 주소",
+    isFrequent: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    createdBy: "admin",
+    updatedBy: "admin"
+  },
+  {
+    id: uuidv4(),
+    name: "송도 물류센터",
+    type: "load",
+    roadAddress: "인천광역시 연수구 송도과학로 32 (송도동)",
+    jibunAddress: "인천광역시 연수구 송도동 11-1",
+    detailAddress: "송도지식산업센터 5층",
+    postalCode: "12345",
+    metadata: {
+      lat: 37.3812,
+      lng: 126.6562
+    },  
+    contactName: "코로코",
+    contactPhone: "032-456-7890",
+    memo: "최근 사용 주소",
+    isFrequent: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),  
+    createdBy: "admin",
+    updatedBy: "admin"
+  }
+
 ];
 
 // 화물 등록 함수
