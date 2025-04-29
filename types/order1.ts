@@ -1,17 +1,42 @@
 // 화주 화물 관리 시스템 타입 정의
 import { IAddress } from './address';
 // 화물 상태 타입 정의
-export type OrderFlowStatus =
-  | '등록'
-  | '운송요청'
-  | '배차대기'
-  | '배차완료'
-  | '상차대기'
-  | '상차완료'
-  | '운송중'
-  | '하차완료'
-  | '운송완료'
-  | '취소';
+export const ORDER_FLOW_STATUSES = [
+  '등록',
+  '운송요청',
+  '배차대기',
+  '배차완료',
+  '상차대기',
+  '상차완료',
+  '운송중',
+  '하차완료',
+  '운송완료'  
+] as const;
+
+export type OrderFlowStatus = typeof ORDER_FLOW_STATUSES[number];
+
+export const ORDER_VEHICLE_TYPES = [
+  '카고',
+  '윙바디',
+  '탑차',
+  '냉장',
+  '냉동',
+  '트레일러'
+] as const;
+
+export type OrderVehicleType = typeof ORDER_VEHICLE_TYPES[number];
+
+export const ORDER_VEHICLE_WEIGHTS = [
+  '1톤',
+  '2.5톤',
+  '3.5톤',
+  '5톤',
+  '11톤',
+  '25톤'
+] as const;
+
+export type OrderVehicleWeight = typeof ORDER_VEHICLE_WEIGHTS[number];
+
 
 // 화물 기본 정보 인터페이스
 export interface IOrder1 {

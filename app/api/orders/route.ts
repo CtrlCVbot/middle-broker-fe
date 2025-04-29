@@ -3,6 +3,7 @@ import { eq, and, ilike, or, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { orders } from '@/db/schema/order';
 import { users } from '@/db/schema/users';
+import { OrderFlowStatus, OrderVehicleType, OrderVehicleWeight } from '@/types/order1';
 import { z } from 'zod';
 import { logOrderChange } from '@/utils/order-change-logger';
 import { orderFlowStatusEnum, vehicleTypeEnum, vehicleWeightEnum } from '@/db/schema/order';
@@ -17,9 +18,9 @@ export async function GET(request: NextRequest) {
 
     // 필터 파라미터
     const keyword = searchParams.get('keyword') || '';
-    const flowStatus = searchParams.get('flowStatus') || '';
-    const vehicleType = searchParams.get('vehicleType') || '';
-    const vehicleWeight = searchParams.get('vehicleWeight') || '';
+    const flowStatus = searchParams.get('flowStatus') as OrderFlowStatus | '';
+    const vehicleType = searchParams.get('vehicleType') as OrderVehicleType | '';
+    const vehicleWeight = searchParams.get('vehicleWeight') as OrderVehicleWeight | '';
     const pickupCity = searchParams.get('pickupCity') || '';
     const deliveryCity = searchParams.get('deliveryCity') || '';
     const startDate = searchParams.get('startDate');
@@ -40,15 +41,18 @@ export async function GET(request: NextRequest) {
     }
 
     if (flowStatus) {
-      conditions.push(eq(orders.flowStatus, flowStatus as orderFlowStatusEnum));
+      conditions.push(eq(orders.flowStatus, 
+        flowStatus as (typeof orderFlowStatusEnum.enumValues)[number]));
     }
 
     if (vehicleType) {
-      conditions.push(eq(orders.requestedVehicleType, vehicleType as vehicleTypeEnum));
+      conditions.push(eq(orders.requestedVehicleType, 
+        vehicleType as (typeof vehicleTypeEnum.enumValues)[number]));
     }
 
     if (vehicleWeight) {
-      conditions.push(eq(orders.requestedVehicleWeight, vehicleWeight as vehicleWeightEnum));
+      conditions.push(eq(orders.requestedVehicleWeight, 
+        vehicleWeight as (typeof vehicleWeightEnum.enumValues)[number]));
     }
 
     if (pickupCity && orders.pickupAddressSnapshot) {
@@ -179,7 +183,8 @@ const CreateOrderSchema = z.object({
   priceSnapshot: z.any().optional(), // JSON 타입은 any로 처리
   
   // 화주 회사 정보
-  companyId: z.string().uuid()
+  companyId: z.string().uuid(),
+  companySnapshot: z.any().optional() // JSON 타입은 any로 처리
 });
 
 export async function POST(request: NextRequest) {
@@ -224,16 +229,16 @@ export async function POST(request: NextRequest) {
       .insert(orders)
       .values({
         // 화주 정보
-        companyId: orderData.companyId,
+        companyId: orderData.companyId || null,
         companySnapshot: orderData.companySnapshot || null,
         contactUserId: requestUserId,
-        contactUserPhone: requestUser.phone || '',
+        contactUserPhone: requestUser.phone_number || '',
         contactUserMail: requestUser.email || '',
         contactUserSnapshot: {
           id: requestUser.id,
           name: requestUser.name,
           email: requestUser.email,
-          phone: requestUser.phone || ''
+          phone: requestUser.phone_number || ''
         },
         
         // 화물 정보
@@ -280,7 +285,7 @@ export async function POST(request: NextRequest) {
           id: requestUser.id,
           name: requestUser.name,
           email: requestUser.email,
-          phone: requestUser.phone || ''
+          phone: requestUser.phone_number || ''
         },
         createdAt: now,
         updatedBy: requestUserId,
@@ -288,7 +293,7 @@ export async function POST(request: NextRequest) {
           id: requestUser.id,
           name: requestUser.name,
           email: requestUser.email,
-          phone: requestUser.phone || ''
+          phone: requestUser.phone_number || ''
         },
         updatedAt: now
       })
