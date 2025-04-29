@@ -49,9 +49,9 @@ export function SearchAddressDialog({ open, onOpenChange, onSelect }: ISearchAdd
       } else {
         const filtered = addresses.filter(address => 
           address.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          address.addressName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          address.detailAddress?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          address.contact?.toLowerCase().includes(searchQuery.toLowerCase())
+          address.roadAddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          address.jibunAddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          address.contactPhone?.toLowerCase().includes(searchQuery.toLowerCase())
         );
         setFilteredAddresses(filtered);
       }
@@ -62,9 +62,9 @@ export function SearchAddressDialog({ open, onOpenChange, onSelect }: ISearchAdd
       } else {
         const filtered = frequentAddresses.filter(address => 
           address.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          address.addressName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          address.detailAddress?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          address.contact?.toLowerCase().includes(searchQuery.toLowerCase())
+          address.roadAddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          address.jibunAddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          address.contactPhone?.toLowerCase().includes(searchQuery.toLowerCase())
         );
         setFilteredAddresses(filtered);
       }
@@ -191,16 +191,16 @@ export function SearchAddressDialog({ open, onOpenChange, onSelect }: ISearchAdd
                             </div>
                             <div className="flex items-start text-sm text-muted-foreground pl-6">
                               <MapPin className="h-3.5 w-3.5 mr-2 shrink-0 mt-0.5" />
-                              <span>{address.addressName}</span>
+                              <span>{address.roadAddress}</span>
                             </div>
                             {address.detailAddress && (
                               <div className="text-sm text-muted-foreground pl-6">
                                 상세주소: {address.detailAddress}
                               </div>
                             )}
-                            {address.contact && (
+                            {address.contactPhone && (
                               <div className="text-sm text-muted-foreground pl-6">
-                                연락처: {address.contact}
+                                연락처: {address.contactPhone}
                               </div>
                             )}
                           </div>
@@ -233,16 +233,16 @@ export function SearchAddressDialog({ open, onOpenChange, onSelect }: ISearchAdd
                             </div>
                             <div className="flex items-start text-sm text-muted-foreground pl-6">
                               <MapPin className="h-3.5 w-3.5 mr-2 shrink-0 mt-0.5" />
-                              <span>{address.addressName}</span>
+                              <span>{address.roadAddress}</span>
                             </div>
                             {address.detailAddress && (
                               <div className="text-sm text-muted-foreground pl-6">
                                 상세주소: {address.detailAddress}
                               </div>
                             )}
-                            {address.contact && (
+                            {address.contactPhone && (
                               <div className="text-sm text-muted-foreground pl-6">
-                                연락처: {address.contact}
+                                연락처: {address.contactPhone}
                               </div>
                             )}
                           </div>
