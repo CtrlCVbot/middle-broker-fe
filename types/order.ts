@@ -2,6 +2,7 @@
 
 // Settlement 관련 타입 임포트
 import { SettlementStatus } from "./settlement";
+import { OrderVehicleType, OrderVehicleWeight } from "@/types/order1";
 
 // 화물 상태 타입 정의
 export type OrderStatusType = 
@@ -103,12 +104,12 @@ export const isStatusAtLeast = (currentStatus: OrderStatusType, targetStatus: Or
 // 화물 등록 관련 타입 정의
 
 // 차량 종류
-export const VEHICLE_TYPES = ['카고', '라보', '윙바디', '탑차', '냉동', '냉장'] as const;
-export type VehicleType = typeof VEHICLE_TYPES[number];
+//export const VEHICLE_TYPES =  OrderVehicleType;
+export type VehicleType = OrderVehicleType;
 
 // 차량 중량
-export const WEIGHT_TYPES = ['1톤', '1.4톤', '2.5톤', '3.5톤', '5톤', '11톤', '25톤'] as const;
-export type WeightType = typeof WEIGHT_TYPES[number];
+//export const WEIGHT_TYPES = ['1톤', '1.4톤', '2.5톤', '3.5톤', '5톤', '11톤', '25톤'] as const;
+export type WeightType = OrderVehicleWeight;
 
 // 운송 옵션
 export interface ITransportOption {

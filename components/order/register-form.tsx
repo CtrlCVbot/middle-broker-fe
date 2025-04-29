@@ -29,12 +29,13 @@ import { useForm } from "react-hook-form";
 import { useOrderRegisterStore } from "@/store/order-register-store";
 import { useOrderEditStore } from "@/store/order-edit-store";
 import { 
-  VEHICLE_TYPES, 
-  WEIGHT_TYPES, 
-  TRANSPORT_OPTIONS, 
-  //ILocationInfo,
-  //IOrderRegisterData
-} from "@/types/order";
+  OrderVehicleType, 
+  OrderVehicleWeight, 
+  ITransportOptionsSnapshot,
+  ORDER_VEHICLE_TYPES,
+  ORDER_VEHICLE_WEIGHTS
+} from "@/types/order1";
+
 import { 
   calculateAmount, 
   calculateDistance, 
@@ -85,6 +86,17 @@ export function AnimatedNumber({ number, duration = 500, suffix = '' }: Animated
   return <span>{display.toLocaleString()}{suffix}</span>;
 }
 
+// TRANSPORT_OPTIONS 상수 정의 (기존 코드 호환성을 위해)
+const TRANSPORT_OPTIONS = [
+  { id: 'early_delivery', label: '빠른배차' },
+  { id: 'forklift_load', label: '지게차 상차' },
+  { id: 'forklift_unload', label: '지게차 하차' },
+  { id: 'exclusive_load', label: '단독배차' },
+  { id: 'mixed_load', label: '혼적 가능' },
+  { id: 'pay_on_delivery', label: '착불' },
+  { id: 'duplicate_load', label: '중복화물 가능' },
+  { id: 'special_load', label: '특수화물 필요' }
+];
 
 export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: OrderRegisterFormProps) {
   const [activeTab, setActiveTab] = useState<string>("vehicle");
@@ -356,7 +368,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                             <SelectValue placeholder="차량 종류 선택" />
                           </SelectTrigger>
                           <SelectContent>
-                            {VEHICLE_TYPES.map((type) => (
+                            {ORDER_VEHICLE_TYPES.map((type) => (
                               <SelectItem key={type} value={type}>
                                 {type}
                               </SelectItem>
@@ -380,7 +392,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                             <SelectValue placeholder="중량 선택" />
                           </SelectTrigger>
                           <SelectContent>
-                            {WEIGHT_TYPES.map((type) => (
+                            {ORDER_VEHICLE_WEIGHTS.map((type) => (
                               <SelectItem key={type} value={type}>
                                 {type}
                               </SelectItem>
@@ -823,7 +835,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                           <SelectValue placeholder="차량 중량 선택" />
                           </SelectTrigger>
                           <SelectContent>
-                            {WEIGHT_TYPES.map((type) => (
+                            {ORDER_VEHICLE_WEIGHTS.map((type) => (
                               <SelectItem key={type} value={type}>
                                 {type}
                               </SelectItem>
@@ -848,7 +860,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                             <SelectValue placeholder="차량 종류 선택" />
                           </SelectTrigger>
                           <SelectContent>
-                            {VEHICLE_TYPES.map((type) => (
+                            {ORDER_VEHICLE_TYPES.map((type) => (
                               <SelectItem key={type} value={type}>
                                 {type}
                               </SelectItem>
