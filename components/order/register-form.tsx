@@ -43,11 +43,15 @@ import {
 import { LocationForm } from "@/components/order/register-location-form";
 import { LocationFormVer01 } from "@/components/order/register-location-form-ver01";
 import { OptionSelector } from "./register-option-selector";
-import { TruckIcon, MapPinIcon, Settings2 as OptionsIcon, Calculator as CalculatorIcon, ChevronDown, ChevronUp, PencilIcon, Info, Weight, Truck, Container } from "lucide-react";
+import { TruckIcon, MapPinIcon, Settings2 as OptionsIcon, Calculator as CalculatorIcon, ChevronDown, ChevronUp, PencilIcon, Info, Weight, Truck, Container, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/components/ui/use-toast";
+import { useRouter } from 'next/navigation';
+import { registerOrder, convertFormDataToApiRequest } from '@/services/order-service';
+import { handleApiError, handleOrderRegisterSuccess, validateOrderFormData } from '@/utils/order-utils';
+import { RegisterSuccessDialog } from '@/components/order/register-success-dialog';
 
 interface OrderRegisterFormProps {
   onSubmit: () => void;
@@ -85,10 +89,14 @@ export function AnimatedNumber({ number, duration = 500, suffix = '' }: Animated
 export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: OrderRegisterFormProps) {
   const [activeTab, setActiveTab] = useState<string>("vehicle");
   const [isCalculating, setIsCalculating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showRemark, setShowRemark] = useState<boolean>(false);
   const [showOptions, setShowOptions] = useState<boolean>(false);
   const [showCargoInfo, setShowCargoInfo] = useState<boolean>(false);
+  const [successDialogOpen, setSuccessDialogOpen] = useState<boolean>(false);
+  const [registeredOrderId, setRegisteredOrderId] = useState<string>('');
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
+  const router = useRouter();
   
   // Zustand 스토어에서 상태와 액션 가져오기
   const registerStore = useOrderRegisterStore();
@@ -98,6 +106,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
   const store = editMode ? editStore : registerStore;
   const { 
     registerData,
+    resetForm,
   } = store;
   
   // 필요한 액션 함수들 (타입 단언 사용)
@@ -201,41 +210,52 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
     }
   }, [editMode, form, originalData, registerData]);
   
-  // 폼 제출 처리
-  const handleFormSubmit = (data: any) => {
-    // 필수 필드 검증
-    const isValid = validateForm();
-    if (!isValid) return;
+  // 폼 제출 처리 함수 업데이트
+  const handleFormSubmit = async (data: any) => {
+    // 폼 유효성 검증
+    const isValid = validateOrderFormData(registerData);
+    if (!isValid) {
+      return;
+    }
     
-    // 최종 확인 모달 열기
-    onSubmit();
+    // 제출 중 상태로 변경
+    setIsSubmitting(true);
+    
+    try {
+      // 폼 데이터를 API 요청 형식으로 변환
+      const requestData = convertFormDataToApiRequest(registerData);
+      
+      // API 호출
+      const response = await registerOrder(requestData);
+      
+      // 성공 처리
+      handleOrderRegisterSuccess(response);
+      
+      // 등록된 화물 ID 저장
+      setRegisteredOrderId(response.id);
+      
+      // 성공 다이얼로그 표시
+      setSuccessDialogOpen(true);
+      
+      // 스토어 초기화
+      resetForm();
+      
+      // 콜백 함수가 있으면 호출
+      if (onSubmit) {
+        onSubmit();
+      }
+    } catch (error) {
+      // 에러 처리
+      handleApiError(error, '화물 등록에 실패했습니다.');
+    } finally {
+      // 로딩 상태 해제
+      setIsSubmitting(false);
+    }
   };
   
-  // 폼 유효성 검증
-  const validateForm = () => {
-    const { departure, destination, cargoType } = registerData;
-    
-    let isValid = true;
-    
-    // 출발지 검증
-    if (!departure.address || !departure.company || !departure.name || !departure.contact || !departure.date || !departure.time) {
-      setActiveTab("departure");
-      isValid = false;
-    }
-    
-    // 도착지 검증
-    if (isValid && (!destination.address || !destination.company || !destination.name || !destination.contact || !destination.date || !destination.time)) {
-      setActiveTab("destination");
-      isValid = false;
-    }
-    
-    // 화물 종류 검증
-    if (isValid && !cargoType) {
-      setActiveTab("vehicle");
-      isValid = false;
-    }
-    
-    return isValid;
+  // 성공 다이얼로그 닫기 함수
+  const handleSuccessDialogClose = () => {
+    setSuccessDialogOpen(false);
   };
   
   // 거리 및 금액 계산
@@ -646,367 +666,371 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
   
   // 데스크톱 환경에서는 2단 컬럼 레이아웃으로 표시
   return (
-    
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-0">
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-0">
 
-        <div className="flex items-center justify-between py-4 grid grid-rows-2 gap-0">
-          <h1 className="text-2xl font-semibold">{editMode  ? (
-                  <>화물 수정 - #{orderNumber}  </> 
-                ) : (
-                  <>화물 등록</>
-                )}
-          </h1>
-          
-          {editMode ? (
-            <div className="text-sm text-muted-foreground">화물 정보를 수정하세요. 배차 상태에 따라 수정 가능한 항목이 제한될 수 있습니다.</div>
-          ) : (
-            <div className="text-sm text-muted-foreground">운송할 화물 정보를 입력하고 등록해주세요.</div>
-          )}
-
-          {editMode && originalData && (
-            <div className="flex items-center mt-4">  
-              <StatusFlow currentStatus={originalData.status} />
-            </div>               
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">              
-          {/* 중간: 출발지/도착지 정보 카드 */}
-          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* 출발지 정보 - 임시 주석*/}
-            {/* <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <MapPinIcon className="h-5 w-5 mr-2 text-blue-500" />
-                  출발지 정보
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <LocationForm
-                  type="departure"
-                  locationInfo={registerData.departure}
-                  onChange={(info) => setDeparture(info as any)}
-                  compact={true}
-                  disabled={editMode && !isEditable('departure')}
-                  onDisabledClick={() => handleDisabledFieldClick('departure')}
-                />
-              </CardContent>
-            </Card> */}
-            
-            {/* 도착지 정보 - 임시 주석*/}
-            {/* <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <MapPinIcon className="h-5 w-5 mr-2 text-red-500" />
-                  도착지 정보
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <LocationForm
-                  type="destination"
-                  locationInfo={registerData.destination}
-                  onChange={(info) => setDestination(info as any)}
-                  compact={true}
-                  disabled={editMode && !isEditable('destination')}
-                  onDisabledClick={() => handleDisabledFieldClick('destination')}
-                />
-              </CardContent>
-            </Card> */}
-
-            {/* 출발지 정보 Copy*/}
-            <Card>
-              {/* <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <MapPinIcon className="h-5 w-5 mr-2 text-bule-500" />
-                  상차 정보
-                </CardTitle>
-              </CardHeader> */}
-              <CardContent>
-                <LocationFormVer01
-                  type="departure"
-                  locationInfo={registerData.departure}
-                  onChange={(info) => setDeparture(info as any)}
-                  compact={true}
-                  disabled={editMode && !isEditable('departure')}
-                  onDisabledClick={() => handleDisabledFieldClick('departure')}
-                />
-              </CardContent>
-            </Card>
-
-            {/* 도착지 정보 Copy*/}
-            <Card>
-              {/* <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <MapPinIcon className="h-5 w-5 mr-2 text-red-500" />
-                  하차 정보
-                </CardTitle>
-              </CardHeader> */}
-              <CardContent>
-                <LocationFormVer01
-                  type="destination"
-                  locationInfo={registerData.destination}
-                  onChange={(info) => setDestination(info as any)}
-                  compact={true}
-                  disabled={editMode && !isEditable('destination')}
-                  onDisabledClick={() => handleDisabledFieldClick('destination')}                  
-                />
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* 오른쪽: 화물 정보 카드 */}
-          <div className="lg:col-span-1 space-y-4">
-            {/* 화물 정보 카드 */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-lg flex items-center">
-                  <Container className="h-5 w-5 mr-2" />
-                  <div className="flex items-center">
-                    화물 정보 <span className="text-destructive">*</span>
-                  </div>
-                </CardTitle>
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowCargoInfo((prev) => !prev)}
-                > 
-                  {showCargoInfo ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </Button>
-
-              </CardHeader>
-             
-              <CardContent>
-                <div className="space-y-4">
-                  {/* 회사명 / 담당자 */}
-                  <div className="grid grid-cols-1 md:grid-cols-2">
-
-                    <div>
-                      <div className="text-sm font-medium mb-2 flex items-center">
-                        <Weight className="h-4 w-4 mr-2 text-muted-foreground" />중량
-                      </div>
-                      <Select
-                        value={registerData.weightType}
-                        onValueChange={(value) => setWeightType(value as any)}
-                        disabled={editMode && !isEditable('weightType')}
-                      >
-                        <SelectTrigger 
-                          onClick={() => handleDisabledFieldClick('weightType')}
-                          className={editMode && !isEditable('weightType') ? 'bg-gray-100' : ''}
-                        >
-                        <SelectValue placeholder="차량 중량 선택" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {WEIGHT_TYPES.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {type}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <div className="text-sm font-medium mb-2 flex items-center">
-                        <Truck className="h-4 w-4 mr-2 text-muted-foreground" />종류
-                      </div>
-                      <Select
-                        value={registerData.vehicleType}
-                        onValueChange={(value) => setVehicleType(value as any)}
-                        disabled={editMode && !isEditable('vehicleType')}
-                      >
-                        <SelectTrigger 
-                          onClick={() => handleDisabledFieldClick('vehicleType')}
-                          className={editMode && !isEditable('vehicleType') ? 'bg-gray-100' : ''}
-                        >
-                          <SelectValue placeholder="차량 종류 선택" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {VEHICLE_TYPES.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {type}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                  </div>
-                  
-                  {/* 화물 품목 */}
-                  <div className="col-span-12 md:col-span-10 flex items-end gap-2">
-                      <div className="flex-1">
-                        <div className="text-sm font-medium mb-2 flex items-center">
-                          화물 품목
-                        </div>
-                        <Input
-                          placeholder="화물 품목을 입력하세요 (최대 38자)"
-                          maxLength={38}
-                          value={registerData.cargoType}
-                          onChange={(e) => setCargoType(e.target.value)}
-                          disabled={editMode && !isEditable('cargoType')}
-                          className={editMode && !isEditable('cargoType') ? 'bg-gray-100' : ''}
-                          onClick={() => handleDisabledFieldClick('cargoType')}
-                        />
-                        <p className="text-xs text-right text-muted-foreground mt-1">
-                          {registerData.cargoType.length}/38자
-                        </p>
-                      </div>
-                      
-                      {/* <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button 
-                              type="button" 
-                              variant="outline" 
-                              size="icon" 
-                              className="mb-5"
-                              onClick={() => setShowRemark(!showRemark)}
-                              disabled={editMode && !isEditable('remark')}
-                            >
-                              {showRemark ? <ChevronUp className="h-4 w-4" /> : <PencilIcon className="h-4 w-4" />}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>비고 입력란 {showRemark ? '숨기기' : '표시하기'}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider> */}
-                  </div>
-
-                  {/* 비고 - 조건부 렌더링 */}
-                  {showCargoInfo && (
-                    <div className="animate-in fade-in-50 duration-200">
-                      <div className="flex items-center justify-between">
-                        <FormLabel>비고</FormLabel>
-                        {editMode && isEditable('remark') && (
-                          <div className="flex items-center text-xs text-green-600">
-                            <Info className="h-3 w-3 mr-1" />
-                            편집 가능
-                          </div>
-                        )}
-                      </div>
-                      <Textarea
-                        placeholder="비고 (선택사항)"
-                        value={registerData.remark || ''}
-                        onChange={(e) => setRemark(e.target.value)}
-                        className={cn("resize-none h-20", editMode && !isEditable('remark') ? 'bg-gray-100' : '')}
-                        disabled={editMode && !isEditable('remark')}
-                        onClick={() => handleDisabledFieldClick('remark')}
-                      />
-                    </div>
+          <div className="flex items-center justify-between py-4 grid grid-rows-2 gap-0">
+            <h1 className="text-2xl font-semibold">{editMode  ? (
+                    <>화물 수정 - #{orderNumber}  </> 
+                  ) : (
+                    <>화물 등록</>
                   )}
-                </div>
-                
-              </CardContent>
-              
-            </Card>
+            </h1>
+            
+            {editMode ? (
+              <div className="text-sm text-muted-foreground">화물 정보를 수정하세요. 배차 상태에 따라 수정 가능한 항목이 제한될 수 있습니다.</div>
+            ) : (
+              <div className="text-sm text-muted-foreground">운송할 화물 정보를 입력하고 등록해주세요.</div>
+            )}
 
-            {/* 운송 옵션 카드 */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-md flex items-center">
-                  <OptionsIcon className="h-5 w-5 mr-2" />
-                  <span className="">운송 옵션</span>
-                </CardTitle>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowOptions((prev) => !prev)}
-                >
-                  {showOptions ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </Button>
-              </CardHeader>
-              {showOptions && (
-                <CardContent>
-                  <OptionSelector
-                    options={TRANSPORT_OPTIONS}
-                    selectedOptions={registerData.selectedOptions}
-                    onToggle={toggleOption}
-                    disabled={editMode && !isEditable('selectedOptions')}
-                    onDisabledClick={() => handleDisabledFieldClick('selectedOptions')}
-                  />
-                </CardContent>
-              )}
-            </Card>
-            
-            {/* 예상 정보 카드 */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <CalculatorIcon className="h-5 w-5 mr-2" />
-                  <span className="">{editMode ? '정산 정보' : '예상 정보'}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">예상 거리</span>
-                    <span className="font-medium">
-                      {isCalculating ? (
-                          <span className="animate-pulse">계산 중...</span>
-                        ) : (
-                          // <span>
-                          //   {typeof registerData.estimatedDistance === 'number' ? 
-                          //     `${registerData.estimatedDistance.toLocaleString()}km` : 
-                          //     editMode && originalData ? 
-                          //       `${0}km` : 
-                          //       '0km'
-                          //   }
-                          // </span>
-                          typeof registerData.estimatedDistance === 'number' ? (
-                            <AnimatedNumber number={registerData.estimatedDistance} suffix="km" />
-                          ) : editMode && originalData ? (
-                            <AnimatedNumber number={0} suffix="km" />
-                          ) : (
-                            '0km'
-                          )
-                        )}
-                    </span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">
-                      {editMode ? '운송 금액' : '예상 금액'}
-                    </span>
-                    <span className="text-xl font-bold text-primary">
-                      {isCalculating ? (
-                          <span className="animate-pulse">계산 중...</span>
-                        ) : (
-                          // <span>
-                          //   {typeof registerData.estimatedAmount === 'number' ? 
-                          //     `${registerData.estimatedAmount.toLocaleString()}원` : 
-                          //     editMode && originalData ? 
-                          //       originalData.amount : 
-                          //       '0원'
-                          //   }
-                          // </span>
-                          typeof registerData.estimatedAmount === 'number' ? (
-                            <AnimatedNumber number={registerData.estimatedAmount} suffix="원" />
-                          ) : editMode && originalData ? (
-                            <AnimatedNumber number={Number(originalData.amount ?? 0)} suffix="원" />
-                          ) : (
-                            '0원'
-                          )
-                        )}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            {/* 등록 버튼 - 수정 모드에서는 표시하지 않음 */}
-            {!editMode && (
-              <Button type="submit" size="lg" className="w-full">
-                화물 등록
-              </Button>
+            {editMode && originalData && (
+              <div className="flex items-center mt-4">  
+                <StatusFlow currentStatus={originalData.status} />
+              </div>               
             )}
           </div>
-        </div>
-      </form>
-    </Form>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">              
+            {/* 중간: 출발지/도착지 정보 카드 */}
+            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* 출발지 정보 - 임시 주석*/}
+              {/* <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center">
+                    <MapPinIcon className="h-5 w-5 mr-2 text-blue-500" />
+                    출발지 정보
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <LocationForm
+                    type="departure"
+                    locationInfo={registerData.departure}
+                    onChange={(info) => setDeparture(info as any)}
+                    compact={true}
+                    disabled={editMode && !isEditable('departure')}
+                    onDisabledClick={() => handleDisabledFieldClick('departure')}
+                  />
+                </CardContent>
+              </Card> */}
+              
+              {/* 도착지 정보 - 임시 주석*/}
+              {/* <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center">
+                    <MapPinIcon className="h-5 w-5 mr-2 text-red-500" />
+                    도착지 정보
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <LocationForm
+                    type="destination"
+                    locationInfo={registerData.destination}
+                    onChange={(info) => setDestination(info as any)}
+                    compact={true}
+                    disabled={editMode && !isEditable('destination')}
+                    onDisabledClick={() => handleDisabledFieldClick('destination')}
+                  />
+                </CardContent>
+              </Card> */}
+
+              {/* 출발지 정보 Copy*/}
+              <Card>
+                {/* <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center">
+                    <MapPinIcon className="h-5 w-5 mr-2 text-bule-500" />
+                    상차 정보
+                  </CardTitle>
+                </CardHeader> */}
+                <CardContent>
+                  <LocationFormVer01
+                    type="departure"
+                    locationInfo={registerData.departure}
+                    onChange={(info) => setDeparture(info as any)}
+                    compact={true}
+                    disabled={editMode && !isEditable('departure')}
+                    onDisabledClick={() => handleDisabledFieldClick('departure')}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* 도착지 정보 Copy*/}
+              <Card>
+                {/* <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center">
+                    <MapPinIcon className="h-5 w-5 mr-2 text-red-500" />
+                    하차 정보
+                  </CardTitle>
+                </CardHeader> */}
+                <CardContent>
+                  <LocationFormVer01
+                    type="destination"
+                    locationInfo={registerData.destination}
+                    onChange={(info) => setDestination(info as any)}
+                    compact={true}
+                    disabled={editMode && !isEditable('destination')}
+                    onDisabledClick={() => handleDisabledFieldClick('destination')}                  
+                  />
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* 오른쪽: 화물 정보 카드 */}
+            <div className="lg:col-span-1 space-y-4">
+              {/* 화물 정보 카드 */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-lg flex items-center">
+                    <Container className="h-5 w-5 mr-2" />
+                    <div className="flex items-center">
+                      화물 정보 <span className="text-destructive">*</span>
+                    </div>
+                  </CardTitle>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowCargoInfo((prev) => !prev)}
+                  > 
+                    {showCargoInfo ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
+
+                </CardHeader>
+               
+                <CardContent>
+                  <div className="space-y-4">
+                    {/* 회사명 / 담당자 */}
+                    <div className="grid grid-cols-1 md:grid-cols-2">
+
+                      <div>
+                        <div className="text-sm font-medium mb-2 flex items-center">
+                          <Weight className="h-4 w-4 mr-2 text-muted-foreground" />중량
+                        </div>
+                        <Select
+                          value={registerData.weightType}
+                          onValueChange={(value) => setWeightType(value as any)}
+                          disabled={editMode && !isEditable('weightType')}
+                        >
+                          <SelectTrigger 
+                            onClick={() => handleDisabledFieldClick('weightType')}
+                            className={editMode && !isEditable('weightType') ? 'bg-gray-100' : ''}
+                          >
+                          <SelectValue placeholder="차량 중량 선택" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {WEIGHT_TYPES.map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <div className="text-sm font-medium mb-2 flex items-center">
+                          <Truck className="h-4 w-4 mr-2 text-muted-foreground" />종류
+                        </div>
+                        <Select
+                          value={registerData.vehicleType}
+                          onValueChange={(value) => setVehicleType(value as any)}
+                          disabled={editMode && !isEditable('vehicleType')}
+                        >
+                          <SelectTrigger 
+                            onClick={() => handleDisabledFieldClick('vehicleType')}
+                            className={editMode && !isEditable('vehicleType') ? 'bg-gray-100' : ''}
+                          >
+                            <SelectValue placeholder="차량 종류 선택" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {VEHICLE_TYPES.map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                    </div>
+                    
+                    {/* 화물 품목 */}
+                    <div className="col-span-12 md:col-span-10 flex items-end gap-2">
+                        <div className="flex-1">
+                          <div className="text-sm font-medium mb-2 flex items-center">
+                            화물 품목
+                          </div>
+                          <Input
+                            placeholder="화물 품목을 입력하세요 (최대 38자)"
+                            maxLength={38}
+                            value={registerData.cargoType}
+                            onChange={(e) => setCargoType(e.target.value)}
+                            disabled={editMode && !isEditable('cargoType')}
+                            className={editMode && !isEditable('cargoType') ? 'bg-gray-100' : ''}
+                            onClick={() => handleDisabledFieldClick('cargoType')}
+                          />
+                          <p className="text-xs text-right text-muted-foreground mt-1">
+                            {registerData.cargoType.length}/38자
+                          </p>
+                        </div>
+                        
+                        {/* <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                type="button" 
+                                variant="outline" 
+                                size="icon" 
+                                className="mb-5"
+                                onClick={() => setShowRemark(!showRemark)}
+                                disabled={editMode && !isEditable('remark')}
+                              >
+                                {showRemark ? <ChevronUp className="h-4 w-4" /> : <PencilIcon className="h-4 w-4" />}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>비고 입력란 {showRemark ? '숨기기' : '표시하기'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider> */}
+                    </div>
+
+                    {/* 비고 - 조건부 렌더링 */}
+                    {showCargoInfo && (
+                      <div className="animate-in fade-in-50 duration-200">
+                        <div className="flex items-center justify-between">
+                          <FormLabel>비고</FormLabel>
+                          {editMode && isEditable('remark') && (
+                            <div className="flex items-center text-xs text-green-600">
+                              <Info className="h-3 w-3 mr-1" />
+                              편집 가능
+                            </div>
+                          )}
+                        </div>
+                        <Textarea
+                          placeholder="비고 (선택사항)"
+                          value={registerData.remark || ''}
+                          onChange={(e) => setRemark(e.target.value)}
+                          className={cn("resize-none h-20", editMode && !isEditable('remark') ? 'bg-gray-100' : '')}
+                          disabled={editMode && !isEditable('remark')}
+                          onClick={() => handleDisabledFieldClick('remark')}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  
+                </CardContent>
+                
+              </Card>
+
+              {/* 운송 옵션 카드 */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-md flex items-center">
+                    <OptionsIcon className="h-5 w-5 mr-2" />
+                    <span className="">운송 옵션</span>
+                  </CardTitle>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowOptions((prev) => !prev)}
+                  >
+                    {showOptions ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
+                </CardHeader>
+                {showOptions && (
+                  <CardContent>
+                    <OptionSelector
+                      options={TRANSPORT_OPTIONS}
+                      selectedOptions={registerData.selectedOptions}
+                      onToggle={toggleOption}
+                      disabled={editMode && !isEditable('selectedOptions')}
+                      onDisabledClick={() => handleDisabledFieldClick('selectedOptions')}
+                    />
+                  </CardContent>
+                )}
+              </Card>
+              
+              {/* 예상 정보 카드 */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center">
+                    <CalculatorIcon className="h-5 w-5 mr-2" />
+                    <span className="">{editMode ? '정산 정보' : '예상 정보'}</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">예상 거리</span>
+                      <span className="font-medium">
+                        {isCalculating ? (
+                            <span className="animate-pulse">계산 중...</span>
+                          ) : (
+                            typeof registerData.estimatedDistance === 'number' ? (
+                              <AnimatedNumber number={registerData.estimatedDistance} suffix="km" />
+                            ) : editMode && originalData ? (
+                              <AnimatedNumber number={0} suffix="km" />
+                            ) : (
+                              '0km'
+                            )
+                          )}
+                      </span>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">
+                        {editMode ? '운송 금액' : '예상 금액'}
+                      </span>
+                      <span className="text-xl font-bold text-primary">
+                        {isCalculating ? (
+                            <span className="animate-pulse">계산 중...</span>
+                          ) : (
+                            typeof registerData.estimatedAmount === 'number' ? (
+                              <AnimatedNumber number={registerData.estimatedAmount} suffix="원" />
+                            ) : editMode && originalData ? (
+                              <AnimatedNumber number={Number(originalData.amount ?? 0)} suffix="원" />
+                            ) : (
+                              '0원'
+                            )
+                          )}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* 등록 버튼 - 수정 모드에서는 표시하지 않음 */}
+              {!editMode && (
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      처리 중...
+                    </>
+                  ) : (
+                    '화물 등록'
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+        </form>
+      </Form>
+      
+      {/* 성공 다이얼로그 */}
+      <RegisterSuccessDialog
+        isOpen={successDialogOpen}
+        orderId={registeredOrderId}
+        onClose={handleSuccessDialogClose}
+      />
+    </>
   );
 } 
