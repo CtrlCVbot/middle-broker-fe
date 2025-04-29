@@ -236,38 +236,9 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
       return;
     }
     
-    // 제출 중 상태로 변경
-    setIsSubmitting(true);
-    
-    try {
-      // 폼 데이터를 API 요청 형식으로 변환
-      const requestData = convertFormDataToApiRequest(registerData);
-      
-      // API 호출
-      const response = await registerOrder(requestData);
-      
-      // 성공 처리
-      handleOrderRegisterSuccess(response);
-      
-      // 등록된 화물 ID 저장
-      setRegisteredOrderId(response.id);
-      
-      // 성공 다이얼로그 표시
-      setSuccessDialogOpen(true);
-      
-      // 스토어 초기화
-      resetFormAction();
-      
-      // 콜백 함수가 있으면 호출
-      if (onSubmit) {
-        onSubmit();
-      }
-    } catch (error) {
-      // 에러 처리
-      handleApiError(error, '화물 등록에 실패했습니다.');
-    } finally {
-      // 로딩 상태 해제
-      setIsSubmitting(false);
+    // API 호출 대신 명세서 표시를 위한 콜백 호출
+    if (onSubmit) {
+      onSubmit();
     }
   };
   

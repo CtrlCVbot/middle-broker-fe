@@ -25,12 +25,6 @@ export default function OrderRegisterPage() {
   
   // 등록 완료 후 처리
   const handleRegisterSuccess = () => {
-    toast({
-      title: "화물 등록 완료",
-      description: "화물이 성공적으로 등록되었습니다.",
-      variant: "default",
-    });
-    
     // 화물 리스트 페이지로 이동
     router.push("/order/list");
   };
