@@ -120,15 +120,48 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
   
   // 주소록에서 주소 선택 함수
   const handleSelectAddressFromBook = (address: IAddress) => {
+    // 현재 시간
+    const now = new Date();
+
+    // 타입별 시간 오프셋 (단위: 시간)
+    const timeOffsetByType: Record<'departure' | 'destination', number> = {
+      departure: 3,    // 출발: 현재 + 3시간
+      destination: 4,  // 도착: 현재 + 4시간
+    };
+
+    // 선택한 타입에 따라 미래 시간 계산
+    const offsetHours = timeOffsetByType[type];
+    const futureTime = new Date(now.getTime() + offsetHours * 60 * 60 * 1000);
+
+    // 시간 포맷팅 (HH:mm)
+    const formattedDate = format(futureTime, 'yyyy-MM-dd');
+    const formattedTime = format(futureTime, 'HH:mm', { locale: ko });
+
+    // 최종 날짜 + 시간 정보
+    const dateTimeInfo = {
+      date: formattedDate,
+      time: formattedTime,
+    };
+
+    
     onChange({
+      id: address.id,
       address: address.roadAddress || address.jibunAddress,
       detailedAddress: address.detailAddress || '',
       name: address.contactName || '',
       company: address.name || '',
       contact: address.contactPhone || '',
       latitude: address.metadata?.lat || 0,
-      longitude: address.metadata?.lng || 0
+      longitude: address.metadata?.lng || 0,
+      ...dateTimeInfo
     });
+    
+    if (type === 'departure' && dateTimeInfo.date) {
+      setDate(now);
+    }
+    else if (type === 'destination' && dateTimeInfo.date) {
+      setDate(now);
+    }
     
     setHasSearchedAddress(true);
   };

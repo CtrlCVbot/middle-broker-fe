@@ -230,6 +230,8 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
   const handleFormSubmit = async (data: any) => {
     // 폼 유효성 검증
     const isValid = validateOrderFormData(registerData);
+    console.log("폼 유효성 검증:", isValid);
+    console.log("폼 데이터:", registerData);
     if (!isValid) {
       return;
     }
