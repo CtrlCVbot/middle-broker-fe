@@ -680,57 +680,13 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
             )}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">              
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">              
             {/* 중간: 출발지/도착지 정보 카드 */}
             <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* 출발지 정보 - 임시 주석*/}
-              {/* <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg flex items-center">
-                    <MapPinIcon className="h-5 w-5 mr-2 text-blue-500" />
-                    출발지 정보
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <LocationForm
-                    type="departure"
-                    locationInfo={registerData.departure}
-                    onChange={(info) => setDeparture(info as any)}
-                    compact={true}
-                    disabled={editMode && !isEditable('departure')}
-                    onDisabledClick={() => handleDisabledFieldClick('departure')}
-                  />
-                </CardContent>
-              </Card> */}
               
-              {/* 도착지 정보 - 임시 주석*/}
-              {/* <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg flex items-center">
-                    <MapPinIcon className="h-5 w-5 mr-2 text-red-500" />
-                    도착지 정보
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <LocationForm
-                    type="destination"
-                    locationInfo={registerData.destination}
-                    onChange={(info) => setDestination(info as any)}
-                    compact={true}
-                    disabled={editMode && !isEditable('destination')}
-                    onDisabledClick={() => handleDisabledFieldClick('destination')}
-                  />
-                </CardContent>
-              </Card> */}
 
               {/* 출발지 정보 Copy*/}
-              <Card>
-                {/* <CardHeader className="pb-3">
-                  <CardTitle className="text-lg flex items-center">
-                    <MapPinIcon className="h-5 w-5 mr-2 text-bule-500" />
-                    상차 정보
-                  </CardTitle>
-                </CardHeader> */}
+              <Card>                
                 <CardContent>
                   <LocationFormVer01
                     type="departure"
@@ -744,13 +700,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
               </Card>
 
               {/* 도착지 정보 Copy*/}
-              <Card>
-                {/* <CardHeader className="pb-3">
-                  <CardTitle className="text-lg flex items-center">
-                    <MapPinIcon className="h-5 w-5 mr-2 text-red-500" />
-                    하차 정보
-                  </CardTitle>
-                </CardHeader> */}
+              <Card>                
                 <CardContent>
                   <LocationFormVer01
                     type="destination"
