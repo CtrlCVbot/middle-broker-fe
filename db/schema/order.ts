@@ -65,7 +65,6 @@ export const orders = pgTable('orders', {
   contactUserId: uuid('contact_user_id').notNull(),
   contactUserPhone: varchar('contact_user_phone', { length: 100 }), //화주 담당자 전화번호
   contactUserMail: varchar('contact_user_mail', { length: 100 }), //화주 담당자 이메일
-
   contactUserSnapshot: json('contact_user_snapshot').$type<IUserSnapshot>(), //화주 담당자 스냅샷
 
   // 상태

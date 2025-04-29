@@ -42,6 +42,7 @@ export type OrderVehicleWeight = typeof ORDER_VEHICLE_WEIGHTS[number];
 export interface IOrder1 {
   id: string;
   companyId: string;
+  companySnapshot: ICompanySnapshot;
   orderContactId?: string;
   orderContactSnapshot?: IUserSnapshot;
 

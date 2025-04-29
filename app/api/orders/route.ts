@@ -3,7 +3,7 @@ import { eq, and, ilike, or, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { orders } from '@/db/schema/order';
 import { users } from '@/db/schema/users';
-import { OrderFlowStatus, OrderVehicleType, OrderVehicleWeight } from '@/types/order1';
+import { IUserSnapshot, OrderFlowStatus, OrderVehicleType, OrderVehicleWeight } from '@/types/order1';
 import { z } from 'zod';
 import { logOrderChange } from '@/utils/order-change-logger';
 import { orderFlowStatusEnum, vehicleTypeEnum, vehicleWeightEnum } from '@/db/schema/order';
@@ -228,75 +228,61 @@ export async function POST(request: NextRequest) {
     const [createdOrder] = await db
       .insert(orders)
       .values({
-        // 화주 정보
-        companyId: orderData.companyId || null,
-        companySnapshot: orderData.companySnapshot || null,
+        companyId: orderData.companyId,
+        companySnapshot: orderData.companySnapshot,
         contactUserId: requestUserId,
-        contactUserPhone: requestUser.phone_number || '',
-        contactUserMail: requestUser.email || '',
+        contactUserMail: requestUser.email,
+        contactUserPhone: requestUser.phone_number,
         contactUserSnapshot: {
-          id: requestUser.id,
-          name: requestUser.name,
-          email: requestUser.email,
-          phone: requestUser.phone_number || ''
-        },
+        name: requestUser.name,
+        email: requestUser.email,
+        mobile: requestUser.phone_number,
+        department: requestUser.department,
+        position: requestUser.position,
+        }as IUserSnapshot,
+
+        flowStatus: orderFlowStatusEnum.enumValues[0],
+        isCanceled: false,
         
-        // 화물 정보
         cargoName: orderData.cargoName,
         requestedVehicleType: orderData.requestedVehicleType,
         requestedVehicleWeight: orderData.requestedVehicleWeight,
-        memo: orderData.memo || '',
+        memo: orderData.memo,
         
-        // 상차지 정보
-        pickupAddressId: orderData.pickupAddressId || null,
-        pickupAddressSnapshot: orderData.pickupAddressSnapshot || null,
-        pickupAddressDetail: orderData.pickupAddressDetail || '',
+        pickupAddressId: orderData.pickupAddressId,
+        pickupAddressSnapshot: orderData.pickupAddressSnapshot,
+        pickupAddressDetail: orderData.pickupAddressDetail,
         pickupName: orderData.pickupName,
         pickupContactName: orderData.pickupContactName,
         pickupContactPhone: orderData.pickupContactPhone,
-        
-        // 하차지 정보
-        deliveryAddressId: orderData.deliveryAddressId || null,
-        deliveryAddressSnapshot: orderData.deliveryAddressSnapshot || null,
-        deliveryAddressDetail: orderData.deliveryAddressDetail || '',
+        pickupDate: orderData.pickupDate,
+        pickupTime: orderData.pickupTime,
+
+        deliveryAddressId: orderData.deliveryAddressId,
+        deliveryAddressSnapshot: orderData.deliveryAddressSnapshot,
+        deliveryAddressDetail: orderData.deliveryAddressDetail,
         deliveryName: orderData.deliveryName,
         deliveryContactName: orderData.deliveryContactName,
         deliveryContactPhone: orderData.deliveryContactPhone,
-        
-        // 일정 정보
-        pickupDate: new Date(orderData.pickupDate),
-        pickupTime: orderData.pickupTime,
-        deliveryDate: new Date(orderData.deliveryDate),
+        deliveryDate: orderData.deliveryDate,
         deliveryTime: orderData.deliveryTime,
-        
-        // 운송 옵션
-        transportOptions: orderData.transportOptions || null,
-        
-        // 가격 정보
-        estimatedDistance: orderData.estimatedDistance || null,
-        estimatedPriceAmount: orderData.estimatedPriceAmount || null,
+
+        transportOptions: orderData.transportOptions,
+
+        estimatedDistance: orderData.estimatedDistance !== undefined ? Number(orderData.estimatedDistance) : null,
+        estimatedPriceAmount: orderData.estimatedPriceAmount !== undefined ? Number(orderData.estimatedPriceAmount) : null,
         priceType: orderData.priceType,
         taxType: orderData.taxType,
-        priceSnapshot: orderData.priceSnapshot || null,
-        
-        // 생성/수정 정보
+        priceSnapshot: orderData.priceSnapshot,
+
         createdBy: requestUserId,
-        createdBySnapshot: {
-          id: requestUser.id,
-          name: requestUser.name,
-          email: requestUser.email,
-          phone: requestUser.phone_number || ''
-        },
+        createdBySnapshot: requestUser,
         createdAt: now,
         updatedBy: requestUserId,
-        updatedBySnapshot: {
-          id: requestUser.id,
-          name: requestUser.name,
-          email: requestUser.email,
-          phone: requestUser.phone_number || ''
-        },
-        updatedAt: now
-      })
+        updatedBySnapshot: requestUser,
+        updatedAt: now,
+         
+      } as any)
       .returning();
 
     // 변경 이력 기록

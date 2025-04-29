@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
           changedByName: request.headers.get('x-user-name') || 'system',
           changedByEmail: request.headers.get('x-user-email') || 'system',
           changedByAccessLevel: request.headers.get('x-user-access-level') || 'system',
-          changeType: changeType,
+          changeType: changeType as 'cancel' | 'delete' | 'updateStatus' | 'update' | 'create',
           oldData: order,
           newData: newData,
           reason: reason || undefined
