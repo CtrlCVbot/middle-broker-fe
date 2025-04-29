@@ -5,6 +5,7 @@ import { orders } from '@/db/schema/order';
 import { users } from '@/db/schema/users';
 import { z } from 'zod';
 import { logOrderChange } from '@/utils/order-change-logger';
+import { IUserSnapshot } from '@/types/order1';
 
 // UUID 검증을 위한 유틸리티 함수
 function isValidUUID(uuid: string): boolean {
@@ -115,11 +116,12 @@ export async function PUT(
         flowStatus,
         updatedBy: requestUserId,
         updatedBySnapshot: {
-          id: requestUser.id,
           name: requestUser.name,
           email: requestUser.email,
-          phone: requestUser.phone || ''
-        },
+          mobile: requestUser.phone_number,
+          department: requestUser.department,
+          position: requestUser.position,
+        } as IUserSnapshot,
         updatedAt: now
       })
       .where(eq(orders.id, orderId))

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { orders } from '@/db/schema/order';
 import { orderChangeLogs } from '@/db/schema/orderChangeLogs';
@@ -58,7 +58,7 @@ export async function GET(
 
     // 총 이력 수 조회
     const [{ count }] = await db
-      .select({ count: db.fn.count() })
+      .select({ count: sql`count(*)` })
       .from(orderChangeLogs)
       .where(eq(orderChangeLogs.orderId, orderId))
       .execute();
