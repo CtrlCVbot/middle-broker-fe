@@ -3,11 +3,13 @@ import { persist } from 'zustand/middleware';
 import { 
   IOrderRegisterData, 
   ILocationInfo,
-  VEHICLE_TYPES,
-  WEIGHT_TYPES,
   VehicleType, 
   WeightType
 } from '@/types/order';
+import { 
+  ORDER_VEHICLE_TYPES,
+  ORDER_VEHICLE_WEIGHTS
+} from '@/types/order1';
 
 // 초기 주소 정보
 const initialLocationInfo: ILocationInfo = {
