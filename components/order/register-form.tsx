@@ -106,8 +106,12 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
   const store = editMode ? editStore : registerStore;
   const { 
     registerData,
-    resetForm,
   } = store;
+  
+  // 스토어 타입에 맞는 resetForm 함수 참조
+  const resetFormAction = editMode 
+    ? editStore.resetState 
+    : registerStore.resetForm;
   
   // 필요한 액션 함수들 (타입 단언 사용)
   const setVehicleType = editMode 
@@ -238,7 +242,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
       setSuccessDialogOpen(true);
       
       // 스토어 초기화
-      resetForm();
+      resetFormAction();
       
       // 콜백 함수가 있으면 호출
       if (onSubmit) {
@@ -533,7 +537,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                     <Button
                       type="button"
                       onClick={() => {
-                        const isValid = validateForm();
+                        const isValid = validateOrderFormData(registerData);
                         if (isValid) {
                           onSubmit();
                         }
@@ -598,7 +602,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                     <Button
                       type="button"
                       onClick={() => {
-                        const isValid = validateForm();
+                        const isValid = validateOrderFormData(registerData);
                         if (isValid) {
                           onSubmit();
                         }
