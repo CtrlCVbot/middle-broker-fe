@@ -2,7 +2,6 @@
 import { IAddress } from './address';
 // 화물 상태 타입 정의
 export const ORDER_FLOW_STATUSES = [
-  '등록',
   '운송요청',
   '배차대기',
   '배차완료',
