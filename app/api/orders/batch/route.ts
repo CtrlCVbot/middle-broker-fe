@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { eq, inArray } from 'drizzle-orm';
 import { db } from '@/db';
-import { orders } from '@/db/schema/order';
+import { orders } from '@/db/schema/orders';
 import { z } from 'zod';
 import { logOrderChange } from '@/utils/order-change-logger';
 

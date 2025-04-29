@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { eq, and, ilike, or, sql } from 'drizzle-orm';
 import { db } from '@/db';
-import { orders } from '@/db/schema/order';
+import { orders } from '@/db/schema/orders';
 import { users } from '@/db/schema/users';
 import { IUserSnapshot, OrderFlowStatus, OrderVehicleType, OrderVehicleWeight } from '@/types/order1';
 import { z } from 'zod';
 import { logOrderChange } from '@/utils/order-change-logger';
-import { orderFlowStatusEnum, vehicleTypeEnum, vehicleWeightEnum } from '@/db/schema/order';
+import { orderFlowStatusEnum, vehicleTypeEnum, vehicleWeightEnum } from '@/db/schema/orders';
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;

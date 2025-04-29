@@ -3,7 +3,7 @@ export * from './users';
 export * from './companyWarnings';
 export * from './companyWarningLogs';
 export * from './user-tokens';
-export * from './order';
+export * from './orders';
 export * from './addresses';
 export * from './addressChangeLogs';
 

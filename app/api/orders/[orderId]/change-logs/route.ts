@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { db } from '@/db';
-import { orders } from '@/db/schema/order';
+import { orders } from '@/db/schema/orders';
 import { orderChangeLogs } from '@/db/schema/orderChangeLogs';
 
 // UUID 검증을 위한 유틸리티 함수

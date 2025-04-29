@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 import { db } from '@/db';
-import { orders } from '@/db/schema/order';
+import { orders } from '@/db/schema/orders';
 import { z } from 'zod';
 
 // 화물 데이터 검증 스키마

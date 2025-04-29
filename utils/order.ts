@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { orders } from '@/db/schema/order';
+import { orders } from '@/db/schema/orders';
 import { sql } from 'drizzle-orm';
 
 /**
