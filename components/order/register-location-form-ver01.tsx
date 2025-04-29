@@ -21,7 +21,8 @@ import { CalendarIcon, Search as SearchIcon, Map, Phone, Building2, User, Loader
 import { useOrderRegisterStore } from '@/store/order-register-store';
 import { cn } from '@/lib/utils';
 import { RECENT_LOCATIONS } from '@/utils/mockdata/mock-register';
-import { IKakaoAddressResult } from '@/types/address';
+import { IKakaoAddressResult, IAddress } from '@/types/address';
+import { SearchAddressDialog } from '@/components/address/search-address-dialog';
 
 
 interface LocationFormProps {
@@ -67,6 +68,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
+  const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false);
   
   // 주소 검색 함수
   const handleSearch = async () => {
@@ -114,6 +116,21 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
     
     setHasSearchedAddress(true);
     setIsSearchDialogOpen(false);
+  };
+  
+  // 주소록에서 주소 선택 함수
+  const handleSelectAddressFromBook = (address: IAddress) => {
+    onChange({
+      address: address.roadAddress || address.jibunAddress,
+      detailedAddress: address.detailAddress || '',
+      name: address.name || '',
+      company: address.company || '',
+      contact: address.contactPhone || '',
+      latitude: address.latitude,
+      longitude: address.longitude
+    });
+    
+    setHasSearchedAddress(true);
   };
   
   // 날짜 변경 함수
@@ -243,6 +260,16 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
               type="button"
               variant="outline"
               size="sm"
+              onClick={() => setIsAddressDialogOpen(true)}
+              disabled={disabled}
+            >
+              <Building className="h-4 w-4 mr-2" />
+              주소록
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
               onClick={handleReset}
               disabled={disabled}
             >
@@ -313,14 +340,24 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
           <div className="flex flex-col items-center justify-center py-8 border border-dashed rounded-md bg-muted/30">
             <Map className="h-10 w-10 text-muted-foreground mb-2" />
             <p className="text-sm text-muted-foreground mb-4">{type === 'departure' ? '출발지' : '도착지'} 주소를 검색해주세요</p>
-            <Button 
-              type="button" 
-              onClick={() => setIsSearchDialogOpen(true)}
-              disabled={disabled}
-            >
-              <SearchIcon className="h-4 w-4 mr-2" />
-              주소 검색하기
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                type="button" 
+                onClick={() => setIsSearchDialogOpen(true)}
+                disabled={disabled}
+              >
+                <SearchIcon className="h-4 w-4 mr-2" />
+                주소 검색하기
+              </Button>
+              <Button 
+                type="button" 
+                onClick={() => setIsAddressDialogOpen(true)}
+                disabled={disabled}
+              >
+                <Building className="h-4 w-4 mr-2" />
+                주소록에서 찾기
+              </Button>
+            </div>
           </div>
         )}
       </div>
@@ -533,6 +570,13 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
           )}
         </DialogContent>
       </Dialog>
+
+      {/* 주소록에서 선택 다이얼로그 */}
+      <SearchAddressDialog 
+        open={isAddressDialogOpen} 
+        onOpenChange={setIsAddressDialogOpen}
+        onSelect={handleSelectAddressFromBook}
+      />
     </div>
   );
 }; 
