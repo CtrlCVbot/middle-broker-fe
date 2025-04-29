@@ -55,6 +55,33 @@ interface OrderRegisterFormProps {
   orderNumber?: string;
 }
 
+interface AnimatedNumberProps {
+  number: number;
+  duration?: number; // 기본 애니메이션 시간
+  suffix?: string;   // "km", "원" 등 단위
+}
+
+export function AnimatedNumber({ number, duration = 500, suffix = '' }: AnimatedNumberProps) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const start = performance.now();
+    const from = display;
+
+    const step = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const nextValue = Math.floor(from + (number - from) * progress);
+      setDisplay(nextValue);
+      if (progress < 1) requestAnimationFrame(step);
+    };
+
+    requestAnimationFrame(step);
+  }, [number]);
+
+  return <span>{display.toLocaleString()}{suffix}</span>;
+}
+
+
 export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: OrderRegisterFormProps) {
   const [activeTab, setActiveTab] = useState<string>("vehicle");
   const [isCalculating, setIsCalculating] = useState(false);
@@ -226,6 +253,16 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
           
           // 금액 계산
           const amount = await calculateAmount(distance, weightType, selectedOptions);
+
+          // 계산 결과를 store에 반영
+          if (editMode) {
+            editStore.setRegisterData({
+              estimatedDistance: distance,
+              estimatedAmount: amount,
+            });
+          } else {
+            registerStore.setEstimatedInfo(distance, amount);
+          }
         } catch (error) {
           console.error("계산 중 오류 발생:", error);
         } finally {
@@ -910,17 +947,24 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                     <span className="text-muted-foreground">예상 거리</span>
                     <span className="font-medium">
                       {isCalculating ? (
-                        <span className="animate-pulse">계산 중...</span>
-                      ) : (
-                        <span>
-                          {typeof registerData.estimatedDistance === 'number' ? 
-                            `${registerData.estimatedDistance.toLocaleString()}km` : 
-                            editMode && originalData ? 
-                              `${0}km` : 
-                              '0km'
-                          }
-                        </span>
-                      )}
+                          <span className="animate-pulse">계산 중...</span>
+                        ) : (
+                          // <span>
+                          //   {typeof registerData.estimatedDistance === 'number' ? 
+                          //     `${registerData.estimatedDistance.toLocaleString()}km` : 
+                          //     editMode && originalData ? 
+                          //       `${0}km` : 
+                          //       '0km'
+                          //   }
+                          // </span>
+                          typeof registerData.estimatedDistance === 'number' ? (
+                            <AnimatedNumber number={registerData.estimatedDistance} suffix="km" />
+                          ) : editMode && originalData ? (
+                            <AnimatedNumber number={0} suffix="km" />
+                          ) : (
+                            '0km'
+                          )
+                        )}
                     </span>
                   </div>
                   <Separator />
@@ -930,17 +974,24 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                     </span>
                     <span className="text-xl font-bold text-primary">
                       {isCalculating ? (
-                        <span className="animate-pulse">계산 중...</span>
-                      ) : (
-                        <span>
-                          {typeof registerData.estimatedAmount === 'number' ? 
-                            `${registerData.estimatedAmount.toLocaleString()}원` : 
-                            editMode && originalData ? 
-                              originalData.amount : 
-                              '0원'
-                          }
-                        </span>
-                      )}
+                          <span className="animate-pulse">계산 중...</span>
+                        ) : (
+                          // <span>
+                          //   {typeof registerData.estimatedAmount === 'number' ? 
+                          //     `${registerData.estimatedAmount.toLocaleString()}원` : 
+                          //     editMode && originalData ? 
+                          //       originalData.amount : 
+                          //       '0원'
+                          //   }
+                          // </span>
+                          typeof registerData.estimatedAmount === 'number' ? (
+                            <AnimatedNumber number={registerData.estimatedAmount} suffix="원" />
+                          ) : editMode && originalData ? (
+                            <AnimatedNumber number={Number(originalData.amount ?? 0)} suffix="원" />
+                          ) : (
+                            '0원'
+                          )
+                        )}
                     </span>
                   </div>
                 </div>
