@@ -70,7 +70,6 @@ export async function GET(request: NextRequest) {
       const formatDateOnly = (date: Date) => date.toISOString().split('T')[0];
       const formattedStartDate = formatDateOnly(new Date(startDate));
       conditions.push(sql`${orders.pickupDate} >= ${formattedStartDate}`);
-      console.log("startDate:", startDate);
     }
 
     if (endDate) {
