@@ -96,63 +96,65 @@ export async function GET(
     }
 
     // 응답 데이터 변환
-    const responseData = {
-      id: order.id,
-      flowStatus: order.flowStatus,
-      cargoName: order.cargoName,
-      requestedVehicleType: order.requestedVehicleType,
-      requestedVehicleWeight: order.requestedVehicleWeight,
-      memo: order.memo,
-      pickup: {
-        name: order.pickupName,
-        contactName: order.pickupContactName,
-        contactPhone: order.pickupContactPhone,
-        addressId: order.pickupAddressId,
-        addressSnapshot: order.pickupAddressSnapshot,
-        addressDetail: order.pickupAddressDetail,
-        date: order.pickupDate,
-        time: order.pickupTime
-      },
-      delivery: {
-        name: order.deliveryName,
-        contactName: order.deliveryContactName,
-        contactPhone: order.deliveryContactPhone,
-        addressId: order.deliveryAddressId,
-        addressSnapshot: order.deliveryAddressSnapshot,
-        addressDetail: order.deliveryAddressDetail,
-        date: order.deliveryDate,
-        time: order.deliveryTime
-      },
-      transportOptions: order.transportOptions,
-      estimatedDistance: order.estimatedDistance,
-      estimatedPriceAmount: order.estimatedPriceAmount,
-      priceType: order.priceType,
-      taxType: order.taxType,
-      priceSnapshot: order.priceSnapshot,
-      isCanceled: order.isCanceled,
-      company: {
-        id: order.companyId,
-        snapshot: order.companySnapshot
-      },
-      contact: {
-        userId: order.contactUserId,
-        phone: order.contactUserPhone,
-        email: order.contactUserMail,
-        snapshot: order.contactUserSnapshot
-      },
-      created: {
-        by: order.createdBy,
-        at: order.createdAt?.toISOString(),
-        snapshot: order.createdBySnapshot
-      },
-      updated: {
-        by: order.updatedBy,
-        at: order.updatedAt?.toISOString(),
-        snapshot: order.updatedBySnapshot
-      }
-    };
+    // const responseData = {
+    //   id: order.id,
+    //   flowStatus: order.flowStatus,
+    //   cargoName: order.cargoName,
+    //   requestedVehicleType: order.requestedVehicleType,
+    //   requestedVehicleWeight: order.requestedVehicleWeight,
+    //   memo: order.memo,
+    //   pickup: {
+    //     name: order.pickupName,
+    //     contactName: order.pickupContactName,
+    //     contactPhone: order.pickupContactPhone,
+    //     addressId: order.pickupAddressId,
+    //     addressSnapshot: order.pickupAddressSnapshot,
+    //     addressDetail: order.pickupAddressDetail,
+    //     date: order.pickupDate,
+    //     time: order.pickupTime
+    //   },
+    //   delivery: {
+    //     name: order.deliveryName,
+    //     contactName: order.deliveryContactName,
+    //     contactPhone: order.deliveryContactPhone,
+    //     addressId: order.deliveryAddressId,
+    //     addressSnapshot: order.deliveryAddressSnapshot,
+    //     addressDetail: order.deliveryAddressDetail,
+    //     date: order.deliveryDate,
+    //     time: order.deliveryTime
+    //   },
+    //   transportOptions: order.transportOptions,
+    //   estimatedDistance: order.estimatedDistance,
+    //   estimatedPriceAmount: order.estimatedPriceAmount,
+    //   priceType: order.priceType,
+    //   taxType: order.taxType,
+    //   priceSnapshot: order.priceSnapshot,
+    //   isCanceled: order.isCanceled,
+    //   company: {
+    //     id: order.companyId,
+    //     snapshot: order.companySnapshot
+    //   },
+    //   contact: {
+    //     userId: order.contactUserId,
+    //     phone: order.contactUserPhone,
+    //     email: order.contactUserMail,
+    //     snapshot: order.contactUserSnapshot
+    //   },
+    //   created: {
+    //     by: order.createdBy,
+    //     at: order.createdAt?.toISOString(),
+    //     snapshot: order.createdBySnapshot
+    //   },
+    //   updated: {
+    //     by: order.updatedBy,
+    //     at: order.updatedAt?.toISOString(),
+    //     snapshot: order.updatedBySnapshot
+    //   }
+    // };
 
-    return NextResponse.json(responseData);
+    return NextResponse.json(
+      { data: order }
+    );
   } catch (error) {
     console.error('화물 상세 조회 중 오류 발생:', error);
     return NextResponse.json(

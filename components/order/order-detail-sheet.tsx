@@ -66,37 +66,39 @@ export function OrderDetailSheet() {
         
         // 응답 데이터 매핑 - 기존의 세부 데이터 구조와 호환되도록 추가 매핑 필요
         // 현재는 기본 정보만 매핑하고 있어 화면 표시에 제한이 있을 수 있음
-        const mappedOrder = mapBackendOrderToFrontendOrder(response);
-        
+        //const mappedOrder = mapBackendOrderToFrontendOrder(response);
+        const mappedOrder = response;        
+        console.log('매핑된 주문 정보:', mappedOrder);
+
         // IOrderDetail 형식에 맞게 데이터 변환
         const orderDetail: IOrderDetail = {
           orderNumber: mappedOrder.id,
-          status: mappedOrder.status,
-          statusProgress: mappedOrder.status,
+          status: mappedOrder.flowStatus,
+          statusProgress: mappedOrder.flowStatus,
           registeredAt: format(new Date(mappedOrder.createdAt), "yyyy-MM-dd HH:mm", { locale: ko }),
-          amount: formatCurrency(mappedOrder.amount) + "원",
+          amount: formatCurrency(mappedOrder.estimatedPriceAmount) + "원",
           
           departure: {
-            address: mappedOrder.departureLocation,
+            address: mappedOrder.pickupAddressSnapshot.name,
             name: response.pickupContactName || "-",
             company: response.pickupName || "-",
             contact: response.pickupContactPhone || "-",
-            time: format(new Date(mappedOrder.departureDateTime), "HH:mm", { locale: ko }),
-            date: format(new Date(mappedOrder.departureDateTime), "yyyy-MM-dd", { locale: ko }),
+            time: format(new Date(mappedOrder.pickupTime), "HH:mm", { locale: ko }),
+            date: format(new Date(mappedOrder.pickupDate), "yyyy-MM-dd", { locale: ko }),
           },
           
           destination: {
-            address: mappedOrder.arrivalLocation,
+            address: mappedOrder.deliveryAddressSnapshot.name,
             name: response.deliveryContactName || "-",
             company: response.deliveryName || "-",
             contact: response.deliveryContactPhone || "-",
-            time: format(new Date(mappedOrder.arrivalDateTime), "HH:mm", { locale: ko }),
-            date: format(new Date(mappedOrder.arrivalDateTime), "yyyy-MM-dd", { locale: ko }),
+            time: format(new Date(mappedOrder.deliveryTime), "HH:mm", { locale: ko }),
+            date: format(new Date(mappedOrder.deliveryDate), "yyyy-MM-dd", { locale: ko }),
           },
           
           cargo: {
             type: response.cargoName || "-",
-            weight: mappedOrder.vehicle.weight,
+            weight: mappedOrder.cargoWeight,
             options: response.transportOptions ? Object.entries(response.transportOptions)
               .filter(([_, value]) => value === true)
               .map(([key]) => key) : [],
@@ -104,12 +106,12 @@ export function OrderDetailSheet() {
           },
           
           vehicle: {
-            type: mappedOrder.vehicle.type,
-            weight: mappedOrder.vehicle.weight,
+            type: mappedOrder.requestedVehicleType,
+            weight: mappedOrder.requestedVehicleWeight,
             licensePlate: "-", // 백엔드 데이터에 없음
             driver: {
-              name: mappedOrder.driver.name || "-",
-              contact: mappedOrder.driver.contact || "-",
+              name: "-",
+              contact: "-",
             },
           },
           
