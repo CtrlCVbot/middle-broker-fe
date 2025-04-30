@@ -53,6 +53,7 @@ import { useRouter } from 'next/navigation';
 import { registerOrder, convertFormDataToApiRequest } from '@/services/order-service';
 import { handleApiError, handleOrderRegisterSuccess, validateOrderFormData } from '@/utils/order-utils';
 import { RegisterSuccessDialog } from '@/components/order/register-success-dialog';
+import { OrderProgress } from "./order-progress";
 
 interface OrderRegisterFormProps {
   onSubmit: () => void;
@@ -663,7 +664,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-4 gap-2">
             <div>
               <h1 className="text-2xl font-semibold">{editMode  ? (
-                      <>운송 정보 수정 - #{orderNumber}  </> 
+                      <>운송 정보 수정 - #{orderNumber?.slice(0, 8)}  </> 
                     ) : (
                       <>운송 요청</>
                     )}
@@ -677,7 +678,8 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
 
               {editMode && originalData && (
                 <div className="flex items-center mt-4">  
-                  <StatusFlow currentStatus={originalData.status} />
+                  {/* <StatusFlow currentStatus={originalData.status} /> */}
+                  <OrderProgress currentStatus={originalData.statusProgress as any} />
                 </div>               
               )}
             </div>

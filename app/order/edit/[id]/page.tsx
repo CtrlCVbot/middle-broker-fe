@@ -20,6 +20,8 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 
 export default function OrderEditPage() {
   const router = useRouter();
@@ -155,32 +157,35 @@ export default function OrderEditPage() {
   
   return (
     <>
-      <header className="flex h-16 shrink-0 items-center gap-2 px-4">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href="/">
-                <Home className="h-4 w-4 mr-1" />
-                홈
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator className="hidden md:block" />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/order/list">화물 관리</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>화물 수정</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+      <header className="flex h-16 shrink-0 items-center gap-2 border-b">
+        <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator
+              orientation="vertical"
+              className="mr-2 data-[orientation=vertical]:h-4"
+            />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink href="/">                  
+                    홈
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+              
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>운송 요청 수정</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
         
-        {originalData && (
-          <span className="ml-2 text-sm font-medium">#{originalData.orderNumber}</span>
-        )}
+          {originalData && (
+            <span className="ml-2 text-sm font-medium">#{originalData.orderNumber.slice(0, 8)}</span>
+          )}
       </header>
 
-      <main className="flex flex-1 flex-col p-4 pt-0">
+      <main className="min-h-screen flex flex-col items-center pt-4">
         <div className="container">
           <div className="flex flex-col space-y-4">
             {/* 로딩 상태 표시 */}
