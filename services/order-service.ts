@@ -3,6 +3,7 @@ import { IAddressSnapshot, ICompanySnapshot, IPriceSnapshot, ITransportOptionsSn
 import { getCurrentUser } from '@/utils/auth';
 import { validateOrderData, validateOrderDataWithErrors } from '@/utils/order-validation';
 import { showValidationError } from '@/utils/order-utils';
+import { IOrder, IOrderListResponse, OrderFlowStatus, OrderVehicleType, OrderVehicleWeight } from "@/types/order1";
 
 // API 클라이언트 인스턴스
 const apiClient = new ApiClient();
@@ -201,4 +202,113 @@ export const convertFormDataToApiRequest = (formData: any): ICreateOrderRequest 
   }
   
   return requestData;
-}; 
+};
+
+interface OrderListParams {
+  page?: number;
+  pageSize?: number;
+  keyword?: string;
+  flowStatus?: OrderFlowStatus;
+  vehicleType?: OrderVehicleType;
+  vehicleWeight?: OrderVehicleWeight;
+  pickupCity?: string;
+  deliveryCity?: string;
+  startDate?: string;
+  endDate?: string;
+  companyId?: string;
+}
+
+/**
+ * 화물 목록 조회 API
+ * @param params 조회 파라미터
+ * @returns Promise<IOrderListResponse> 화물 목록 응답
+ */
+export async function fetchOrders(params: OrderListParams): Promise<IOrderListResponse> {
+  // URL 파라미터 구성
+  const queryParams = new URLSearchParams();
+  
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      queryParams.append(key, value.toString());
+    }
+  });
+
+  const response = await fetch(`/api/orders?${queryParams.toString()}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || '화물 목록을 불러오는 데 실패했습니다.');
+  }
+
+  return response.json();
+}
+
+/**
+ * 화물 상세 정보 조회 API
+ * @param orderId 화물 ID
+ * @returns Promise<IOrder> 화물 상세 정보
+ */
+export async function fetchOrderDetail(orderId: string): Promise<IOrder> {
+  const response = await fetch(`/api/orders/${orderId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || '화물 상세 정보를 불러오는 데 실패했습니다.');
+  }
+
+  return response.json();
+}
+
+/**
+ * 화물 상태 변경 API
+ * @param orderId 화물 ID
+ * @param flowStatus 변경할 상태
+ * @returns Promise<IOrder> 업데이트된 화물 정보
+ */
+export async function updateOrderStatus(orderId: string, flowStatus: OrderFlowStatus): Promise<IOrder> {
+  const response = await fetch(`/api/orders/${orderId}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ flowStatus })
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || '화물 상태 변경에 실패했습니다.');
+  }
+
+  return response.json();
+}
+
+/**
+ * 화물 변경 이력 조회 API
+ * @param orderId 화물 ID
+ * @returns Promise<any> 화물 변경 이력
+ */
+export async function fetchOrderChangeLogs(orderId: string): Promise<any> {
+  const response = await fetch(`/api/orders/${orderId}/change-logs`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || '화물 변경 이력을 불러오는 데 실패했습니다.');
+  }
+
+  return response.json();
+} 

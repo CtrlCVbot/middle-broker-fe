@@ -11,9 +11,15 @@ import {
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
 import { ListFilter, Grid3x3 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useOrderStore } from "@/store/order-store";
-import { getOrdersByPage } from "@/utils/mockdata/mock-orders";
+// 기존 Mock 데이터 관련 임포트 주석 처리
+// import { getOrdersByPage } from "@/utils/mockdata/mock-orders";
+// 실제 API 서비스 임포트
+import { fetchOrders } from "@/services/order-service";
+import { mapApiResponseToOrderList } from "@/utils/data-mapper";
+import { handleApiError } from "@/utils/api-error-handler";
+
 import { OrderSearch } from "@/components/order/order-search";
 //import { OrderTable } from "@/components/order/order-table";
 import { OrderTable } from "@/components/order/order-table-ver01";
@@ -24,8 +30,36 @@ import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { StatusFlow } from "@/components/order/status-badge";
+import { OrderFlowStatus, OrderVehicleType, OrderVehicleWeight } from "@/types/order1";
+import { IOrderFilter, OrderStatusType } from "@/types/order";
 
+// 프론트 상태와 백엔드 API 파라미터 간 매핑 함수
+const mapFilterToApiParams = (filter: IOrderFilter) => {
+  // 상태 매핑
+  let flowStatus: OrderFlowStatus | undefined;
+  if (filter.status) {
+    const statusMap: Record<OrderStatusType, OrderFlowStatus> = {
+      '배차대기': '배차대기',
+      '배차완료': '배차완료',
+      '상차완료': '상차완료',
+      '운송중': '운송중',
+      '하차완료': '하차완료',
+      '운송마감': '운송완료'
+    };
+    flowStatus = statusMap[filter.status] as OrderFlowStatus;
+  }
+
+  return {
+    keyword: filter.searchTerm,
+    flowStatus,
+    vehicleType: filter.vehicleType as OrderVehicleType,
+    vehicleWeight: filter.weight as OrderVehicleWeight,
+    pickupCity: filter.departureCity,
+    deliveryCity: filter.arrivalCity,
+    startDate: filter.startDate,
+    endDate: filter.endDate,
+  };
+};
 
 export default function OrderListPage() {
   // Zustand 스토어에서 상태 및 액션 가져오기
@@ -43,37 +77,36 @@ export default function OrderListPage() {
     console.log('Filter in OrderListPage:', filter);
   }, [filter]);
 
-  // 화물 목록 데이터 조회
+  // 화물 목록 데이터 조회 - 실제 API 연동
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["orders", currentPage, pageSize, filter],
-    queryFn: () => {
-      console.log('Query function called with:', {
-        currentPage,
-        pageSize,
-        departureCity: filter.departureCity,
-        arrivalCity: filter.arrivalCity,
-        vehicleType: filter.vehicleType,
-        weight: filter.weight,
-        searchTerm: filter.searchTerm,
-        status: filter.status,
-        startDate: filter.startDate,
-        endDate: filter.endDate
-      });
-      
-      return getOrdersByPage(
-        currentPage,
-        pageSize,
-        filter.departureCity,
-        filter.arrivalCity,
-        filter.vehicleType,
-        filter.weight,
-        filter.searchTerm,
-        filter.status,
-        filter.startDate,
-        filter.endDate
-      );
+    queryFn: async () => {
+      try {
+        console.log('Query function called with:', {
+          currentPage,
+          pageSize,
+          filter
+        });
+        
+        // API 파라미터 매핑
+        const apiParams = {
+          page: currentPage,
+          pageSize,
+          ...mapFilterToApiParams(filter)
+        };
+        
+        // API 호출
+        const response = await fetchOrders(apiParams);
+        
+        // 응답 데이터 매핑
+        return mapApiResponseToOrderList(response);
+      } catch (error) {
+        handleApiError(error, '화물 목록을 불러오는 데 실패했습니다.');
+        throw error;
+      }
     },
-    staleTime: 1000 * 60, // 1분
+    staleTime: 1000 * 60 * 5, // 5분 캐시
+    retry: 1, // 실패 시 1번 재시도
   });
 
   // 필터 변경 시 데이터 다시 조회
@@ -118,19 +151,10 @@ export default function OrderListPage() {
         </div>
       </header>
       
-      {/* 데스크톱 환경에서는 2단 컬럼 레이아웃으로 표시 */}
-      {/* <main className="flex flex-1 flex-col p-4 pt-0"> */}
       <main className="min-h-screen flex flex-col items-center pt-4">
         <div className="container">
           <div className="flex flex-col space-y-4">
 
-            {/* 헤더 영역 */}
-            {/* <div className="flex items-center justify-between py-4 grid grid-rows-2 gap-0">
-              <h1 className="text-2xl font-semibold">
-                운송 목록
-              </h1>              
-              <div className="text-sm text-muted-foreground mt-0">배차 요청한 화물의 운송 현황을 확인할 수 있습니다.</div>
-            </div> */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-4 gap-2">
               <div>
                 <h1 className="text-2xl font-semibold">운송 목록</h1>
@@ -144,39 +168,31 @@ export default function OrderListPage() {
                   <Grid3x3 className="h-4 w-4" />
                 </ToggleGroupItem>
               </ToggleGroup>
-              {/* 추후 버튼 추가 자리 확보 */}
             </div>
           
-
-            {/* 본문 영역 */}
             <div className="gap-4">  
               <Card>
-                {/* <CardHeader className="flex flex-row items-center justify-between">
-                  <div> 
-                    <CardTitle>화물 현황</CardTitle>
-                    <CardDescription>화물 목록을 확인할 수 있습니다.</CardDescription>
-                  </div>                
-                </CardHeader> */}
-
                 <CardContent>
-                  {/* 검색 필터 */}
-                  
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <OrderSearch />                    
                   </div>
 
-                  {/* 로딩 상태 */}
+                  {/* 로딩 상태 - 개선된 UI */}
                   {isLoading ? (
-                    <div className="py-12 text-center text-lg text-muted-foreground">
-                      데이터를 불러오는 중...
+                    <div className="py-12 text-center">
+                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      <p className="mt-2 text-muted-foreground">데이터를 불러오는 중...</p>
                     </div>
                   ) : isError ? (
-                    // 에러 상태
-                    <div className="py-12 text-center text-lg text-red-500">
-                      데이터 조회 중 오류가 발생했습니다.
+                    // 에러 상태 - 개선된 UI
+                    <div className="py-12 text-center">
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100">
+                        <span className="text-red-500 text-2xl">!</span>
+                      </div>
+                      <p className="mt-2 text-red-500">데이터 조회 중 오류가 발생했습니다.</p>
                       <Button
                         variant="outline"
-                        className="ml-2"
+                        className="mt-2"
                         onClick={() => refetch()}
                       >
                         다시 시도
@@ -185,7 +201,7 @@ export default function OrderListPage() {
                   ) : (
                     <>
                       {/* 데이터 표시 */}                      
-                      {data?.data.length === 0 ? (
+                      {!data || data.data.length === 0 ? (
                         <div className="py-16 text-center text-muted-foreground">
                           등록된 운송 요청이 없습니다.
                         </div>
@@ -193,14 +209,14 @@ export default function OrderListPage() {
                         //뷰 모드에 따라 테이블 또는 카드 형태로 표시
                         viewMode === "table" ? (
                           <OrderTable
-                            orders={data?.data || []}
+                            orders={data.data}
                             currentPage={currentPage}
                             totalPages={totalPages}
                             onPageChange={handlePageChange}
                           />
                         ) : (
                           <OrderCard
-                            orders={data?.data || []}
+                            orders={data.data}
                             currentPage={currentPage}
                             totalPages={totalPages}
                             onPageChange={handlePageChange}
@@ -209,13 +225,9 @@ export default function OrderListPage() {
                       )}
                     </>
                   )}
-
-                 
                 </CardContent>
-
               </Card>
             </div>
-
           </div>
         </div>
         
