@@ -240,14 +240,14 @@ export default function OrderListPage() {
                         //뷰 모드에 따라 테이블 또는 카드 형태로 표시
                         viewMode === "table" ? (
                           <OrderTable
-                            orders={data.data}
+                            orders={data.data as any}
                             currentPage={currentPage}
                             totalPages={totalPages}
                             onPageChange={handlePageChange}
                           />
                         ) : (
                           <OrderCard
-                            orders={data.data}
+                            orders={data.data as any}
                             currentPage={currentPage}
                             totalPages={totalPages}
                             onPageChange={handlePageChange}

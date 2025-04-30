@@ -17,7 +17,7 @@ import {
   DollarSign,
   User,
 } from "lucide-react";
-import { IOrder } from "@/types/order";
+import { IOrder } from "@/types/order1";
 import { formatCurrency } from "@/lib/utils";
 import { useOrderDetailStore } from "@/store/order-detail-store";
 
@@ -103,7 +103,7 @@ export function OrderCard({
             >
               <div className="flex items-center justify-between p-4 bg-gray-100">
                 <div className="font-semibold text-sm text-primary truncate">{order.id}</div>
-                <div>{getStatusBadge(order.status)}</div>
+                <div>{getStatusBadge(order.flowStatus)}</div>
               </div>
               
               <CardContent className="p-4 space-y-4">
@@ -111,24 +111,24 @@ export function OrderCard({
                   {/* 상차지 정보 */}
                   <ArrowUp className="h-5 w-5 text-blue-500" />
                   <div className="space-y-1">
-                    <div className="font-medium line-clamp-1" title={order.departureLocation}>
-                      {order.departureLocation}
+                    <div className="font-medium line-clamp-1" title={order.pickupAddressSnapshot.name}>
+                      {order.pickupAddressSnapshot.name}
                     </div>
                     <div className="text-sm text-muted-foreground flex gap-1 items-center">
                       <Clock className="h-3 w-3" />
-                      {order.departureDateTime}
+                      {order.pickupDate}
                     </div>
                   </div>
                   
                   {/* 하차지 정보 */}
                   <ArrowDown className="h-5 w-5 text-red-500" />
                   <div className="space-y-1">
-                    <div className="font-medium line-clamp-1" title={order.arrivalLocation}>
-                      {order.arrivalLocation}
+                    <div className="font-medium line-clamp-1" title={order.deliveryAddressSnapshot.name}>
+                      {order.deliveryAddressSnapshot.name}
                     </div>
                     <div className="text-sm text-muted-foreground flex gap-1 items-center">
                       <Clock className="h-3 w-3" />
-                      {order.arrivalDateTime}
+                      {order.deliveryDate}
                     </div>
                   </div>
                   
@@ -148,11 +148,11 @@ export function OrderCard({
                 </div>
 
                 <div className="flex justify-between items-center text-md">
-                  <span><Truck className="inline h-4 w-4 mr-1 text-muted-foreground" />{order.vehicle.type} {order.vehicle.weight}</span>
-                  <span><User className="inline h-4 w-4 mr-1 text-muted-foreground" />{order.driver.name || "-"}</span>
+                  <span><Truck className="inline h-4 w-4 mr-1 text-muted-foreground" />{order.requestedVehicleType} {order.requestedVehicleWeight}</span>
+                  <span><User className="inline h-4 w-4 mr-1 text-muted-foreground" />{"-"}</span>
                 </div>
                 <div className="text-right text-base font-semibold text-green-600">
-                  {formatCurrency(order.amount)}원
+                  {formatCurrency(order.estimatedPriceAmount)}원
                 </div>
               </CardContent>
 
