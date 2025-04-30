@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { format } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 import {
   Table,
   TableBody,
@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-import { IOrder } from "@/types/order";
+import { IOrder } from "@/types/order1";
 import { formatCurrency } from "@/lib/utils";
 import { useOrderDetailStore } from "@/store/order-detail-store";
 import { ko } from "date-fns/locale";
@@ -53,6 +53,37 @@ const getStatusBadge = (status: string) => {
 const getDateTimeformat = (date: string) => {
   const dateObj = new Date(date);
   return format(dateObj, "MM.dd (E) HH:mm", { locale: ko });
+}
+
+const getSchedule = (pickupDate: string, pickupTime: string, deliveryDate: string, deliveryTime: string) => {
+  const pickupDateObj = format(pickupDate, "MM.dd", { locale: ko });
+  const deliveryDateObj = format(deliveryDate, "dd", { locale: ko });
+  if (pickupDate === deliveryDate) {
+    return pickupDateObj;
+  } else {
+    return pickupDateObj + ' - ' + deliveryDateObj;
+  }
+}
+
+const getTime = (pickupDate: string, pickupTime: string, deliveryDate: string, deliveryTime: string) => {
+  const pickupTimeObj = format(parseISO('1970-01-01T' + pickupTime), 'HH:mm', {locale: ko});
+  let deliveryTimeObj = format(parseISO('1970-01-01T' + deliveryTime), 'HH:mm', {locale: ko});
+  const deliveryDateObj = format(deliveryDate, "dd", { locale: ko });
+  if (pickupDate === deliveryDate) {
+    deliveryTimeObj = deliveryTimeObj;
+  } else {
+    deliveryTimeObj = deliveryTimeObj + "(" + deliveryDateObj + ")";
+  }
+  if (pickupDate === deliveryDate) {
+    return pickupTimeObj + ' - ' + deliveryTimeObj;
+  } else {
+    return pickupTimeObj + ' - ' + deliveryTimeObj;
+  }
+}
+
+function formatTimeOnly(dateStr: string | Date): string {
+  const date = typeof dateStr === 'string' ? parseISO(dateStr) : dateStr;
+  return isValid(date) ? format(date, 'HH:mm', {locale: ko}) : '-';
 }
 
 interface OrderTableProps {
@@ -106,8 +137,10 @@ export function OrderTable({
         <Table className="min-w-[900px]">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[120px]">화물 ID</TableHead>
               <TableHead>상태</TableHead>
+              <TableHead className="w-[120px]">일정</TableHead>
+              <TableHead className="w-[120px]">시간</TableHead>
+              
               <TableHead>상차지</TableHead>
               <TableHead>하차지</TableHead>
               <TableHead>상차 일시</TableHead>              
@@ -130,32 +163,36 @@ export function OrderTable({
             ) : (
               orders.map((order) => (
                 <TableRow key={order.id} className="cursor-pointer hover:bg-secondary/20" onClick={() => handleOrderClick(order.id)}>
+                  <TableCell>{getStatusBadge(order.flowStatus)}</TableCell>
                   <TableCell className="font-medium text-primary underline">
-                    {order.id}
+                    {getSchedule(order.pickupDate, order.pickupTime, order.deliveryDate, order.deliveryTime)}
                   </TableCell>
-                  <TableCell>{getStatusBadge(order.status)}</TableCell>
-                  <TableCell className="max-w-[200px] truncate" title={order.departureLocation}>
-                    {order.departureLocation}
+                  <TableCell className="font-medium text-primary ">
+                    {getTime(order.pickupDate, order.pickupTime, order.deliveryDate, order.deliveryTime)}
                   </TableCell>
-                  <TableCell className="max-w-[200px] truncate" title={order.arrivalLocation}>
-                    {order.arrivalLocation}
+                  
+                  <TableCell className="max-w-[200px] truncate" title={order.pickupAddressSnapshot.name}>
+                    {order.pickupAddressSnapshot.name}
                   </TableCell>
-                  <TableCell>{order.departureDateTime}</TableCell>                  
-                  <TableCell>{order.arrivalDateTime}</TableCell>
+                  <TableCell className="max-w-[200px] truncate" title={order.deliveryAddressSnapshot.name}>
+                    {order.deliveryAddressSnapshot.name}
+                  </TableCell>
+                  <TableCell>{getDateTimeformat(order.pickupDate + ' ' + order.pickupTime)}</TableCell>                  
+                  <TableCell>{getDateTimeformat(order.deliveryDate + ' ' + order.deliveryTime)}</TableCell>
                   <TableCell>
-                    {order.vehicle.type} {order.vehicle.weight}
+                    {order.requestedVehicleType} {order.requestedVehicleWeight}
                   </TableCell>
                   <TableCell>
                     {/* {order.driver.name || "-"} */}
                     <TooltipProvider>
                       <Tooltip>
-                        <TooltipTrigger>{order.driver.name || "-"}</TooltipTrigger>
-                        <TooltipContent>{order.driver.contact}</TooltipContent>
+                        <TooltipTrigger>{"-"}</TooltipTrigger>
+                        <TooltipContent>{"-"}</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </TableCell>
                   <TableCell className="text-right font-medium">
-                    {formatCurrency(order.amount)}원
+                    {formatCurrency(order.estimatedPriceAmount)}원
                   </TableCell>
                 </TableRow>
               ))

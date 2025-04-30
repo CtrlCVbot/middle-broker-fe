@@ -28,7 +28,7 @@ export function mapApiResponseToOrderList(apiResponse: any): {
 
   // 화물 데이터 매핑
   const data = Array.isArray(apiResponse.data) 
-    ? apiResponse.data.map(mapBackendOrderToFrontendOrder)
+    ? apiResponse.data//.map(mapBackendOrderToFrontendOrder)
     : [];
 
   return {
@@ -44,11 +44,13 @@ export function mapApiResponseToOrderList(apiResponse: any): {
  */
 export function mapBackendOrderToFrontendOrder(backendOrder: IBackendOrder): IFrontendOrder {
   // 디버깅
-  console.log('백엔드 데이터:', backendOrder);
+  console.log('백엔드 데이터1:', backendOrder);
+  console.log('백엔드 상차지 주소 스냅샷:', backendOrder.pickupAddressSnapshot);
+  console.log('백엔드 하차지 주소 스냅샷:', backendOrder.deliveryAddressSnapshot);
   
   // 주소 스냅샷 추출
-  const pickupAddressSnapshot = backendOrder.pickupSnapshot || {};
-  const deliveryAddressSnapshot = backendOrder.deliverySnapshot || {};
+  const pickupAddressSnapshot = backendOrder.pickupAddressSnapshot || {};
+  const deliveryAddressSnapshot = backendOrder.deliveryAddressSnapshot || {};
   
   // 도시 정보 추출 
   let departureCity = '';
@@ -75,12 +77,12 @@ export function mapBackendOrderToFrontendOrder(backendOrder: IBackendOrder): IFr
   return {
     id: backendOrder.id,
     status: mapFlowStatusToUiStatus(backendOrder.flowStatus) as OrderStatusType,
-    departureLocation: getFullAddress(pickupAddressSnapshot),
+    departureLocation: getAddressName(pickupAddressSnapshot),
     departureCity: departureCity,
-    departureDateTime: backendOrder.pickupDate,
-    arrivalLocation: getFullAddress(deliveryAddressSnapshot),
+    departureDateTime: backendOrder.pickupDate + ' ' + backendOrder.pickupTime,
+    arrivalLocation: getAddressName(deliveryAddressSnapshot),
     arrivalCity: arrivalCity,
-    arrivalDateTime: backendOrder.deliveryTime,
+    arrivalDateTime: backendOrder.deliveryDate + ' ' + backendOrder.deliveryTime,
     amount: backendOrder.estimatedPriceAmount,
     fee: calculateFee(backendOrder.estimatedPriceAmount),
     vehicle: {
@@ -131,6 +133,24 @@ function getFullAddress(addressSnapshot: any): string {
   
   return parts.length > 0 ? parts.join(" ") : "-";
 }
+
+/**
+ * 주소 이름 정보 조합
+ * @param addressSnapshot 주소 스냅샷 객체
+ * @returns 전체 주소 문자열
+ */
+function getAddressName(addressSnapshot: any): string {
+    console.log('addressSnapshot: ', addressSnapshot);
+    if (!addressSnapshot) return "-";
+    
+    const parts = [
+      addressSnapshot.name
+    ].filter(Boolean);
+    
+    return parts.length > 0 ? parts.join(" ") : "-";
+  }
+
+
 
 /**
  * 날짜와 시간 조합

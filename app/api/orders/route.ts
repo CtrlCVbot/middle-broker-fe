@@ -3,10 +3,11 @@ import { eq, and, ilike, or, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { orders } from '@/db/schema/orders';
 import { users } from '@/db/schema/users';
-import { IUserSnapshot, OrderFlowStatus, OrderVehicleType, OrderVehicleWeight } from '@/types/order1';
+import { IAddressSnapshot, ICompanySnapshot, IOrder, IPriceSnapshot, ITransportOptionsSnapshot, IUserSnapshot, OrderFlowStatus, OrderVehicleType, OrderVehicleWeight } from '@/types/order1';
 import { z } from 'zod';
 import { logOrderChange } from '@/utils/order-change-logger';
 import { orderFlowStatusEnum, vehicleTypeEnum, vehicleWeightEnum } from '@/db/schema/orders';
+import { format } from 'date-fns';
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -95,41 +96,41 @@ export async function GET(request: NextRequest) {
     ]);
 
     // 응답 데이터 변환
-    const formattedResult = result.map(order => ({
-      id: order.id,
-      flowStatus: order.flowStatus,
-      cargoName: order.cargoName,
-      requestedVehicleType: order.requestedVehicleType,
-      requestedVehicleWeight: order.requestedVehicleWeight,
-      pickup: {
-        name: order.pickupName,
-        contactName: order.pickupContactName,
-        contactPhone: order.pickupContactPhone,
-        date: order.pickupDate,
-        time: order.pickupTime,
-        addressSnapshot: order.pickupAddressSnapshot
-      },
-      delivery: {
-        name: order.deliveryName,
-        contactName: order.deliveryContactName,
-        contactPhone: order.deliveryContactPhone,
-        date: order.deliveryDate,
-        time: order.deliveryTime,
-        addressSnapshot: order.deliveryAddressSnapshot
-      },
-      estimatedDistance: order.estimatedDistance,
-      estimatedPriceAmount: order.estimatedPriceAmount,
-      priceType: order.priceType,
-      taxType: order.taxType,
-      isCanceled: order.isCanceled,
-      companyId: order.companyId,
-      companySnapshot: order.companySnapshot,
-      createdAt: order.createdAt?.toISOString(),
-      updatedAt: order.updatedAt?.toISOString()
-    }));
+    // const formattedResult = result.map(order => ({
+    //   id: order.id,
+    //   flowStatus: order.flowStatus,
+    //   cargoName: order.cargoName,
+    //   requestedVehicleType: order.requestedVehicleType,
+    //   requestedVehicleWeight: order.requestedVehicleWeight,
+    //   pickupSnapshot: {
+    //     name: order.pickupName,
+    //     contactName: order.pickupContactName,
+    //     contactPhone: order.pickupContactPhone,
+    //     date: order.pickupDate,
+    //     time: order.pickupTime,
+    //     addressSnapshot: order.pickupAddressSnapshot
+    //   },
+    //   delivery: {
+    //     name: order.deliveryName,
+    //     contactName: order.deliveryContactName,
+    //     contactPhone: order.deliveryContactPhone,
+    //     date: order.deliveryDate,
+    //     time: order.deliveryTime,
+    //     addressSnapshot: order.deliveryAddressSnapshot
+    //   },
+    //   estimatedDistance: order.estimatedDistance,
+    //   estimatedPriceAmount: order.estimatedPriceAmount,
+    //   priceType: order.priceType,
+    //   taxType: order.taxType,
+    //   isCanceled: order.isCanceled,
+    //   companyId: order.companyId,
+    //   companySnapshot: order.companySnapshot,
+    //   createdAt: order.createdAt?.toISOString(),
+    //   updatedAt: order.updatedAt?.toISOString()
+    // }));
 
     return NextResponse.json({
-      data: formattedResult,
+      data: result,
       total,
       page,
       pageSize,
@@ -300,38 +301,48 @@ export async function POST(request: NextRequest) {
     }
 
     // 응답 데이터 변환
-    const responseData = {
+    const responseData: IOrder = {
       id: createdOrder.id,
       flowStatus: createdOrder.flowStatus,
-      cargoName: createdOrder.cargoName,
+      cargoName: createdOrder.cargoName || '',
       requestedVehicleType: createdOrder.requestedVehicleType,
       requestedVehicleWeight: createdOrder.requestedVehicleWeight,
-      memo: createdOrder.memo,
-      pickup: {
-        name: createdOrder.pickupName,
-        contactName: createdOrder.pickupContactName,
-        contactPhone: createdOrder.pickupContactPhone,
-        date: createdOrder.pickupDate,
-        time: createdOrder.pickupTime,
-        addressSnapshot: createdOrder.pickupAddressSnapshot
-      },
-      delivery: {
-        name: createdOrder.deliveryName,
-        contactName: createdOrder.deliveryContactName,
-        contactPhone: createdOrder.deliveryContactPhone,
-        date: createdOrder.deliveryDate,
-        time: createdOrder.deliveryTime,
-        addressSnapshot: createdOrder.deliveryAddressSnapshot
-      },
-      estimatedDistance: createdOrder.estimatedDistance,
-      estimatedPriceAmount: createdOrder.estimatedPriceAmount,
-      priceType: createdOrder.priceType,
-      taxType: createdOrder.taxType,
-      isCanceled: createdOrder.isCanceled,
-      companyId: createdOrder.companyId,
-      companySnapshot: createdOrder.companySnapshot,
-      createdAt: createdOrder.createdAt?.toISOString(),
-      updatedAt: createdOrder.updatedAt?.toISOString()
+      memo: createdOrder.memo || '',
+      pickupAddressSnapshot: createdOrder.pickupAddressSnapshot as IAddressSnapshot,
+      deliveryAddressSnapshot: createdOrder.deliveryAddressSnapshot as IAddressSnapshot,
+      pickupDate: createdOrder.pickupDate || '',
+      deliveryDate: createdOrder.deliveryDate || '',
+      pickupTime: createdOrder.pickupTime || '',
+      deliveryTime: createdOrder.deliveryTime || '',
+      transportOptions: createdOrder.transportOptions as ITransportOptionsSnapshot,
+      estimatedDistance: createdOrder.estimatedDistance !== undefined ? Number(createdOrder.estimatedDistance) : 0,
+      estimatedPriceAmount: createdOrder.estimatedPriceAmount !== undefined ? Number(createdOrder.estimatedPriceAmount) : 0,
+      priceType: createdOrder.priceType || '',
+      taxType: createdOrder.taxType as '과세' | '면세',
+      isCanceled: createdOrder.isCanceled || false,
+      companyId: createdOrder.companyId || '',
+      companySnapshot: createdOrder.companySnapshot as ICompanySnapshot,
+      createdAt: createdOrder.createdAt?.toISOString() || '',
+      updatedAt: createdOrder.updatedAt?.toISOString() || '',
+      contactUserId: createdOrder.contactUserId || '',
+      contactUserPhone: createdOrder.contactUserPhone || '',
+      contactUserMail: createdOrder.contactUserMail || '',
+      contactUserSnapshot: createdOrder.contactUserSnapshot as IUserSnapshot,
+      pickupAddressId: createdOrder.pickupAddressId || '',
+      pickupAddressDetail: createdOrder.pickupAddressDetail || '',
+      pickupName: createdOrder.pickupName || '',
+      pickupContactName: createdOrder.pickupContactName || '',
+      pickupContactPhone: createdOrder.pickupContactPhone || '',
+      deliveryAddressId: createdOrder.deliveryAddressId || '',
+      deliveryAddressDetail: createdOrder.deliveryAddressDetail || '',
+      deliveryName: createdOrder.deliveryName || '',
+      deliveryContactName: createdOrder.deliveryContactName || '',
+      deliveryContactPhone: createdOrder.deliveryContactPhone || '',
+      priceSnapshot: createdOrder.priceSnapshot as IPriceSnapshot,
+      createdBy: createdOrder.createdBy || '',
+      createdBySnapshot: createdOrder.createdBySnapshot as IUserSnapshot,
+      updatedBy: createdOrder.updatedBy || '',
+      updatedBySnapshot: createdOrder.updatedBySnapshot as IUserSnapshot,
     };
 
     return NextResponse.json(responseData, { status: 201 });

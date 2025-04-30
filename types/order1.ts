@@ -114,14 +114,14 @@ export interface IOrder {
   pickupName: string;
   pickupContactName: string;
   pickupContactPhone: string;
-  pickupSnapshot: IAddressSnapshot;
+  pickupAddressSnapshot: IAddressSnapshot;
 
   deliveryAddressId: string;
   deliveryAddressDetail: string;
   deliveryName: string;
   deliveryContactName: string;
   deliveryContactPhone: string;  
-  deliverySnapshot: IAddressSnapshot; 
+  deliveryAddressSnapshot: IAddressSnapshot; 
 
   //일정 정보
   pickupDate: string;
