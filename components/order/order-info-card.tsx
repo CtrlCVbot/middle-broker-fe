@@ -3,7 +3,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Truck, Home, Phone, Building2, Calendar } from "lucide-react";
+import { Truck, Home, Phone, Building2, Building, Factory, Calendar, User, MapPinHouse, Map } from "lucide-react";
 
 interface LocationInfoProps {
   title: string;
@@ -29,49 +29,55 @@ function LocationInfo({
   isDeparture = false
 }: LocationInfoProps) {
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
+    <>
+    <Card className="h-full bg-muted/20">
+      <CardHeader >
         <CardTitle className="text-sm md:text-base flex items-center">
           {isDeparture ? (
-            <Truck className="h-4 w-4 mr-2 text-blue-500" />
+            <Map className="h-4 w-4 mr-2 text-blue-500" />
           ) : (
-            <Home className="h-4 w-4 mr-2 text-green-500" />
+            <Map className="h-4 w-4 mr-2 text-green-500" />
           )}
           {title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2 pt-0 text-sm">
+      <CardContent className="space-y-2 pt-0 text-md">
+
         <div className="flex">
-          <div className="w-20 text-muted-foreground">주소</div>
+          {/* <div className="w-20 text-muted-foreground">회사</div> */}
+          <div className="flex-1 font-medium flex items-center">
+            <Factory className="h-4 w-4 mr-1 text-muted-foreground" />
+            {company}
+          </div>
+        </div>
+
+        <div className="flex">
+          {/* <div className="w-20 text-muted-foreground">주소</div> */}
           <div className="flex-1 font-medium">
+            <MapPinHouse className="inline h-4 w-4 mr-1 text-muted-foreground" />
             {address}
             {detailedAddress && (
-              <div className="text-xs text-muted-foreground mt-1">{detailedAddress}</div>
+              <div className="text-xs text-muted-foreground mt-1 ml-5">{detailedAddress}</div>
             )}
           </div>
         </div>
         
         <div className="flex">
-          <div className="w-20 text-muted-foreground">담당자</div>
-          <div className="flex-1 font-medium flex items-center">
+          {/* <div className="w-20 text-muted-foreground">담당자</div> */}
+          <div className="flex-1 font-medium ">
+            <User className="inline h-4 w-4 mr-1 text-muted-foreground" />
             {name}
-            <Phone className="h-3 w-3 ml-3 mr-1 text-muted-foreground" />
+            <Phone className="inline h-4 w-4 ml-3 mr-1 text-muted-foreground" />
             <span className="text-xs">{contact}</span>
           </div>
         </div>
         
-        <div className="flex">
-          <div className="w-20 text-muted-foreground">회사</div>
-          <div className="flex-1 font-medium flex items-center">
-            <Building2 className="h-3 w-3 mr-1 text-muted-foreground" />
-            {company}
-          </div>
-        </div>
+        
         
         <div className="flex">
-          <div className="w-20 text-muted-foreground">
+          {/* <div className="w-20 text-muted-foreground">
             {isDeparture ? "출발시간" : "도착시간"}
-          </div>
+          </div> */}
           <div className="flex-1 font-medium flex items-center">
             <Calendar className="h-3 w-3 mr-1 text-muted-foreground" />
             <span>{date} {time}</span>
@@ -79,6 +85,9 @@ function LocationInfo({
         </div>
       </CardContent>
     </Card>
+
+    
+    </>
   );
 }
 
@@ -108,7 +117,7 @@ export function OrderInfoCard({ departure, destination, className }: OrderInfoCa
   return (
     <div className={cn("grid grid-cols-1 md:grid-cols-2 gap-4", className)}>
       <LocationInfo
-        title="출발지 정보"
+        title="상차지 정보"
         address={departure.address}
         detailedAddress={departure.detailedAddress}
         name={departure.name}

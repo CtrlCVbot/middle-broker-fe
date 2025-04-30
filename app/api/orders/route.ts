@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const page = Number(searchParams.get('page')) || 1;
     const pageSize = Number(searchParams.get('pageSize')) || 10;
     const offset = (page - 1) * pageSize;
-
+    
     // 필터 파라미터
     const keyword = searchParams.get('keyword') || '';
     const flowStatus = searchParams.get('flowStatus') as OrderFlowStatus | '';
@@ -36,7 +36,9 @@ export async function GET(request: NextRequest) {
         or(
           ilike(orders.cargoName, `%${keyword}%`),
           ilike(orders.pickupName, `%${keyword}%`),
-          ilike(orders.deliveryName, `%${keyword}%`)
+          ilike(orders.deliveryName, `%${keyword}%`),
+          sql`${orders.pickupAddressSnapshot}->>'roadAddress' ILIKE ${`%${keyword}%`}`,
+          sql`${orders.deliveryAddressSnapshot}->>'roadAddress' ILIKE ${`%${keyword}%`}`
         )
       );
     }
@@ -65,11 +67,16 @@ export async function GET(request: NextRequest) {
     }
 
     if (startDate) {
-      conditions.push(sql`${orders.createdAt} >= ${new Date(startDate)}`);
+      const formatDateOnly = (date: Date) => date.toISOString().split('T')[0];
+      const formattedStartDate = formatDateOnly(new Date(startDate));
+      conditions.push(sql`${orders.pickupDate} >= ${formattedStartDate}`);
+      console.log("startDate:", startDate);
     }
 
     if (endDate) {
-      conditions.push(sql`${orders.createdAt} <= ${new Date(endDate)}`);
+      const formatDateOnly = (date: Date) => date.toISOString().split('T')[0];
+      const formattedEndDate = formatDateOnly(new Date(endDate));
+      conditions.push(sql`${orders.pickupDate} <= ${formattedEndDate}`);
     }
 
     if (companyId) {
@@ -128,7 +135,7 @@ export async function GET(request: NextRequest) {
     //   createdAt: order.createdAt?.toISOString(),
     //   updatedAt: order.updatedAt?.toISOString()
     // }));
-
+    
     return NextResponse.json({
       data: result,
       total,

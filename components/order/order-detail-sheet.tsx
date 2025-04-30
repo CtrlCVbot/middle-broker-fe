@@ -17,8 +17,8 @@ import { useOrderDetailStore } from "@/store/order-detail-store";
 import { fetchOrderDetail } from "@/services/order-service";
 import { mapBackendOrderToFrontendOrder } from "@/utils/data-mapper";
 import { handleApiError } from "@/utils/api-error-handler";
-// IOrderDetail 타입 임포트 추가
-import { IOrderDetail } from "@/utils/mockdata/mock-orders-detail";
+// IOrder 타입 임포트 추가
+import { IOrder, OrderFlowStatus } from "@/types/order1";
 import { IOrderLog } from "@/types/order";
 
 import { OrderProgress } from "./order-progress";
@@ -28,11 +28,61 @@ import { OrderActionButtons } from "./order-action-buttons";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatCurrency } from "@/lib/utils";
-import { CalendarClock, AlertTriangle } from "lucide-react";
-import { format } from "date-fns";
+import { CalendarClock, AlertTriangle, Package, Truck } from "lucide-react";
+import { format, parseISO } from "date-fns";
 import { ko } from "date-fns/locale";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Button } from "../ui/button";
+import { getStatusBadge } from "./order-table-ver01";
 
-// TODO: 화물 상세 정보 타입 정의를 별도 파일로 분리하고 필요에 따라 백엔드 응답 구조와 매핑하는 로직 추가
+// UI 표시를 위한 인터페이스 정의 (백엔드 데이터를 UI에 맞게 변환)
+interface OrderDetailForUI {
+  orderNumber: string;
+  status: OrderFlowStatus;
+  statusProgress: OrderFlowStatus;
+  registeredAt: string;
+  amount: string;
+  
+  departure: {
+    address: string;
+    detailedAddress: string;
+    name: string;
+    company: string;
+    contact: string;
+    time: string;
+    date: string;
+  };
+  
+  destination: {
+    address: string;
+    detailedAddress: string;
+    name: string;
+    company: string;
+    contact: string;
+    time: string;
+    date: string;
+  };
+  
+  cargo: {
+    name: string;
+    type: string;
+    weight: string | null;
+    options: string[];
+    remark: string;
+  };
+  
+  vehicle: {
+    type: string;
+    weight: string;
+    licensePlate: string;
+    driver: {
+      name: string;
+      contact: string;
+    };
+  };
+  
+  logs: IOrderLog[];
+}
 
 export function OrderDetailSheet() {
   const { 
@@ -52,8 +102,6 @@ export function OrderDetailSheet() {
     error 
   } = useQuery({
     queryKey: ["orderDetail", selectedOrderId],
-    // 기존 모크 데이터 임포트 주석 처리
-    // queryFn: () => selectedOrderId ? getOrderDetailById(selectedOrderId) : Promise.reject("화물 ID가 없습니다."),    
     queryFn: async () => {
       try {
         if (!selectedOrderId) {
@@ -63,51 +111,48 @@ export function OrderDetailSheet() {
         // API 호출
         const response = await fetchOrderDetail(selectedOrderId);
         console.log('상세 정보 API 응답:', response);
-        
-        // 응답 데이터 매핑 - 기존의 세부 데이터 구조와 호환되도록 추가 매핑 필요
-        // 현재는 기본 정보만 매핑하고 있어 화면 표시에 제한이 있을 수 있음
-        //const mappedOrder = mapBackendOrderToFrontendOrder(response);
-        const mappedOrder = response;        
-        console.log('매핑된 주문 정보:', mappedOrder);
-
-        // IOrderDetail 형식에 맞게 데이터 변환
-        const orderDetail: IOrderDetail = {
-          orderNumber: mappedOrder.id,
-          status: mappedOrder.flowStatus,
-          statusProgress: mappedOrder.flowStatus,
-          registeredAt: format(new Date(mappedOrder.createdAt), "yyyy-MM-dd HH:mm", { locale: ko }),
-          amount: formatCurrency(mappedOrder.estimatedPriceAmount) + "원",
+        console.log('상세 정보 API 응답1:', response.createdAt);
+        // 백엔드 응답을 UI 표시용 객체로 변환
+        const orderDetail: OrderDetailForUI = {
+          orderNumber: response.id,
+          status: response.flowStatus,
+          statusProgress: response.flowStatus,
+          registeredAt: format(new Date(response.createdAt), "yyyy-MM-dd HH:mm", { locale: ko }),
+          amount: formatCurrency(response.estimatedPriceAmount) + "원",
           
           departure: {
-            address: mappedOrder.pickupAddressSnapshot.name,
+            address: response.pickupAddressSnapshot?.roadAddress || "-",
+            detailedAddress: response.pickupAddressSnapshot?.detailAddress || "-",
             name: response.pickupContactName || "-",
             company: response.pickupName || "-",
             contact: response.pickupContactPhone || "-",
-            time: format(new Date(mappedOrder.pickupTime), "HH:mm", { locale: ko }),
-            date: format(new Date(mappedOrder.pickupDate), "yyyy-MM-dd", { locale: ko }),
+            time: response.pickupTime,
+            date: format(new Date(response.pickupDate), "yyyy-MM-dd", { locale: ko }),
           },
           
           destination: {
-            address: mappedOrder.deliveryAddressSnapshot.name,
+            address: response.deliveryAddressSnapshot?.roadAddress || "-",
+            detailedAddress: response.deliveryAddressSnapshot?.detailAddress || "-",
             name: response.deliveryContactName || "-",
             company: response.deliveryName || "-",
             contact: response.deliveryContactPhone || "-",
-            time: format(new Date(mappedOrder.deliveryTime), "HH:mm", { locale: ko }),
-            date: format(new Date(mappedOrder.deliveryDate), "yyyy-MM-dd", { locale: ko }),
+            time: response.deliveryTime,
+            date: format(new Date(response.deliveryDate), "yyyy-MM-dd", { locale: ko }),
           },
           
           cargo: {
-            type: response.cargoName || "-",
-            weight: mappedOrder.cargoWeight,
+            name: response.cargoName || "-",
+            type: response.requestedVehicleType || "",
+            weight: response.requestedVehicleWeight || null,
             options: response.transportOptions ? Object.entries(response.transportOptions)
               .filter(([_, value]) => value === true)
               .map(([key]) => key) : [],
-            remark: response.memo || "-",
+            remark: response.memo || "",
           },
           
           vehicle: {
-            type: mappedOrder.requestedVehicleType,
-            weight: mappedOrder.requestedVehicleWeight,
+            type: response.requestedVehicleType || "-",
+            weight: response.requestedVehicleWeight || "-",
             licensePlate: "-", // 백엔드 데이터에 없음
             driver: {
               name: "-",
@@ -115,10 +160,10 @@ export function OrderDetailSheet() {
             },
           },
           
-          // 로그 정보 - 현재는 샘플 데이터
+          // 로그 정보 - 현재는 생성일자 기준 샘플 데이터
           logs: [
             {
-              status: mappedOrder.status,
+              status: response.flowStatus,
               time: format(new Date(response.createdAt), "HH:mm", { locale: ko }),
               date: format(new Date(response.createdAt), "yyyy-MM-dd", { locale: ko }),
               handler: response.contactUserSnapshot?.name || "-",
@@ -149,7 +194,7 @@ export function OrderDetailSheet() {
     }
     
     if (orderData) {
-      setOrderDetail(orderData);
+      setOrderDetail(orderData as any);
     }
   }, [orderData, isLoading, isError, error, setLoading, setError, setOrderDetail]);
   
@@ -191,13 +236,13 @@ export function OrderDetailSheet() {
           // 데이터 로드 완료
           <ScrollArea className="h-full max-h-screen">
             {/* 헤더 - 기본 정보 */}
-            <SheetHeader className="px-6 py-4 sticky top-0 bg-background z-10 border-b">
+            {/* <SheetHeader className="px-6 py-4 sticky top-0 bg-background z-10 border-b">
               <div className="flex items-center justify-between">
                 <SheetTitle className="text-xl font-bold">
                   화물 번호: {orderData.orderNumber}
                 </SheetTitle>
                 <Badge 
-                  variant={orderData.status === "운송마감" ? "default" : "secondary"}
+                  variant={orderData.status === "운송완료" ? "default" : "secondary"}
                   className="text-sm px-3 py-1"
                 >
                   {orderData.status}
@@ -212,97 +257,141 @@ export function OrderDetailSheet() {
                   운송비: {orderData.amount}
                 </p>
               </div>
+            </SheetHeader> */}
+            <SheetHeader className="py-4 border-b sticky top-0 bg-background">
+              
+              <div className="flex justify-between items-center  bg-muted/30">
+                <div className="text-sm text-muted-foreground">
+                  <span className="font-semibold text-primary mr-2">화물 #{orderData.orderNumber.slice(0, 8)}</span>
+                  {/* <Badge>{orderData.status}</Badge> */}
+                  {getStatusBadge(orderData.status)}
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="font-semibold text-lg mr-10">{orderData.amount}</span>                  
+                </div>
+              </div>
             </SheetHeader>
             
             <div className="px-6 py-4 space-y-6">
               {/* 배차 상태 Progress */}
-              <div>
-                <h3 className="text-base font-medium mb-3">배차 진행 상태</h3>
-                <OrderProgress currentStatus={orderData.statusProgress} />
+              <div>                
+                <OrderProgress currentStatus={orderData.statusProgress as any} />
               </div>
               
               <Separator />
               
               {/* 출발지 및 도착지 정보 */}
               <div>
-                <h3 className="text-base font-medium mb-3">운송 정보</h3>
+                {/* <h3 className="text-base font-medium mb-3">운송 정보</h3> */}
                 <OrderInfoCard 
                   departure={orderData.departure} 
                   destination={orderData.destination} 
                 />
+
+                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-muted/30 rounded-md p-4">
+                  <div>
+                    <p className="text-muted-foreground">상차지</p>
+                    <p className="font-medium">{orderData.departure.address}</p>
+                    <p className="text-xs text-muted-foreground">{orderData.departure.date}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">하차지</p>
+                    <p className="font-medium">{orderData.destination.address}</p>
+                    <p className="text-xs text-muted-foreground">{orderData.destination.date}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">차량</p>
+                    <p>{orderData.vehicle.type} / {orderData.vehicle.licensePlate}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">운전자</p>
+                    <p>{orderData.vehicle.driver.name} ({orderData.vehicle.driver.contact})</p>
+                  </div>
+                </div> */}
+                
               </div>
               
               <Separator />
               
               {/* 화물 정보 및 차량 정보 */}
+              <div className="px-0">
+                
+              </div>
+
+              <div className="px-0">
+                
+              </div>
+
               <div>
-                <h3 className="text-base font-medium mb-3">화물 및 차량 정보</h3>
+                {/* <h3 className="text-base font-medium mb-3">화물 및 차량 정보</h3> */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* 화물 정보 */}
-                  <div className="space-y-2 bg-secondary/30 rounded-md p-3">
-                    <h4 className="font-medium">화물 정보</h4>
-                    <div className="grid grid-cols-3 gap-2 text-sm">
-                      <div className="text-muted-foreground">화물 종류</div>
-                      <div className="col-span-2 font-medium">{orderData.cargo.type}</div>
-                      
-                      {orderData.cargo.weight && (
-                        <>
-                          <div className="text-muted-foreground">중량</div>
-                          <div className="col-span-2 font-medium">{orderData.cargo.weight}</div>
-                        </>
-                      )}
-                      
-                      {orderData.cargo.options && orderData.cargo.options.length > 0 && (
-                        <>
-                          <div className="text-muted-foreground">옵션</div>
-                          <div className="col-span-2 font-medium">
-                            {orderData.cargo.options.join(", ")}
-                          </div>
-                        </>
-                      )}
-                      
-                      {orderData.cargo.remark && (
-                        <>
-                          <div className="text-muted-foreground">비고</div>
-                          <div className="col-span-2 font-medium text-xs">
-                            {orderData.cargo.remark}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
+                  <Card className="bg-muted/20 text-md">
+                    <CardHeader >
+                      <CardTitle className="text-sm md:text-base flex items-center">
+                        <Package className="h-4 w-4 mr-2 text-muted-foreground" />
+                        화물 정보 
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 pt-0 text-md">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-y-1">
+                        <div className="text-muted-foreground">품목</div>
+                        <div className="font-medium col-span-2">{orderData.cargo.name}</div>
+
+                        <div className="text-muted-foreground">중량/종류</div>
+                        <div className="font-medium col-span-2">{orderData.cargo.weight} / {orderData.cargo.type}</div>
+
+                        {orderData.cargo.options.length > 0 && (
+                          <>
+                            <div className="text-muted-foreground">옵션</div>
+                            <div className="font-medium col-span-2">{orderData.cargo.options.join(', ')}</div>
+                          </>
+                        )}
+
+                        {orderData.cargo.remark && (
+                          <>
+                            <div className="text-muted-foreground">비고</div>
+                            <div className="font-medium col-span-2 text-xs">{orderData.cargo.remark}</div>
+                          </>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
                   
                   {/* 차량 정보 */}
-                  <div className="space-y-2 bg-secondary/30 rounded-md p-3">
-                    <h4 className="font-medium">차량 정보</h4>
-                    <div className="grid grid-cols-3 gap-2 text-sm">
-                      <div className="text-muted-foreground">차량 종류</div>
-                      <div className="col-span-2 font-medium">{orderData.vehicle.type}</div>
-                      
-                      {orderData.vehicle.licensePlate && (
-                        <>
-                          <div className="text-muted-foreground">차량 번호</div>
-                          <div className="col-span-2 font-medium">{orderData.vehicle.licensePlate}</div>
-                        </>
-                      )}
-                      
-                      {orderData.vehicle.driver && (
-                        <>
-                          <div className="text-muted-foreground">운전자</div>
-                          <div className="col-span-2 font-medium">
-                            {orderData.vehicle.driver.name} ({orderData.vehicle.driver.contact})
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
+                  <Card className="text-md">
+                    <CardHeader >
+                        <CardTitle className="text-sm md:text-base flex items-center">
+                          <Truck className="h-4 w-4 mr-2 text-muted-foreground" />
+                          차량 정보
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-2 pt-0 text-md">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-y-1">
+                          <div className="text-muted-foreground">차주</div>
+                          <div className="font-medium col-span-2">{orderData.vehicle.driver.name}/{orderData.vehicle.licensePlate}</div>
+
+                          <div className="text-muted-foreground">중량/종류</div>
+                          <div className="font-medium col-span-2">{orderData.vehicle.weight} / {orderData.vehicle.type}</div>
+
+                          <div className="text-muted-foreground">연락처</div>
+                          <div className="font-medium col-span-2">{orderData.vehicle.driver.contact}</div>
+
+                        </div>
+                      </CardContent>
+                    </Card>
                 </div>
               </div>
               
               <Separator />
               
-              {/* 화물 상태 변화 로그 */}
-              <OrderStatusLog logs={orderData.logs} />
+
+              <div className="px-6 py-4">
+                <h4 className="text-sm font-semibold mb-2">상태 로그</h4>
+                <OrderStatusLog logs={orderData.logs.slice(0, 3)} />
+                {orderData.logs.length > 3 && <Button variant="link" size="sm">+ 더보기</Button>}
+              </div>
+              
             </div>
             
             {/* 푸터 - 액션 버튼 */}

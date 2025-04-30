@@ -2,16 +2,12 @@
 
 import React from "react";
 import { Progress } from "@/components/ui/progress";
-import { 
-  OrderStatusType,
-  ORDER_STATUS,
-  getProgressPercentage, 
-  isStatusAtLeast 
-} from "@/types/order";
+
+import { ORDER_FLOW_STATUSES, OrderFlowStatus, getProgressPercentage, isStatusAtLeast } from "@/types/order1";
 import { cn } from "@/lib/utils";
 
 interface OrderProgressProps {
-  currentStatus: OrderStatusType;
+  currentStatus: OrderFlowStatus;
   className?: string;
 }
 
@@ -43,7 +39,7 @@ export function OrderProgress({ currentStatus, className }: OrderProgressProps) 
         </div>
       ) : (
         <div className="flex justify-between text-xs md:text-sm mt-2">
-          {ORDER_STATUS.map((status) => {
+          {ORDER_FLOW_STATUSES.map((status) => {
             const isActive = isStatusAtLeast(currentStatus, status);
             const isCurrent = currentStatus === status;
             

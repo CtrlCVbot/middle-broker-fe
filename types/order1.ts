@@ -1,5 +1,6 @@
 // 화주 화물 관리 시스템 타입 정의
 import { IAddress } from './address';
+import { OrderStatusType } from './order';
 // 화물 상태 타입 정의
 export const ORDER_FLOW_STATUSES = [
   '운송요청',
@@ -264,3 +265,21 @@ export interface IOrderListResponse {
   data: IOrder[];
   pagination: IOrderPagination;
 } 
+
+// 배차 상태 진행도를 계산하는 함수
+export const getProgressPercentage = (currentStatus: OrderFlowStatus): number => {
+  const currentIndex = ORDER_FLOW_STATUSES.indexOf(currentStatus);
+  if (currentIndex === -1) return 0;
+  
+  return (currentIndex / (ORDER_FLOW_STATUSES.length - 1)) * 100;
+};
+
+// 배차 상태가 특정 상태 이상인지 확인하는 함수
+export const isStatusAtLeast = (currentStatus: OrderFlowStatus, targetStatus: OrderFlowStatus): boolean => {
+  const currentIndex = ORDER_FLOW_STATUSES.indexOf(currentStatus);
+  const targetIndex = ORDER_FLOW_STATUSES.indexOf(targetStatus);
+  
+  if (currentIndex === -1 || targetIndex === -1) return false;
+  
+  return currentIndex >= targetIndex;
+};

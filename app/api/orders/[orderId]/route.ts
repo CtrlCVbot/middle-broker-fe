@@ -153,7 +153,7 @@ export async function GET(
     // };
 
     return NextResponse.json(
-      { data: order }
+      order
     );
   } catch (error) {
     console.error('화물 상세 조회 중 오류 발생:', error);
