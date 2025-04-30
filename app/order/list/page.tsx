@@ -15,8 +15,10 @@ import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/com
 import { useOrderStore } from "@/store/order-store";
 import { getOrdersByPage } from "@/utils/mockdata/mock-orders";
 import { OrderSearch } from "@/components/order/order-search";
-import { OrderTable } from "@/components/order/order-table";
-import { OrderCard } from "@/components/order/order-card";
+//import { OrderTable } from "@/components/order/order-table";
+import { OrderTable } from "@/components/order/order-table-ver01";
+//import { OrderCard } from "@/components/order/order-card";
+import { OrderCard } from "@/components/order/order-card-ver01";
 import { OrderDetailSheet } from "@/components/order/order-detail-sheet";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
