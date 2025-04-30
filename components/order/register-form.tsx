@@ -657,35 +657,39 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
   return (
     <>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-0">
+        <form onSubmit={form.handleSubmit(handleFormSubmit)}>
 
-          <div className="flex items-center justify-between py-4 grid grid-rows-2 gap-0">
-            <h1 className="text-2xl font-semibold">{editMode  ? (
-                    <>화물 수정 - #{orderNumber}  </> 
-                  ) : (
-                    <>화물 등록</>
-                  )}
-            </h1>
-            
-            {editMode ? (
-              <div className="text-sm text-muted-foreground">화물 정보를 수정하세요. 배차 상태에 따라 수정 가능한 항목이 제한될 수 있습니다.</div>
-            ) : (
-              <div className="text-sm text-muted-foreground">운송할 화물 정보를 입력하고 등록해주세요.</div>
-            )}
+          {/* 헤더 영역 */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-4 gap-2">
+            <div>
+              <h1 className="text-2xl font-semibold">{editMode  ? (
+                      <>운송 정보 수정 - #{orderNumber}  </> 
+                    ) : (
+                      <>운송 요청</>
+                    )}
+              </h1>
+              
+              {editMode ? (
+                <div className="text-sm text-muted-foreground mt-1">요청한 운송 정보를 수정하세요. 배차 상태에 따라 수정 가능한 항목이 제한될 수 있습니다.</div>
+              ) : (
+                <div className="text-sm text-muted-foreground mt-1">운송 요청할 화물 정보를 입력하고 등록해주세요.</div>
+              )}            
 
-            {editMode && originalData && (
-              <div className="flex items-center mt-4">  
-                <StatusFlow currentStatus={originalData.status} />
-              </div>               
-            )}
+              {editMode && originalData && (
+                <div className="flex items-center mt-4">  
+                  <StatusFlow currentStatus={originalData.status} />
+                </div>               
+              )}
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">              
-            {/* 중간: 출발지/도착지 정보 카드 */}
-            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-              
+          {/* 본문 영역 */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">          
 
-              {/* 출발지 정보 Copy*/}
+            {/* 중간: 출발지/도착지 정보 카드 */}
+            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">              
+
+              {/* 상차지 정보*/}
               <Card>                
                 <CardContent>
                   <LocationFormVer01
@@ -699,7 +703,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                 </CardContent>
               </Card>
 
-              {/* 도착지 정보 Copy*/}
+              {/* 하차지 정보 Copy*/}
               <Card>                
                 <CardContent>
                   <LocationFormVer01
@@ -960,6 +964,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                 </Button>
               )}
             </div>
+
           </div>
         </form>
       </Form>

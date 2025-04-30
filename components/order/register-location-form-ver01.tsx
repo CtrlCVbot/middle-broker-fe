@@ -39,7 +39,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
   type, 
   locationInfo, 
   onChange, 
-  //title = type === 'departure' ? '출발지 정보' : '도착지 정보',
+  //title = type === 'departure' ? '상차지 정보' : '하차지 정보',
   compact = false,
   disabled = false,
   onDisabledClick
@@ -125,8 +125,8 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
 
     // 타입별 시간 오프셋 (단위: 시간)
     const timeOffsetByType: Record<'departure' | 'destination', number> = {
-      departure: 3,    // 출발: 현재 + 3시간
-      destination: 4,  // 도착: 현재 + 4시간
+      departure: 3,    // 상차: 현재 + 3시간
+      destination: 4,  // 하차: 현재 + 4시간
     };
 
     // 선택한 타입에 따라 미래 시간 계산
@@ -385,7 +385,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
         ) : (
           <div className="flex flex-col items-center justify-center py-8 border border-dashed rounded-md bg-muted/30">
             <Map className="h-10 w-10 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground mb-4">{type === 'departure' ? '출발지' : '도착지'} 주소를 검색해주세요</p>
+            <p className="text-sm text-muted-foreground mb-4">{type === 'departure' ? '상차지' : '하차지'} 주소를 검색해주세요</p>
             <div className="flex gap-2">
               {/* 주소 검색 버튼 주석 처리 - 나중에 사용할지도. 삭제하지 말자!*/}
               {/* <Button 
@@ -486,7 +486,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
             <div className="flex items-center gap-2">
               {/* <CalendarIcon className="h-5 w-5 mb-2" /> */}
               <div className="text-sm font-medium mb-2">
-                {type === 'departure' ? '출발일' : '도착일'} <span className="text-destructive">*</span>
+                {type === 'departure' ? '상차일' : '하차일'} <span className="text-destructive">*</span>
               </div>
             </div>
             <Popover>
@@ -521,7 +521,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
             <div className="flex items-center gap-2">
               {/* <Clock className="h-5 w-5 mb-2" /> */}
               <div className="text-sm font-medium mb-2">
-                {type === 'departure' ? '출발 시간' : '도착 시간'} <span className="text-destructive">*</span>
+                {type === 'departure' ? '상차 시간' : '하차 시간'} <span className="text-destructive">*</span>
               </div>
             </div>
             <Input

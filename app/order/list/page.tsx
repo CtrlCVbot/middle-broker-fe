@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { StatusFlow } from "@/components/order/status-badge";
 
 
 export default function OrderListPage() {
@@ -91,8 +92,7 @@ export default function OrderListPage() {
 
   return (
     <>
-      
-      <header className="flex h-16 shrink-0 items-center gap-2">
+      <header className="flex h-16 shrink-0 items-center gap-2 border-b">
         <div className="flex items-center gap-2 px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator
@@ -106,78 +106,116 @@ export default function OrderListPage() {
                   홈
                 </BreadcrumbLink>
               </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />              
+             
+              <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>화물 현황</BreadcrumbPage>
+                <BreadcrumbPage>운송 목록</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </div>
       </header>
-      <main className="flex flex-1 flex-col p-4 pt-0">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div> 
-              <CardTitle>화물 현황</CardTitle>
-              <CardDescription>화물 목록을 확인할 수 있습니다.</CardDescription>
+      
+      {/* 데스크톱 환경에서는 2단 컬럼 레이아웃으로 표시 */}
+      {/* <main className="flex flex-1 flex-col p-4 pt-0"> */}
+      <main className="min-h-screen flex flex-col items-center pt-4">
+        <div className="container">
+          <div className="flex flex-col space-y-4">
+
+            {/* 헤더 영역 */}
+            {/* <div className="flex items-center justify-between py-4 grid grid-rows-2 gap-0">
+              <h1 className="text-2xl font-semibold">
+                운송 목록
+              </h1>              
+              <div className="text-sm text-muted-foreground mt-0">배차 요청한 화물의 운송 현황을 확인할 수 있습니다.</div>
+            </div> */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-4 gap-2">
+              <div>
+                <h1 className="text-2xl font-semibold">운송 목록</h1>
+                <p className="text-sm text-muted-foreground mt-1">배차 요청한 화물의 운송 현황을 확인할 수 있습니다.</p>
+              </div>
+              <ToggleGroup type="single" className="flex gap-1" value={viewMode} onValueChange={(value: string) => value && setViewMode(value as 'table' | 'card')}>
+                <ToggleGroupItem value="table" aria-label="테이블 보기">
+                  <ListFilter className="h-4 w-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="card" aria-label="카드 보기">
+                  <Grid3x3 className="h-4 w-4" />
+                </ToggleGroupItem>
+              </ToggleGroup>
+              {/* 추후 버튼 추가 자리 확보 */}
             </div>
-            <ToggleGroup type="single" value={viewMode} onValueChange={(value: string) => value && setViewMode(value as 'table' | 'card')}>
-              <ToggleGroupItem value="table" aria-label="테이블 보기">
-                <ListFilter className="h-4 w-4" />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="card" aria-label="카드 보기">
-                <Grid3x3 className="h-4 w-4" />
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </CardHeader>
-          <CardContent>
-            {/* 검색 필터 */}
-            <OrderSearch />
+          
 
-            {/* 로딩 상태 */}
-            {isLoading && (
-              <div className="py-12 text-center text-lg text-muted-foreground">
-                데이터를 불러오는 중...
-              </div>
-            )}
+            {/* 본문 영역 */}
+            <div className="gap-4">  
+              <Card>
+                {/* <CardHeader className="flex flex-row items-center justify-between">
+                  <div> 
+                    <CardTitle>화물 현황</CardTitle>
+                    <CardDescription>화물 목록을 확인할 수 있습니다.</CardDescription>
+                  </div>                
+                </CardHeader> */}
 
-            {/* 에러 상태 */}
-            {isError && (
-              <div className="py-12 text-center text-lg text-red-500">
-                데이터 조회 중 오류가 발생했습니다.
-                <Button
-                  variant="outline"
-                  className="ml-2"
-                  onClick={() => refetch()}
-                >
-                  다시 시도
-                </Button>
-              </div>
-            )}
+                <CardContent>
+                  {/* 검색 필터 */}
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <OrderSearch />                    
+                  </div>
 
-            {/* 데이터 표시 */}
-            {!isLoading && !isError && data && (
-              <>
-                {/* 뷰 모드에 따라 테이블 또는 카드 형태로 표시 */}
-                {viewMode === "table" ? (
-                  <OrderTable
-                    orders={data.data}
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                  />
-                ) : (
-                  <OrderCard
-                    orders={data.data}
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                  />
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
+                  {/* 로딩 상태 */}
+                  {isLoading ? (
+                    <div className="py-12 text-center text-lg text-muted-foreground">
+                      데이터를 불러오는 중...
+                    </div>
+                  ) : isError ? (
+                    // 에러 상태
+                    <div className="py-12 text-center text-lg text-red-500">
+                      데이터 조회 중 오류가 발생했습니다.
+                      <Button
+                        variant="outline"
+                        className="ml-2"
+                        onClick={() => refetch()}
+                      >
+                        다시 시도
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      {/* 데이터 표시 */}                      
+                      {data?.data.length === 0 ? (
+                        <div className="py-16 text-center text-muted-foreground">
+                          등록된 운송 요청이 없습니다.
+                        </div>
+                      ) : (
+                        //뷰 모드에 따라 테이블 또는 카드 형태로 표시
+                        viewMode === "table" ? (
+                          <OrderTable
+                            orders={data?.data || []}
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                          />
+                        ) : (
+                          <OrderCard
+                            orders={data?.data || []}
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                          />
+                        )
+                      )}
+                    </>
+                  )}
+
+                 
+                </CardContent>
+
+              </Card>
+            </div>
+
+          </div>
+        </div>
         
         {/* 화물 상세 정보 모달 */}
         <OrderDetailSheet />

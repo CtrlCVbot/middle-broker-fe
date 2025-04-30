@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { format } from "date-fns";
 import {
   Table,
   TableBody,
@@ -20,6 +21,7 @@ import {
 import { IOrder } from "@/types/order";
 import { formatCurrency } from "@/lib/utils";
 import { useOrderDetailStore } from "@/store/order-detail-store";
+import { ko } from "date-fns/locale";
 
 // 화물 상태에 따른 배지 색상 설정
 const getStatusBadge = (status: string) => {
@@ -40,6 +42,10 @@ const getStatusBadge = (status: string) => {
       return <Badge variant="outline">{status}</Badge>;
   }
 };
+const getDateTimeformat = (date: string) => {
+  const dateObj = new Date(date);
+  return format(dateObj, "MM.dd (E) HH:mm", { locale: ko });
+}
 
 interface OrderTableProps {
   orders: IOrder[];
@@ -88,8 +94,8 @@ export function OrderTable({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border">
-        <Table>
+      <div className="rounded-md border overflow-x-auto">
+        <Table className="min-w-[900px]">
           <TableHeader>
             <TableRow>
               <TableHead className="w-[120px]">화물 ID</TableHead>
@@ -123,11 +129,11 @@ export function OrderTable({
                   <TableCell className="max-w-[200px] truncate" title={order.departureLocation}>
                     {order.departureLocation}
                   </TableCell>
-                  <TableCell>{order.departureDateTime}</TableCell>
+                  <TableCell>{getDateTimeformat(order.departureDateTime)}</TableCell>
                   <TableCell className="max-w-[200px] truncate" title={order.arrivalLocation}>
                     {order.arrivalLocation}
                   </TableCell>
-                  <TableCell>{order.arrivalDateTime}</TableCell>
+                  <TableCell>{getDateTimeformat(order.arrivalDateTime)}</TableCell>
                   <TableCell>
                     {order.vehicle.type} {order.vehicle.weight}
                   </TableCell>

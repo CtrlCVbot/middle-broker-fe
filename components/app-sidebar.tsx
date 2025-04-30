@@ -57,39 +57,42 @@ export const data = {
       isActive: true,
     },
     
-    
-    {
-      title: "화물 현황",
-      url: "/order/list",
-      icon: Truck,
-      items: [
-        {
-          title: "화물 목록",
-          url: "/order/list",
-        },
-        {
-          title: "화물 등록",
-          url: "/order/register",
-        }
-      ],
-    },
-    {
-      title: "화물 등록",
-      url: "/order/register",
-      icon: PackagePlus,
-    },
-    
-    {
-      title: "정산 현황",
-      url: "/settlement/list",
-      icon: CreditCard,
-    },
-
     {
       title: "주소록",
       url: "/address",
       icon: NotebookTabs,
     },
+
+    {
+      title: "운송 요청",
+      url: "/order/register",
+      icon: PackagePlus,
+    },
+
+    {
+      title: "운송 현황",
+      url: "/order/list",
+      icon: Truck,
+      items: [
+        {
+          title: "운송 목록",
+          url: "/order/list",
+        },
+        {
+          title: "운송 요청",
+          url: "/order/register",
+        }
+      ],
+    },
+    
+    
+    {
+      title: "운송 정산",
+      url: "/settlement/list",
+      icon: CreditCard,
+    },
+
+    
 
     {
       title: "대시보드",
