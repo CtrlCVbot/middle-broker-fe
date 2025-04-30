@@ -140,8 +140,8 @@ export function OrderTable({
                   <TableCell className="max-w-[200px] truncate" title={order.arrivalLocation}>
                     {order.arrivalLocation}
                   </TableCell>
-                  <TableCell>{getDateTimeformat(order.departureDateTime)}</TableCell>                  
-                  <TableCell>{getDateTimeformat(order.arrivalDateTime)}</TableCell>
+                  <TableCell>{order.departureDateTime}</TableCell>                  
+                  <TableCell>{order.arrivalDateTime}</TableCell>
                   <TableCell>
                     {order.vehicle.type} {order.vehicle.weight}
                   </TableCell>

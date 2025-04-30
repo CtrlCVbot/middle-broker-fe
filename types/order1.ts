@@ -37,7 +37,56 @@ export const ORDER_VEHICLE_WEIGHTS = [
 export type OrderVehicleWeight = typeof ORDER_VEHICLE_WEIGHTS[number];
 
 
+// 화물 기본 정보 인터페이스
+export interface IOrder1 {
+  id: string;
+  companyId: string;
+  companySnapshot: ICompanySnapshot;
+  orderContactId?: string;
+  orderContactSnapshot?: IUserSnapshot;
 
+  orderNumber: string;
+  orderName: string;
+  flowStatus: OrderFlowStatus;
+
+  // 화물 정보
+  cargoName: string;
+  cargoWeight: number;
+  cargoUnit: string;
+  cargoQuantity: number;
+  packagingType: string;
+
+  // 차량 정보
+  vehicleType: string;
+  vehicleCount: number;
+
+  // 가격 정보
+  priceAmount: number;
+  priceType: string;
+  taxType: '과세' | '면세';
+
+  // 주소 정보
+  pickupAddressId: string;
+  deliveryAddressId: string;
+  pickupSnapshot: IAddressSnapshot;
+  deliverySnapshot: IAddressSnapshot;
+
+  // 일정 정보
+  pickupDate: string;
+  deliveryDate: string;
+
+  // 상태 및 메모
+  isCanceled: boolean;
+  memo?: string;
+
+  // 생성/수정 정보
+  createdBy: string;
+  createdBySnapshot: IUserSnapshot;
+  createdAt: string;
+  updatedBy: string;
+  updatedBySnapshot: IUserSnapshot;
+  updatedAt: string;
+}
 
 // 화주 화물 관리 시스템 타입 정의
 export interface IOrder {

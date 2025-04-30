@@ -1,4 +1,4 @@
-import { IOrder as IFrontendOrder } from "@/types/order";
+import { IOrder as IFrontendOrder, OrderStatusType } from "@/types/order";
 import { IOrder as IBackendOrder, OrderFlowStatus, IOrderListResponse } from "@/types/order1";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -8,7 +8,7 @@ import { ko } from "date-fns/locale";
  * @param apiResponse API 응답 데이터
  * @returns 프론트엔드용 화물 목록 데이터
  */
-export function mapApiResponseToOrderList(apiResponse: IOrderListResponse): {
+export function mapApiResponseToOrderList(apiResponse: any): {
   data: IFrontendOrder[];
   pagination: {
     total: number;
@@ -16,15 +16,20 @@ export function mapApiResponseToOrderList(apiResponse: IOrderListResponse): {
     limit: number;
   };
 } {
-  // 페이지네이션 정보 추출
+  // 디버깅을 위한 로그 추가
+  console.log('API 응답 구조:', apiResponse);
+  
+  // 페이지네이션 정보 추출 (구조 변경)
   const pagination = {
-    total: apiResponse.pagination.total,
-    page: apiResponse.pagination.page,
-    limit: apiResponse.pagination.limit
+    total: apiResponse.total || 0,
+    page: apiResponse.page || 1,
+    limit: apiResponse.pageSize || 10
   };
 
   // 화물 데이터 매핑
-  const data = apiResponse.data.map(mapBackendOrderToFrontendOrder);
+  const data = Array.isArray(apiResponse.data) 
+    ? apiResponse.data.map(mapBackendOrderToFrontendOrder)
+    : [];
 
   return {
     data,
@@ -38,15 +43,44 @@ export function mapApiResponseToOrderList(apiResponse: IOrderListResponse): {
  * @returns 프론트엔드용 화물 데이터
  */
 export function mapBackendOrderToFrontendOrder(backendOrder: IBackendOrder): IFrontendOrder {
+  // 디버깅
+  console.log('백엔드 데이터:', backendOrder);
+  
+  // 주소 스냅샷 추출
+  const pickupAddressSnapshot = backendOrder.pickupSnapshot || {};
+  const deliveryAddressSnapshot = backendOrder.deliverySnapshot || {};
+  
+  // 도시 정보 추출 
+  let departureCity = '';
+  let arrivalCity = '';
+  
+  try {
+    if (pickupAddressSnapshot.roadAddress) {
+      const addressParts = pickupAddressSnapshot.roadAddress.split(' ');
+      if (addressParts.length > 0) {
+        departureCity = addressParts[0];
+      }
+    }
+    
+    if (deliveryAddressSnapshot.roadAddress) {
+      const addressParts = deliveryAddressSnapshot.roadAddress.split(' ');
+      if (addressParts.length > 0) {
+        arrivalCity = addressParts[0];
+      }
+    }
+  } catch (error) {
+    console.error('도시 정보 추출 에러:', error);
+  }
+
   return {
     id: backendOrder.id,
-    status: mapFlowStatusToUiStatus(backendOrder.flowStatus),
-    departureLocation: getFullAddress(backendOrder.pickupSnapshot),
-    departureCity: backendOrder.pickupSnapshot?.roadAddress?.split(' ')[0] || '',
-    departureDateTime: combineDateAndTime(backendOrder.pickupDate, backendOrder.pickupTime),
-    arrivalLocation: getFullAddress(backendOrder.deliverySnapshot),
-    arrivalCity: backendOrder.deliverySnapshot?.roadAddress?.split(' ')[0] || '',
-    arrivalDateTime: combineDateAndTime(backendOrder.deliveryDate, backendOrder.deliveryTime),
+    status: mapFlowStatusToUiStatus(backendOrder.flowStatus) as OrderStatusType,
+    departureLocation: getFullAddress(pickupAddressSnapshot),
+    departureCity: departureCity,
+    departureDateTime: backendOrder.pickupDate,
+    arrivalLocation: getFullAddress(deliveryAddressSnapshot),
+    arrivalCity: arrivalCity,
+    arrivalDateTime: backendOrder.deliveryTime,
     amount: backendOrder.estimatedPriceAmount,
     fee: calculateFee(backendOrder.estimatedPriceAmount),
     vehicle: {

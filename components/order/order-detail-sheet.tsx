@@ -17,6 +17,9 @@ import { useOrderDetailStore } from "@/store/order-detail-store";
 import { fetchOrderDetail } from "@/services/order-service";
 import { mapBackendOrderToFrontendOrder } from "@/utils/data-mapper";
 import { handleApiError } from "@/utils/api-error-handler";
+// IOrderDetail 타입 임포트 추가
+import { IOrderDetail } from "@/utils/mockdata/mock-orders-detail";
+import { IOrderLog } from "@/types/order";
 
 import { OrderProgress } from "./order-progress";
 import { OrderInfoCard } from "./order-info-card";
@@ -59,15 +62,14 @@ export function OrderDetailSheet() {
         
         // API 호출
         const response = await fetchOrderDetail(selectedOrderId);
+        console.log('상세 정보 API 응답:', response);
         
         // 응답 데이터 매핑 - 기존의 세부 데이터 구조와 호환되도록 추가 매핑 필요
         // 현재는 기본 정보만 매핑하고 있어 화면 표시에 제한이 있을 수 있음
         const mappedOrder = mapBackendOrderToFrontendOrder(response);
         
-        // TODO: 상세 정보를 위한 추가 매핑 로직 구현
-        // 예: 예상 배송 일정, 운전자 정보 등
-        
-        return {
+        // IOrderDetail 형식에 맞게 데이터 변환
+        const orderDetail: IOrderDetail = {
           orderNumber: mappedOrder.id,
           status: mappedOrder.status,
           statusProgress: mappedOrder.status,
@@ -75,21 +77,21 @@ export function OrderDetailSheet() {
           amount: formatCurrency(mappedOrder.amount) + "원",
           
           departure: {
-            name: response.pickupName || "-",
             address: mappedOrder.departureLocation,
-            date: format(new Date(mappedOrder.departureDateTime), "yyyy-MM-dd", { locale: ko }),
-            time: format(new Date(mappedOrder.departureDateTime), "HH:mm", { locale: ko }),
+            name: response.pickupContactName || "-",
+            company: response.pickupName || "-",
             contact: response.pickupContactPhone || "-",
-            contactPerson: response.pickupContactName || "-",
+            time: format(new Date(mappedOrder.departureDateTime), "HH:mm", { locale: ko }),
+            date: format(new Date(mappedOrder.departureDateTime), "yyyy-MM-dd", { locale: ko }),
           },
           
           destination: {
-            name: response.deliveryName || "-",
             address: mappedOrder.arrivalLocation,
-            date: format(new Date(mappedOrder.arrivalDateTime), "yyyy-MM-dd", { locale: ko }),
-            time: format(new Date(mappedOrder.arrivalDateTime), "HH:mm", { locale: ko }),
+            name: response.deliveryContactName || "-",
+            company: response.deliveryName || "-",
             contact: response.deliveryContactPhone || "-",
-            contactPerson: response.deliveryContactName || "-",
+            time: format(new Date(mappedOrder.arrivalDateTime), "HH:mm", { locale: ko }),
+            date: format(new Date(mappedOrder.arrivalDateTime), "yyyy-MM-dd", { locale: ko }),
           },
           
           cargo: {
@@ -103,6 +105,7 @@ export function OrderDetailSheet() {
           
           vehicle: {
             type: mappedOrder.vehicle.type,
+            weight: mappedOrder.vehicle.weight,
             licensePlate: "-", // 백엔드 데이터에 없음
             driver: {
               name: mappedOrder.driver.name || "-",
@@ -113,13 +116,16 @@ export function OrderDetailSheet() {
           // 로그 정보 - 현재는 샘플 데이터
           logs: [
             {
-              status: '배차대기',
-              timestamp: response.createdAt,
-              operator: response.contactUserSnapshot?.name || "-",
-              note: '화물 등록 완료',
-            }
+              status: mappedOrder.status,
+              time: format(new Date(response.createdAt), "HH:mm", { locale: ko }),
+              date: format(new Date(response.createdAt), "yyyy-MM-dd", { locale: ko }),
+              handler: response.contactUserSnapshot?.name || "-",
+              remark: '화물 등록 완료',
+            } as IOrderLog
           ],
         };
+        
+        return orderDetail;
       } catch (error) {
         handleApiError(error, '화물 상세 정보를 불러오는 데 실패했습니다.');
         throw error;

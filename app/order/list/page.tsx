@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
   Breadcrumb, 
@@ -19,6 +19,7 @@ import { useOrderStore } from "@/store/order-store";
 import { fetchOrders } from "@/services/order-service";
 import { mapApiResponseToOrderList } from "@/utils/data-mapper";
 import { handleApiError } from "@/utils/api-error-handler";
+import { toast } from "@/components/ui/use-toast";
 
 import { OrderSearch } from "@/components/order/order-search";
 //import { OrderTable } from "@/components/order/order-table";
@@ -62,6 +63,9 @@ const mapFilterToApiParams = (filter: IOrderFilter) => {
 };
 
 export default function OrderListPage() {
+  // 에러 상태 관리를 위한 추가 state
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  
   // Zustand 스토어에서 상태 및 액션 가져오기
   const {
     viewMode,
@@ -78,7 +82,7 @@ export default function OrderListPage() {
   }, [filter]);
 
   // 화물 목록 데이터 조회 - 실제 API 연동
-  const { data, isLoading, isError, refetch } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["orders", currentPage, pageSize, filter],
     queryFn: async () => {
       try {
@@ -97,11 +101,20 @@ export default function OrderListPage() {
         
         // API 호출
         const response = await fetchOrders(apiParams);
+        console.log('API 호출 응답:', response);
+        
+        // 응답이 없거나 형식이 잘못된 경우
+        if (!response || !response.data) {
+          throw new Error('유효하지 않은 응답 형식입니다.');
+        }
         
         // 응답 데이터 매핑
-        return mapApiResponseToOrderList(response);
+        const mappedData = mapApiResponseToOrderList(response);
+        return mappedData;
       } catch (error) {
-        handleApiError(error, '화물 목록을 불러오는 데 실패했습니다.');
+        console.error('화물 목록 조회 에러:', error);
+        const message = error instanceof Error ? error.message : '화물 목록을 불러오는 데 실패했습니다.';
+        setErrorMessage(message);
         throw error;
       }
     },
@@ -111,7 +124,14 @@ export default function OrderListPage() {
 
   // 필터 변경 시 데이터 다시 조회
   useEffect(() => {
-    refetch();
+    refetch().catch(err => {
+      console.error('데이터 갱신 에러:', err);
+      toast({
+        variant: "destructive",
+        title: "데이터 갱신 실패",
+        description: "화물 목록을 갱신하는 중에 오류가 발생했습니다."
+      });
+    });
   }, [currentPage, pageSize, filter, refetch]);
 
   // 페이지 변경 핸들러
@@ -123,7 +143,16 @@ export default function OrderListPage() {
   );
 
   // 총 페이지 수 계산
-  const totalPages = Math.ceil((data?.pagination.total || 0) / pageSize);
+  const totalPages = data ? Math.ceil(data.pagination.total / pageSize) : 0;
+
+  // 다시 시도 버튼 클릭 핸들러
+  const handleRetry = useCallback(() => {
+    setErrorMessage(null);
+    refetch().catch(err => {
+      console.error('재시도 에러:', err);
+      setErrorMessage('재시도 중 오류가 발생했습니다.');
+    });
+  }, [refetch]);
 
   return (
     <>
@@ -183,17 +212,19 @@ export default function OrderListPage() {
                       <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                       <p className="mt-2 text-muted-foreground">데이터를 불러오는 중...</p>
                     </div>
-                  ) : isError ? (
+                  ) : isError || errorMessage ? (
                     // 에러 상태 - 개선된 UI
                     <div className="py-12 text-center">
                       <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100">
                         <span className="text-red-500 text-2xl">!</span>
                       </div>
-                      <p className="mt-2 text-red-500">데이터 조회 중 오류가 발생했습니다.</p>
+                      <p className="mt-2 text-red-500">
+                        {errorMessage || (error instanceof Error ? error.message : "데이터 조회 중 오류가 발생했습니다.")}
+                      </p>
                       <Button
                         variant="outline"
                         className="mt-2"
-                        onClick={() => refetch()}
+                        onClick={handleRetry}
                       >
                         다시 시도
                       </Button>
