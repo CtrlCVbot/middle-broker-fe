@@ -246,30 +246,38 @@ export default function AddressClientPage() {
 
       <Card className="border-none shadow-none">
         <LoadingOverlay isLoading={refreshing} text="새로고침 중...">
-          <CardHeader>
-            <CardTitle>주소록 관리</CardTitle>
-            <CardDescription>            
-              상/하차지 주소를 관리합니다.          
-            </CardDescription>
+          <CardHeader className="pb-0">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <CardTitle>주소록 관리</CardTitle>
+                <CardDescription className="text-sm text-muted-foreground">
+                  상/하차지 주소를 관리합니다.
+                </CardDescription>
+              </div>
+              <Button size="sm" onClick={() => handleOpenFormSheet()}>주소 등록</Button>
+            </div>
           </CardHeader>
         </LoadingOverlay>
 
         <CardContent>
-          <Card>
-            <CardHeader >
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                <Button onClick={() => handleOpenFormSheet()}>주소 등록</Button>
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={handleRefresh} 
+
+          <Card>                  
+            <CardContent>
+              <div className="flex flex-wrap items-center justify-between gap-2 ">
+                <AddressSearch onSearch={handleSearch} />
+
+                {/* 새로고침 버튼 및 선택 작업 메뉴 - 추후 사용 예정 */}
+                {/* <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRefresh}
                     disabled={isLoading || refreshing}
                   >
                     <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                     새로고침
                   </Button>
-                  
+
                   {selectedAddresses.length > 0 && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -287,7 +295,7 @@ export default function AddressClientPage() {
                           자주 사용하는 주소에서 제거
                         </DropdownMenuItem>
                         <Separator className="my-1" />
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => handleDeleteSelected(selectedAddresses)}
                           className="text-destructive"
                         >
@@ -296,30 +304,21 @@ export default function AddressClientPage() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   )}
-                </div>
+                </div> */}
               </div>
-            </CardHeader>
-            
-            <CardContent>
-              <AddressSearch onSearch={handleSearch} />
-              
+
               <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange}>
-                <div className="flex justify-between items-center mb-4">
-                  <TabsList>
-                    <TabsTrigger value="all">
-                      전체 주소
-                      <Badge className="ml-2" variant="outline">
-                        {totalItems}
-                      </Badge>
-                    </TabsTrigger>
-                    <TabsTrigger value="frequent">
-                      자주 사용
-                      <Badge className="ml-2" variant="outline">
-                        {frequentAddresses.length}
-                      </Badge>
-                    </TabsTrigger>
-                  </TabsList>
-                </div>
+                
+                <TabsList className="mb-1">
+                  <TabsTrigger value="all">
+                    전체 주소
+                    <Badge className="ml-2" variant="outline">{totalItems}</Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="frequent">
+                    자주 사용
+                    <Badge className="ml-2" variant="outline">{frequentAddresses.length}</Badge>
+                  </TabsTrigger>
+                </TabsList>
                 
                 <TabsContent value="all" className="m-0">
                   {isLoading && addresses.length === 0 ? (
@@ -367,136 +366,11 @@ export default function AddressClientPage() {
                 </TabsContent>
               </Tabs>
             </CardContent>
-          </Card>          
+          </Card>   
+                 
         </CardContent>
       </Card>
-      
-      <LoadingOverlay isLoading={refreshing} text="새로고침 중...">
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="flex items-center justify-between py-4">
-            <h1 className="text-2xl font-semibold">주소록 관리</h1>
-            <Button onClick={() => handleOpenFormSheet()}>주소 등록</Button>
-          </div>
-          
-          <Card>
-            <CardHeader >
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                <div>
-                  <CardTitle>상/하차지 주소록</CardTitle>
-                  <CardDescription>등록된 상/하차지 주소를 관리합니다.</CardDescription>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={handleRefresh} 
-                    disabled={isLoading || refreshing}
-                  >
-                    <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-                    새로고침
-                  </Button>
-                  
-                  {selectedAddresses.length > 0 && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          선택 작업 <ChevronDown className="ml-2 h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleToggleSelectedFrequent(true)}>
-                          <Star className="mr-2 h-4 w-4" />
-                          자주 사용하는 주소로 설정
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleToggleSelectedFrequent(false)}>
-                          <StarOff className="mr-2 h-4 w-4" />
-                          자주 사용하는 주소에서 제거
-                        </DropdownMenuItem>
-                        <Separator className="my-1" />
-                        <DropdownMenuItem 
-                          onClick={() => handleDeleteSelected(selectedAddresses)}
-                          className="text-destructive"
-                        >
-                          선택 삭제
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </div>
-              </div>
-            </CardHeader>
             
-            <CardContent>
-              <AddressSearch onSearch={handleSearch} />
-              
-              <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange}>
-                <div className="flex justify-between items-center mb-4">
-                  <TabsList>
-                    <TabsTrigger value="all">
-                      전체 주소
-                      <Badge className="ml-2" variant="outline">
-                        {totalItems}
-                      </Badge>
-                    </TabsTrigger>
-                    <TabsTrigger value="frequent">
-                      자주 사용
-                      <Badge className="ml-2" variant="outline">
-                        {frequentAddresses.length}
-                      </Badge>
-                    </TabsTrigger>
-                  </TabsList>
-                </div>
-                
-                <TabsContent value="all" className="m-0">
-                  {isLoading && addresses.length === 0 ? (
-                    renderLoading()
-                  ) : error ? (
-                    renderError()
-                  ) : addresses.length === 0 ? (
-                    totalItems === 0 ? renderEmpty() : renderEmptySearch()
-                  ) : (
-                    <AddressTable
-                      addresses={addresses}
-                      totalPages={Math.ceil(totalItems / itemsPerPage)}
-                      currentPage={currentPage}
-                      onPageChange={handlePageChange}
-                      onDeleteSingle={handleDeleteSingle}
-                      onDeleteSelected={handleDeleteSelected}
-                      onEdit={handleOpenFormSheet}
-                      onToggleFrequent={handleToggleFrequent}
-                      selectedAddresses={selectedAddresses}
-                      onSelectAddresses={setSelectedAddresses}
-                    />
-                  )}
-                </TabsContent>
-                
-                <TabsContent value="frequent" className="m-0">
-                  {isLoadingFrequent ? (
-                    renderLoading()
-                  ) : frequentAddresses.length === 0 ? (
-                    renderEmpty("자주 사용하는 주소가 없습니다")
-                  ) : (
-                    <AddressTable
-                      addresses={frequentAddresses}
-                      totalPages={1}
-                      currentPage={1}
-                      onPageChange={() => {}}
-                      onDeleteSingle={handleDeleteSingle}
-                      onDeleteSelected={handleDeleteSelected}
-                      onEdit={handleOpenFormSheet}
-                      onToggleFrequent={handleToggleFrequent}
-                      selectedAddresses={selectedAddresses}
-                      onSelectAddresses={setSelectedAddresses}
-                      hidePagenation
-                    />
-                  )}
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        </div>
-      </LoadingOverlay>
-      
       <AddressDeleteModal
         isOpen={isDeleteModalOpen}
         addresses={addressesToDelete}
