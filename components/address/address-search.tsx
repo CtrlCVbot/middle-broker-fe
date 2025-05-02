@@ -95,8 +95,26 @@ export function AddressSearch({
   return (
     <Card className="mb-6 border-0 shadow-none">
       <CardContent className="p-0">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
+        
+        <div className="flex flex-wrap items-center gap-2">
+          {/* 유형 선택 드롭다운 */}
+          <div className="relative">
+            <Filter className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <Select value={selectedType} onValueChange={handleTypeChange}>
+              <SelectTrigger className="w-[140px] pl-10">
+                <SelectValue placeholder="유형 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                <SelectItem value="load">상차지</SelectItem>
+                <SelectItem value="drop">하차지</SelectItem>
+                <SelectItem value="any">상/하차지</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 검색창 + 검색버튼 + 초기화 */}
+          <div className="relative flex items-center w-full md:w-auto max-w-md flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="상/하차지명, 담당자명, 주소 또는 연락처 검색"
@@ -115,44 +133,29 @@ export function AddressSearch({
             )}
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Filter className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-              <Select value={selectedType} onValueChange={handleTypeChange}>
-                <SelectTrigger className="w-[140px] pl-10">
-                  <SelectValue placeholder="유형 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  <SelectItem value="load">상차지</SelectItem>
-                  <SelectItem value="drop">하차지</SelectItem>
-                  <SelectItem value="any">상/하차지</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <Button 
+            onClick={handleSearchClick}
+            disabled={isSearching}
+            className="shrink-0"
+          >
+            검색
+          </Button>
 
-            <Button 
-              onClick={handleSearchClick}
-              variant="default"
-              disabled={isSearching}
+          {(searchTerm || selectedType !== "all") && (
+            <Button
+              onClick={handleClearSearch}
+              variant="ghost"
+              size="sm"
+              className="h-10 shrink-0"
             >
-              검색
+              <X className="mr-2 h-4 w-4" />
+              초기화
             </Button>
-
-            {(searchTerm || selectedType !== "all") && (
-              <Button
-                onClick={handleClearSearch}
-                variant="ghost"
-                size="sm"
-                className="h-10"
-              >
-                <X className="mr-2 h-4 w-4" />
-                초기화
-              </Button>
-            )}
-          </div>
+          )}
         </div>
+
       </CardContent>
     </Card>
+    
   );
 } 
