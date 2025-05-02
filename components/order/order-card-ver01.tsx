@@ -16,26 +16,40 @@ import {
   Clock,
   DollarSign,
   User,
+  MoveRight,
+  Tally1,
+  ArrowRightCircle,
+  GitCommitVertical,
+  Link2Off,
+  LogOut,
+  LogIn,
 } from "lucide-react";
 import { IOrder } from "@/types/order1";
-import { formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { useOrderDetailStore } from "@/store/order-detail-store";
+import { getSchedule, getTime, getStatusColor, getStatusBadge } from "./order-table-ver01";
+
 
 // 화물 상태에 따른 배지 색상 설정
-const getStatusBadge = (status: string) => {
+export const getStatusBadgeVer01 = (status: string) => {
   switch (status) {
+    case "운송요청":
+      return <Badge className="inline-flex items-center justify-center px-3 py-1 text-xs font-semibold bg-gray-100 rounded-full border text-muted-foreground" variant="outline" >운송요청</Badge>;
     case "배차대기":
-      return <Badge variant="outline">배차대기</Badge>;
+      return <Badge className="text-md border-orange-500 border-2">배차대기</Badge>;
     case "배차완료":
-      return <Badge variant="secondary">배차완료</Badge>;
+      return <Badge className="text-md border-green-500 border-2">배차완료</Badge>;
+    case "상차대기":
+      return <Badge className="text-md bg-green-800">상차대기</Badge>;
     case "상차완료":
-      return <Badge variant="default">상차완료</Badge>;
+      return <Badge className="text-md bg-blue-300">상차완료</Badge>;
     case "운송중":
-      return <Badge className="bg-blue-500">운송중</Badge>;
+      return <Badge className="text-md bg-blue-500">운송중</Badge>;
     case "하차완료":
-      return <Badge className="bg-green-500">하차완료</Badge>;
+      return <Badge className="text-md bg-blue-800">하차완료</Badge>;
     case "운송마감":
-      return <Badge className="bg-purple-500">운송마감</Badge>;
+    case "운송완료":
+      return <Badge className="text-md bg-purple-500">운송마감</Badge>;
     default:
       return <Badge variant="outline">{status}</Badge>;
   }
@@ -86,84 +100,128 @@ export function OrderCard({
     onPageChange(totalPages);
   };
 
+  
+
   return (
+    <>
     <div className="space-y-4">
       {orders.length === 0 ? (
         <div className="py-12 text-center text-lg text-muted-foreground">
           표시할 화물 정보가 없습니다.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {orders.map((order) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+          {orders.map((order) => {
+
+            const isCurrent = order.flowStatus.length > 1;
+            
+            return(
+            
+            <>
             <Card 
               key={order.id} 
               //className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-              className="hover:ring-2 hover:ring-primary/30 transition-all duration-150"
+              className="hover:ring-2 hover:ring-primary/30 transition-all duration-150 shadow-sm rounded-xl bg-muted/30"
               onClick={() => handleOrderClick(order.id)}
-            >
-              <div className="flex items-center justify-between p-4 bg-gray-100">
-                <div className="font-semibold text-sm text-primary truncate">{order.id}</div>
-                <div>{getStatusBadge(order.flowStatus)}</div>
+            >              
+              
+              <div className="flex items-center justify-between px-6 pb-3 border-b ">
+                {/* 왼쪽: 시간 */}
+                <div className="flex-1 flex items-center">
+                  <div className="font-semibold text-shadow-xs text-lg text-neutral-600 truncate">
+                    {getSchedule(order.pickupDate, order.pickupTime, order.deliveryDate, order.deliveryTime)}
+                  </div>
+                </div>
+
+                {/* 가운데: 상태 배지 (정중앙 정렬) */}
+                <div className="flex-1 flex justify-center">
+                  {/* <div className="scale-100">{getStatusBadgeVer01(order.flowStatus)}</div> */}
+                  <Badge className="inline-flex items-center justify-center px-3 py-1 
+                  text-xs font-semibold bg-gray-100 rounded-full border text-muted-foreground" variant="outline" >
+                    {order.flowStatus}
+                  </Badge>
+                </div>
+
+                {/* 오른쪽: 금액 */}
+                <div className="flex-1 flex justify-end">
+                  <span className="text-primary font-bold text-lg text-shadow-xs">{formatCurrency(order.estimatedPriceAmount)}원</span>
+                </div>
               </div>
+
               
-              <CardContent className="p-4 space-y-4">
-                <div className="grid grid-cols-[20px_1fr] gap-x-2 gap-y-3">
+              <CardContent className=" space-y-4 ">
+                
+                <div className="flex items-center justify-between  ">
                   {/* 상차지 정보 */}
-                  <ArrowUp className="h-5 w-5 text-blue-500" />
-                  <div className="space-y-1">
-                    <div className="font-medium line-clamp-1" title={order.pickupAddressSnapshot.name}>
-                      {order.pickupAddressSnapshot.name}
-                    </div>
-                    <div className="text-sm text-muted-foreground flex gap-1 items-center">
-                      <Clock className="h-3 w-3" />
-                      {order.pickupDate}
+                  <div className="flex items-center gap-2">
+                    <ArrowUp className={cn(
+                      "h-8 w-8 text-green-500",
+                      isCurrent ? `text-${getStatusColor(order.flowStatus)}` : "text-muted"
+                    )} />
+
+                    {/* <ArrowUp className="h-8 w-8 text-green-500" /> */}
+                    <div>
+                      <div className="font-medium line-clamp-1 scale-120 ml-2"> {order.pickupAddressSnapshot.name}</div>
+                      <div className="font-semibold text-muted-foreground w-[155px] truncate">({order.pickupAddressSnapshot.roadAddress})</div>
+                      <div className="font-semibold scale-110">{order.pickupTime.slice(0, 5)}</div>
                     </div>
                   </div>
-                  
+
+                  {/* 세로선 */}
+                  <div className="flex items-center gap-2">                    
+                    <div className="relative flex flex-col items-center justify-center h-20">
+                      {/* 세로선 */}
+                      <div className="absolute top-0 bottom-0 w-px bg-gray-200" />
+
+                      {/* VS 원 */}
+                      <div className="z-10 bg-gray-100 text-xs text-gray-600 font-semibold rounded-full w-8 h-8 flex items-center justify-center shadow-sm border">
+                        <ChevronsRight className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                    </div>
+                  </div>
+
+
                   {/* 하차지 정보 */}
-                  <ArrowDown className="h-5 w-5 text-red-500" />
-                  <div className="space-y-1">
-                    <div className="font-medium line-clamp-1" title={order.deliveryAddressSnapshot.name}>
-                      {order.deliveryAddressSnapshot.name}
+                  <div className="flex items-center gap-2">
+                    
+                    {/* < className="h-8 w-8 text-blue-500" /> */}
+                    <div>
+                      <div className="font-medium line-clamp-1 scale-120 ml-2"> {order.deliveryAddressSnapshot.name}</div>
+                      <div className="font-semibold text-muted-foreground w-[155px] truncate">({order.deliveryAddressSnapshot.roadAddress})</div>
+                      <div className="font-semibold scale-110">{order.deliveryTime.slice(0, 5)}</div>
                     </div>
-                    <div className="text-sm text-muted-foreground flex gap-1 items-center">
-                      <Clock className="h-3 w-3" />
-                      {order.deliveryDate}
-                    </div>
+                    <ArrowDown className={cn(
+                      "h-8 w-8 text-blue-500",
+                      isCurrent ? `text-${getStatusColor(order.flowStatus)}` : "text-muted"
+                    )} />
                   </div>
-                  
-                  {/* 차량 정보 */}
-                  {/* <Truck className="h-5 w-5 text-muted-foreground" />
-                  <div>{order.vehicle.type} {order.vehicle.weight}</div> */}
-                  
-                  {/* 운전자 정보 */}
-                  {/* <User className="h-5 w-5 text-muted-foreground" />
-                  <div>{order.driver.name || "-"}</div> */}
-                  
-                  {/* 운송비 정보 */}
-                  {/* <DollarSign className="h-5 w-5 text-green-500" />
-                  <div className="font-medium">{formatCurrency(order.amount)}원</div> */}
-
-                  
                 </div>
-
-                <div className="flex justify-between items-center text-md">
-                  <span><Truck className="inline h-4 w-4 mr-1 text-muted-foreground" />{order.requestedVehicleType} {order.requestedVehicleWeight}</span>
-                  <span><User className="inline h-4 w-4 mr-1 text-muted-foreground" />{"-"}</span>
-                </div>
-                <div className="text-right text-base font-semibold text-green-600">
-                  {formatCurrency(order.estimatedPriceAmount)}원
-                </div>
+                
               </CardContent>
-
               
-
-              
-              <CardFooter className="p-3 border-t bg-muted/30 text-xs text-muted-foreground">
+              {/* <CardFooter className="p-3 border-t bg-muted/30 text-xs text-muted-foreground">
               등록일: {format(new Date(order.createdAt), "yyyy.MM.dd HH:mm")}
-              </CardFooter>
+              </CardFooter> */}
+
+              
+
+              {/* 하단 정보: 차량 및 차주 */}
+              <div className="flex items-center justify-between px-4 pb-4">
+                <div className="text-sm font-medium px-2 py-1 rounded-md bg-muted text-foreground flex items-center">
+                  <Truck className="h-4 w-4 mr-1" />
+                  {order.requestedVehicleType} {order.requestedVehicleWeight}
+                </div>
+
+                {/* 차주명/연락처 */}                
+                <Button variant="outline" size="sm" className="text-xs px-3 py-1 border-dashed">
+                  <Link2Off className="h-4 w-4 mr-1" />
+                  배차전
+                </Button>
+              </div>
+
             </Card>
-          ))}
+            </>
+          )})}
         </div>
       )}
 
@@ -212,5 +270,9 @@ export function OrderCard({
         </div>
       )}
     </div>
+
+    
+
+    </>
   );
 } 

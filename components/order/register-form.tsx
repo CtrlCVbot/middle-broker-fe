@@ -660,6 +660,35 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleFormSubmit)}>
 
+<Card className="border-none">
+  
+          {/* 헤더 영역 */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-4 gap-2">
+            <div>
+              <h1 className="text-2xl font-semibold">{editMode  ? (
+                      <>운송 정보 수정 - #{orderNumber?.slice(0, 8)}  </> 
+                    ) : (
+                      <>운송 요청</>
+                    )}
+              </h1>
+              
+              {editMode ? (
+                <div className="text-sm text-muted-foreground mt-1">요청한 운송 정보를 수정하세요. 배차 상태에 따라 수정 가능한 항목이 제한될 수 있습니다.</div>
+              ) : (
+                <div className="text-sm text-muted-foreground mt-1">운송 요청할 화물 정보를 입력하고 등록해주세요.</div>
+              )}            
+
+              {editMode && originalData && (
+                <div className="flex items-center mt-4">  
+                  {/* <StatusFlow currentStatus={originalData.status} /> */}
+                  <OrderProgress currentStatus={originalData.statusProgress as any} />
+                </div>               
+              )}
+            </div>
+          </div>
+  
+</Card>
+
           {/* 헤더 영역 */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-4 gap-2">
             <div>

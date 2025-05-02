@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 
 import { ORDER_FLOW_STATUSES, OrderFlowStatus, getProgressPercentage, isStatusAtLeast } from "@/types/order1";
 import { cn } from "@/lib/utils";
+import { getStatusBadge, getStatusColor } from "./order-table-ver01";
 
 interface OrderProgressProps {
   currentStatus: OrderFlowStatus;
@@ -21,23 +22,28 @@ export function OrderProgress({ currentStatus, className }: OrderProgressProps) 
   return (
     <div className={cn("w-full", className)}>
       {/* Progress Bar */}
-      <div className="mb-2">
+      {/* <div className="mb-2">
         <Progress value={progressValue} className="h-2" />
-      </div>
+      </div> */}
       
       {/* Status Labels - 모바일에서는 현재 상태만 표시 */}
       {isSmallScreen ? (
-        <div className="flex justify-center items-center mt-4">
-          <div 
-            className={cn(
-              "font-medium text-sm px-3 py-1 rounded-full",
-              "bg-primary text-primary-foreground"
-            )}
-          >
-            {currentStatus}
-          </div>
-        </div>
+        // <div className="flex justify-center items-center mt-4">
+        //   <div 
+        //     className={cn(
+        //       "font-medium text-sm px-3 py-1 rounded-full",              
+        //       "bg-" + getStatusColor(currentStatus) + " text-primary-foreground"
+        //     )}
+        //   >
+        //     {currentStatus}
+        //   </div>
+        // </div>
+        <></>
       ) : (
+        <>
+        <div className="mb-2">
+          <Progress value={progressValue} className="h-2" />
+        </div>
         <div className="flex justify-between text-xs md:text-sm mt-2">
           {ORDER_FLOW_STATUSES.map((status) => {
             const isActive = isStatusAtLeast(currentStatus, status);
@@ -48,22 +54,26 @@ export function OrderProgress({ currentStatus, className }: OrderProgressProps) 
                 key={status}
                 className={cn(
                   "flex flex-col items-center transition-all",
-                  isActive ? "text-primary" : "text-muted-foreground",
-                  isCurrent ? "font-bold scale-110" : "font-normal"
+                  isActive ? "text-md text-shadow-xs " : "text-muted-foreground",
+                  isCurrent ? "font-bold scale-105" : "font-normal"
                 )}
-              >
-                <div 
+              >                
+                {/* <div 
                   className={cn(
                     "w-3 h-3 rounded-full mb-1 transition-all",
-                    isActive ? "bg-primary" : "bg-muted",
-                    isCurrent ? "ring-2 ring-primary ring-offset-2" : ""
+                    isActive ? `bg-${getStatusColor(status)}` : "bg-muted",
+                    isCurrent ? "ring-2 ring-offset-2 animate-glow" : ""
                   )}
-                />
-                <span>{status}</span>
+                /> */}
+
+                {isCurrent ? getStatusBadge(status) : <span>{status}</span>}
+                
+                {/* <span>{status}</span> */}
               </div>
             );
           })}
         </div>
+        </>
       )}
     </div>
   );

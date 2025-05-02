@@ -33,7 +33,7 @@ import { format, parseISO } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
-import { getStatusBadge } from "./order-table-ver01";
+import { getStatusBadge, getStatusColor } from "./order-table-ver01";
 
 // UI 표시를 위한 인터페이스 정의 (백엔드 데이터를 UI에 맞게 변환)
 interface OrderDetailForUI {
@@ -235,39 +235,18 @@ export function OrderDetailSheet() {
         ) : orderData ? (
           // 데이터 로드 완료
           <ScrollArea className="h-full max-h-screen">
-            {/* 헤더 - 기본 정보 */}
-            {/* <SheetHeader className="px-6 py-4 sticky top-0 bg-background z-10 border-b">
-              <div className="flex items-center justify-between">
-                <SheetTitle className="text-xl font-bold">
-                  화물 번호: {orderData.orderNumber}
-                </SheetTitle>
-                <Badge 
-                  variant={orderData.status === "운송완료" ? "default" : "secondary"}
-                  className="text-sm px-3 py-1"
-                >
-                  {orderData.status}
-                </Badge>
-              </div>
-              <div className="flex flex-col gap-1 mt-1">
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <CalendarClock className="h-4 w-4 mr-2" />
-                  등록일시: {orderData.registeredAt}
-                </div>
-                <p className="text-lg font-semibold mt-1">
-                  운송비: {orderData.amount}
-                </p>
-              </div>
-            </SheetHeader> */}
-            <SheetHeader className="py-4 border-b sticky top-0 bg-background">
+            
+            {/* 헤더 - 기본 정보 */}            
+            <SheetHeader className="py-4 border-b sticky top-0 bg-background bg-muted/100">
               
-              <div className="flex justify-between items-center  bg-muted/30">
+              <div className="flex justify-between items-center  ">
                 <div className="text-sm text-muted-foreground">
-                  <span className="font-semibold text-primary mr-2">화물 #{orderData.orderNumber.slice(0, 8)}</span>
+                  <span className="font-semibold text-shadow-xs text-lg text-neutral-600 truncate mr-2">화물 #{orderData.orderNumber.slice(0, 8)}</span>
                   {/* <Badge>{orderData.status}</Badge> */}
-                  {getStatusBadge(orderData.status)}
+                  {isMobile && getStatusBadge(orderData.status) }
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="font-semibold text-lg mr-10">{orderData.amount}</span>                  
+                  <span className="text-primary font-bold text-lg text-shadow-xs mr-10">{orderData.amount}</span>                  
                 </div>
               </div>
             </SheetHeader>
@@ -278,7 +257,7 @@ export function OrderDetailSheet() {
                 <OrderProgress currentStatus={orderData.statusProgress as any} />
               </div>
               
-              <Separator />
+              {/* <Separator /> */}
               
               {/* 출발지 및 도착지 정보 */}
               <div>
@@ -287,50 +266,22 @@ export function OrderDetailSheet() {
                   departure={orderData.departure} 
                   destination={orderData.destination} 
                 />
-
-                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-muted/30 rounded-md p-4">
-                  <div>
-                    <p className="text-muted-foreground">상차지</p>
-                    <p className="font-medium">{orderData.departure.address}</p>
-                    <p className="text-xs text-muted-foreground">{orderData.departure.date}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">하차지</p>
-                    <p className="font-medium">{orderData.destination.address}</p>
-                    <p className="text-xs text-muted-foreground">{orderData.destination.date}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">차량</p>
-                    <p>{orderData.vehicle.type} / {orderData.vehicle.licensePlate}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">운전자</p>
-                    <p>{orderData.vehicle.driver.name} ({orderData.vehicle.driver.contact})</p>
-                  </div>
-                </div> */}
                 
               </div>
               
               <Separator />
               
-              {/* 화물 정보 및 차량 정보 */}
-              <div className="px-0">
-                
-              </div>
-
-              <div className="px-0">
-                
-              </div>
+             
 
               <div>
                 {/* <h3 className="text-base font-medium mb-3">화물 및 차량 정보</h3> */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* 화물 정보 */}
-                  <Card className="bg-muted/20 text-md">
+                  <Card className="bg-muted/20 text-md hover:ring-2 hover:ring-primary/20 transition-all duration-150">
                     <CardHeader >
                       <CardTitle className="text-sm md:text-base flex items-center">
                         <Package className="h-4 w-4 mr-2 text-muted-foreground" />
-                        화물 정보 
+                        <div className="font-medium text-shadow-xs text-md text-neutral-500 truncate">화물 정보</div>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2 pt-0 text-md">
@@ -359,12 +310,14 @@ export function OrderDetailSheet() {
                   </Card>
                   
                   {/* 차량 정보 */}
-                  <Card className="text-md">
-                    <CardHeader >
-                        <CardTitle className="text-sm md:text-base flex items-center">
-                          <Truck className="h-4 w-4 mr-2 text-muted-foreground" />
-                          차량 정보
-                        </CardTitle>
+                  { orderData.vehicle.driver.name.length >= 2 ? (  
+                    <>
+                    <Card className="text-md hover:ring-2 hover:ring-primary/20 transition-all duration-150">
+                      <CardHeader >
+                          <CardTitle className="text-sm md:text-base flex items-center">
+                            <Truck className="h-4 w-4 mr-2 text-muted-foreground" />
+                            <div className="text-md font-medium text-muted-foreground text-shadow-xs">차량 정보</div>
+                          </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-2 pt-0 text-md">
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-y-1">
@@ -376,10 +329,18 @@ export function OrderDetailSheet() {
 
                           <div className="text-muted-foreground">연락처</div>
                           <div className="font-medium col-span-2">{orderData.vehicle.driver.contact}</div>
-
                         </div>
                       </CardContent>
                     </Card>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-8 border border-dashed rounded-md bg-muted/30">
+                      <Truck className="h-10 w-10 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground mb-4">배차전 상태입니다.</p>                      
+                    </div>
+                  )}
+
+                  
                 </div>
               </div>
               
@@ -395,7 +356,7 @@ export function OrderDetailSheet() {
             </div>
             
             {/* 푸터 - 액션 버튼 */}
-            <SheetFooter className="px-6 py-4 border-t mt-4">
+            <SheetFooter className="px-6 py-4 border-t mt-4 ">
               <OrderActionButtons orderNumber={orderData.orderNumber} />
             </SheetFooter>
           </ScrollArea>

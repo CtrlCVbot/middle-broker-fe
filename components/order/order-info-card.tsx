@@ -30,7 +30,7 @@ function LocationInfo({
 }: LocationInfoProps) {
   return (
     <>
-    <Card className="h-full bg-muted/20">
+    <Card className="h-full bg-muted/20 hover:ring-2 hover:ring-primary/20 transition-all duration-150">
       <CardHeader >
         <CardTitle className="text-sm md:text-base flex items-center">
           {isDeparture ? (
@@ -38,29 +38,34 @@ function LocationInfo({
           ) : (
             <Map className="h-4 w-4 mr-2 text-green-500" />
           )}
-          {title}
+          <div className="font-medium text-shadow-xs text-md text-neutral-500 truncate">{title}</div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2 pt-0 text-md">
 
         <div className="flex">
-          {/* <div className="w-20 text-muted-foreground">회사</div> */}
-          <div className="flex-1 font-medium flex items-center">
-            <Factory className="h-4 w-4 mr-1 text-muted-foreground" />
-            {company}
-          </div>
-        </div>
+          <div className="flex-1">
+            <div className="flex items-center">
+              <Factory className="inline h-4 w-4 mr-1 text-muted-foreground" />
+              <div className="text-shadow-xs font-medium">{company}</div>
+            </div>
+          </div>          
+        </div>       
 
-        <div className="flex">
-          {/* <div className="w-20 text-muted-foreground">주소</div> */}
-          <div className="flex-1 font-medium">
-            <MapPinHouse className="inline h-4 w-4 mr-1 text-muted-foreground" />
-            {address}
+        <div className="flex">          
+          <div className="flex-1">
+            <div className="flex items-center">
+              <MapPinHouse className="inline h-4 w-4 mr-1 text-muted-foreground text-shadow-regal-blue" />
+              {address && (
+                <div className="text-md font-medium">{address}</div>
+              )}
+            </div>
             {detailedAddress && (
               <div className="text-xs text-muted-foreground mt-1 ml-5">{detailedAddress}</div>
             )}
           </div>
         </div>
+
         
         <div className="flex">
           {/* <div className="w-20 text-muted-foreground">담당자</div> */}

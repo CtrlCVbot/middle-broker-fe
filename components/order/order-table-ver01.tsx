@@ -18,6 +18,8 @@ import {
   ChevronsLeft,
   ChevronsRight,
   ArrowBigRightDash,
+  Link2Off,
+  Truck,
 } from "lucide-react";
 import {
   Tooltip,
@@ -41,25 +43,52 @@ export const getStatusBadge = (status: string) => {
       return <Badge className="text-md bg-orange-500">배차대기</Badge>;
     case "배차완료":
       return <Badge className="text-md bg-green-500">배차완료</Badge>;
+    case "상차대기":
+      return <Badge className="text-md bg-green-800">상차대기</Badge>;
     case "상차완료":
-      return <Badge className="text-md bg-blue-200">상차완료</Badge>;
+      return <Badge className="text-md bg-blue-300">상차완료</Badge>;
     case "운송중":
       return <Badge className="text-md bg-blue-500">운송중</Badge>;
     case "하차완료":
       return <Badge className="text-md bg-blue-800">하차완료</Badge>;
     case "운송마감":
+    case "운송완료":
       return <Badge className="text-md bg-purple-500">운송마감</Badge>;
     default:
       return <Badge variant="outline">{status}</Badge>;
   }
 };
+export const getStatusColor = (status: string) => {
+  switch (status) {
+    case "운송요청":
+      return "destructive";
+    case "배차대기":
+      return "orange-500";
+    case "배차완료":
+      return "green-500";
+    case "상차대기":
+      return "green-800";
+    case "상차완료":
+      return "blue-200";
+    case "운송중":
+      return "blue-500";
+    case "하차완료":
+      return "blue-800";
+    case "운송마감":
+    case "운송완료":
+      return "purple-500";
+    default:
+      return "muted-foreground";
+  }
+}
+
 const getDateTimeformat = (date: string) => {
   const dateObj = new Date(date);
   return format(dateObj, "MM.dd (E) HH:mm", { locale: ko });
 }
 
-const getSchedule = (pickupDate: string, pickupTime: string, deliveryDate: string, deliveryTime: string) => {
-  const pickupDateObj = format(pickupDate, "MM.dd", { locale: ko });
+export const getSchedule = (pickupDate: string, pickupTime: string, deliveryDate: string, deliveryTime: string) => {
+  const pickupDateObj = format(pickupDate, "MM.dd(E)", { locale: ko });
   const deliveryDateObj = format(deliveryDate, "dd", { locale: ko });
   if (pickupDate === deliveryDate) {
     return pickupDateObj;
@@ -68,7 +97,7 @@ const getSchedule = (pickupDate: string, pickupTime: string, deliveryDate: strin
   }
 }
 
-const getTime = (pickupDate: string, pickupTime: string, deliveryDate: string, deliveryTime: string) => {
+export const getTime = (pickupDate: string, pickupTime: string, deliveryDate: string, deliveryTime: string) => {
   const pickupTimeObj = format(parseISO('1970-01-01T' + pickupTime), 'HH:mm', {locale: ko});
   let deliveryTimeObj = format(parseISO('1970-01-01T' + deliveryTime), 'HH:mm', {locale: ko});
   const deliveryDateObj = format(deliveryDate, "dd", { locale: ko });
@@ -138,7 +167,7 @@ export function OrderTable({
     <div className="space-y-4">
       <div className="rounded-md border overflow-x-auto">
         <Table className="min-w-[900px]">
-          <TableHeader>
+          <TableHeader className="sticky top-0 z-10 bg-muted">
             <TableRow>
               <TableHead className="w-[80px] text-center">ID</TableHead>
               <TableHead className="w-[80px] text-center">상태</TableHead>
@@ -147,7 +176,8 @@ export function OrderTable({
               <TableHead>상차지</TableHead>
               <TableHead>{/* 상차지 하차지 흐름 보여주는 이미지 넣는 컬럼! 지우지 마세요!*/}</TableHead>
               <TableHead>하차지</TableHead>              
-              <TableHead>차량</TableHead>
+              <TableHead className="w-[100px]">품목</TableHead>              
+              <TableHead className="w-[80px] ">차량</TableHead>
               <TableHead>기사</TableHead>
               <TableHead className="text-right">운송비</TableHead>
             </TableRow>
@@ -164,9 +194,9 @@ export function OrderTable({
               </TableRow>
             ) : (
               orders.map((order) => (
-                <TableRow key={order.id} className="cursor-pointer hover:bg-secondary/20" onClick={() => handleOrderClick(order.id)}>
+                <TableRow key={order.id} className="cursor-pointer hover:bg-secondary/80" onClick={() => handleOrderClick(order.id)}>
                   <TableCell className="font-medium text-primary underline">{order.id.slice(0, 8)}</TableCell>
-                  <TableCell>{getStatusBadge(order.flowStatus)}</TableCell>
+                  <TableCell className="text-center scale-90">{getStatusBadge(order.flowStatus)}</TableCell>
                   <TableCell className="font-medium">
                     {getSchedule(order.pickupDate, order.pickupTime, order.deliveryDate, order.deliveryTime)}
                   </TableCell>
@@ -176,7 +206,7 @@ export function OrderTable({
                   
                   <TableCell className="max-w-[200px] truncate" title={order.pickupAddressSnapshot.name}>
                     <div className="flex flex-col">
-                      <div className="text-md font-medium">
+                      <div className="text-md font-medium text-shadow-xs">
                         {order.pickupAddressSnapshot.name}
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -187,7 +217,7 @@ export function OrderTable({
                   <TableCell><ChevronsRight className="h-5 w-5 text-muted-foreground" /></TableCell>
                   <TableCell className="max-w-[200px] truncate" title={order.deliveryAddressSnapshot.name}>
                     <div className="flex flex-col">
-                      <div className="text-md font-medium">
+                      <div className="text-md font-medium text-shadow-xs">
                         {order.deliveryAddressSnapshot.name}
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -195,21 +225,33 @@ export function OrderTable({
                       </div>
                     </div>
                   </TableCell>
+                  <TableCell className="max-w-[150px] truncate">{order.cargoName}</TableCell>
                   {/* <TableCell>{getDateTimeformat(order.pickupDate + ' ' + order.pickupTime)}</TableCell>                  
                   <TableCell>{getDateTimeformat(order.deliveryDate + ' ' + order.deliveryTime)}</TableCell> */}
                   <TableCell>
-                  {order.requestedVehicleWeight} / {order.requestedVehicleType} 
+                    <div className="flex flex-col">
+                      <div className="text-md font-bold text-neutral-800">
+                        {order.requestedVehicleWeight}
+                      </div>
+                      <div className="text-md font-medium text-shadow-xs">
+                        {order.requestedVehicleType}
+                      </div>                      
+                    </div> 
                   </TableCell>
                   <TableCell>
                     {/* {order.driver.name || "-"} */}
-                    <TooltipProvider>
+                    <Badge variant="outline"  className="text-xs px-3 py-1 border-dashed">
+                      <Link2Off className="h-4 w-4 mr-1" />
+                      배차전                      
+                    </Badge>
+                    {/* <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>{"-"}</TooltipTrigger>
                         <TooltipContent>{"-"}</TooltipContent>
                       </Tooltip>
-                    </TooltipProvider>
+                    </TooltipProvider> */}
                   </TableCell>
-                  <TableCell className="text-right font-medium">
+                  <TableCell className="text-right text-primary font-bold text-md text-shadow-xs">
                     {formatCurrency(order.estimatedPriceAmount)}원
                   </TableCell>
                 </TableRow>
