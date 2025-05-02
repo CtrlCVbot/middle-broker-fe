@@ -17,7 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ILocationInfo } from '@/types/order';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { CalendarIcon, Search as SearchIcon, Map, Phone, Building2, User, Loader2, MapPin, Building, Clock, Pin } from 'lucide-react';
+import { CalendarIcon, Search as SearchIcon, Map, Phone, Building2, User, Loader2, MapPin, Building, Clock, Pin, LogOut, LogIn } from 'lucide-react';
 import { useOrderRegisterStore } from '@/store/order-register-store';
 import { cn } from '@/lib/utils';
 import { RECENT_LOCATIONS, MOCK_RECENT_LOCATIONS_ADDRESS } from '@/utils/mockdata/mock-register';
@@ -277,7 +277,11 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
       <div className="">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-primary">
-            <Map className={`h-5 w-5 ${type === 'departure' ? 'text-red-500' : 'text-blue-500'}`} />
+            {type === 'departure' ? (
+              <LogOut className={`h-5 w-5 text-primary`} />
+            ) : (
+              <LogIn className={`h-5 w-5 text-primary`} />
+            )}
             <h3 className="text-lg font-bold">{type === 'departure' ? '상차 정보' : '하차 정보'}</h3>
           </div>
           {/* <Button 
@@ -302,7 +306,8 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
               <SearchIcon className="h-4 w-4 mr-2" />
               주소 검색
             </Button> */}
-            <Button
+            {/* 주소록 버튼 - 나중에 사용할지도. 삭제하지 말자! */}
+            {/* <Button
               type="button"
               variant="outline"
               size="sm"
@@ -311,7 +316,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
             >
               <Building className="h-4 w-4 mr-2" />
               주소록
-            </Button>
+            </Button> */}
             <Button
               type="button"
               variant="outline"
