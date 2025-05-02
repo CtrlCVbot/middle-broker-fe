@@ -204,7 +204,7 @@ export function OrderTable({
                     {getTime(order.pickupDate, order.pickupTime, order.deliveryDate, order.deliveryTime)}
                   </TableCell>
                   
-                  <TableCell className="max-w-[200px] truncate" title={order.pickupAddressSnapshot.name}>
+                  <TableCell className="max-w-[100px] truncate" title={order.pickupAddressSnapshot.name}>
                     <div className="flex flex-col">
                       <div className="text-md font-medium text-shadow-xs">
                         {order.pickupAddressSnapshot.name}
@@ -215,7 +215,7 @@ export function OrderTable({
                     </div>
                   </TableCell>
                   <TableCell><ChevronsRight className="h-5 w-5 text-muted-foreground" /></TableCell>
-                  <TableCell className="max-w-[200px] truncate" title={order.deliveryAddressSnapshot.name}>
+                  <TableCell className="max-w-[100px] truncate" title={order.deliveryAddressSnapshot.name}>
                     <div className="flex flex-col">
                       <div className="text-md font-medium text-shadow-xs">
                         {order.deliveryAddressSnapshot.name}
@@ -240,7 +240,7 @@ export function OrderTable({
                   </TableCell>
                   <TableCell>
                     {/* {order.driver.name || "-"} */}
-                    <Badge variant="outline"  className="text-xs px-3 py-1 border-dashed">
+                    <Badge variant="outline"  className="text-xs px-3 py-1 border-dashed text-muted-foreground">
                       <Link2Off className="h-4 w-4 mr-1" />
                       배차전                      
                     </Badge>
