@@ -22,6 +22,7 @@ import { IOrder, OrderFlowStatus } from "@/types/order1";
 import { IOrderLog } from "@/types/order";
 
 import { OrderProgress } from "./order-progress";
+import { OrderStepProgress } from "./order-step-progress";
 import { OrderInfoCard } from "./order-info-card";
 import { OrderStatusLog } from "./order-status-log";
 import { OrderActionButtons } from "./order-action-buttons";
@@ -256,6 +257,7 @@ export function OrderDetailSheet() {
               <div>                
                 <OrderProgress currentStatus={orderData.statusProgress as any} />
               </div>
+              <OrderStepProgress currentStatus={orderData.statusProgress as any} />
               
               {/* <Separator /> */}
               

@@ -662,311 +662,317 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
 
           <Card className="border-none shadow-none">
             <CardHeader>    
-              {/* 헤더 영역 */}
-              
-              <CardTitle>
-                {editMode  ? (
-                  <>운송 정보 수정 - #{orderNumber?.slice(0, 8)}  </> 
-                ) : (
-                  <>운송 요청</>
-                )}
-              </CardTitle>
-              <CardDescription>{editMode ? (
-                    "요청한 운송 정보를 수정하세요. 배차 상태에 따라 수정 가능한 항목이 제한될 수 있습니다."
-                  ) : (
-                    "운송 요청할 화물 정보를 입력하고 등록해주세요."
-                  )}
-                  {editMode && originalData && (
-                    <div className="flex items-center mt-4">  
-                      {/* <StatusFlow currentStatus={originalData.status} /> */}
-                      <OrderProgress currentStatus={originalData.statusProgress as any} />
-                    </div>               
-                  )}  
-              </CardDescription>
-                
-              </CardHeader>
-              
-              <CardContent className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">
-                {/* 중간: 출발지/도착지 정보 카드 */}
-                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">              
-
-                {/* 상차지 정보*/}
-                <Card>                
-                  <CardContent>
-                    <LocationFormVer01
-                      type="departure"
-                      locationInfo={registerData.departure}
-                      onChange={(info) => setDeparture(info as any)}
-                      compact={true}
-                      disabled={editMode && !isEditable('departure')}
-                      onDisabledClick={() => handleDisabledFieldClick('departure')}
-                    />
-                  </CardContent>
-                </Card>
-
-                {/* 하차지 정보 Copy*/}
-                <Card>                
-                  <CardContent>
-                    <LocationFormVer01
-                      type="destination"
-                      locationInfo={registerData.destination}
-                      onChange={(info) => setDestination(info as any)}
-                      compact={true}
-                      disabled={editMode && !isEditable('destination')}
-                      onDisabledClick={() => handleDisabledFieldClick('destination')}                  
-                    />
-                  </CardContent>
-                </Card>
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <CardTitle>
+                    {editMode  ? (
+                      <>운송 정보 수정 - #{orderNumber?.slice(0, 8)}  </> 
+                    ) : (
+                      <>운송 요청</>
+                    )}
+                  </CardTitle>                  
+                  <CardDescription className="text-sm text-muted-foreground">{editMode ? (
+                      "요청한 운송 정보를 수정하세요. 배차 상태에 따라 수정 가능한 항목이 제한될 수 있습니다."
+                    ) : (
+                      "운송 요청할 화물 정보를 입력하고 등록해주세요."
+                    )}
+                    {editMode && originalData && (
+                      <div className="flex items-center mt-4">  
+                        {/* <StatusFlow currentStatus={originalData.status} /> */}
+                        <OrderProgress currentStatus={originalData.statusProgress as any} />
+                      </div>               
+                    )}  
+                  </CardDescription>
                 </div>
-
-                {/* 오른쪽: 화물 정보 카드 */}
-                <div className="lg:col-span-1 space-y-4">
-                {/* 화물 정보 카드 */}
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-lg flex items-center">
-                      <Container className="h-5 w-5 mr-2" />
-                      <div className="flex items-center">
-                        화물 정보 <span className="text-destructive">*</span>
-                      </div>
-                    </CardTitle>
-
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setShowCargoInfo((prev) => !prev)}
-                    > 
-                      {showCargoInfo ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                    </Button>
-
-                  </CardHeader>
+                {/* <Button size="sm" onClick={() => handleOpenFormSheet()}>주소 등록</Button> */}
+              </div>
+              
+              
+              
                 
-                  <CardContent>
-                    <div className="space-y-4">
-                      {/* 회사명 / 담당자 */}
-                      <div className="grid grid-cols-1 md:grid-cols-2">
+            </CardHeader>
+              
+            <CardContent className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">
+              {/* 중간: 출발지/도착지 정보 카드 */}
+              <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">              
 
-                        <div>
-                          <div className="text-sm font-medium mb-2 flex items-center">
-                            <Weight className="h-4 w-4 mr-2 text-muted-foreground" />중량
-                          </div>
-                          <Select
-                            value={registerData.weightType}
-                            onValueChange={(value) => setWeightType(value as any)}
-                            disabled={editMode && !isEditable('weightType')}
-                          >
-                            <SelectTrigger 
-                              onClick={() => handleDisabledFieldClick('weightType')}
-                              className={editMode && !isEditable('weightType') ? 'bg-gray-100' : ''}
-                            >
-                            <SelectValue placeholder="차량 중량 선택" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {ORDER_VEHICLE_WEIGHTS.map((type) => (
-                                <SelectItem key={type} value={type}>
-                                  {type}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+              {/* 상차지 정보*/}
+              <Card>                
+                <CardContent>
+                  <LocationFormVer01
+                    type="departure"
+                    locationInfo={registerData.departure}
+                    onChange={(info) => setDeparture(info as any)}
+                    compact={true}
+                    disabled={editMode && !isEditable('departure')}
+                    onDisabledClick={() => handleDisabledFieldClick('departure')}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* 하차지 정보 Copy*/}
+              <Card>                
+                <CardContent>
+                  <LocationFormVer01
+                    type="destination"
+                    locationInfo={registerData.destination}
+                    onChange={(info) => setDestination(info as any)}
+                    compact={true}
+                    disabled={editMode && !isEditable('destination')}
+                    onDisabledClick={() => handleDisabledFieldClick('destination')}                  
+                  />
+                </CardContent>
+              </Card>
+              </div>
+
+              {/* 오른쪽: 화물 정보 카드 */}
+              <div className="lg:col-span-1 space-y-4">
+              {/* 화물 정보 카드 */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-lg flex items-center">
+                    <Container className="h-5 w-5 mr-2" />
+                    <div className="flex items-center">
+                      화물 정보 <span className="text-destructive">*</span>
+                    </div>
+                  </CardTitle>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowCargoInfo((prev) => !prev)}
+                  > 
+                    {showCargoInfo ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
+
+                </CardHeader>
+              
+                <CardContent>
+                  <div className="space-y-4">
+                    {/* 회사명 / 담당자 */}
+                    <div className="grid grid-cols-1 md:grid-cols-2">
+
+                      <div>
+                        <div className="text-sm font-medium mb-2 flex items-center">
+                          <Weight className="h-4 w-4 mr-2 text-muted-foreground" />중량
                         </div>
-
-                        <div>
-                          <div className="text-sm font-medium mb-2 flex items-center">
-                            <Truck className="h-4 w-4 mr-2 text-muted-foreground" />종류
-                          </div>
-                          <Select
-                            value={registerData.vehicleType}
-                            onValueChange={(value) => setVehicleType(value as any)}
-                            disabled={editMode && !isEditable('vehicleType')}
+                        <Select
+                          value={registerData.weightType}
+                          onValueChange={(value) => setWeightType(value as any)}
+                          disabled={editMode && !isEditable('weightType')}
+                        >
+                          <SelectTrigger 
+                            onClick={() => handleDisabledFieldClick('weightType')}
+                            className={editMode && !isEditable('weightType') ? 'bg-gray-100' : ''}
                           >
-                            <SelectTrigger 
-                              onClick={() => handleDisabledFieldClick('vehicleType')}
-                              className={editMode && !isEditable('vehicleType') ? 'bg-gray-100' : ''}
-                            >
-                              <SelectValue placeholder="차량 종류 선택" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {ORDER_VEHICLE_TYPES.map((type) => (
-                                <SelectItem key={type} value={type}>
-                                  {type}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                      </div>
-                      
-                      {/* 화물 품목 */}
-                      <div className="col-span-12 md:col-span-10 flex items-end gap-2">
-                          <div className="flex-1">
-                            <div className="text-sm font-medium mb-2 flex items-center">
-                              화물 품목
-                            </div>
-                            <Input
-                              placeholder="화물 품목을 입력하세요 (최대 38자)"
-                              maxLength={38}
-                              value={registerData.cargoType}
-                              onChange={(e) => setCargoType(e.target.value)}
-                              disabled={editMode && !isEditable('cargoType')}
-                              className={editMode && !isEditable('cargoType') ? 'bg-gray-100' : ''}
-                              onClick={() => handleDisabledFieldClick('cargoType')}
-                            />
-                            <p className="text-xs text-right text-muted-foreground mt-1">
-                              {registerData.cargoType.length}/38자
-                            </p>
-                          </div>
-                          
-                          {/* <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  type="button" 
-                                  variant="outline" 
-                                  size="icon" 
-                                  className="mb-5"
-                                  onClick={() => setShowRemark(!showRemark)}
-                                  disabled={editMode && !isEditable('remark')}
-                                >
-                                  {showRemark ? <ChevronUp className="h-4 w-4" /> : <PencilIcon className="h-4 w-4" />}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>비고 입력란 {showRemark ? '숨기기' : '표시하기'}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider> */}
+                          <SelectValue placeholder="차량 중량 선택" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ORDER_VEHICLE_WEIGHTS.map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
 
-                      {/* 비고 - 조건부 렌더링 */}
-                      {showCargoInfo && (
-                        <div className="animate-in fade-in-50 duration-200">
-                          <div className="flex items-center justify-between">
-                            <FormLabel>비고</FormLabel>
-                            {editMode && isEditable('remark') && (
-                              <div className="flex items-center text-xs text-green-600">
-                                <Info className="h-3 w-3 mr-1" />
-                                편집 가능
-                              </div>
-                            )}
-                          </div>
-                          <Textarea
-                            placeholder="비고 (선택사항)"
-                            value={registerData.remark || ''}
-                            onChange={(e) => setRemark(e.target.value)}
-                            className={cn("resize-none h-20", editMode && !isEditable('remark') ? 'bg-gray-100' : '')}
-                            disabled={editMode && !isEditable('remark')}
-                            onClick={() => handleDisabledFieldClick('remark')}
-                          />
+                      <div>
+                        <div className="text-sm font-medium mb-2 flex items-center">
+                          <Truck className="h-4 w-4 mr-2 text-muted-foreground" />종류
                         </div>
-                      )}
+                        <Select
+                          value={registerData.vehicleType}
+                          onValueChange={(value) => setVehicleType(value as any)}
+                          disabled={editMode && !isEditable('vehicleType')}
+                        >
+                          <SelectTrigger 
+                            onClick={() => handleDisabledFieldClick('vehicleType')}
+                            className={editMode && !isEditable('vehicleType') ? 'bg-gray-100' : ''}
+                          >
+                            <SelectValue placeholder="차량 종류 선택" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ORDER_VEHICLE_TYPES.map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
                     </div>
                     
-                  </CardContent>
-                  
-                </Card>
-
-                {/* 운송 옵션 카드 */}
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-md flex items-center">
-                      <OptionsIcon className="h-5 w-5 mr-2" />
-                      <span className="">운송 옵션</span>
-                    </CardTitle>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setShowOptions((prev) => !prev)}
-                    >
-                      {showOptions ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                    </Button>
-                  </CardHeader>
-                  {showOptions && (
-                    <CardContent>
-                      <OptionSelector
-                        options={TRANSPORT_OPTIONS}
-                        selectedOptions={registerData.selectedOptions}
-                        onToggle={toggleOption}
-                        disabled={editMode && !isEditable('selectedOptions')}
-                        onDisabledClick={() => handleDisabledFieldClick('selectedOptions')}
-                      />
-                    </CardContent>
-                  )}
-                </Card>
-
-                {/* 예상 정보 카드 */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg flex items-center">
-                      <CalculatorIcon className="h-5 w-5 mr-2" />
-                      <span className="">{editMode ? '정산 정보' : '예상 정보'}</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">예상 거리</span>
-                        <span className="font-medium">
-                          {isCalculating ? (
-                              <span className="animate-pulse">계산 중...</span>
-                            ) : (
-                              typeof registerData.estimatedDistance === 'number' ? (
-                                <AnimatedNumber number={registerData.estimatedDistance} suffix="km" />
-                              ) : editMode && originalData ? (
-                                <AnimatedNumber number={0} suffix="km" />
-                              ) : (
-                                '0km'
-                              )
-                            )}
-                        </span>
-                      </div>
-                      <Separator />
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">
-                          {editMode ? '운송 금액' : '예상 금액'}
-                        </span>
-                        <span className="text-xl font-bold text-primary">
-                          {isCalculating ? (
-                              <span className="animate-pulse">계산 중...</span>
-                            ) : (
-                              typeof registerData.estimatedAmount === 'number' ? (
-                                <AnimatedNumber number={registerData.estimatedAmount} suffix="원" />
-                              ) : editMode && originalData ? (
-                                <AnimatedNumber number={Number(originalData.amount ?? 0)} suffix="원" />
-                              ) : (
-                                '0원'
-                              )
-                            )}
-                        </span>
-                      </div>
+                    {/* 화물 품목 */}
+                    <div className="col-span-12 md:col-span-10 flex items-end gap-2">
+                        <div className="flex-1">
+                          <div className="text-sm font-medium mb-2 flex items-center">
+                            화물 품목
+                          </div>
+                          <Input
+                            placeholder="화물 품목을 입력하세요 (최대 38자)"
+                            maxLength={38}
+                            value={registerData.cargoType}
+                            onChange={(e) => setCargoType(e.target.value)}
+                            disabled={editMode && !isEditable('cargoType')}
+                            className={editMode && !isEditable('cargoType') ? 'bg-gray-100' : ''}
+                            onClick={() => handleDisabledFieldClick('cargoType')}
+                          />
+                          <p className="text-xs text-right text-muted-foreground mt-1">
+                            {registerData.cargoType.length}/38자
+                          </p>
+                        </div>
+                        
+                        {/* <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                type="button" 
+                                variant="outline" 
+                                size="icon" 
+                                className="mb-5"
+                                onClick={() => setShowRemark(!showRemark)}
+                                disabled={editMode && !isEditable('remark')}
+                              >
+                                {showRemark ? <ChevronUp className="h-4 w-4" /> : <PencilIcon className="h-4 w-4" />}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>비고 입력란 {showRemark ? '숨기기' : '표시하기'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider> */}
                     </div>
-                  </CardContent>
-                </Card>
 
-                {/* 등록 버튼 - 수정 모드에서는 표시하지 않음 */}
-                {!editMode && (
-                  <Button 
-                    type="submit" 
-                    size="lg" 
-                    className="w-full"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        처리 중...
-                      </>
-                    ) : (
-                      '화물 등록'
+                    {/* 비고 - 조건부 렌더링 */}
+                    {showCargoInfo && (
+                      <div className="animate-in fade-in-50 duration-200">
+                        <div className="flex items-center justify-between">
+                          <FormLabel>비고</FormLabel>
+                          {editMode && isEditable('remark') && (
+                            <div className="flex items-center text-xs text-green-600">
+                              <Info className="h-3 w-3 mr-1" />
+                              편집 가능
+                            </div>
+                          )}
+                        </div>
+                        <Textarea
+                          placeholder="비고 (선택사항)"
+                          value={registerData.remark || ''}
+                          onChange={(e) => setRemark(e.target.value)}
+                          className={cn("resize-none h-20", editMode && !isEditable('remark') ? 'bg-gray-100' : '')}
+                          disabled={editMode && !isEditable('remark')}
+                          onClick={() => handleDisabledFieldClick('remark')}
+                        />
+                      </div>
                     )}
-                  </Button>
-                )}
-                </div>
+                  </div>
+                  
+                </CardContent>
+                
+              </Card>
 
-              </CardContent>
+              {/* 운송 옵션 카드 */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-md flex items-center">
+                    <OptionsIcon className="h-5 w-5 mr-2" />
+                    <span className="">운송 옵션</span>
+                  </CardTitle>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowOptions((prev) => !prev)}
+                  >
+                    {showOptions ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
+                </CardHeader>
+                {showOptions && (
+                  <CardContent>
+                    <OptionSelector
+                      options={TRANSPORT_OPTIONS}
+                      selectedOptions={registerData.selectedOptions}
+                      onToggle={toggleOption}
+                      disabled={editMode && !isEditable('selectedOptions')}
+                      onDisabledClick={() => handleDisabledFieldClick('selectedOptions')}
+                    />
+                  </CardContent>
+                )}
+              </Card>
+
+              {/* 예상 정보 카드 */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center">
+                    <CalculatorIcon className="h-5 w-5 mr-2" />
+                    <span className="">{editMode ? '정산 정보' : '예상 정보'}</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">예상 거리</span>
+                      <span className="font-medium">
+                        {isCalculating ? (
+                            <span className="animate-pulse">계산 중...</span>
+                          ) : (
+                            typeof registerData.estimatedDistance === 'number' ? (
+                              <AnimatedNumber number={registerData.estimatedDistance} suffix="km" />
+                            ) : editMode && originalData ? (
+                              <AnimatedNumber number={0} suffix="km" />
+                            ) : (
+                              '0km'
+                            )
+                          )}
+                      </span>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">
+                        {editMode ? '운송 금액' : '예상 금액'}
+                      </span>
+                      <span className="text-xl font-bold text-primary">
+                        {isCalculating ? (
+                            <span className="animate-pulse">계산 중...</span>
+                          ) : (
+                            typeof registerData.estimatedAmount === 'number' ? (
+                              <AnimatedNumber number={registerData.estimatedAmount} suffix="원" />
+                            ) : editMode && originalData ? (
+                              <AnimatedNumber number={Number(originalData.amount ?? 0)} suffix="원" />
+                            ) : (
+                              '0원'
+                            )
+                          )}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* 등록 버튼 - 수정 모드에서는 표시하지 않음 */}
+              {!editMode && (
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      처리 중...
+                    </>
+                  ) : (
+                    '화물 등록'
+                  )}
+                </Button>
+              )}
+              </div>
+
+            </CardContent>
           </Card>
 
         </form>

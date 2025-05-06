@@ -11,7 +11,7 @@ import {
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
 import { ListFilter, Grid3x3 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useOrderStore } from "@/store/order-store";
 // 기존 Mock 데이터 관련 임포트 주석 처리
 // import { getOrdersByPage } from "@/utils/mockdata/mock-orders";
@@ -180,14 +180,13 @@ export default function OrderListPage() {
         </div>
       </header>
       
-      <main className="min-h-screen flex flex-col items-center pt-4">
-        <div className="container">
-          <div className="flex flex-col space-y-4">
-
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-4 gap-2">
+      <main>
+        <Card className="border-none shadow-none">
+          <CardHeader>            
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
-                <h1 className="text-2xl font-semibold">운송 목록</h1>
-                <p className="text-sm text-muted-foreground mt-1">배차 요청한 화물의 운송 현황을 확인할 수 있습니다.</p>
+                <CardTitle>운송 목록</CardTitle>
+                <CardDescription>배차 요청한 화물의 운송 현황을 확인할 수 있습니다.</CardDescription>
               </div>
               <ToggleGroup type="single" className="flex gap-1" value={viewMode} onValueChange={(value: string) => value && setViewMode(value as 'table' | 'card')}>
                 <ToggleGroupItem value="table" aria-label="테이블 보기">
@@ -198,7 +197,8 @@ export default function OrderListPage() {
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
-          
+          </CardHeader>
+          <CardContent>
             <div className="gap-4">  
               <Card>
                 <CardContent>
@@ -259,9 +259,11 @@ export default function OrderListPage() {
                 </CardContent>
               </Card>
             </div>
-          </div>
-        </div>
-        
+
+          </CardContent>
+            
+          
+        </Card>
         {/* 화물 상세 정보 모달 */}
         <OrderDetailSheet />
       </main>

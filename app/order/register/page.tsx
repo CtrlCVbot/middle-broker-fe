@@ -55,23 +55,9 @@ export default function OrderRegisterPage() {
         </div>
       </header>
       
-      <main className="min-h-screen flex flex-col items-center pt-4">
-        <div className="container">
-          <div className="flex flex-col space-y-4">
-            {/* 화물 등록 타이틀 */}
-            {/*
-            <Card className="w-full">
-              <CardHeader>
-                <CardTitle>화물 등록</CardTitle>
-                <CardDescription>
-                  운송할 화물 정보를 입력하고 등록해주세요.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            */}
-            <OrderRegisterForm onSubmit={() => setOpenSummary(true)} />
-          </div>
-        </div>
+      <main >
+        <OrderRegisterForm onSubmit={() => setOpenSummary(true)} />
+        
         
         {/* 최종 확인 모달 */}
         <OrderRegisterSummary 

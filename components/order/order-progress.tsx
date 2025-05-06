@@ -73,6 +73,47 @@ export function OrderProgress({ currentStatus, className }: OrderProgressProps) 
             );
           })}
         </div>
+
+          {/* 배차 상태 표시 */}
+        <div className="flex justify-between text-xs md:text-sm mt-2">
+          {ORDER_FLOW_STATUSES.map((status) => {
+            const isActive = isStatusAtLeast(currentStatus, status);
+            const isCurrent = currentStatus === status;
+
+            return (
+              <div 
+                key={status}
+                className={cn(
+                  "flex flex-col items-center transition-all",
+                  isActive ? "text-md" : "text-muted-foreground",
+                  isCurrent ? "font-bold scale-105" : "font-normal"
+                )}
+              >
+                <div className="relative w-4 h-4 mb-1">
+                  {/* 배경 원 */}
+                  <div
+                    className={cn(
+                      "absolute inset-0 rounded-full transition-all",
+                      isActive ? `bg-${getStatusColor(status)}` : "bg-muted"
+                    )}
+                  />
+                  
+                  {/* 현재 상태일 경우 점멸 애니메이션 원 추가 */}
+                  {isCurrent && (
+                    <div
+                      className={cn(
+                        "absolute inset-0 rounded-full bg-blue-500 animate-bounce-scale"
+                      )}
+                    />
+                  )}
+                </div>
+
+                <span>{status}</span>
+              </div>
+            );
+          })}
+        </div>
+
         </>
       )}
     </div>
