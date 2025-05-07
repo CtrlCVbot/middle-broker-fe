@@ -69,7 +69,7 @@ export const getStatusColor = (status: string) => {
     case "상차대기":
       return "green-800";
     case "상차완료":
-      return "blue-200";
+      return "blue-500";
     case "운송중":
       return "blue-500";
     case "하차완료":

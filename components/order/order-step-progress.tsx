@@ -1,6 +1,6 @@
 "use client"
 
-import { Check } from "lucide-react"
+import { Check, Truck } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ORDER_FLOW_STATUSES, OrderFlowStatus, isStatusAtLeast } from "@/types/order1"
 import { getStatusBadge, getStatusColor } from "./order-table-ver01";
@@ -38,6 +38,7 @@ export function OrderStepProgress({ currentStatus }: OrderStepProgressProps) {
   const stepCount = ORDER_FLOW_STATUSES.length
   const currentIndex = ORDER_FLOW_STATUSES.findIndex((s) => s === currentStatus)
   const currentGroupIndex = getCurrentGroupIndex(currentStatus)
+  const currentStatusLabel = currentStatus
 
   return (
     <div className="w-full px-4">
@@ -54,7 +55,7 @@ export function OrderStepProgress({ currentStatus }: OrderStepProgressProps) {
         />
 
         {/* 스텝 마커들 */}
-        {GROUPED_ORDER_FLOW.map((group, idx, array) => {
+        {GROUPED_ORDER_FLOW.map((group, idx) => {
           const isCurrent = idx === currentGroupIndex
           const isCompleted = idx < currentGroupIndex
           const isUpcoming = idx > currentGroupIndex
@@ -69,12 +70,15 @@ export function OrderStepProgress({ currentStatus }: OrderStepProgressProps) {
               >
                 {/* 현재 상태: 점멸 + 컬러 */}
                 {isCurrent && (
+                  <>
                   <div
                     className={cn(
                       "absolute inset-0 rounded-full animate-pulse-scale",
                       "bg-" + getStatusColor(currentStatus)
                     )}
                   />
+                  <Truck size={18} className="text-white z-10 animate-pulse-scale" />
+                  </>
                 )}
 
                 {/* 완료 상태: 검정 원 + 체크 */}
@@ -96,7 +100,7 @@ export function OrderStepProgress({ currentStatus }: OrderStepProgressProps) {
                 className={cn(
                   "text-xs mt-2 text-center",
                   isCurrent
-                    ? "text-" + getStatusColor(currentStatus) + " font-semibold"
+                    ? "text-" + getStatusColor(currentStatus) + " font-bold text-md"
                     : isCompleted
                     ? "text-black"
                     : "text-gray-400"
@@ -107,6 +111,8 @@ export function OrderStepProgress({ currentStatus }: OrderStepProgressProps) {
             </div>
           )
         })}
+
+        
       </div>
     </div>
   )
