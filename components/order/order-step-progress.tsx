@@ -1,90 +1,113 @@
-// components/OrderStepProgress.tsx
-
 "use client"
 
 import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { ORDER_FLOW_STATUSES, OrderFlowStatus, getProgressPercentage, isStatusAtLeast } from "@/types/order1"
-import { Progress } from "@radix-ui/react-progress"
+import { ORDER_FLOW_STATUSES, OrderFlowStatus, isStatusAtLeast } from "@/types/order1"
+import { getStatusBadge, getStatusColor } from "./order-table-ver01";
 
 interface OrderStepProgressProps {
   currentStatus: OrderFlowStatus
 }
 
-export function OrderStepProgress({ currentStatus }: OrderStepProgressProps) {
-  // 현재 배차 진행도 퍼센트 계산
-  const progressValue = getProgressPercentage(currentStatus);
-  return (
-    <div className="flex items-center justify-between w-full px-4 py-2">
-      {ORDER_FLOW_STATUSES.map((status, idx) => {
-        const isCompleted = isStatusAtLeast(currentStatus, status)
-        const isCurrent = currentStatus === status
-        const isLast = idx === ORDER_FLOW_STATUSES.length - 1
+export const GROUPED_ORDER_FLOW = [
+  {
+    label: "운송요청",
+    statuses: ["운송요청"],
+  },
+  {
+    label: "배차중",
+    statuses: ["배차대기", "배차완료"],
+  },
+  {
+    label: "운송중",
+    statuses: ["상차대기", "상차완료", "운송중"],
+  },
+  {
+    label: "운송완료",
+    statuses: ["하차완료", "운송완료"],
+  },
+] as const;
 
-        return (
-          <>
-          <div className="mb-2">
-            <Progress value={progressValue} className="h-2" />
-          </div>
-          <div key={status} className="flex items-center w-full">
-            {/* Step Marker */}
-            <div className="relative flex flex-col items-center text-center w-16">
-              <div className="relative w-6 h-6 flex items-center justify-center rounded-full z-10">
-                {/* 배경 원 */}
-                <div
-                  className={cn(
-                    "absolute inset-0 rounded-full",
-                    isCurrent
-                      ? "bg-blue-500 animate-pulse-scale"
-                      : isCompleted
-                      ? "bg-black"
-                      : "bg-gray-300"
-                  )}
-                />
-                {/* 체크 아이콘 또는 텍스트 */}
-                {isCompleted && !isCurrent ? (
-                  <Check size={14} className="text-white z-20" />
-                ) : (
-                  <span
-                    className={cn(
-                      "text-xs z-20",
-                      isCurrent ? "text-white" : isCompleted ? "text-white" : "text-gray-400"
-                    )}
-                  >
-                    {isCurrent ? "" : ""}
-                  </span>
-                )}
-              </div>
-              {/* 상태 텍스트 */}
+function getCurrentGroupIndex(currentStatus: string) {
+  return GROUPED_ORDER_FLOW.findIndex(group =>
+    group.statuses.includes(currentStatus as never)
+  )
+}
+
+export function OrderStepProgress({ currentStatus }: OrderStepProgressProps) {
+  const stepCount = ORDER_FLOW_STATUSES.length
+  const currentIndex = ORDER_FLOW_STATUSES.findIndex((s) => s === currentStatus)
+  const currentGroupIndex = getCurrentGroupIndex(currentStatus)
+
+  return (
+    <div className="w-full px-4">
+      <div className="flex items-center justify-between relative">
+        {/* 배경 선 */}
+        <div className="absolute left-0 right-0 h-2 bg-gray-200 top-1/2 -translate-y-1/2 z-0 rounded-full" />
+
+        {/* 채워진 진행 선 */}
+        <div
+          className="absolute left-0 h-2 bg-black top-1/2 -translate-y-1/2 z-10 transition-all duration-500 rounded-full"
+          style={{
+            width: `${(currentGroupIndex / (ORDER_FLOW_STATUSES.length-5)) * 100}%`
+          }}
+        />
+
+        {/* 스텝 마커들 */}
+        {GROUPED_ORDER_FLOW.map((group, idx, array) => {
+          const isCurrent = idx === currentGroupIndex
+          const isCompleted = idx < currentGroupIndex
+          const isUpcoming = idx > currentGroupIndex
+          return (
+            <div key={group.label} className="flex flex-col items-center z-20 w-max">
+              {/* 마커 */}
               <div
                 className={cn(
-                  "mt-2 text-xs",
+                  "relative flex items-center justify-center",
+                  isCurrent ? "w-7 h-7" : isCompleted ? "w-6 h-6" : "w-5 h-5"
+                )}
+              >
+                {/* 현재 상태: 점멸 + 컬러 */}
+                {isCurrent && (
+                  <div
+                    className={cn(
+                      "absolute inset-0 rounded-full animate-pulse-scale",
+                      "bg-" + getStatusColor(currentStatus)
+                    )}
+                  />
+                )}
+
+                {/* 완료 상태: 검정 원 + 체크 */}
+                {isCompleted && !isCurrent && (
+                  <>
+                    <div className="absolute inset-0 rounded-full bg-black" />
+                    <Check size={14} className="text-white z-10" />
+                  </>
+                )}
+
+                {/* 미래 상태: 회색 원 */}
+                {!isCompleted && !isCurrent && (
+                  <div className="absolute inset-0 rounded-full bg-gray-200" />
+                )}
+              </div>
+
+              {/* 텍스트 */}
+              <span
+                className={cn(
+                  "text-xs mt-2 text-center",
                   isCurrent
-                    ? "text-blue-500 font-bold"
+                    ? "text-" + getStatusColor(currentStatus) + " font-semibold"
                     : isCompleted
                     ? "text-black"
                     : "text-gray-400"
                 )}
               >
-                {status}
-              </div>
+                {group.label}
+              </span>
             </div>
-
-            {/* Connector Line */}
-            {!isLast && (
-              <div
-                className={cn(
-                  "h-1 flex-1 mx-1 mt-3 rounded-sm",
-                  isStatusAtLeast(currentStatus, ORDER_FLOW_STATUSES[idx + 1])
-                    ? "bg-black"
-                    : "bg-gray-200"
-                )}
-              />
-            )}
-          </div>
-          </>
-        )
-      })}
+          )
+        })}
+      </div>
     </div>
   )
 }

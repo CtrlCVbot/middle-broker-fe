@@ -81,6 +81,21 @@ export const getStatusColor = (status: string) => {
       return "muted-foreground";
   }
 }
+export const getStatusColorSummary = (status: string) => {
+  switch (status) {
+    case "운송요청":
+      return "orange-500";
+    case "배차중":
+      return "green-500";    
+    case "운송중":
+      return "blue-500";
+    case "운송완료":
+      return "purple-500";
+    default:
+      return "muted-foreground";
+  }
+}
+
 
 const getDateTimeformat = (date: string) => {
   const dateObj = new Date(date);

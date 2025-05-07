@@ -254,10 +254,12 @@ export function OrderDetailSheet() {
             
             <div className="px-6 py-4 space-y-6">
               {/* 배차 상태 Progress */}
-              <div>                
+              {/* <div>                
                 <OrderProgress currentStatus={orderData.statusProgress as any} />
+              </div> */}
+              <div>
+                <OrderStepProgress currentStatus={orderData.statusProgress as any} />
               </div>
-              <OrderStepProgress currentStatus={orderData.statusProgress as any} />
               
               {/* <Separator /> */}
               

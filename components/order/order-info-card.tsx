@@ -3,7 +3,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Truck, Home, Phone, Building2, Building, Factory, Calendar, User, MapPinHouse, Map } from "lucide-react";
+import { Truck, Home, Phone, Building2, Building, Factory, Calendar, User, MapPinHouse, Map, Clock } from "lucide-react";
 
 interface LocationInfoProps {
   title: string;
@@ -83,9 +83,11 @@ function LocationInfo({
           {/* <div className="w-20 text-muted-foreground">
             {isDeparture ? "출발시간" : "도착시간"}
           </div> */}
-          <div className="flex-1 font-medium flex items-center">
-            <Calendar className="h-3 w-3 mr-1 text-muted-foreground" />
-            <span>{date} {time}</span>
+          <div className="flex-1 font-medium ">
+            <Calendar className="inline h-3 w-3 mr-1 text-muted-foreground" />
+            <span>{date}</span>
+            <Clock className="inline h-3 w-3 ml-3 text-muted-foreground" />
+            <span>{time.slice(0, 5)}</span>
           </div>
         </div>
       </CardContent>
