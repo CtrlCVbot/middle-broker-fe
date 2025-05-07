@@ -35,6 +35,7 @@ import { ko } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { getStatusBadge, getStatusColor } from "./order-table-ver01";
+import { OrderInfoCardVer01 } from "./order-info-card-ver01";
 
 // UI 표시를 위한 인터페이스 정의 (백엔드 데이터를 UI에 맞게 변환)
 interface OrderDetailForUI {
@@ -264,13 +265,17 @@ export function OrderDetailSheet() {
               {/* <Separator /> */}
               
               {/* 출발지 및 도착지 정보 */}
-              <div>
-                {/* <h3 className="text-base font-medium mb-3">운송 정보</h3> */}
+              {/* <div>                
                 <OrderInfoCard 
                   departure={orderData.departure} 
                   destination={orderData.destination} 
+                />                
+              </div> */}
+              <div>
+                <OrderInfoCardVer01 
+                  departure={orderData.departure} 
+                  destination={orderData.destination} 
                 />
-                
               </div>
               
               <Separator />

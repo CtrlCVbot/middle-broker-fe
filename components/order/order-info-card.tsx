@@ -3,7 +3,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Truck, Home, Phone, Building2, Building, Factory, Calendar, User, MapPinHouse, Map, Clock } from "lucide-react";
+import { Truck, Home, Phone, Building2, Building, Factory, Calendar, User, MapPinHouse, Map, Clock, LogOut, LogIn } from "lucide-react";
 
 interface LocationInfoProps {
   title: string;
@@ -34,9 +34,9 @@ function LocationInfo({
       <CardHeader >
         <CardTitle className="text-sm md:text-base flex items-center">
           {isDeparture ? (
-            <Map className="h-4 w-4 mr-2 text-blue-500" />
+            <LogOut className="h-4 w-4 mr-2 text-blue-500" />
           ) : (
-            <Map className="h-4 w-4 mr-2 text-green-500" />
+            <LogIn className="h-4 w-4 mr-2 text-green-500" />
           )}
           <div className="font-medium text-shadow-xs text-md text-neutral-500 truncate">{title}</div>
         </CardTitle>
