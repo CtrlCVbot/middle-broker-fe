@@ -54,6 +54,7 @@ import { registerOrder, convertFormDataToApiRequest } from '@/services/order-ser
 import { handleApiError, handleOrderRegisterSuccess, validateOrderFormData } from '@/utils/order-utils';
 import { RegisterSuccessDialog } from '@/components/order/register-success-dialog';
 import { OrderProgress } from "./order-progress";
+import { OrderStepProgress } from "./order-step-progress";
 
 interface OrderRegisterFormProps {
   onSubmit: () => void;
@@ -661,7 +662,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
         <form onSubmit={form.handleSubmit(handleFormSubmit)}>
 
           <Card className="border-none shadow-none">
-            <CardHeader>    
+            {/* <CardHeader>    
               <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <CardTitle>
@@ -676,20 +677,33 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                     ) : (
                       "운송 요청할 화물 정보를 입력하고 등록해주세요."
                     )}
-                    {editMode && originalData && (
-                      <div className="flex items-center mt-4">  
-                        {/* <StatusFlow currentStatus={originalData.status} /> */}
-                        <OrderProgress currentStatus={originalData.statusProgress as any} />
-                      </div>               
-                    )}  
+                      
                   </CardDescription>
                 </div>
-                {/* <Button size="sm" onClick={() => handleOpenFormSheet()}>주소 등록</Button> */}
               </div>
-              
-              
-              
                 
+            </CardHeader> */}
+
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div className="flex flex-col">
+                  <CardTitle>{editMode  ? (
+                      <>운송 정보 수정 - #{orderNumber?.slice(0, 8)}  </> 
+                    ) : (
+                      <>운송 요청</>
+                    )}</CardTitle>
+                  <CardDescription>{editMode ? (
+                      "요청한 운송 정보를 수정하세요. 배차 상태에 따라 수정 가능한 항목이 제한될 수 있습니다."
+                    ) : (
+                      "운송 요청할 화물 정보를 입력하고 등록해주세요."
+                    )}</CardDescription>
+                </div>
+                {editMode && originalData && (
+                  <div>
+                    <OrderStepProgress currentStatus={originalData.statusProgress as any} />
+                  </div>
+                )}
+              </div>
             </CardHeader>
               
             <CardContent className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">
