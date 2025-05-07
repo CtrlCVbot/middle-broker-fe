@@ -107,6 +107,7 @@ export function OrderStepProgress({ currentStatus }: OrderStepProgressProps) {
                 )}
               >
                 {group.label}
+                {group.label !== currentStatus && isCurrent && `(${currentStatus})`}
               </span>
             </div>
           )
