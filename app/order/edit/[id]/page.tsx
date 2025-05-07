@@ -215,7 +215,7 @@ export default function OrderEditPage() {
             )}
             
             {/* 하단 버튼 영역 */}
-            <div className="flex justify-between pt-4">
+            <div className="flex flex-col sm:flex-row justify-between px-6">
               <Button 
                 variant="outline" 
                 onClick={() => {
@@ -240,6 +240,7 @@ export default function OrderEditPage() {
                 )}
               </Button>
             </div>
+
           </div>
           
           {/* 확인 대화상자 */}
