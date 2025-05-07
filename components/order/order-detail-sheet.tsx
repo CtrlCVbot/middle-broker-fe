@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { 
   Sheet, 
   SheetContent, 
@@ -29,13 +29,14 @@ import { OrderActionButtons } from "./order-action-buttons";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatCurrency } from "@/lib/utils";
-import { CalendarClock, AlertTriangle, Package, Truck } from "lucide-react";
+import { CalendarClock, AlertTriangle, Package, Truck, Link2Off, ChevronUp, ChevronDown, Phone, Logs, ChevronsDown, ChevronsUp, Circle } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { getStatusBadge, getStatusColor } from "./order-table-ver01";
 import { OrderInfoCardVer01 } from "./order-info-card-ver01";
+import { Timeline } from "./order-timeline";
 
 // UI 표시를 위한 인터페이스 정의 (백엔드 데이터를 UI에 맞게 변환)
 interface OrderDetailForUI {
@@ -95,6 +96,10 @@ export function OrderDetailSheet() {
     setLoading, 
     setError 
   } = useOrderDetailStore();
+
+  const [showCargeDetail, setShowCargeDetail] = useState(true);
+  const [showVehicleDetail, setShowVehicleDetail] = useState(true);
+  const [showStatusLog, setShowStatusLog] = useState(true);
   
   // TanStack Query를 사용하여 화물 상세 정보 조회 - 실제 API 연동
   const { 
@@ -279,74 +284,117 @@ export function OrderDetailSheet() {
               </div>
               
               <Separator />
-              
-             
 
               <div>
                 {/* <h3 className="text-base font-medium mb-3">화물 및 차량 정보</h3> */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  
+
                   {/* 화물 정보 */}
-                  <Card className="bg-muted/20 text-md hover:ring-2 hover:ring-primary/20 transition-all duration-150">
-                    <CardHeader >
-                      <CardTitle className="text-sm md:text-base flex items-center">
-                        <Package className="h-4 w-4 mr-2 text-muted-foreground" />
-                        <div className="font-medium text-shadow-xs text-md text-neutral-500 truncate">화물 정보</div>
+                  <div className="h-full bg-white shadow-md rounded-md hover:ring-2 hover:ring-primary/20 transition-all duration-150">
+                    <div className={cn("bg-gray-100" + " text-sm p-2 rounded-t-md flex items-center")}>
+                      
+                      <Badge variant="default" className="mr-2 bg-gray-700 text-white">
+                        <Package className="h-4 w-4 text-white" />
+                      </Badge>
+                      <div className="font-medium text-md text-gray-700 truncate">{orderData.cargo.name}</div>
+                    
+                    </div>
+                    <CardHeader className="p-3 flex justify-between items-center">          
+                      <CardTitle className="text-md font-semibold flex items-center">      
+                        {orderData.cargo.weight} / {orderData.cargo.type}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setShowCargeDetail((prev) => !prev)}
+                        >
+                          {showCargeDetail ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </Button>                      
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-2 pt-0 text-md">
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-y-1">
-                        <div className="text-muted-foreground">품목</div>
-                        <div className="font-medium col-span-2">{orderData.cargo.name}</div>
 
-                        <div className="text-muted-foreground">중량/종류</div>
-                        <div className="font-medium col-span-2">{orderData.cargo.weight} / {orderData.cargo.type}</div>
-
-                        {orderData.cargo.options.length > 0 && (
-                          <>
-                            <div className="text-muted-foreground">옵션</div>
-                            <div className="font-medium col-span-2">{orderData.cargo.options.join(', ')}</div>
-                          </>
-                        )}
-
-                        {orderData.cargo.remark && (
-                          <>
-                            <div className="text-muted-foreground">비고</div>
-                            <div className="font-medium col-span-2 text-xs">{orderData.cargo.remark}</div>
-                          </>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
+                    {showCargeDetail && (
+                      <CardContent className="p-3 border-t border-gray-200 space-y-2 pt-0 text-md">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-y-1 mt-3">   
+                          {showCargeDetail && (
+                            <>
+                            {orderData.cargo.options.length > 0 && (
+                              orderData.cargo.options.map((option) => (
+                                <>                           
+                                  <Badge variant="default" className="mr-2 bg-gray-200 text-gray-800">
+                                      {option}
+                                  </Badge>
+                                  {/* <div className="font-medium col-span-2">{orderData.cargo.options.join(', ')}</div> */}
+                                </>
+                              ))
+                            )}                            
+    
+                            {orderData.cargo.remark && (
+                              <>
+                                <div className="text-muted-foreground">비고</div>
+                                <div className="font-medium col-span-2 text-xs">{orderData.cargo.remark}</div>
+                              </>
+                            )}
+                            </>
+                          )}
+                        </div>
+                      </CardContent>
+                    )}
+                  </div>
                   
                   {/* 차량 정보 */}
                   { orderData.vehicle.driver.name.length >= 2 ? (  
                     <>
-                    <Card className="text-md hover:ring-2 hover:ring-primary/20 transition-all duration-150">
-                      <CardHeader >
-                          <CardTitle className="text-sm md:text-base flex items-center">
-                            <Truck className="h-4 w-4 mr-2 text-muted-foreground" />
-                            <div className="text-md font-medium text-muted-foreground text-shadow-xs">차량 정보</div>
-                          </CardTitle>
+                    <div className="h-full bg-white shadow-md rounded-md hover:ring-2 hover:ring-primary/20 transition-all duration-150">
+                      <div className={cn("bg-purple-100" + " text-sm p-2 rounded-t-md flex items-center")}>
+                        
+                        <Badge variant="default" className="mr-2 bg-purple-700 text-white">
+                          <Truck className="h-4 w-4 text-white" />
+                        </Badge>
+                        <div className="font-medium text-md text-purple-700 truncate">차량번호</div>
+                      
+                      </div>
+                      <CardHeader className="p-3 flex justify-between items-center">            
+                        <CardTitle className="text-md font-semibold flex items-center">                                                  
+                            차주명
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setShowVehicleDetail((prev) => !prev)}
+                            >
+                              {showVehicleDetail ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                            </Button>                        
+                        </CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-2 pt-0 text-md">
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-y-1">
-                          <div className="text-muted-foreground">차주</div>
-                          <div className="font-medium col-span-2">{orderData.vehicle.driver.name}/{orderData.vehicle.licensePlate}</div>
+                      {showVehicleDetail && (
+                        <CardContent className="p-3 border-t border-gray-200">
+                          <div className="text-md font-medium mt-2">
+                            연락처
+                          </div>
+                          <div className="flex items-center text-sm text-gray-700">
+                            <Phone className="h-4 w-4 mr-1 text-gray-500" />              
+                            {orderData.vehicle.driver.contact && (
+                              <div>{orderData.vehicle.driver.contact}</div>
+                            )}
+                          </div>
 
-                          <div className="text-muted-foreground">중량/종류</div>
-                          <div className="font-medium col-span-2">{orderData.vehicle.weight} / {orderData.vehicle.type}</div>
+                          {/* 배차 차량 정보 */}
+                          <div className="flex items-center space-x-1 mt-2">
+                            <Truck className="inline h-4 w-4 text-gray-500" />
+                            <span className="text-md font-medium text-muted-foreground">{orderData.vehicle.weight} / {orderData.vehicle.type}</span>
+                          </div>
 
-                          <div className="text-muted-foreground">연락처</div>
-                          <div className="font-medium col-span-2">{orderData.vehicle.driver.contact}</div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                        </CardContent>
+                      )}
+                    </div>
                     </>
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-8 border border-dashed rounded-md bg-muted/30">
-                      <Truck className="h-10 w-10 text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground mb-4">배차전 상태입니다.</p>                      
-                    </div>
+                    <div className="flex flex-col items-center justify-center  border border-dashed rounded-md bg-muted/30">
+                      <Link2Off className="h-8 w-8 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground mb-2">배차전 상태입니다.</p>                      
+                    </div>                                 
                   )}
 
                   
@@ -355,17 +403,78 @@ export function OrderDetailSheet() {
               
               <Separator />
               
+              <div className="h-full bg-white">
+                <div className={cn("" + " text-sm px-1 rounded-t-md flex items-center")} onClick={() => setShowStatusLog((prev) => !prev)}>
+                  
+                  {/* <Badge variant="default" className="mr-2 bg-gray-700 text-white">
+                    <Logs className="h-4 w-4 text-white" />
+                  </Badge> */}
+                  <Logs className="h-5 w-5 text-gray-500 mr-2" />
+                  <div className="font-medium text-md text-gray-700 truncate">상태 로그</div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    //onClick={() => setShowStatusLog((prev) => !prev)}
+                  >
+                    {showStatusLog ? <ChevronsUp className="h-4 w-4 text-gray-700" /> : <ChevronsDown className="h-4 w-4 text-gray-700" />}
+                  </Button>  
+                
+                </div>
+                
+                {showStatusLog && (
+                  <CardContent className="p-3 border-t border-gray-200">
+                    {/* <OrderStatusLog logs={orderData.logs.slice(0, 3)} />
+                    {orderData.logs.length > 3 && <Button variant="link" size="sm">+ 더보기</Button>} */}
+                    <Timeline
+                      items={orderData.logs.map((log) => ({
+                        icon: <Circle className={cn("text-" + getStatusColor(log.status) + "-500")} size={12} />,
+                        title: log.status,
+                        description: log.remark || "",
+                        time: log.time,
+                        
+                      }))}
+                      // items={[
+                      //   {
+                      //     icon: <Circle className="text-purple-500" size={12} />,
+                      //     title: "12 Invoices have been paid",
+                      //     description: "Invoices have been paid to the company",
+                      //     time: "12 min ago",
+                      //     fileLink: "#",
+                      //   },
+                      //   {
+                      //     icon: <Circle className="text-green-500" size={12} />,
+                      //     title: "Client Meeting",
+                      //     description: "Project meeting with John @10:15am",
+                      //     time: "45 min ago",
+                      //     additionalInfo: "Lester McCarthy (Client) - CEO of Pixinvent",
+                      //     userImages: [
+                      //       "/images/user1.jpg",
+                      //       "/images/user2.jpg",
+                      //     ],
+                      //   },
+                      //   {
+                      //     icon: <Circle className="text-blue-500" size={12} />,
+                      //     title: "Create a new project for client",
+                      //     description: "6 team members in a project",
+                      //     time: "2 Day Ago",
+                      //     userImages: [
+                      //       "/images/user1.jpg",
+                      //       "/images/user2.jpg",
+                      //       "/images/user3.jpg",
+                      //       "/images/user4.jpg",
+                      //     ],
+                      //   },
+                      // ]}
+                    />
 
-              <div className="px-6 py-4">
-                <h4 className="text-sm font-semibold mb-2">상태 로그</h4>
-                <OrderStatusLog logs={orderData.logs.slice(0, 3)} />
-                {orderData.logs.length > 3 && <Button variant="link" size="sm">+ 더보기</Button>}
-              </div>
-              
+                  </CardContent>
+                )}
+              </div>                            
             </div>
             
             {/* 푸터 - 액션 버튼 */}
-            <SheetFooter className="px-6 py-4 border-t mt-4 ">
+            <SheetFooter className="px-6 py-4 border-t  ">
               <OrderActionButtons orderNumber={orderData.orderNumber} />
             </SheetFooter>
           </ScrollArea>

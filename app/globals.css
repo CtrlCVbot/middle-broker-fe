@@ -141,3 +141,20 @@
 .animate-pulse-scale {
   animation: pulse-scale 1.2s infinite;
 }
+
+.timeline-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  top: 1rem; /* 마커와 수직선의 연결을 자연스럽게 */
+  left: 0.8rem; /* 마커 중앙과 수직선 일치 */
+  width: 2px;
+  height: 100%; /* 타임라인 길이 조정 */
+  background-color: #d1d5db; /* 회색 (Tailwind: bg-gray-300) */
+  z-index: -1;
+}

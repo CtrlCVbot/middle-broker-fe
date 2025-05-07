@@ -71,11 +71,11 @@ function LocationInfo({
         {/* <Badge variant="default" className="mr-2 bg-blue-700 text-white"> */}
           {isDeparture ? (
             <Badge variant="default" className="mr-2 bg-green-700 text-white">
-            <LogOut className="inline h-4 w-4 mr-1" />
+            <LogOut className="inline h-4 w-4" />
             </Badge>
           ) : (
             <Badge variant="default" className="mr-2 bg-blue-700 text-white">
-            <LogIn className="inline h-4 w-4 mr-1" />
+            <LogIn className="inline h-4 w-4" />
             </Badge>
           )}
         
@@ -108,7 +108,7 @@ function LocationInfo({
         <div className="text-md font-medium mt-2">
           주소
         </div>
-        <div className="flex items-center text-sm text-gray-700 mt-1">
+        <div className="flex items-center text-sm text-gray-700">
           <MapPin className="h-4 w-4 mr-1 text-gray-500" />              
           {address && (
               <div>{address}</div>
@@ -129,7 +129,7 @@ function LocationInfo({
             <Separator className="my-2 border-gray-800" />
 
             {/* 담당자 정보 */}
-            <div className="flex items-center space-x-1 mt-1">
+            <div className="flex items-center space-x-1">
               <User className="inline h-4 w-4 text-gray-500" />
               <span className="text-sm font-medium text-gray-600">{name}</span>
               {contact && (
