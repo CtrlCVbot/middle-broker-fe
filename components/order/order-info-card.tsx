@@ -28,6 +28,8 @@ function LocationInfo({
   date,
   isDeparture = false
 }: LocationInfoProps) {
+
+
   return (
     <>
     <Card className="h-full bg-muted/20 hover:ring-2 hover:ring-primary/20 transition-all duration-150">

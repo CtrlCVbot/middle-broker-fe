@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -27,8 +27,14 @@ import {
   Info,
   ChevronDown,
   MapPin,
+  ChevronUp,
 } from "lucide-react";
 import { Separator } from "@radix-ui/react-separator";
+import { Button } from "../ui/button";
+import { OptionSelector } from "./register-option-selector";
+import { TRANSPORT_OPTIONS } from "@/utils/mockdata/constants";
+import { ko } from "date-fns/locale";
+import { format } from "date-fns";
 
 interface LocationInfoProps {
   title: string;
@@ -53,10 +59,13 @@ function LocationInfo({
   date,
   isDeparture = false,
 }: LocationInfoProps) {
+
+  const [showDetail, setShowDetail] = useState<boolean>(false);
+  
   return (
     <>    
     
-    <div className="h-full bg-white shadow-md rounded-md">
+    <div className="h-full bg-white shadow-md rounded-md hover:ring-2 hover:ring-primary/20 transition-all duration-150">
       {/* 상단 알림 */}
       <div className={cn("bg-"+ (isDeparture ? "green-100" : "blue-100") + " text-" + (isDeparture ? "text-green-700" : "text-blue-700") + " text-sm p-2 rounded-t-md flex items-center")}>
         {/* <Badge variant="default" className="mr-2 bg-blue-700 text-white"> */}
@@ -70,19 +79,24 @@ function LocationInfo({
             </Badge>
           )}
         
-        <span className="text-sm text-gray-700">{date} {time.slice(0, 5)}</span>
+        <span className="text-sm text-gray-700">{format(date, "MM.dd (E) ", { locale: ko })} {time.slice(0, 5)}</span>
       </div>
 
-      <Accordion type="single" collapsible>
-        <AccordionItem value="item-1">
-          <CardHeader className="p-3 flex justify-between items-center">
+      
+
+      <CardHeader className="p-3 flex justify-between items-center">
           
-            <CardTitle className="text-md font-semibold ">
-            <AccordionTrigger className="p-1">
-              
-              {company}
-              
-            </AccordionTrigger>
+            <CardTitle className="text-md font-semibold flex items-center">
+            
+            {company}
+            <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowDetail((prev) => !prev)}
+                  >
+                    {showDetail ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
             
             </CardTitle>
           </CardHeader>
@@ -100,34 +114,41 @@ function LocationInfo({
                 )}
             </div>
 
-            <AccordionContent className="border-none">
-              {/* 주소 정보 */}
-              <div className="flex items-center space-x-1">
-              {detailedAddress && (
-                <div className="text-xs text-muted-foreground ml-5">
-                  {detailedAddress}
-                </div>
-              )}
-              </div>    
-              <Separator className="my-2 border-gray-800" />
+            {/* <AccordionContent className="border-none">
+              
+            </AccordionContent>    */}
 
-              {/* 담당자 정보 */}
-              <div className="flex items-center space-x-1 mt-1">
-                <User className="inline h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">{name}</span>
-                {contact && (
-                  <div className="text-md text-muted-foreground ml-5">
-                    {contact}
-                  </div>
-                )}
-                {/* <Phone className="inline h-4 w-4 ml-2 text-muted-foreground" />
-                <span className="text-xs">{contact}</span> */}
-              </div>
-            </AccordionContent>   
+            {showDetail && (
+              <>
+                  {/* 주소 정보 */}
+                  <div className="flex items-center space-x-1">
+                  {detailedAddress && (
+                    <div className="text-xs text-muted-foreground ml-5">
+                      {detailedAddress}
+                    </div>
+                  )}
+                </div>    
+
+                <Separator className="my-2 border-gray-800" />
+
+                {/* 담당자 정보 */}
+                <div className="flex items-center space-x-1 mt-1">
+                  <User className="inline h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">{name}</span>
+                  {contact && (
+                    <div className="text-md text-muted-foreground ml-5">
+                      {contact}
+                    </div>
+                  )}
+                  {/* <Phone className="inline h-4 w-4 ml-2 text-muted-foreground" />
+                  <span className="text-xs">{contact}</span> */}
+                </div>
+              </>
+            )}
+
+            
             
           </CardContent>
-        </AccordionItem>
-      </Accordion>
     </div>
 
     </>
