@@ -111,7 +111,7 @@ function LocationInfo({
         <div className="flex items-center text-sm text-gray-700">
           <MapPin className="h-4 w-4 mr-1 text-gray-500" />              
           {address && (
-              <div>{address}</div>
+              <div className="text-sm font-medium text-gray-600">{address}</div>
             )}
         </div>
 
