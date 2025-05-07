@@ -61,38 +61,38 @@ export const getStatusBadge = (status: string) => {
 export const getStatusColor = (status: string) => {
   switch (status) {
     case "운송요청":
-      return "destructive";
+      return "red";
     case "배차대기":
-      return "orange-500";
+      return "orange";
     case "배차완료":
-      return "green-500";
+      return "green";
     case "상차대기":
-      return "green-800";
+      return "green";
     case "상차완료":
-      return "blue-500";
+      return "blue";
     case "운송중":
-      return "blue-500";
+      return "blue";
     case "하차완료":
-      return "blue-800";
+      return "blue";
     case "운송마감":
     case "운송완료":
-      return "purple-500";
+      return "purple";
     default:
-      return "muted-foreground";
+      return "gray";
   }
 }
 export const getStatusColorSummary = (status: string) => {
   switch (status) {
     case "운송요청":
-      return "orange-500";
+      return "orange";
     case "배차중":
-      return "green-500";    
+      return "green";    
     case "운송중":
-      return "blue-500";
+      return "blue";
     case "운송완료":
-      return "purple-500";
+      return "purple";
     default:
-      return "muted-foreground";
+      return "gray";
   }
 }
 

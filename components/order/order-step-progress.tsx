@@ -74,7 +74,7 @@ export function OrderStepProgress({ currentStatus }: OrderStepProgressProps) {
                   <div
                     className={cn(
                       "absolute inset-0 rounded-full animate-pulse-scale",
-                      "bg-" + getStatusColor(currentStatus)
+                      "bg-" + getStatusColor(currentStatus) + "-500"
                     )}
                   />
                   <Truck size={18} className="text-white z-10 animate-pulse-scale" />
@@ -100,7 +100,7 @@ export function OrderStepProgress({ currentStatus }: OrderStepProgressProps) {
                 className={cn(
                   "text-xs mt-2 text-center",
                   isCurrent
-                    ? "text-" + getStatusColor(currentStatus) + " font-bold text-md"
+                    ? "text-" + getStatusColor(currentStatus) + "-500 font-bold text-md"
                     : isCompleted
                     ? "text-black"
                     : "text-gray-400"

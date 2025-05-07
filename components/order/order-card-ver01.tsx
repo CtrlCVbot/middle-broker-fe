@@ -100,7 +100,20 @@ export function OrderCard({
     onPageChange(totalPages);
   };
 
-  
+  const getStatusTopColor= (status: string) => {
+    switch (status) {
+      case "운송요청":
+        return "orange-100";
+      case "배차중":
+        return "green-100";    
+      case "운송중":
+        return "blue-100";
+      case "운송완료":
+        return "purple-100";
+      default:
+        return "gray-100";
+    }
+  }
 
   return (
     <>
@@ -118,17 +131,17 @@ export function OrderCard({
             return(
             
             <>
-            <Card 
+            <div 
               key={order.id} 
               //className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-              className="hover:ring-2 hover:ring-primary/30 transition-all duration-150 shadow-sm rounded-xl bg-muted/30"
+              className="h-full bg-white shadow-md rounded-md hover:ring-2 hover:ring-primary/20 transition-all duration-150"
               onClick={() => handleOrderClick(order.id)}
-            >              
-              
-              <div className="flex items-center justify-between px-6 pb-3 border-b ">
+            >   
+
+              <div className={cn("bg-"+ getStatusColor(order.flowStatus) + "-100" + " text-gray-700" + " text-sm p-2 rounded-t-md flex items-center")}>
                 {/* 왼쪽: 시간 */}
                 <div className="flex-1 flex items-center">
-                  <div className="font-semibold text-shadow-xs text-lg text-neutral-600 truncate">
+                  <div className="font-semibold text-shadow-xs text-lg text-gray-700 truncate">
                     {getSchedule(order.pickupDate, order.pickupTime, order.deliveryDate, order.deliveryTime)}
                   </div>
                 </div>
@@ -137,7 +150,7 @@ export function OrderCard({
                 <div className="flex-1 flex justify-center">
                   {/* <div className="scale-100">{getStatusBadgeVer01(order.flowStatus)}</div> */}
                   <Badge className="inline-flex items-center justify-center px-3 py-1 
-                  text-xs font-semibold bg-gray-100 rounded-full border text-muted-foreground" variant="outline" >
+                  text-sm font-semibold bg-white rounded-full border text-gray-700" variant="outline" >
                     {order.flowStatus}
                   </Badge>
                 </div>
@@ -149,14 +162,14 @@ export function OrderCard({
               </div>
 
               
-              <CardContent className=" space-y-4 ">
+              <CardContent className=" space-y-4 border-b border-gray-200 ">
                 
                 <div className="flex items-center justify-between  ">
                   {/* 상차지 정보 */}
                   <div className="flex items-center gap-2">
                     <ArrowUp className={cn(
                       "h-8 w-8 text-green-500",
-                      isCurrent ? `text-${getStatusColor(order.flowStatus)}` : "text-muted"
+                      isCurrent ? `text-${getStatusColor(order.flowStatus)}-500` : "text-muted"
                     )} />
 
                     {/* <ArrowUp className="h-8 w-8 text-green-500" /> */}
@@ -192,24 +205,18 @@ export function OrderCard({
                     </div>
                     <ArrowDown className={cn(
                       "h-8 w-8 text-blue-500",
-                      isCurrent ? `text-${getStatusColor(order.flowStatus)}` : "text-muted"
+                      isCurrent ? `text-${getStatusColor(order.flowStatus)}-500` : "text-muted"
                     )} />
                   </div>
                 </div>
                 
               </CardContent>
-              
-              {/* <CardFooter className="p-3 border-t bg-muted/30 text-xs text-muted-foreground">
-              등록일: {format(new Date(order.createdAt), "yyyy.MM.dd HH:mm")}
-              </CardFooter> */}
-
-              
-
+            
               {/* 하단 정보: 차량 및 차주 */}
-              <div className="flex items-center justify-between px-4 pb-4">
-                <div className="text-sm font-medium px-2 py-1 rounded-md bg-muted text-foreground flex items-center">
+              <div className="flex items-center justify-between px-4  pt-2 pb-2">
+                <div className="text-sm font-medium px-2 py-1 rounded-md text-foreground flex items-center">
                   <Truck className="h-4 w-4 mr-1" />
-                  {order.requestedVehicleType} {order.requestedVehicleWeight}
+                  <span className="text-lg font-medium">{order.requestedVehicleWeight}/{order.requestedVehicleType}</span>
                 </div>
 
                 {/* 차주명/연락처 */}                
@@ -219,7 +226,7 @@ export function OrderCard({
                 </Button>
               </div>
 
-            </Card>
+            </div>
             </>
           )})}
         </div>

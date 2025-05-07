@@ -28,6 +28,7 @@ import {
   ChevronDown,
   MapPin,
   ChevronUp,
+  Warehouse,
 } from "lucide-react";
 import { Separator } from "@radix-ui/react-separator";
 import { Button } from "../ui/button";
@@ -63,8 +64,7 @@ function LocationInfo({
   const [showDetail, setShowDetail] = useState<boolean>(false);
   
   return (
-    <>    
-    
+    <> 
     <div className="h-full bg-white shadow-md rounded-md hover:ring-2 hover:ring-primary/20 transition-all duration-150">
       {/* 상단 알림 */}
       <div className={cn("bg-"+ (isDeparture ? "green-100" : "blue-100") + " text-" + (isDeparture ? "text-green-700" : "text-blue-700") + " text-sm p-2 rounded-t-md flex items-center")}>
@@ -86,71 +86,63 @@ function LocationInfo({
 
       <CardHeader className="p-3 flex justify-between items-center">
           
-            <CardTitle className="text-md font-semibold flex items-center">
-            
-            {company}
-            <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowDetail((prev) => !prev)}
-                  >
-                    {showDetail ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                  </Button>
-            
-            </CardTitle>
-          </CardHeader>
+        <CardTitle className="text-md font-semibold flex items-center">
+        
+          <Warehouse className="h-4 w-4 mr-2 text-gray-500" />
+          {company}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowDetail((prev) => !prev)}
+          >
+            {showDetail ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </Button>
+        
+        </CardTitle>
+      </CardHeader>
 
-          <CardContent className="p-3 border-t border-gray-200">            
+      <CardContent className="p-3 border-t border-gray-200">            
 
-            {/* 배달 주소 */}
-            <div className="text-md font-medium mt-2">
-              주소
-            </div>
-            <div className="flex items-center text-sm text-gray-700 mt-1">
-              <MapPin className="h-4 w-4 mr-1 text-gray-500" />              
-              {address && (
-                  <div>{address}</div>
-                )}
-            </div>
-
-            {/* <AccordionContent className="border-none">
-              
-            </AccordionContent>    */}
-
-            {showDetail && (
-              <>
-                  {/* 주소 정보 */}
-                  <div className="flex items-center space-x-1">
-                  {detailedAddress && (
-                    <div className="text-xs text-muted-foreground ml-5">
-                      {detailedAddress}
-                    </div>
-                  )}
-                </div>    
-
-                <Separator className="my-2 border-gray-800" />
-
-                {/* 담당자 정보 */}
-                <div className="flex items-center space-x-1 mt-1">
-                  <User className="inline h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">{name}</span>
-                  {contact && (
-                    <div className="text-md text-muted-foreground ml-5">
-                      {contact}
-                    </div>
-                  )}
-                  {/* <Phone className="inline h-4 w-4 ml-2 text-muted-foreground" />
-                  <span className="text-xs">{contact}</span> */}
-                </div>
-              </>
+        {/* 배달 주소 */}
+        <div className="text-md font-medium mt-2">
+          주소
+        </div>
+        <div className="flex items-center text-sm text-gray-700 mt-1">
+          <MapPin className="h-4 w-4 mr-1 text-gray-500" />              
+          {address && (
+              <div>{address}</div>
             )}
+        </div>
 
-            
-            
-          </CardContent>
+        {showDetail && (
+          <>
+              {/* 주소 정보 */}
+              <div className="flex items-center space-x-1">
+              {detailedAddress && (
+                <div className="text-xs text-muted-foreground ml-5">
+                  {detailedAddress}
+                </div>
+              )}
+            </div>    
+
+            <Separator className="my-2 border-gray-800" />
+
+            {/* 담당자 정보 */}
+            <div className="flex items-center space-x-1 mt-1">
+              <User className="inline h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-600">{name}</span>
+              {contact && (
+                <div className="text-sm text-muted-foreground ml-3">
+                  {contact}
+                </div>
+              )}
+            </div>
+          </>
+        )}        
+        
+      </CardContent>
     </div>
-
     </>
   );
 }
