@@ -688,7 +688,9 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div className="flex flex-col w-full">
                   <CardTitle>{editMode  ? (
-                      <>운송 정보 수정 - #{orderNumber?.slice(0, 8)}  </> 
+                      <>운송 정보 수정 
+                      {/* - #{orderNumber?.slice(0, 8)}  */}
+                      </> 
                     ) : (
                       <>운송 요청</>
                     )}</CardTitle>
@@ -699,7 +701,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                     )}</CardDescription>
                 </div>
                 {editMode && originalData && (
-                  <div className="w-full">
+                  <div className="w-full pt-0">
                     <OrderStepProgress currentStatus={originalData.statusProgress as any} />
                   </div>
                 )}
