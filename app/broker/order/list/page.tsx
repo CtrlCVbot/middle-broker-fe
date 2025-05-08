@@ -26,6 +26,13 @@ import { cn, formatCurrency } from "@/lib/utils";
 import { BrokerOrderStatusType } from "@/types/broker-order";
 import { toast } from "sonner";
 
+import { OverviewTopCard } from "@/components/order/overview/overview-top-card";
+import { RevenueCard } from "@/components/order/overview/revenue-card";
+import { AverageValueCard } from "@/components/order/overview/average-value-card";
+import { OrderCard as OrderCardOverview } from "@/components/order/overview/order-card";
+import { SpendingCard } from "@/components/order/overview/spending-card";
+import { EarningsCard } from "@/components/order/overview/earning-card";
+
 export default function BrokerOrderListPage() {
   // 자동 새로고침 상태
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
@@ -186,7 +193,7 @@ export default function BrokerOrderListPage() {
       </header>
 
 
-      <main className="flex flex-1 flex-col p-4 pt-0">
+      <main>
         {data?.summary && (
           <Card  className="border-none shadow-none">            
             <CardHeader className="flex flex-row items-center justify-between">
@@ -213,7 +220,7 @@ export default function BrokerOrderListPage() {
 
           <CardContent>     
             {/* 화물 현황 요약 카드 */}
-            <Card className="mb-6 bg-primary/5 hidden md:block">
+            {/* <Card className="mb-6 bg-primary/5 hidden md:block">
               <CardContent  className="pt-0">
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                   <div className="flex flex-col">
@@ -238,7 +245,26 @@ export default function BrokerOrderListPage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
+
+            {/* 요약 영역 */}
+            <div className="mb-4 bg-gray-100 shadow-md rounded-lg">
+                <OverviewTopCard conversionRate={30.5} />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 p-4">
+                  
+                  {/* <OrderCardOverview ordersNumber={data.summary.totalOrders} changePercentage={4.09} progress={63} /> */}
+                  {/* <RevenueCard revenue={12095} changePercentage={-5.08} /> */}
+                  <AverageValueCard value={data.summary.totalOrders} valueColor="gray-500" label="총 화물 건수" memo="총 화물 건수" />
+                  <AverageValueCard value={data.summary.totalContractAmount} valueColor="orange-500" label="총 견적금" memo="총 견적금" />
+                  <AverageValueCard value={data.summary.totalChargeAmount} valueColor="blue-500" label="총 청구금" memo="총 청구금" />
+                  <AverageValueCard value={data.summary.totalSupplyAmount} valueColor="red-500" label="총 공급가" memo="총 공급가" />
+                  <AverageValueCard value={data.summary.totalProfit} valueColor="green-500" label="총 수익" memo="총 수익" />
+                  {/* <SpendingCard expenses={12095} />
+                  <EarningsCard current={12095} target={45000} />
+                  <WeekReportCard revenue={14000} /> */}
+                </div>
+              </div>
 
             <Card>   
               <CardContent>

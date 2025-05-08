@@ -10,7 +10,7 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
-import { ListFilter, Grid3x3 } from "lucide-react";
+import { ListFilter, Grid3x3, ArrowUpRight } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useOrderStore } from "@/store/order-store";
 // 기존 Mock 데이터 관련 임포트 주석 처리
@@ -33,6 +33,14 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { OrderFlowStatus, OrderVehicleType, OrderVehicleWeight } from "@/types/order-ver01";
 import { IOrderFilter, OrderStatusType } from "@/types/order-ver01";
+import { OrderOverview } from "@/components/order/order-overview";
+import { OrderCard as OrderCardOverview } from "@/components/order/overview/order-card";
+import { OverviewTopCard } from "@/components/order/overview/overview-top-card";
+import { RevenueCard } from "@/components/order/overview/revenue-card";
+import { SpendingCard } from "@/components/order/overview/spending-card";
+import { AverageValueCard } from "@/components/order/overview/average-value-card";
+import { WeekReportCard } from "@/components/order/overview/week-report-card";
+import { EarningsCard } from "@/components/order/overview/earning-card";
 
 // 프론트 상태와 백엔드 API 파라미터 간 매핑 함수
 const mapFilterToApiParams = (filter: IOrderFilter) => {
@@ -154,6 +162,8 @@ export default function OrderListPage() {
     });
   }, [refetch]);
 
+  
+
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 border-b">
@@ -200,6 +210,23 @@ export default function OrderListPage() {
           </CardHeader>
           <CardContent>
             <div className="gap-4">  
+              {/* 요약 영역 */}
+              <div className="mb-2 bg-gray-500 shadow-md rounded-lg">
+                <OverviewTopCard conversionRate={30.5} />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 p-6">
+                  
+                  <OrderCardOverview ordersNumber={2095} changePercentage={4.09} progress={63} />
+                  <RevenueCard revenue={12095} changePercentage={-5.08} />
+                  <AverageValueCard value={80.5} />
+                  
+                  {/* <SpendingCard expenses={12095} />
+                  <EarningsCard current={12095} target={45000} />
+                  <WeekReportCard revenue={14000} /> */}
+                </div>
+              </div>
+
+              {/* 검색 영역 */}
               <Card>
                 <CardContent>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
