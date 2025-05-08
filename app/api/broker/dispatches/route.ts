@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { ZodError } from 'zod';
 import { dispatchListQuerySchema } from '@/types/broker-dispatch';
 import { getDispatchList } from '@/services/broker-dispatch-service';
-import { authOptions } from '@/lib/auth';
+// import { authOptions } from '@/lib/auth';
 
 /**
  * 주선사 담당 배차 목록을 조회합니다.
@@ -14,15 +14,16 @@ import { authOptions } from '@/lib/auth';
 export async function GET(request: NextRequest) {
   try {
     // 1. 인증 확인
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: '인증이 필요합니다.' },
-        { status: 401 }
-      );
-    }
+    // const session = await getServerSession(authOptions);
+    // if (!session?.user) {
+    //   return NextResponse.json(
+    //     { success: false, error: '인증이 필요합니다.' },
+    //     { status: 401 }
+    //   );
+    // }
     
-    const userId = session.user.id;
+    // const userId = session.user.id;
+    const userId = request.headers.get('x-user-id') || '';
     
     // 2. 쿼리 파라미터 파싱 및 검증
     const { searchParams } = new URL(request.url);

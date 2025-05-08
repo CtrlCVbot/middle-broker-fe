@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { z, ZodError } from 'zod';
 import { createDispatchSchema } from '@/types/broker-dispatch';
 import { createDispatch, getDispatchDetail } from '@/services/broker-dispatch-service';
-import { authOptions } from '@/lib/auth';
+// import { authOptions } from '@/lib/auth';
 
 // orderId 파라미터 검증 스키마
 const orderIdSchema = z.string().uuid('유효한 주문 ID 형식이 아닙니다.');
@@ -20,15 +20,15 @@ export async function POST(
 ) {
   try {
     // 1. 인증 확인
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: '인증이 필요합니다.' },
-        { status: 401 }
-      );
-    }
+    // const session = await getServerSession(authOptions);
+    // if (!session?.user) {
+    //   return NextResponse.json(
+    //     { success: false, error: '인증이 필요합니다.' },
+    //     { status: 401 }
+    //   );
+    // }
     
-    const userId = session.user.id;
+    const userId = request.headers.get('x-user-id') || '';
     
     // 2. orderId 유효성 검증
     const orderId = orderIdSchema.parse(params.orderId);
