@@ -1,6 +1,6 @@
 // 화주 화물 관리 시스템 타입 정의
 import { IAddress } from './address';
-import { OrderStatusType } from './order';
+
 // 화물 상태 타입 정의
 export const ORDER_FLOW_STATUSES = [
   '운송요청',
@@ -36,6 +36,87 @@ export const ORDER_VEHICLE_WEIGHTS = [
 ] as const;
 
 export type OrderVehicleWeight = typeof ORDER_VEHICLE_WEIGHTS[number];
+
+// 주소 정보 인터페이스
+export interface ILocationInfo {
+  id: string;
+  address: string;
+  roadAddress: string;
+  jibunAddress: string;
+  latitude: number;
+  longitude: number;
+  detailedAddress?: string;
+  name: string;
+  company: string;
+  contact: string;
+  date: string;
+  time: string;
+  createdAt: string;
+}
+
+
+// 화물 상태 타입 정의
+export type OrderStatusType = 
+  | '배차대기' 
+  | '배차완료' 
+  | '상차완료' 
+  | '운송중' 
+  | '하차완료' 
+  | '운송마감';
+
+// 화물 상태 배열 - 상태 순서대로 정의
+export const ORDER_STATUS: OrderStatusType[] = [
+  '배차대기', 
+  '배차완료', 
+  '상차완료', 
+  '운송중', 
+  '하차완료', 
+  '운송마감'
+];
+
+
+// 차량 종류
+//export const VEHICLE_TYPES =  OrderVehicleType;
+export type VehicleType = OrderVehicleType;
+
+// 차량 중량
+//export const WEIGHT_TYPES = ['1톤', '1.4톤', '2.5톤', '3.5톤', '5톤', '11톤', '25톤'] as const;
+export type WeightType = OrderVehicleWeight;
+
+// 화물 등록 정보 인터페이스
+export interface IOrderRegisterData {
+  vehicleType: VehicleType;
+  weightType: WeightType;
+  cargoType: string;
+  remark?: string;
+  departure: ILocationInfo;
+  destination: ILocationInfo;
+  selectedOptions: string[];
+  estimatedDistance?: number;
+  estimatedAmount?: number;
+} 
+
+// 검색 필터 인터페이스
+export interface IOrderFilter {
+  departureCity?: string;      // 출발지 도시
+  arrivalCity?: string;        // 도착지 도시
+  vehicleType?: string;        // 차량 종류
+  weight?: string;             // 중량
+  searchTerm?: string;         // 검색어
+  status?: OrderStatusType;    // 배차상태
+  startDate?: string;          // 검색 시작일
+  endDate?: string;            // 검색 종료일
+}
+
+// 화물 로그 항목 인터페이스
+export interface IOrderLog {
+  status: OrderStatusType;
+  time: string;
+  date: string;
+  handler?: string;
+  location?: string;
+  remark?: string;
+}
 
 
 // 화물 기본 정보 인터페이스

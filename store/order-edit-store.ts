@@ -1,7 +1,6 @@
 import { create } from 'zustand';
-import { OrderStatusType } from '@/types/order';
 import { IOrderDetail } from '@/utils/mockdata/mock-orders-detail';
-import { IOrderRegisterData } from '@/types/order';
+import { IOrderRegisterData } from '@/types/order1';
 
 // 화물 수정 스토어 인터페이스
 interface IOrderEditState {

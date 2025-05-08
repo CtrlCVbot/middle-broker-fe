@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { IOrderFilter } from '@/types/order';
+import { IOrderFilter } from '@/types/order1';
 import { 
   CITIES, 
   VEHICLE_TYPES, 
