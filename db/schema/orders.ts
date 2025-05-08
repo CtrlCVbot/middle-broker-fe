@@ -134,7 +134,9 @@ export const brokerOrders = pgTable('broker_orders', {
 
   // 배차 정보
   driverId: uuid('driver_id').references(() => users.id),
+  //driverSnapshot: json('driver_snapshot').$type<IUserSnapshot>(), //배차 정보
   carrierId: uuid('carrier_id').references(() => companies.id),
+  //carrierSnapshot: json('carrier_snapshot').$type<ICompanySnapshot>(), //운송사 정보
   vehicleNumber: varchar('vehicle_number', { length: 20 }),
 
   // 차량 상세
