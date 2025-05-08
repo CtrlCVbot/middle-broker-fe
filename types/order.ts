@@ -2,7 +2,7 @@
 
 // Settlement 관련 타입 임포트
 import { SettlementStatus } from "./settlement";
-import { OrderVehicleType, OrderVehicleWeight } from "@/types/order1";
+import { OrderVehicleType, OrderVehicleWeight } from "@/types/order-ver01";
 
 // 화물 상태 타입 정의
 export type OrderStatusType = 

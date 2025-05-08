@@ -1,5 +1,5 @@
 // 화물 상세 정보 목업 데이터
-import { OrderStatusType, IOrderLog } from '@/types/order1';
+import { OrderStatusType, IOrderLog } from '@/types/order-ver01';
 
 // 화물 상세 정보 인터페이스
 export interface IOrderDetail {

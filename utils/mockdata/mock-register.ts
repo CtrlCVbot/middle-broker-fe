@@ -1,5 +1,5 @@
 import { IAddress } from "@/types/address";
-import { ILocationInfo, WeightType } from "@/types/order1";
+import { ILocationInfo, WeightType } from "@/types/order-ver01";
 import { v4 as uuidv4 } from 'uuid';
 /**
  * 두 주소 간의 예상 거리를 계산합니다.

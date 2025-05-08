@@ -1,5 +1,5 @@
 import { IOrder as IFrontendOrder, OrderStatusType } from "@/types/order";
-import { IOrder as IBackendOrder, OrderFlowStatus, IOrderListResponse } from "@/types/order1";
+import { IOrder as IBackendOrder, OrderFlowStatus, IOrderListResponse } from "@/types/order-ver01";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 

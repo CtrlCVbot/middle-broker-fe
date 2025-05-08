@@ -34,7 +34,7 @@ import {
   ITransportOptionsSnapshot,
   ORDER_VEHICLE_TYPES,
   ORDER_VEHICLE_WEIGHTS
-} from "@/types/order1";
+} from "@/types/order-ver01";
 
 import { 
   calculateAmount, 

@@ -5,7 +5,7 @@ import {
   ILocationInfo,
   VehicleType, 
   WeightType
-} from '@/types/order1';
+} from '@/types/order-ver01';
 
 
 // 초기 주소 정보

@@ -7,7 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger 
 } from "@/components/ui/accordion";
-import { IOrderLog, OrderStatusType } from "@/types/order1";
+import { IOrderLog, OrderStatusType } from "@/types/order-ver01";
 import { cn } from "@/lib/utils";
 import { 
   ClipboardList, 

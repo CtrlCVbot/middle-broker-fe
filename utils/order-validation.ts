@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ORDER_VEHICLE_TYPES, ORDER_VEHICLE_WEIGHTS } from '@/types/order1';
+import { ORDER_VEHICLE_TYPES, ORDER_VEHICLE_WEIGHTS } from '@/types/order-ver01';
 
 // 주소 스냅샷 스키마
 const addressSnapshotSchema = z.object({

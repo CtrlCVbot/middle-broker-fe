@@ -5,7 +5,7 @@ import { orders } from '@/db/schema/orders';
 import { users } from '@/db/schema/users';
 import { z } from 'zod';
 import { logOrderChange } from '@/utils/order-change-logger';
-import { IUserSnapshot } from '@/types/order1';
+import { IUserSnapshot } from '@/types/order-ver01';
 
 // UUID 검증을 위한 유틸리티 함수
 function isValidUUID(uuid: string): boolean {

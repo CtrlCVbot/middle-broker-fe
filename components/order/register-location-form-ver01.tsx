@@ -14,7 +14,7 @@ import {
   DialogTrigger 
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ILocationInfo } from '@/types/order1';
+import { ILocationInfo } from '@/types/order-ver01';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { CalendarIcon, Search as SearchIcon, Map, Phone, Building2, User, Loader2, MapPin, Building, Clock, Pin, LogOut, LogIn } from 'lucide-react';

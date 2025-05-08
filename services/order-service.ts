@@ -1,9 +1,9 @@
 import { ApiClient, IApiError } from '@/utils/api-client';
-import { IAddressSnapshot, ICompanySnapshot, IPriceSnapshot, ITransportOptionsSnapshot } from '@/types/order1';
+import { IAddressSnapshot, ICompanySnapshot, IPriceSnapshot, ITransportOptionsSnapshot } from '@/types/order-ver01';
 import { getCurrentUser } from '@/utils/auth';
 import { validateOrderData, validateOrderDataWithErrors } from '@/utils/order-validation';
 import { showValidationError } from '@/utils/order-utils';
-import { IOrder, IOrderListResponse, OrderFlowStatus, OrderVehicleType, OrderVehicleWeight } from "@/types/order1";
+import { IOrder, IOrderListResponse, OrderFlowStatus, OrderVehicleType, OrderVehicleWeight } from "@/types/order-ver01";
 
 // API 클라이언트 인스턴스
 const apiClient = new ApiClient();

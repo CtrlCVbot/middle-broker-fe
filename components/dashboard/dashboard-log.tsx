@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import { OrderStatusType } from "@/types/order1";
+import { OrderStatusType } from "@/types/order-ver01";
 
 // 상태별 색상 및 아이콘 정의
 const getStatusStyle = (status: OrderStatusType) => {
