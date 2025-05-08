@@ -251,6 +251,9 @@ export default function BrokerOrderListPage() {
               </div>
             </div>
 
+            {/* 탭 추가 */}
+            <div></div>
+
             {/* 화물 목록 영역 */}
             <Card>   
               <CardContent>
