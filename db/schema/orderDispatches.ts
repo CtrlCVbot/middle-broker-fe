@@ -56,7 +56,9 @@ export const orderDispatches = pgTable('order_dispatches', {
 
   // 생성/수정 정보 (이 배차 정보를 생성/수정한 주선사 직원)
   createdBy: uuid('created_by').notNull().references(() => users.id),
+  createdBySnapshot: json('created_by_snapshot').$type<IUserSnapshot>(), // 생성자 스냅샷
   updatedBy: uuid('updated_by').notNull().references(() => users.id),
+  updatedBySnapshot: json('updated_by_snapshot').$type<IUserSnapshot>(), // 수정자 스냅샷
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
