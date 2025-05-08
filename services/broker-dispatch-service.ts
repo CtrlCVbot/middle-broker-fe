@@ -164,18 +164,18 @@ export async function getDispatchList(query: IDispatchListQuery, userId: string)
     return {
       dispatchId: dispatch.dispatchId,
       orderId: dispatch.orderId,
-      orderFlowStatus: dispatch.orderFlowStatus,
-      cargoName: dispatch.cargoName,
+      orderFlowStatus: dispatch.orderFlowStatus || '',
+      cargoName: dispatch.cargoName || '',
       requestedVehicleInfo,
       pickupLocation: pickupAddress,
       deliveryLocation: deliveryAddress,
       pickupDateTime,
       deliveryDateTime,
       brokerManagerName,
-      assignedVehicleNumber: dispatch.assignedVehicleNumber,
+      assignedVehicleNumber: dispatch.assignedVehicleNumber ?? undefined,
       assignedDriverName,
       agreedFreightCost: dispatch.agreedFreightCost ? Number(dispatch.agreedFreightCost) : undefined,
-      createdAt: dispatch.createdAt?.toString(),
+      createdAt: dispatch.createdAt?.toString() || '',
     };
   });
   
@@ -251,7 +251,7 @@ export async function getDispatchDetail(dispatchId: string): Promise<IOrderDispa
       brokerManager = {
         id: manager.id,
         name: manager.name,
-        phone: manager.phone_number,
+        phone: manager.phone || '',
       };
     }
   }
@@ -259,7 +259,7 @@ export async function getDispatchDetail(dispatchId: string): Promise<IOrderDispa
   // 배차된 기사 정보 조회
   if (dispatch.assignedDriverId) {
     const driverResults = await db
-      .select({ id: users.id, name: users.name, phone: users.phone })
+      .select({ id: users.id, name: users.name, phone: users.phone_number })
       .from(users)
       .where(eq(users.id, dispatch.assignedDriverId))
       .limit(1);
@@ -269,7 +269,7 @@ export async function getDispatchDetail(dispatchId: string): Promise<IOrderDispa
       assignedDriver = {
         id: driver.id,
         name: driver.name,
-        phone: driver.phone,
+        phone: driver.phone || '',
       };
     }
   }
@@ -286,7 +286,7 @@ export async function getDispatchDetail(dispatchId: string): Promise<IOrderDispa
     assignedDriverId: dispatch.assignedDriverId || undefined,
     assignedDriverSnapshot: dispatch.assignedDriverSnapshot as IUserSnapshot | undefined,
     assignedDriverPhone: dispatch.assignedDriverPhone || undefined,
-    assignedVehicleNumber: dispatch.assignedVehicleNumber || undefined,
+    assignedVehicleNumber: dispatch.assignedVehicleNumber ?? undefined,
     assignedVehicleType: dispatch.assignedVehicleType || undefined,
     assignedVehicleWeight: dispatch.assignedVehicleWeight || undefined,
     assignedVehicleConnection: dispatch.assignedVehicleConnection || undefined,
@@ -296,14 +296,14 @@ export async function getDispatchDetail(dispatchId: string): Promise<IOrderDispa
     createdBySnapshot: dispatch.createdBySnapshot as IUserSnapshot | undefined,
     updatedBy: dispatch.updatedBy,
     updatedBySnapshot: dispatch.updatedBySnapshot as IUserSnapshot | undefined,
-    createdAt: dispatch.createdAt?.toString(),
-    updatedAt: dispatch.updatedAt?.toString(),
+    createdAt: dispatch.createdAt?.toString() || '',
+    updatedAt: dispatch.updatedAt?.toString() || '',
     
     // 연결된 원본 주문 정보
     orderInfo: {
       id: order.id,
       flowStatus: order.flowStatus,
-      cargoName: order.cargoName,
+      cargoName: order.cargoName || '',
       requestedVehicleType: order.requestedVehicleType,
       requestedVehicleWeight: order.requestedVehicleWeight,
       pickupAddressSnapshot: order.pickupAddressSnapshot,
@@ -368,9 +368,9 @@ export async function createDispatch(
   
   const brokerCompanySnapshot: ICompanySnapshot = {    
     name: brokerCompanyResults[0].name,
-    address: brokerCompanyResults[0].address || '',
-    phone: brokerCompanyResults[0].phone || '',
-    email: brokerCompanyResults[0].email || '',
+    address: brokerCompanyResults[0].addressRoad || '',
+    phone: brokerCompanyResults[0].contactTel || '',
+    email: brokerCompanyResults[0].contactEmail || '',
     // 기타 필요한 회사 정보
   };
   
@@ -389,9 +389,9 @@ export async function createDispatch(
     }
     
     brokerManagerSnapshot = {
-      id: managerResults[0].id,
       name: managerResults[0].name,
-      phone: managerResults[0].phone_number || '',
+      mobile: managerResults[0].phone_number || '',
+      email: managerResults[0].email || '',
       // 기타 필요한 사용자 정보
     };
   }
@@ -408,9 +408,9 @@ export async function createDispatch(
   }
   
   const assignedDriverSnapshot: IUserSnapshot = {
-    id: driverResults[0].id,
     name: driverResults[0].name,
-    phone: driverResults[0].phone || '',
+    mobile: driverResults[0].phone_number || '',
+    email: driverResults[0].email || '',
     // 기타 필요한 기사 정보
   };
   
@@ -426,9 +426,9 @@ export async function createDispatch(
   }
   
   const createdBySnapshot: IUserSnapshot = {
-    id: creatorResults[0].id,
     name: creatorResults[0].name,
-    phone: creatorResults[0].phone || '',
+    mobile: creatorResults[0].phone_number || '',
+    email: creatorResults[0].email || '',
     // 기타 필요한 사용자 정보
   };
   
@@ -443,12 +443,12 @@ export async function createDispatch(
       brokerManagerSnapshot,
       assignedDriverId: payload.assignedDriverId,
       assignedDriverSnapshot,
-      assignedDriverPhone: assignedDriverSnapshot.phone,
+      assignedDriverPhone: assignedDriverSnapshot.mobile,
       assignedVehicleNumber: payload.assignedVehicleNumber,
       assignedVehicleType: payload.assignedVehicleType,
       assignedVehicleWeight: payload.assignedVehicleWeight,
       assignedVehicleConnection: payload.assignedVehicleConnection,
-      agreedFreightCost: payload.agreedFreightCost,
+      agreedFreightCost: payload.agreedFreightCost?.toString(),
       brokerMemo: payload.brokerMemo,
       createdBy: userId,
       createdBySnapshot,
@@ -510,7 +510,8 @@ export async function updateDispatch(
   updateData.updatedBySnapshot = {
     id: updaterResults[0].id,
     name: updaterResults[0].name,
-    phone: updaterResults[0].phone || '',
+    mobile: updaterResults[0].phone_number || '',
+    email: updaterResults[0].email || '',
     // 기타 필요한 사용자 정보
   } as any;
   
@@ -529,10 +530,10 @@ export async function updateDispatch(
         .limit(1);
       
       if (managerResults.length > 0) {
-        updateData.brokerManagerSnapshot = {
-          id: managerResults[0].id,
+        updateData.brokerManagerSnapshot = {          
           name: managerResults[0].name,
-          phone: managerResults[0].phone || '',
+          mobile: managerResults[0].phone_number || '',
+          email: managerResults[0].email || '',
           // 기타 필요한 사용자 정보
         } as any;
       }
@@ -556,13 +557,13 @@ export async function updateDispatch(
       
       if (driverResults.length > 0) {
         updateData.assignedDriverSnapshot = {
-          id: driverResults[0].id,
           name: driverResults[0].name,
-          phone: driverResults[0].phone || '',
+          mobile: driverResults[0].phone_number || '',
+          email: driverResults[0].email || '',
           // 기타 필요한 사용자 정보
         } as any;
         
-        updateData.assignedDriverPhone = driverResults[0].phone || null;
+        updateData.assignedDriverPhone = driverResults[0].phone_number || null;
       }
     } else {
       // null로 설정된 경우 스냅샷도 null로 설정
@@ -589,7 +590,7 @@ export async function updateDispatch(
   }
   
   if (payload.agreedFreightCost !== undefined) {
-    updateData.agreedFreightCost = payload.agreedFreightCost;
+    updateData.agreedFreightCost = payload.agreedFreightCost?.toString();
   }
   
   if (payload.brokerMemo !== undefined) {
