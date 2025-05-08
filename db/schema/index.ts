@@ -6,5 +6,5 @@ export * from './user-tokens';
 export * from './orders';
 export * from './addresses';
 export * from './addressChangeLogs';
-
+export * from './orderDispatches';
 
