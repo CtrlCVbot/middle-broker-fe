@@ -161,6 +161,19 @@ export default function BrokerOrderListPage() {
   // 총 페이지 수 계산
   const totalPages = Math.ceil((data?.pagination.total || 0) / pageSize);
 
+  // 견적금 기준 수익
+  const profitFromContract = data?.summary?.totalContractAmount ? data?.summary?.totalContractAmount - data?.summary?.totalSupplyAmount : 0;
+
+  // 청구금 기준 수익
+  const profitFromCharge = data?.summary?.totalChargeAmount ? data?.summary?.totalChargeAmount - data?.summary?.totalSupplyAmount : 0;
+
+  // 견적금 기준 수익률
+  const profitRateFromContract = data?.summary?.totalContractAmount ? (profitFromContract / data?.summary?.totalContractAmount) * 100 : 0;
+
+  // 청구금 기준 수익률
+  const profitRateFromCharge = data?.summary?.totalChargeAmount ? (profitFromCharge / data?.summary?.totalChargeAmount) * 100 : 0;
+
+
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 border-b">
@@ -219,53 +232,26 @@ export default function BrokerOrderListPage() {
           </CardHeader>
 
           <CardContent>     
-            {/* 화물 현황 요약 카드 */}
-            {/* <Card className="mb-6 bg-primary/5 hidden md:block">
-              <CardContent  className="pt-0">
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                  <div className="flex flex-col">
-                    <span className="text-sm text-muted-foreground">화물 건수</span>
-                    <span className="text-xl font-bold">{data.summary.totalOrders}건</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm text-muted-foreground">총 견적금</span>
-                    <span className="text-xl font-bold">{formatCurrency(data.summary.totalContractAmount)}원</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm text-muted-foreground">총 청구금</span>
-                    <span className="text-xl font-bold">{formatCurrency(data.summary.totalChargeAmount)}원</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm text-muted-foreground">총 공급가</span>
-                    <span className="text-xl font-bold">{formatCurrency(data.summary.totalSupplyAmount)}원</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm text-muted-foreground">예상 수익</span>
-                    <span className="text-xl font-bold text-green-600">{formatCurrency(data.summary.totalProfit)}원</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card> */}
+            {/* 화물 현황 요약 카드 */}   
+            <div className="mb-4 bg-muted shadow-md rounded-lg">
+              <OverviewTopCard conversionRate={profitRateFromCharge} />
 
-            {/* 요약 영역 */}
-            <div className="mb-4 bg-gray-100 shadow-md rounded-lg">
-                <OverviewTopCard conversionRate={30.5} />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 p-4">
-                  
-                  {/* <OrderCardOverview ordersNumber={data.summary.totalOrders} changePercentage={4.09} progress={63} /> */}
-                  {/* <RevenueCard revenue={12095} changePercentage={-5.08} /> */}
-                  <AverageValueCard value={data.summary.totalOrders} valueColor="gray-500" label="총 화물 건수" memo="총 화물 건수" />
-                  <AverageValueCard value={data.summary.totalContractAmount} valueColor="orange-500" label="총 견적금" memo="총 견적금" />
-                  <AverageValueCard value={data.summary.totalChargeAmount} valueColor="blue-500" label="총 청구금" memo="총 청구금" />
-                  <AverageValueCard value={data.summary.totalSupplyAmount} valueColor="red-500" label="총 공급가" memo="총 공급가" />
-                  <AverageValueCard value={data.summary.totalProfit} valueColor="green-500" label="총 수익" memo="총 수익" />
-                  {/* <SpendingCard expenses={12095} />
-                  <EarningsCard current={12095} target={45000} />
-                  <WeekReportCard revenue={14000} /> */}
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 p-4">
+                
+                {/* <OrderCardOverview ordersNumber={data.summary.totalOrders} changePercentage={4.09} progress={63} /> */}
+                {/* <RevenueCard revenue={12095} changePercentage={-5.08} /> */}
+                <AverageValueCard value={data.summary.totalOrders} valueColor="gray-500" label="총 화물 건수" memo="총 화물 건수" />
+                <AverageValueCard value={data.summary.totalContractAmount} valueColor="orange-500" label="총 견적금" memo="총 견적금" />
+                <AverageValueCard value={data.summary.totalChargeAmount} valueColor="blue-500" label="총 청구금" memo="총 청구금" />
+                <AverageValueCard value={data.summary.totalSupplyAmount} valueColor="red-500" label="총 공급가" memo="총 공급가" />
+                <AverageValueCard value={data.summary.totalProfit} valueColor="green-500" label="총 수익" memo="총 수익" />
+                {/* <SpendingCard expenses={12095} />
+                <EarningsCard current={12095} target={45000} />
+                <WeekReportCard revenue={14000} /> */}
               </div>
+            </div>
 
+            {/* 화물 목록 영역 */}
             <Card>   
               <CardContent>
                 {/* 검색 필터 - 양끝에 배치*/}

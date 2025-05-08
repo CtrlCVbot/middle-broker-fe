@@ -122,38 +122,4 @@ export const orders = pgTable('orders', {
   updatedAt: timestamp('updated_at').defaultNow(), //수정일
 });
 
-// 주선사 배차 및 운송 정보 테이블
-export const brokerOrders = pgTable('broker_orders', {
-  id: uuid('id').defaultRandom().primaryKey(),
-
-  // 연결된 주문
-  orderId: uuid('order_id').notNull().references(() => orders.id),
-
-  // 배차 상태
-  dispatchStatus: dispatchStatusEnum('dispatch_status').notNull().default('배차대기'),
-
-  // 배차 정보
-  driverId: uuid('driver_id').references(() => users.id),
-  //driverSnapshot: json('driver_snapshot').$type<IUserSnapshot>(), //배차 정보
-  carrierId: uuid('carrier_id').references(() => companies.id),
-  //carrierSnapshot: json('carrier_snapshot').$type<ICompanySnapshot>(), //운송사 정보
-  vehicleNumber: varchar('vehicle_number', { length: 20 }),
-
-  // 차량 상세
-  truckType: varchar('truck_type', { length: 50 }),
-  tonnage: numeric('tonnage', { precision: 6, scale: 2 }),
-
-  // 정산
-  payToCarrier: numeric('pay_to_carrier', { precision: 12, scale: 2 }),
-  payMethod: varchar('pay_method', { length: 30 }),
-  settlementMemo: varchar('settlement_memo', { length: 300 }),
-
-  // 특이사항
-  specialNotes: varchar('special_notes', { length: 500 }),
-
-  // 생성/수정 정보
-  createdBy: uuid('created_by').references(() => users.id),
-  updatedBy: uuid('updated_by').references(() => users.id),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
-}); 
+ 

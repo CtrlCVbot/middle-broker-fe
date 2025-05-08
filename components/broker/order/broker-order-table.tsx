@@ -85,11 +85,10 @@ export function BrokerOrderTable({
             <TableRow>
               <TableHead className="w-[80px] text-center">ID</TableHead>
               <TableHead className="w-[80px] text-center">상태</TableHead>
-              <TableHead className="w-[80px] ">일정</TableHead>
-              <TableHead className="w-[120px] ">시간</TableHead>              
-              <TableHead>상차지</TableHead>
-              <TableHead>{/* 상차지 하차지 흐름 보여주는 이미지 넣는 컬럼! 지우지 마세요!*/}</TableHead>
-              <TableHead>하차지</TableHead>     
+              <TableHead className="w-[80px] ">상차지</TableHead>
+              <TableHead className="w-[120px] ">상차일시</TableHead>              
+              <TableHead>하차지</TableHead>              
+              <TableHead className="w-[120px] ">하차일시</TableHead>
               <TableHead>차량</TableHead>
               <TableHead>차주</TableHead>
               <TableHead>콜센터</TableHead>
@@ -127,12 +126,6 @@ export function BrokerOrderTable({
                         <Badge variant="destructive" className="ml-1 text-[10px] px-1">지각</Badge>
                       ) : null}
                     </TableCell>
-                    {/* <TableCell>
-                      <BrokerStatusBadge status={order.status} size="sm" />
-                      {order.gpsLocation?.status === "상차 지각" || order.gpsLocation?.status === "하차 지각" ? (
-                        <Badge variant="destructive" className="ml-1 text-[10px] px-1">지각</Badge>
-                      ) : null}
-                    </TableCell> */}
                     <TableCell className="max-w-[150px] truncate" title={order.departureLocation}>
                       {order.departureLocation}
                     </TableCell>
