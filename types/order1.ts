@@ -28,6 +28,7 @@ export type OrderVehicleType = typeof ORDER_VEHICLE_TYPES[number];
 
 export const ORDER_VEHICLE_WEIGHTS = [
   '1톤',
+  '1.4톤',
   '2.5톤',
   '3.5톤',
   '5톤',
@@ -74,6 +75,23 @@ export const ORDER_STATUS: OrderStatusType[] = [
   '운송마감'
 ];
 
+// 운송 옵션
+export interface ITransportOption {
+  id: string;
+  label: string;
+  description?: string;
+}
+
+export const TRANSPORT_OPTIONS: ITransportOption[] = [
+  { id: 'direct', label: '이착', description: '상하차 지점 직접 운송' },
+  { id: 'trace', label: '혼적', description: '다른 짐들과 합짐' },
+  { id: 'fast', label: '빠른 배차', description: '우선 배차 처리' },
+  { id: 'cod', label: '착불', description: '도착 후 결제' },
+  { id: 'wing', label: '윙바디', description: '윙바디 차량으로 배차' },
+  { id: 'duplicate', label: '중복화물', description: '중복 화물 허용' },
+  { id: 'forklift', label: '지게차 하차', description: '하차 시 지게차 필요' },
+  { id: 'special', label: '특수화물', description: '특수 운송 필요' },
+];
 
 // 차량 종류
 //export const VEHICLE_TYPES =  OrderVehicleType;

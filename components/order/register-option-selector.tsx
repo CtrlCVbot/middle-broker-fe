@@ -3,7 +3,7 @@
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { ITransportOption } from "@/types/order";
+import { ITransportOption } from "@/types/order1";
 
 interface OptionSelectorProps {
   options: ITransportOption[];

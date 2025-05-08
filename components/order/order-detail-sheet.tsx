@@ -18,9 +18,7 @@ import { fetchOrderDetail } from "@/services/order-service";
 import { mapBackendOrderToFrontendOrder } from "@/utils/data-mapper";
 import { handleApiError } from "@/utils/api-error-handler";
 // IOrder 타입 임포트 추가
-import { IOrder, OrderFlowStatus } from "@/types/order1";
-import { IOrderLog } from "@/types/order";
-
+import { IOrder, OrderFlowStatus, IOrderLog } from "@/types/order1";
 import { OrderProgress } from "./order-progress";
 import { OrderStepProgress } from "./order-step-progress";
 import { OrderInfoCard } from "./order-info-card";

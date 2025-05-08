@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardStore } from "@/store/dashboard-store";
 import { MoreVertical, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { OrderStatusType } from "@/types/order";
+import { OrderStatusType } from "@/types/order1";
 
 // 상태별 색상 및 스타일 정의
 const getStatusStyle = (status: OrderStatusType) => {

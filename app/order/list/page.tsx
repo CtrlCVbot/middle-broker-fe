@@ -32,7 +32,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { OrderFlowStatus, OrderVehicleType, OrderVehicleWeight } from "@/types/order1";
-import { IOrderFilter, OrderStatusType } from "@/types/order";
+import { IOrderFilter, OrderStatusType } from "@/types/order1";
 
 // 프론트 상태와 백엔드 API 파라미터 간 매핑 함수
 const mapFilterToApiParams = (filter: IOrderFilter) => {
