@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { orders } from '@/db/schema/orders';
+import { orderFlowStatusEnum, orders, vehicleTypeEnum, vehicleWeightEnum } from '@/db/schema/orders';
 import { orderDispatches } from '@/db/schema/orderDispatches';
 import { users } from '@/db/schema/users';
 import { eq, and, ilike, or, sql, desc, asc, gte, lte } from 'drizzle-orm';
@@ -56,15 +56,15 @@ export async function GET(request: NextRequest) {
     }
     
     if (flowStatus) {
-      conditions.push(eq(orders.flowStatus, flowStatus));
+      conditions.push(eq(orders.flowStatus, flowStatus as (typeof orderFlowStatusEnum.enumValues)[number]));
     }
     
     if (vehicleType) {
-      conditions.push(eq(orders.requestedVehicleType, vehicleType));
+      conditions.push(eq(orders.requestedVehicleType, vehicleType as (typeof vehicleTypeEnum.enumValues)[number]));
     }
     
     if (vehicleWeight) {
-      conditions.push(eq(orders.requestedVehicleWeight, vehicleWeight));
+      conditions.push(eq(orders.requestedVehicleWeight, vehicleWeight as (typeof vehicleWeightEnum.enumValues)[number]));
     }
     
     if (pickupCity) {
@@ -76,14 +76,13 @@ export async function GET(request: NextRequest) {
     }
     
     if (startDate) {
-      conditions.push(gte(orders.pickupDate, new Date(startDate)));
+      conditions.push(gte(orders.pickupDate, startDate));
     }
     
     if (endDate) {
-      // endDate에 하루를 더해 당일 23:59:59까지 포함
       const nextDay = new Date(endDate);
       nextDay.setDate(nextDay.getDate() + 1);
-      conditions.push(lte(orders.pickupDate, nextDay));
+      conditions.push(lte(orders.pickupDate, nextDay.toISOString().split('T')[0]));
     }
     
     if (companyId) {
@@ -102,14 +101,19 @@ export async function GET(request: NextRequest) {
       ? and(...conditions) 
       : undefined;
     
+    // 안전한 정렬 함수 정의
+    function getSafeOrderColumn(table: any, columnName: string) {
+      return table[columnName] || table.id; // 컬럼이 없으면 id로 대체
+    }
+
     // 정렬 조건 설정
     const orderByClause = sortOrder === 'asc'
       ? (sortBy.startsWith('dispatch.') 
-          ? asc(orderDispatches[sortBy.replace('dispatch.', '') as keyof typeof orderDispatches]) 
-          : asc(orders[sortBy as keyof typeof orders]))
+          ? asc(getSafeOrderColumn(orderDispatches, sortBy.replace('dispatch.', '')))
+          : asc(getSafeOrderColumn(orders, sortBy)))
       : (sortBy.startsWith('dispatch.') 
-          ? desc(orderDispatches[sortBy.replace('dispatch.', '') as keyof typeof orderDispatches]) 
-          : desc(orders[sortBy as keyof typeof orders]));
+          ? desc(getSafeOrderColumn(orderDispatches, sortBy.replace('dispatch.', '')))
+          : desc(getSafeOrderColumn(orders, sortBy)));
     
     // 전체 카운트 쿼리 실행
     const totalCountResult = await db
@@ -148,7 +152,7 @@ export async function GET(request: NextRequest) {
         memo: orders.memo,
         isCanceled: orders.isCanceled,
         companyId: orders.companyId,
-        companySnapshot: orders.companySnapshot,
+        companySnapshot: orders.companySnapshot || undefined,
         createdAt: orders.createdAt,
         updatedAt: orders.updatedAt,
         
@@ -168,9 +172,9 @@ export async function GET(request: NextRequest) {
         agreedFreightCost: orderDispatches.agreedFreightCost,
         brokerMemo: orderDispatches.brokerMemo,
         dispatchCreatedBy: orderDispatches.createdBy,
-        dispatchCreatedBySnapshot: orderDispatches.createdBySnapshot,
+        dispatchCreatedBySnapshot: orderDispatches.createdBySnapshot || undefined,
         dispatchUpdatedBy: orderDispatches.updatedBy,
-        dispatchUpdatedBySnapshot: orderDispatches.updatedBySnapshot,
+        dispatchUpdatedBySnapshot: orderDispatches.updatedBySnapshot || undefined,
         dispatchCreatedAt: orderDispatches.createdAt,
         dispatchUpdatedAt: orderDispatches.updatedAt,
       })
@@ -195,7 +199,7 @@ export async function GET(request: NextRequest) {
           contactName: item.pickupContactName || '',
           contactPhone: item.pickupContactPhone || '',
           address: item.pickupAddressSnapshot,
-          date: item.pickupDate?.toISOString().split('T')[0] || '',
+          date: item.pickupDate?.toString().split('T')[0] || '',
           time: item.pickupTime || '',
         },
         delivery: {
@@ -203,17 +207,17 @@ export async function GET(request: NextRequest) {
           contactName: item.deliveryContactName || '',
           contactPhone: item.deliveryContactPhone || '',
           address: item.deliveryAddressSnapshot,
-          date: item.deliveryDate?.toISOString().split('T')[0] || '',
+          date: item.deliveryDate?.toString().split('T')[0] || '',
           time: item.deliveryTime || '',
         },
-        estimatedDistance: item.estimatedDistance,
+        estimatedDistance: item.estimatedDistance ? Number(item.estimatedDistance) : undefined,
         estimatedPriceAmount: item.estimatedPriceAmount ? Number(item.estimatedPriceAmount) : undefined,
         priceType: item.priceType || '',
         taxType: item.taxType || '',
         memo: item.memo || '',
         isCanceled: item.isCanceled || false,
         companyId: item.companyId || '',
-        companySnapshot: item.companySnapshot,
+        companySnapshot: item.companySnapshot || undefined,
         createdAt: item.createdAt?.toISOString() || '',
         updatedAt: item.updatedAt?.toISOString() || '',
       };
@@ -222,11 +226,11 @@ export async function GET(request: NextRequest) {
       const dispatchInfo = item.dispatchId ? {
         id: item.dispatchId,
         brokerCompanyId: item.brokerCompanyId || '',
-        brokerCompanySnapshot: item.brokerCompanySnapshot,
+        brokerCompanySnapshot: item.brokerCompanySnapshot || undefined,
         brokerManagerId: item.brokerManagerId || '',
-        brokerManagerSnapshot: item.brokerManagerSnapshot,
+        brokerManagerSnapshot: item.brokerManagerSnapshot || undefined,
         assignedDriverId: item.assignedDriverId || '',
-        assignedDriverSnapshot: item.assignedDriverSnapshot,
+        assignedDriverSnapshot: item.assignedDriverSnapshot || undefined,
         assignedDriverPhone: item.assignedDriverPhone || '',
         assignedVehicleNumber: item.assignedVehicleNumber || '',
         assignedVehicleType: item.assignedVehicleType || '',
@@ -235,9 +239,9 @@ export async function GET(request: NextRequest) {
         agreedFreightCost: item.agreedFreightCost ? Number(item.agreedFreightCost) : undefined,
         brokerMemo: item.brokerMemo || '',
         createdBy: item.dispatchCreatedBy || '',
-        createdBySnapshot: item.dispatchCreatedBySnapshot,
+        createdBySnapshot: item.dispatchCreatedBySnapshot || undefined,
         updatedBy: item.dispatchUpdatedBy || '',
-        updatedBySnapshot: item.dispatchUpdatedBySnapshot,
+        updatedBySnapshot: item.dispatchUpdatedBySnapshot || undefined,
         createdAt: item.dispatchCreatedAt?.toISOString() || '',
         updatedAt: item.dispatchUpdatedAt?.toISOString() || '',
       } : null;
