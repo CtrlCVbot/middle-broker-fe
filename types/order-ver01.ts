@@ -58,8 +58,10 @@ export interface ILocationInfo {
 
 // 화물 상태 타입 정의
 export type OrderStatusType = 
+  | '운송요청'
   | '배차대기' 
   | '배차완료' 
+  | '상차대기' 
   | '상차완료' 
   | '운송중' 
   | '하차완료' 
@@ -67,8 +69,10 @@ export type OrderStatusType =
 
 // 화물 상태 배열 - 상태 순서대로 정의
 export const ORDER_STATUS: OrderStatusType[] = [
+  '운송요청',
   '배차대기', 
-  '배차완료', 
+  '배차완료',
+  '상차대기',
   '상차완료', 
   '운송중', 
   '하차완료', 

@@ -138,7 +138,7 @@ export default function BrokerOrderListPage() {
         vehicleType: orderFilter.vehicleType,
         weight: orderFilter.weight,
         searchTerm: orderFilter.searchTerm,
-        status: "", // 항상 운송요청 상태만 가져옴
+        status: "운송요청", // 항상 운송요청 상태만 가져옴
         startDate: orderFilter.startDate,
         endDate: orderFilter.endDate
       });
@@ -151,7 +151,7 @@ export default function BrokerOrderListPage() {
         orderFilter.vehicleType,
         orderFilter.weight,
         orderFilter.searchTerm,
-        "",
+        "운송요청",
         orderFilter.startDate,
         orderFilter.endDate
       );
