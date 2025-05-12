@@ -288,6 +288,187 @@ export const swaggerSpec = {
             description: '수정 일시'
           }
         }
+      },
+      OrderWithDispatch: {
+        type: 'object',
+        properties: {
+          order: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              flowStatus: { type: 'string' },
+              cargoName: { type: 'string' },
+              requestedVehicleType: { type: 'string' },
+              requestedVehicleWeight: { type: 'string' },
+              pickup: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  contactName: { type: 'string' },
+                  contactPhone: { type: 'string' },
+                  address: { type: 'object' },
+                  date: { type: 'string', format: 'date' },
+                  time: { type: 'string' }
+                }
+              },
+              delivery: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  contactName: { type: 'string' },
+                  contactPhone: { type: 'string' },
+                  address: { type: 'object' },
+                  date: { type: 'string', format: 'date' },
+                  time: { type: 'string' }
+                }
+              },
+              estimatedDistance: { type: 'number' },
+              estimatedPriceAmount: { type: 'number' },
+              priceType: { type: 'string' },
+              taxType: { type: 'string' },
+              memo: { type: 'string' },
+              isCanceled: { type: 'boolean' },
+              companyId: { type: 'string', format: 'uuid' },
+              companySnapshot: { type: 'object' },
+              createdAt: { type: 'string', format: 'date-time' },
+              updatedAt: { type: 'string', format: 'date-time' }
+            }
+          },
+          dispatch: {
+            type: 'object',
+            nullable: true,
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              brokerCompanyId: { type: 'string', format: 'uuid' },
+              brokerCompanySnapshot: { type: 'object' },
+              brokerManagerId: { type: 'string', format: 'uuid' },
+              brokerManagerSnapshot: { type: 'object' },
+              assignedDriverId: { type: 'string', format: 'uuid' },
+              assignedDriverSnapshot: { type: 'object' },
+              assignedDriverPhone: { type: 'string' },
+              assignedVehicleNumber: { type: 'string' },
+              assignedVehicleType: { type: 'string' },
+              assignedVehicleWeight: { type: 'string' },
+              assignedVehicleConnection: { type: 'string' },
+              agreedFreightCost: { type: 'number' },
+              brokerMemo: { type: 'string' },
+              createdBy: { type: 'string', format: 'uuid' },
+              createdBySnapshot: { type: 'object' },
+              updatedBy: { type: 'string', format: 'uuid' },
+              updatedBySnapshot: { type: 'object' },
+              createdAt: { type: 'string', format: 'date-time' },
+              updatedAt: { type: 'string', format: 'date-time' }
+            }
+          }
+        }
+      },
+      BrokerDispatch: {
+        type: 'object',
+        properties: {
+          dispatchId: { type: 'string', format: 'uuid' },
+          orderId: { type: 'string', format: 'uuid' },
+          orderFlowStatus: { type: 'string' },
+          cargoName: { type: 'string' },
+          requestedVehicleInfo: { type: 'string' },
+          pickupLocation: { type: 'string' },
+          deliveryLocation: { type: 'string' },
+          pickupDateTime: { type: 'string' },
+          deliveryDateTime: { type: 'string' },
+          brokerManagerName: { type: 'string' },
+          assignedVehicleNumber: { type: 'string' },
+          assignedDriverName: { type: 'string' },
+          agreedFreightCost: { type: 'number' },
+          createdAt: { type: 'string', format: 'date-time' }
+        }
+      },
+      BrokerDispatchDetail: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          orderId: { type: 'string', format: 'uuid' },
+          brokerCompanyId: { type: 'string', format: 'uuid' },
+          brokerCompanySnapshot: { type: 'object' },
+          brokerManagerId: { type: 'string', format: 'uuid' },
+          brokerManagerSnapshot: { type: 'object' },
+          assignedDriverId: { type: 'string', format: 'uuid' },
+          assignedDriverSnapshot: { type: 'object' },
+          assignedDriverPhone: { type: 'string' },
+          assignedVehicleNumber: { type: 'string' },
+          assignedVehicleType: { type: 'string' },
+          assignedVehicleWeight: { type: 'string' },
+          assignedVehicleConnection: { type: 'string' },
+          agreedFreightCost: { type: 'number' },
+          brokerMemo: { type: 'string' },
+          createdBy: { type: 'string', format: 'uuid' },
+          createdBySnapshot: { type: 'object' },
+          updatedBy: { type: 'string', format: 'uuid' },
+          updatedBySnapshot: { type: 'object' },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+          orderInfo: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              flowStatus: { type: 'string' },
+              cargoName: { type: 'string' },
+              requestedVehicleType: { type: 'string' },
+              requestedVehicleWeight: { type: 'string' },
+              pickupAddressSnapshot: { type: 'object' },
+              pickupDate: { type: 'string', format: 'date' },
+              pickupTime: { type: 'string' },
+              deliveryAddressSnapshot: { type: 'object' },
+              deliveryDate: { type: 'string', format: 'date' },
+              deliveryTime: { type: 'string' },
+              memo: { type: 'string' }
+            }
+          },
+          brokerCompanyName: { type: 'string' },
+          brokerManager: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              name: { type: 'string' },
+              phone: { type: 'string' }
+            }
+          },
+          assignedDriver: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              name: { type: 'string' },
+              phone: { type: 'string' }
+            }
+          }
+        }
+      },
+      CreateDispatchPayload: {
+        type: 'object',
+        required: ['brokerCompanyId', 'assignedDriverId', 'assignedVehicleNumber', 'assignedVehicleType', 'assignedVehicleWeight'],
+        properties: {
+          brokerCompanyId: { type: 'string', format: 'uuid' },
+          brokerManagerId: { type: 'string', format: 'uuid' },
+          assignedDriverId: { type: 'string', format: 'uuid' },
+          assignedVehicleNumber: { type: 'string' },
+          assignedVehicleType: { type: 'string', enum: ['카고', '윙바디', '탑차', '냉장', '냉동', '트레일러'] },
+          assignedVehicleWeight: { type: 'string', enum: ['1톤', '2.5톤', '3.5톤', '5톤', '11톤', '25톤'] },
+          assignedVehicleConnection: { type: 'string', enum: ['일반', '카고', '윙바디', '냉장', '냉동', '특수차량', '기타'] },
+          agreedFreightCost: { type: 'number' },
+          brokerMemo: { type: 'string' }
+        }
+      },
+      UpdateDispatchPayload: {
+        type: 'object',
+        properties: {
+          dispatchStatus: { type: 'string', enum: ['배차완료', '상차중', '운송중', '하차완료', '정산완료'] },
+          brokerManagerId: { type: 'string', format: 'uuid' },
+          assignedDriverId: { type: 'string', format: 'uuid' },
+          assignedVehicleNumber: { type: 'string' },
+          assignedVehicleType: { type: 'string', enum: ['카고', '윙바디', '탑차', '냉장', '냉동', '트레일러'] },
+          assignedVehicleWeight: { type: 'string', enum: ['1톤', '2.5톤', '3.5톤', '5톤', '11톤', '25톤'] },
+          assignedVehicleConnection: { type: 'string', enum: ['일반', '카고', '윙바디', '냉장', '냉동', '특수차량', '기타'] },
+          agreedFreightCost: { type: 'number' },
+          brokerMemo: { type: 'string' }
+        }
       }
     }
   },
@@ -2267,5 +2448,659 @@ export const swaggerSpec = {
         },
       },
     },
+
+    // 주문-배차 조회 API 추가
+    '/api/orders/with-dispatch': {
+      get: {
+        summary: '주문 목록을 배차 정보와 함께 조회',
+        description: '페이지네이션과 필터링을 지원하는 주문 목록과 배차 정보를 함께 조회하는 API',
+        tags: ['Orders'],
+        parameters: [
+          {
+            name: 'page',
+            in: 'query',
+            schema: {
+              type: 'integer',
+              default: 1
+            },
+            description: '페이지 번호'
+          },
+          {
+            name: 'pageSize',
+            in: 'query',
+            schema: {
+              type: 'integer',
+              default: 10
+            },
+            description: '페이지당 항목 수'
+          },
+          {
+            name: 'keyword',
+            in: 'query',
+            schema: {
+              type: 'string'
+            },
+            description: '주문명, 상/하차지 주소 검색어'
+          },
+          {
+            name: 'flowStatus',
+            in: 'query',
+            schema: {
+              type: 'string',
+              enum: ['운송요청', '배차대기', '배차완료', '상차대기', '상차완료', '운송중', '하차완료', '운송완료']
+            },
+            description: '주문 상태 필터'
+          },
+          {
+            name: 'vehicleType',
+            in: 'query',
+            schema: {
+              type: 'string',
+              enum: ['카고', '윙바디', '탑차', '냉장', '냉동', '트레일러']
+            },
+            description: '차량 유형 필터'
+          },
+          {
+            name: 'vehicleWeight',
+            in: 'query',
+            schema: {
+              type: 'string',
+              enum: ['1톤', '2.5톤', '3.5톤', '5톤', '11톤', '25톤']
+            },
+            description: '차량 중량 필터'
+          },
+          {
+            name: 'pickupCity',
+            in: 'query',
+            schema: {
+              type: 'string'
+            },
+            description: '상차지 도시 필터'
+          },
+          {
+            name: 'deliveryCity',
+            in: 'query',
+            schema: {
+              type: 'string'
+            },
+            description: '하차지 도시 필터'
+          },
+          {
+            name: 'startDate',
+            in: 'query',
+            schema: {
+              type: 'string',
+              format: 'date'
+            },
+            description: '시작 날짜 필터 (YYYY-MM-DD)'
+          },
+          {
+            name: 'endDate',
+            in: 'query',
+            schema: {
+              type: 'string',
+              format: 'date'
+            },
+            description: '종료 날짜 필터 (YYYY-MM-DD)'
+          },
+          {
+            name: 'companyId',
+            in: 'query',
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: '회사 ID 필터'
+          },
+          {
+            name: 'hasDispatch',
+            in: 'query',
+            schema: {
+              type: 'string',
+              enum: ['true', 'false']
+            },
+            description: '배차 여부 필터'
+          },
+          {
+            name: 'sortBy',
+            in: 'query',
+            schema: {
+              type: 'string',
+              default: 'createdAt'
+            },
+            description: '정렬 기준 필드'
+          },
+          {
+            name: 'sortOrder',
+            in: 'query',
+            schema: {
+              type: 'string',
+              enum: ['asc', 'desc'],
+              default: 'desc'
+            },
+            description: '정렬 방향'
+          }
+        ],
+        responses: {
+          '200': {
+            description: '성공적으로 주문-배차 목록을 조회함',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: {
+                      type: 'boolean',
+                      description: '성공 여부'
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        $ref: '#/components/schemas/OrderWithDispatch'
+                      }
+                    },
+                    total: {
+                      type: 'integer',
+                      description: '전체 주문 수'
+                    },
+                    page: {
+                      type: 'integer',
+                      description: '현재 페이지 번호'
+                    },
+                    pageSize: {
+                      type: 'integer',
+                      description: '페이지당 항목 수'
+                    },
+                    totalPages: {
+                      type: 'integer',
+                      description: '전체 페이지 수'
+                    }
+                  }
+                }
+              }
+            }
+          },
+          '400': {
+            description: '잘못된 요청 형식'
+          },
+          '500': {
+            description: '서버 오류'
+          }
+        }
+      }
+    },
+    '/api/orders/with-dispatch/{orderId}': {
+      get: {
+        summary: '주문과 배차 정보 상세 조회',
+        description: '특정 주문과 연결된 배차 정보를 상세 조회하는 API',
+        tags: ['Orders'],
+        parameters: [
+          {
+            name: 'orderId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: '주문 ID'
+          }
+        ],
+        responses: {
+          '200': {
+            description: '주문과 배차 정보 상세 조회 성공',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: {
+                      type: 'boolean',
+                      description: '성공 여부'
+                    },
+                    data: {
+                      $ref: '#/components/schemas/OrderWithDispatch'
+                    }
+                  }
+                }
+              }
+            }
+          },
+          '400': {
+            description: '유효하지 않은 요청 데이터'
+          },
+          '404': {
+            description: '주문을 찾을 수 없음'
+          },
+          '500': {
+            description: '서버 오류'
+          }
+        }
+      }
+    },
+    
+    // 주선사 배차 관련 API
+    '/api/broker/dispatches': {
+      get: {
+        summary: '주선사 담당 배차 목록 조회',
+        description: '주선사가 담당하는 배차 목록을 조회하는 API',
+        tags: ['Broker Dispatches'],
+        parameters: [
+          {
+            name: 'page',
+            in: 'query',
+            schema: {
+              type: 'integer',
+              default: 1
+            },
+            description: '페이지 번호'
+          },
+          {
+            name: 'pageSize',
+            in: 'query',
+            schema: {
+              type: 'integer',
+              default: 10
+            },
+            description: '페이지당 항목 수'
+          },
+          {
+            name: 'brokerCompanyId',
+            in: 'query',
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: '주선사 회사 ID 필터'
+          },
+          {
+            name: 'brokerManagerId',
+            in: 'query',
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: '주선사 담당자 ID 필터'
+          },
+          {
+            name: 'dispatchStatus',
+            in: 'query',
+            schema: {
+              type: 'string',
+              enum: ['배차완료', '상차중', '운송중', '하차완료', '정산완료']
+            },
+            description: '배차 상태 필터'
+          },
+          {
+            name: 'assignedDriverId',
+            in: 'query',
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: '배차된 기사 ID 필터'
+          },
+          {
+            name: 'assignedVehicleNumber',
+            in: 'query',
+            schema: {
+              type: 'string'
+            },
+            description: '배차된 차량 번호 필터'
+          },
+          {
+            name: 'startDate',
+            in: 'query',
+            schema: {
+              type: 'string',
+              format: 'date'
+            },
+            description: '시작일 필터'
+          },
+          {
+            name: 'endDate',
+            in: 'query',
+            schema: {
+              type: 'string',
+              format: 'date'
+            },
+            description: '종료일 필터'
+          },
+          {
+            name: 'keyword',
+            in: 'query',
+            schema: {
+              type: 'string'
+            },
+            description: '검색 키워드'
+          },
+          {
+            name: 'sortBy',
+            in: 'query',
+            schema: {
+              type: 'string',
+              default: 'createdAt'
+            },
+            description: '정렬 기준 필드'
+          },
+          {
+            name: 'sortOrder',
+            in: 'query',
+            schema: {
+              type: 'string',
+              enum: ['asc', 'desc'],
+              default: 'desc'
+            },
+            description: '정렬 방향'
+          }
+        ],
+        responses: {
+          '200': {
+            description: '성공적으로 배차 목록을 조회함',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: {
+                      type: 'boolean',
+                      description: '성공 여부'
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        $ref: '#/components/schemas/BrokerDispatch'
+                      }
+                    },
+                    total: {
+                      type: 'integer',
+                      description: '전체 배차 수'
+                    },
+                    page: {
+                      type: 'integer',
+                      description: '현재 페이지 번호'
+                    },
+                    pageSize: {
+                      type: 'integer',
+                      description: '페이지당 항목 수'
+                    },
+                    totalPages: {
+                      type: 'integer',
+                      description: '전체 페이지 수'
+                    }
+                  }
+                }
+              }
+            }
+          },
+          '400': {
+            description: '잘못된 요청 형식'
+          },
+          '401': {
+            description: '인증 실패'
+          },
+          '500': {
+            description: '서버 오류'
+          }
+        }
+      }
+    },
+    '/api/broker/dispatches/{dispatchId}': {
+      get: {
+        summary: '배차 상세 정보 조회',
+        description: '특정 배차의 상세 정보를 조회하는 API',
+        tags: ['Broker Dispatches'],
+        parameters: [
+          {
+            name: 'dispatchId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: '배차 ID'
+          }
+        ],
+        responses: {
+          '200': {
+            description: '배차 상세 정보 조회 성공',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: {
+                      type: 'boolean',
+                      description: '성공 여부'
+                    },
+                    data: {
+                      $ref: '#/components/schemas/BrokerDispatchDetail'
+                    },
+                    error: {
+                      type: 'null'
+                    }
+                  }
+                }
+              }
+            }
+          },
+          '400': {
+            description: '잘못된 요청 형식'
+          },
+          '401': {
+            description: '인증 실패'
+          },
+          '404': {
+            description: '배차 정보를 찾을 수 없음'
+          },
+          '500': {
+            description: '서버 오류'
+          }
+        }
+      },
+      patch: {
+        summary: '배차 정보 수정',
+        description: '특정 배차의 정보를 수정하는 API',
+        tags: ['Broker Dispatches'],
+        parameters: [
+          {
+            name: 'dispatchId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: '배차 ID'
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/UpdateDispatchPayload'
+              }
+            }
+          }
+        },
+        responses: {
+          '200': {
+            description: '배차 정보 수정 성공',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: {
+                      type: 'boolean',
+                      description: '성공 여부'
+                    },
+                    data: {
+                      $ref: '#/components/schemas/BrokerDispatchDetail'
+                    },
+                    error: {
+                      type: 'null'
+                    }
+                  }
+                }
+              }
+            }
+          },
+          '400': {
+            description: '잘못된 요청 데이터'
+          },
+          '401': {
+            description: '인증 실패'
+          },
+          '404': {
+            description: '배차 정보를 찾을 수 없음'
+          },
+          '500': {
+            description: '서버 오류'
+          }
+        }
+      },
+      delete: {
+        summary: '배차 삭제',
+        description: '특정 배차를 삭제하는 API',
+        tags: ['Broker Dispatches'],
+        parameters: [
+          {
+            name: 'dispatchId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: '배차 ID'
+          }
+        ],
+        responses: {
+          '200': {
+            description: '배차 삭제 성공',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: {
+                      type: 'boolean',
+                      description: '성공 여부'
+                    },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        id: {
+                          type: 'string',
+                          format: 'uuid',
+                          description: '삭제된 배차 ID'
+                        },
+                        deleted: {
+                          type: 'boolean',
+                          description: '삭제 성공 여부'
+                        }
+                      }
+                    },
+                    error: {
+                      type: 'null'
+                    }
+                  }
+                }
+              }
+            }
+          },
+          '400': {
+            description: '잘못된 요청 형식'
+          },
+          '401': {
+            description: '인증 실패'
+          },
+          '404': {
+            description: '배차 정보를 찾을 수 없음'
+          },
+          '500': {
+            description: '서버 오류'
+          }
+        }
+      }
+    },
+    '/api/orders/{orderId}/dispatches': {
+      post: {
+        summary: '주문에 배차 생성',
+        description: '특정 주문에 새로운 배차를 생성하는 API',
+        tags: ['Broker Dispatches'],
+        parameters: [
+          {
+            name: 'orderId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: '주문 ID'
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/CreateDispatchPayload'
+              }
+            }
+          }
+        },
+        responses: {
+          '201': {
+            description: '배차 생성 성공',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: {
+                      type: 'boolean',
+                      description: '성공 여부'
+                    },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        id: {
+                          type: 'string',
+                          format: 'uuid',
+                          description: '생성된 배차 ID'
+                        }
+                      }
+                    },
+                    error: {
+                      type: 'null'
+                    }
+                  }
+                }
+              }
+            }
+          },
+          '400': {
+            description: '잘못된 요청 데이터'
+          },
+          '401': {
+            description: '인증 실패'
+          },
+          '404': {
+            description: '주문을 찾을 수 없음'
+          },
+          '409': {
+            description: '이미 배차가 존재하는 주문'
+          },
+          '500': {
+            description: '서버 오류'
+          }
+        }
+      }
+    }
   }
 }; 
