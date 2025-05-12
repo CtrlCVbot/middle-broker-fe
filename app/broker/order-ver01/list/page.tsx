@@ -23,7 +23,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { cn, formatCurrency } from "@/lib/utils";
-import { BrokerOrderStatusType } from "@/types/broker-order";
+import { BrokerOrderStatusType, BROKER_ORDER_STATUS } from "@/types/broker-order";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
@@ -67,9 +67,9 @@ export default function BrokerOrderListPage() {
       // "운송요청" 탭 선택 시
       setFilter({ status: "운송요청" });
     } else if (value === "dispatched") {
-      // "배차대기 이후" 탭 선택 시 
-      // 배차대기 이후 상태로 필터링 (filter에서는 정확한 status만 지정 가능하므로 백엔드에서 처리하거나 필터 API에 옵션 추가 필요)
-      setFilter({ status: "배차대기" });
+      // "배차대기 이후" 탭 선택 시 - 운송요청 외의 모든 상태값 표시
+      // 프론트엔드에서 필터링하기 위해 status를 undefined로 설정
+      setFilter({ status: undefined });
     } else {
       // "전체" 탭 선택 시
       setFilter({ status: undefined });
@@ -77,7 +77,7 @@ export default function BrokerOrderListPage() {
   };
 
   // 화물 목록 데이터 조회
-  const { data, isLoading, isError, refetch } = useQuery({
+  const { data: rawData, isLoading, isError, refetch } = useQuery({
     queryKey: ["brokerOrders", currentPage, pageSize, filter, lastRefreshed],
     queryFn: () => {
       console.log('Query function called with:', {
@@ -112,6 +112,48 @@ export default function BrokerOrderListPage() {
     },
     staleTime: 1000 * 60, // 1분
   });
+
+  // 탭에 따라 데이터 필터링
+  const data = React.useMemo(() => {
+    if (!rawData) return null;
+    
+    // "배차대기 이후" 탭이고 status가 없는 경우에만 운송요청 제외
+    if (currentTab === "dispatched") {
+      // 운송요청 상태 제외한 데이터만 필터링
+      const filteredOrders = rawData.data.filter(order => order.status !== "운송요청");
+      
+      // 필터링된 데이터로 요약 정보 재계산
+      const filteredSummary = filteredOrders.reduce((summary, order) => {
+        return {
+          totalOrders: summary.totalOrders + 1,
+          totalChargeAmount: summary.totalChargeAmount + (order.chargeAmount || 0),
+          totalContractAmount: summary.totalContractAmount + (order.amount || 0),
+          totalSupplyAmount: summary.totalSupplyAmount + (order.fee || 0),
+          totalProfit: summary.totalProfit + ((order.chargeAmount || order.amount || 0) - (order.fee || 0))
+        };
+      }, {
+        totalOrders: 0,
+        totalChargeAmount: 0,
+        totalContractAmount: 0,
+        totalSupplyAmount: 0,
+        totalProfit: 0
+      });
+      
+      const filteredData = {
+        ...rawData,
+        data: filteredOrders,
+        pagination: {
+          ...rawData.pagination,
+          total: filteredOrders.length
+        },
+        summary: filteredSummary
+      };
+      
+      return filteredData;
+    }
+    
+    return rawData;
+  }, [rawData, currentTab]);
 
   // 필터 변경 시 데이터 다시 조회
   useEffect(() => {
@@ -273,12 +315,12 @@ export default function BrokerOrderListPage() {
             </div>
 
             {/* 탭 추가 */}
-            <div className="mb-4">
+            <div>
               <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full">
                 <TabsList className="w-full justify-start mb-2">
-                  <TabsTrigger value="all">전체</TabsTrigger>
-                  <TabsTrigger value="request">운송요청</TabsTrigger>
-                  <TabsTrigger value="dispatched">배차대기 이후</TabsTrigger>
+                  <TabsTrigger value="all" className="px-4">전체</TabsTrigger>
+                  <TabsTrigger value="request" className="px-4">운송요청</TabsTrigger>
+                  <TabsTrigger value="dispatched" className="px-4">배차대기 이후</TabsTrigger>
                 </TabsList>
                 <TabsContent value="all" className="mt-0">
                   {/* 전체 데이터 - 별도 컨텐츠 불필요, 아래 공통 영역에 표시됨 */}
