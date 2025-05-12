@@ -13,9 +13,13 @@ import {
 import { ListFilter, Grid3x3, RotateCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { useBrokerOrderStore } from "@/store/broker-order-store";
+import { useOrderStore } from "@/store/order-store";
 import { getBrokerOrdersByPage } from "@/utils/mockdata/mock-broker-orders";
+import { getOrdersByPage } from "@/utils/mockdata/mock-orders";
 import { BrokerOrderSearch } from "@/components/broker/order/broker-order-search";
 import { BrokerOrderTable } from "@/components/broker/order/broker-order-table";
+import { BrokerOrderTable as BrokerOrderTableVer01 } from "@/components/broker/order/broker-order-table-ver01";
+
 import { BrokerOrderCard } from "@/components/broker/order/broker-order-card";
 import { BrokerOrderDetailSheet } from "@/components/broker/order/broker-order-detail-sheet";
 import { Button } from "@/components/ui/button";
@@ -39,7 +43,7 @@ export default function BrokerOrderListPage() {
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
   // 현재 선택된 탭
-  const [currentTab, setCurrentTab] = useState("all");
+  const [currentTab, setCurrentTab] = useState("dispatched");
 
   // Zustand 스토어에서 상태 및 액션 가져오기
   const {
@@ -51,6 +55,14 @@ export default function BrokerOrderListPage() {
     pageSize,
     setCurrentPage,
   } = useBrokerOrderStore();
+  
+  // 운송요청 탭용 Order Store
+  const {
+    filter: orderFilter,
+    currentPage: orderCurrentPage,
+    pageSize: orderPageSize,
+    setCurrentPage: setOrderCurrentPage,
+  } = useOrderStore();
   
   //const { openSheet } = useBrokerOrderDetailStore();
 
@@ -76,7 +88,7 @@ export default function BrokerOrderListPage() {
     }
   };
 
-  // 화물 목록 데이터 조회
+  // 화물 목록 데이터 조회 (배차대기 이후 탭)
   const { data: rawData, isLoading, isError, refetch } = useQuery({
     queryKey: ["brokerOrders", currentPage, pageSize, filter, lastRefreshed],
     queryFn: () => {
@@ -111,10 +123,96 @@ export default function BrokerOrderListPage() {
       );
     },
     staleTime: 1000 * 60, // 1분
+    enabled: currentTab !== "request" // 운송요청 탭이 아닐 때만 활성화
   });
+
+  // 운송요청 데이터 조회 (운송요청 탭)
+  const { data: orderData, isLoading: isOrderLoading, isError: isOrderError, refetch: refetchOrders } = useQuery({
+    queryKey: ["orders", orderCurrentPage, orderPageSize, orderFilter, lastRefreshed],
+    queryFn: () => {
+      console.log('Order Query function called with:', {
+        currentPage: orderCurrentPage,
+        pageSize: orderPageSize,
+        departureCity: orderFilter.departureCity,
+        arrivalCity: orderFilter.arrivalCity,
+        vehicleType: orderFilter.vehicleType,
+        weight: orderFilter.weight,
+        searchTerm: orderFilter.searchTerm,
+        status: "", // 항상 운송요청 상태만 가져옴
+        startDate: orderFilter.startDate,
+        endDate: orderFilter.endDate
+      });
+      
+      return getOrdersByPage(
+        orderCurrentPage,
+        orderPageSize,
+        orderFilter.departureCity,
+        orderFilter.arrivalCity,
+        orderFilter.vehicleType,
+        orderFilter.weight,
+        orderFilter.searchTerm,
+        "",
+        orderFilter.startDate,
+        orderFilter.endDate
+      );
+    },
+    staleTime: 1000 * 60, // 1분
+    enabled: currentTab === "request" // 운송요청 탭일 때만 활성화
+  });
+
+  // 운송요청 데이터를 브로커 주문 형식으로 변환
+  const convertedOrderData = React.useMemo(() => {
+    if (!orderData) return null;
+    
+    // 주문 데이터를 브로커 주문 형식으로 변환
+    const brokerOrdersData = orderData.data.map(order => ({
+      id: order.id,
+      status: "운송요청" as BrokerOrderStatusType,
+      statusProgress: "운송요청" as BrokerOrderStatusType,
+      departureDateTime: order.departureDateTime,
+      departureCity: order.departureCity,
+      departureLocation: order.departureLocation,
+      arrivalDateTime: order.arrivalDateTime,
+      arrivalCity: order.arrivalCity,
+      arrivalLocation: order.arrivalLocation,
+      vehicle: order.vehicle,
+      chargeAmount: order.amount,
+      amount: order.amount,
+      fee: order.fee,
+      shipperName: "화주",
+      driver: order.driver,
+      createdAt: order.createdAt,
+      updatedAt: order.createdAt,
+      callCenter: "24시",
+      company: "우리운수",
+      contactPerson: "홍길동",
+      paymentMethod: "선불",
+      managerContact: "010-1234-5678",
+      manager: "김관리"
+    }));
+    
+    // 요약 정보 계산
+    const summary = {
+      totalOrders: orderData.pagination.total,
+      totalChargeAmount: orderData.data.reduce((sum, order) => sum + order.amount, 0),
+      totalContractAmount: orderData.data.reduce((sum, order) => sum + order.amount, 0),
+      totalSupplyAmount: orderData.data.reduce((sum, order) => sum + order.fee, 0),
+      totalProfit: orderData.data.reduce((sum, order) => sum + (order.amount - order.fee), 0)
+    };
+    
+    return {
+      data: brokerOrdersData,
+      pagination: orderData.pagination,
+      summary
+    };
+  }, [orderData]);
 
   // 탭에 따라 데이터 필터링
   const data = React.useMemo(() => {
+    if (currentTab === "request") {
+      return convertedOrderData;
+    }
+    
     if (!rawData) return null;
     
     // "배차대기 이후" 탭이고 status가 없는 경우에만 운송요청 제외
@@ -153,12 +251,21 @@ export default function BrokerOrderListPage() {
     }
     
     return rawData;
-  }, [rawData, currentTab]);
+  }, [rawData, currentTab, convertedOrderData]);
 
   // 필터 변경 시 데이터 다시 조회
   useEffect(() => {
-    refetch();
-  }, [currentPage, pageSize, filter, refetch]);
+    if (currentTab !== "request") {
+      refetch();
+    }
+  }, [currentPage, pageSize, filter, refetch, currentTab]);
+  
+  // 운송요청 탭에서 필터 변경 시 데이터 다시 조회
+  useEffect(() => {
+    if (currentTab === "request") {
+      refetchOrders();
+    }
+  }, [orderCurrentPage, orderPageSize, orderFilter, refetchOrders, currentTab]);
   
   // 자동 새로고침 기능
   useEffect(() => {
@@ -179,14 +286,23 @@ export default function BrokerOrderListPage() {
   // 페이지 변경 핸들러
   const handlePageChange = useCallback(
     (page: number) => {
-      setCurrentPage(page);
+      if (currentTab === "request") {
+        setOrderCurrentPage(page);
+      } else {
+        setCurrentPage(page);
+      }
     },
-    [setCurrentPage]
+    [setCurrentPage, setOrderCurrentPage, currentTab]
   );
   
   // 수동 새로고침 핸들러
   const handleManualRefresh = () => {
     setLastRefreshed(new Date());
+    if (currentTab === "request") {
+      refetchOrders();
+    } else {
+      refetch();
+    }
     toast.info("화물 정보가 갱신되었습니다.");
   };
   
@@ -222,7 +338,13 @@ export default function BrokerOrderListPage() {
   };
 
   // 총 페이지 수 계산
-  const totalPages = Math.ceil((data?.pagination.total || 0) / pageSize);
+  const totalPages = data ? Math.ceil((data.pagination.total || 0) / (currentTab === "request" ? orderPageSize : pageSize)) : 0;
+
+  // 현재 로딩 상태 계산
+  const isCurrentLoading = currentTab === "request" ? isOrderLoading : isLoading;
+  
+  // 현재 에러 상태 계산
+  const isCurrentError = currentTab === "request" ? isOrderError : isError;
 
   // 견적금 기준 수익
   const profitFromContract = data?.summary?.totalContractAmount ? data?.summary?.totalContractAmount - data?.summary?.totalSupplyAmount : 0;
@@ -236,6 +358,8 @@ export default function BrokerOrderListPage() {
   // 청구금 기준 수익률
   const profitRateFromCharge = data?.summary?.totalChargeAmount ? (profitFromCharge / data?.summary?.totalChargeAmount) * 100 : 0;
 
+  console.log("orderData", orderData);
+  console.log("convertedOrderData", convertedOrderData);
 
   return (
     <>
@@ -318,100 +442,155 @@ export default function BrokerOrderListPage() {
             <div>
               <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full">
                 <TabsList className="w-full justify-start mb-2">
-                  <TabsTrigger value="all" className="px-4">전체</TabsTrigger>
                   <TabsTrigger value="request" className="px-4">운송요청</TabsTrigger>
                   <TabsTrigger value="dispatched" className="px-4">배차대기 이후</TabsTrigger>
                 </TabsList>
-                <TabsContent value="all" className="mt-0">
-                  {/* 전체 데이터 - 별도 컨텐츠 불필요, 아래 공통 영역에 표시됨 */}
-                </TabsContent>
                 <TabsContent value="request" className="mt-0">
-                  {/* 운송요청 데이터 - 별도 컨텐츠 불필요, 아래 공통 영역에 표시됨 */}
+                  {/* 운송요청 데이터 - 운송요청 전용 테이블 컴포넌트로 표시 */}
+                  <Card>
+                    <CardContent>
+                      {/* 검색 필터 - 양끝에 배치*/}
+                      <div className="flex flex-col md:flex-row items-center justify-between">
+                        <div className="w-full md:w-auto">
+                          <BrokerOrderSearch />   
+                        </div>
+                        <div className="flex flex-row hidden md:flex items-center mb-6 gap-2">                  
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className={cn(autoRefreshEnabled && "bg-primary/10")}
+                            onClick={toggleAutoRefresh}
+                          >
+                            <RotateCcw className={cn("h-4 w-4 mr-1", autoRefreshEnabled && "animate-spin")} />
+                            자동 갱신 {autoRefreshEnabled ? "켜짐" : "꺼짐"}
+                          </Button>
+                          <Button className="bg-primary/10" variant="outline" size="icon" onClick={handleManualRefresh}>
+                            <RotateCcw className="h-4 w-4" />
+                          </Button>
+                          <Separator orientation="vertical" className="h-6" />
+                          
+                        </div>
+                      </div>
+
+                      {/* 로딩 상태 */}
+                      {isOrderLoading && (
+                        <div className="py-12 text-center text-lg text-muted-foreground">
+                          데이터를 불러오는 중...
+                        </div>
+                      )}
+
+                      {/* 에러 상태 */}
+                      {isOrderError && (
+                        <div className="py-12 text-center text-lg text-red-500">
+                          데이터 조회 중 오류가 발생했습니다.
+                          <Button
+                            variant="outline"
+                            className="ml-2"
+                            onClick={() => refetchOrders()}
+                          >
+                            다시 시도
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* 데이터 표시 */}
+                      {!isOrderLoading && !isOrderError && convertedOrderData && (
+                        <BrokerOrderTableVer01
+                          orders={convertedOrderData.data}
+                          currentPage={orderCurrentPage}
+                          totalPages={Math.ceil(convertedOrderData.pagination.total / orderPageSize)}
+                          onPageChange={handlePageChange}
+                          onStatusChange={handleStatusChange}
+                          onEditTransportFee={handleEditTransportFee}
+                          onExportExcel={handleExportExcel}
+                          onViewMap={handleViewMap}
+                        />
+                      )}
+                    </CardContent>
+                  </Card>
                 </TabsContent>
                 <TabsContent value="dispatched" className="mt-0">
                   {/* 배차대기 이후 데이터 - 별도 컨텐츠 불필요, 아래 공통 영역에 표시됨 */}
+                  <Card>   
+                    <CardContent>
+                      {/* 검색 필터 - 양끝에 배치*/}
+                      <div className="flex flex-col md:flex-row items-center justify-between">
+                        <div className="w-full md:w-auto">
+                          <BrokerOrderSearch />   
+                        </div>
+                        <div className="flex flex-row hidden md:flex items-center mb-6 gap-2">                  
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className={cn(autoRefreshEnabled && "bg-primary/10")}
+                            onClick={toggleAutoRefresh}
+                          >
+                            <RotateCcw className={cn("h-4 w-4 mr-1", autoRefreshEnabled && "animate-spin")} />
+                            자동 갱신 {autoRefreshEnabled ? "켜짐" : "꺼짐"}
+                          </Button>
+                          <Button className="bg-primary/10" variant="outline" size="icon" onClick={handleManualRefresh}>
+                            <RotateCcw className="h-4 w-4" />
+                          </Button>
+                          <Separator orientation="vertical" className="h-6" />
+                          
+                        </div>
+                      </div>                           
+
+                      {/* 로딩 상태 */}
+                      {isLoading && (
+                        <div className="py-12 text-center text-lg text-muted-foreground">
+                          데이터를 불러오는 중...
+                        </div>
+                      )}
+
+                      {/* 에러 상태 */}
+                      {isError && (
+                        <div className="py-12 text-center text-lg text-red-500">
+                          데이터 조회 중 오류가 발생했습니다.
+                          <Button
+                            variant="outline"
+                            className="ml-2"
+                            onClick={() => refetch()}
+                          >
+                            다시 시도
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* 데이터 표시 */}
+                      {!isLoading && !isError && data && (
+                        <>
+                          {/* 뷰 모드에 따라 테이블 또는 카드 형태로 표시 */}
+                          {viewMode === "table" ? (
+                            <BrokerOrderTable
+                              orders={data.data}
+                              currentPage={currentPage}
+                              totalPages={totalPages}
+                              onPageChange={handlePageChange}
+                              onStatusChange={handleStatusChange}
+                              onEditTransportFee={handleEditTransportFee}
+                              onExportExcel={handleExportExcel}
+                              onViewMap={handleViewMap}
+                            />
+                          ) : (
+                            <BrokerOrderCard
+                              orders={data.data}
+                              currentPage={currentPage}
+                              totalPages={totalPages}
+                              onPageChange={handlePageChange}
+                              onStatusChange={handleStatusChange}
+                              onEditTransportFee={handleEditTransportFee}
+                              onExportExcel={handleExportExcel}
+                              onViewMap={handleViewMap}
+                            />
+                          )}
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
                 </TabsContent>
               </Tabs>
             </div>
-
-            {/* 화물 목록 영역 */}
-            <Card>   
-              <CardContent>
-                {/* 검색 필터 - 양끝에 배치*/}
-                <div className="flex flex-col md:flex-row items-center justify-between">
-                    <div className="w-full md:w-auto">
-                      <BrokerOrderSearch />   
-                    </div>
-                    <div className="flex flex-row hidden md:flex items-center mb-6 gap-2">                  
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className={cn(autoRefreshEnabled && "bg-primary/10")}
-                        onClick={toggleAutoRefresh}
-                      >
-                        <RotateCcw className={cn("h-4 w-4 mr-1", autoRefreshEnabled && "animate-spin")} />
-                        자동 갱신 {autoRefreshEnabled ? "켜짐" : "꺼짐"}
-                      </Button>
-                      <Button className="bg-primary/10" variant="outline" size="icon" onClick={handleManualRefresh}>
-                        <RotateCcw className="h-4 w-4" />
-                      </Button>
-                      <Separator orientation="vertical" className="h-6" />
-                      
-                    </div>
-                </div>                           
-
-                {/* 로딩 상태 */}
-                {isLoading && (
-                  <div className="py-12 text-center text-lg text-muted-foreground">
-                    데이터를 불러오는 중...
-                  </div>
-                )}
-
-                {/* 에러 상태 */}
-                {isError && (
-                  <div className="py-12 text-center text-lg text-red-500">
-                    데이터 조회 중 오류가 발생했습니다.
-                    <Button
-                      variant="outline"
-                      className="ml-2"
-                      onClick={() => refetch()}
-                    >
-                      다시 시도
-                    </Button>
-                  </div>
-                )}
-
-                {/* 데이터 표시 */}
-                {!isLoading && !isError && data && (
-                  <>
-                    {/* 뷰 모드에 따라 테이블 또는 카드 형태로 표시 */}
-                    {viewMode === "table" ? (
-                      <BrokerOrderTable
-                        orders={data.data}
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={handlePageChange}
-                        onStatusChange={handleStatusChange}
-                        onEditTransportFee={handleEditTransportFee}
-                        onExportExcel={handleExportExcel}
-                        onViewMap={handleViewMap}
-                      />
-                    ) : (
-                      <BrokerOrderCard
-                        orders={data.data}
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={handlePageChange}
-                        onStatusChange={handleStatusChange}
-                        onEditTransportFee={handleEditTransportFee}
-                        onExportExcel={handleExportExcel}
-                        onViewMap={handleViewMap}
-                      />
-                    )}
-                  </>
-                )}
-              </CardContent>
-            </Card>
           </CardContent>
           </Card>
         )}
