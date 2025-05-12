@@ -151,6 +151,11 @@ export const data = {
       icon: LifeBuoy,
     },
     {
+      title: "실시간 화물 현황 ver01",
+      url: "/broker/order-ver01/list",
+      icon: LifeBuoy,
+    },
+    {
       title: "업체 관리",
       url: "/broker/company/list",
       icon: Building,

@@ -5,6 +5,7 @@ import { SettlementStatus } from "./settlement";
 
 // 중개 화물 상태 타입 정의
 export type BrokerOrderStatusType = 
+  | "운송요청"
   | "배차대기"
   | "배차완료"
   | "운송중"
@@ -16,6 +17,7 @@ export type BrokerOrderStatusType =
 
 // 중개 화물 상태 배열 - 상태 순서대로 정의
 export const BROKER_ORDER_STATUS: BrokerOrderStatusType[] = [
+  "운송요청",
   "배차대기",
   "배차완료",
   "운송중",
