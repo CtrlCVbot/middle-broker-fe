@@ -19,7 +19,7 @@ import { getOrdersByPage } from "@/utils/mockdata/mock-orders";
 import { BrokerOrderSearch } from "@/components/broker/order/broker-order-search";
 import { BrokerOrderTable } from "@/components/broker/order/broker-order-table";
 import { OrderSearch as OrderSearchVer01 } from "@/components/broker/order/broker-order-search-ver01";
-import { OrderTable as BrokerOrderTableVer01, OrderTable } from "@/components/broker/order/broker-order-table-ver01";
+import { OrderTable as OrderTableVer01 } from "@/components/broker/order/broker-order-table-ver01";
 
 import { BrokerOrderCard } from "@/components/broker/order/broker-order-card";
 import { BrokerOrderDetailSheet } from "@/components/broker/order/broker-order-detail-sheet";
@@ -117,7 +117,7 @@ export default function BrokerOrderListPage() {
     
     if (value === "request") {
       // "운송요청" 탭 선택 시
-      setFilter({ status: "운송요청" });
+      //setFilter({ status: "운송요청" });
     } else if (value === "dispatched") {
       // "배차대기 이후" 탭 선택 시 - 운송요청 외의 모든 상태값 표시
       // 프론트엔드에서 필터링하기 위해 status를 undefined로 설정
@@ -350,6 +350,8 @@ export default function BrokerOrderListPage() {
     },
     [setCurrentPage, setOrderCurrentPage, currentTab]
   );
+
+  
   
   // 수동 새로고침 핸들러
   const handleManualRefresh = () => {
@@ -404,6 +406,9 @@ export default function BrokerOrderListPage() {
 
   // 총 페이지 수 계산
   const totalPages = data ? Math.ceil((data.pagination.total || 0) / (currentTab === "request" ? orderPageSize : pageSize)) : 0;
+
+  // 총 페이지 수 계산
+  const ordersTotalPages = data ? Math.ceil(data.pagination.total / pageSize) : 0;
 
   // 현재 로딩 상태 계산
   const isCurrentLoading = currentTab === "request" ? isOrderLoading : isLoading;
@@ -519,56 +524,56 @@ export default function BrokerOrderListPage() {
                   </div>
 
                   {/* 로딩 상태 - 개선된 UI */}
-                  {isLoading ? (
-                    <div className="py-12 text-center">
-                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                      <p className="mt-2 text-muted-foreground">데이터를 불러오는 중...</p>
-                    </div>
-                  ) : isError || errorMessage ? (
-                    // 에러 상태 - 개선된 UI
-                    <div className="py-12 text-center">
-                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100">
-                        <span className="text-red-500 text-2xl">!</span>
-                      </div>
-                      <p className="mt-2 text-red-500">
-                        {errorMessage || (error instanceof Error ? error.message : "데이터 조회 중 오류가 발생했습니다.")}
-                      </p>
-                      <Button
-                        variant="outline"
-                        className="mt-2"
-                        onClick={handleRetry}
-                      >
-                        다시 시도
-                      </Button>
-                    </div>
-                  ) : (
-                    <>
-                      {/* 데이터 표시 */}                      
-                      {!data || data.data.length === 0 ? (
-                        <div className="py-16 text-center text-muted-foreground">
-                          등록된 운송 요청이 없습니다.
+                  {isOrderLoading ? (
+                        <div className="py-12 text-center">
+                          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                          <p className="mt-2 text-muted-foreground">데이터를 불러오는 중...</p>
+                        </div>
+                      ) : isOrderError || errorMessage ? (
+                        // 에러 상태 - 개선된 UI
+                        <div className="py-12 text-center">
+                          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100">
+                            <span className="text-red-500 text-2xl">!</span>
+                          </div>
+                          <p className="mt-2 text-red-500">
+                            {errorMessage || (error instanceof Error ? error.message : "데이터 조회 중 오류가 발생했습니다.")}
+                          </p>
+                          <Button
+                            variant="outline"
+                            className="mt-2"
+                            onClick={handleRetry}
+                          >
+                            다시 시도
+                          </Button>
                         </div>
                       ) : (
-                        //뷰 모드에 따라 테이블 또는 카드 형태로 표시
-                        viewMode === "table" ? (
-                          <OrderTable
-                            orders={data.data as any}
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onPageChange={handlePageChange}
-                          />
-                        ) : (
-                          // <OrderCard
-                          //   orders={data.data as any}
-                          //   currentPage={currentPage}
-                          //   totalPages={totalPages}
-                          //   onPageChange={handlePageChange}
-                          // />
-                          <></>
-                        )
+                        <>
+                          {/* 데이터 표시 */}                      
+                          {!orderData || orderData.data.length === 0 ? (
+                            <div className="py-16 text-center text-muted-foreground">
+                              등록된 운송 요청이 없습니다.
+                            </div>
+                          ) : (
+                            //뷰 모드에 따라 테이블 또는 카드 형태로 표시
+                            viewMode === "table" ? (
+                              <OrderTableVer01
+                                orders={(convertedOrderData?.data || []) as any}
+                                currentPage={orderCurrentPage}
+                                totalPages={ordersTotalPages}
+                                onPageChange={handlePageChange}
+                              />
+                            ) : (
+                              // <OrderCard
+                              //   orders={orderData.data}
+                              //   currentPage={orderCurrentPage}
+                              //   totalPages={Math.ceil((orderData.pagination.total || 0) / orderPageSize)}
+                              //   onPageChange={handlePageChange}
+                              // />
+                              <></>
+                            )
+                          )}
+                        </>
                       )}
-                    </>
-                  )}
                 </CardContent>
               </Card>
                 </TabsContent>
