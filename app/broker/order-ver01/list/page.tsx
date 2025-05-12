@@ -18,7 +18,8 @@ import { getBrokerOrdersByPage } from "@/utils/mockdata/mock-broker-orders";
 import { getOrdersByPage } from "@/utils/mockdata/mock-orders";
 import { BrokerOrderSearch } from "@/components/broker/order/broker-order-search";
 import { BrokerOrderTable } from "@/components/broker/order/broker-order-table";
-import { BrokerOrderTable as BrokerOrderTableVer01 } from "@/components/broker/order/broker-order-table-ver01";
+import { OrderSearch as OrderSearchVer01 } from "@/components/broker/order/broker-order-search-ver01";
+import { OrderTable as BrokerOrderTableVer01, OrderTable } from "@/components/broker/order/broker-order-table-ver01";
 
 import { BrokerOrderCard } from "@/components/broker/order/broker-order-card";
 import { BrokerOrderDetailSheet } from "@/components/broker/order/broker-order-detail-sheet";
@@ -37,6 +38,42 @@ import { AverageValueCard } from "@/components/order/overview/average-value-card
 import { OrderCard as OrderCardOverview } from "@/components/order/overview/order-card";
 import { SpendingCard } from "@/components/order/overview/spending-card";
 import { EarningsCard } from "@/components/order/overview/earning-card";
+import { IOrderFilter, OrderFlowStatus, OrderStatusType } from "@/types/order-ver01";
+import { OrderVehicleWeight } from "@/types/order-ver01";
+import { OrderVehicleType } from "@/types/order-ver01";
+import { fetchOrders } from "@/services/order-service";
+import { mapApiResponseToOrderList } from "@/utils/data-mapper";
+import { toast as toastUi} from "@/components/ui/use-toast";
+
+// 프론트 상태와 백엔드 API 파라미터 간 매핑 함수
+const mapFilterToApiParams = (filter: IOrderFilter) => {
+  // 상태 매핑
+  let flowStatus: OrderFlowStatus | undefined;
+  if (filter.status) {
+    const statusMap: Record<OrderStatusType, OrderFlowStatus> = {
+      '운송요청': '운송요청',
+      '배차대기': '배차대기',
+      '배차완료': '배차완료',
+      '상차대기': '상차대기',
+      '상차완료': '상차완료',
+      '운송중': '운송중',
+      '하차완료': '하차완료',
+      '운송마감': '운송완료'
+    };
+    flowStatus = statusMap[filter.status] as OrderFlowStatus;
+  }
+
+  return {
+    keyword: filter.searchTerm,
+    flowStatus,
+    vehicleType: filter.vehicleType as OrderVehicleType,
+    vehicleWeight: filter.weight as OrderVehicleWeight,
+    pickupCity: filter.departureCity,
+    deliveryCity: filter.arrivalCity,
+    startDate: filter.startDate,
+    endDate: filter.endDate,
+  };
+};  
 
 export default function BrokerOrderListPage() {
   // 자동 새로고침 상태
@@ -44,6 +81,9 @@ export default function BrokerOrderListPage() {
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
   // 현재 선택된 탭
   const [currentTab, setCurrentTab] = useState("dispatched");
+
+  // 에러 상태 관리를 위한 추가 state
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Zustand 스토어에서 상태 및 액션 가져오기
   const {
@@ -127,37 +167,44 @@ export default function BrokerOrderListPage() {
   });
 
   // 운송요청 데이터 조회 (운송요청 탭)
-  const { data: orderData, isLoading: isOrderLoading, isError: isOrderError, refetch: refetchOrders } = useQuery({
+  const { data: orderData, isLoading: isOrderLoading, isError: isOrderError, error, refetch: refetchOrders } = useQuery({
     queryKey: ["orders", orderCurrentPage, orderPageSize, orderFilter, lastRefreshed],
-    queryFn: () => {
+    queryFn: async () => {
+    try {
       console.log('Order Query function called with:', {
         currentPage: orderCurrentPage,
         pageSize: orderPageSize,
-        departureCity: orderFilter.departureCity,
-        arrivalCity: orderFilter.arrivalCity,
-        vehicleType: orderFilter.vehicleType,
-        weight: orderFilter.weight,
-        searchTerm: orderFilter.searchTerm,
-        status: "운송요청", // 항상 운송요청 상태만 가져옴
-        startDate: orderFilter.startDate,
-        endDate: orderFilter.endDate
+        filter: orderFilter
       });
       
-      return getOrdersByPage(
-        orderCurrentPage,
-        orderPageSize,
-        orderFilter.departureCity,
-        orderFilter.arrivalCity,
-        orderFilter.vehicleType,
-        orderFilter.weight,
-        orderFilter.searchTerm,
-        "운송요청",
-        orderFilter.startDate,
-        orderFilter.endDate
-      );
+      // API 파라미터 매핑
+      const apiParams = {
+        page: currentPage,
+        pageSize,
+        ...mapFilterToApiParams(orderFilter)
+      };
+      
+      // API 호출
+      const response = await fetchOrders(apiParams);
+      console.log('API 호출 응답:', response);
+      
+      // 응답이 없거나 형식이 잘못된 경우
+      if (!response || !response.data) {
+        throw new Error('유효하지 않은 응답 형식입니다.');
+      }
+      
+      // 응답 데이터 매핑
+      const mappedData = mapApiResponseToOrderList(response);
+      return mappedData;
+      } catch (error) {
+        console.error('화물 목록 조회 에러:', error);
+        const message = error instanceof Error ? error.message : '화물 목록을 불러오는 데 실패했습니다.';
+        setErrorMessage(message);
+        throw error;
+      }
     },
-    staleTime: 1000 * 60, // 1분
-    enabled: currentTab === "request" // 운송요청 탭일 때만 활성화
+    staleTime: 1000 * 60 * 5, // 5분 캐시
+    retry: 1, // 실패 시 1번 재시도
   });
 
   // 운송요청 데이터를 브로커 주문 형식으로 변환
@@ -263,7 +310,14 @@ export default function BrokerOrderListPage() {
   // 운송요청 탭에서 필터 변경 시 데이터 다시 조회
   useEffect(() => {
     if (currentTab === "request") {
-      refetchOrders();
+      refetchOrders().catch(err => {
+        console.error('데이터 갱신 에러:', err);
+        toastUi({
+          variant: "destructive",
+          title: "데이터 갱신 실패",
+          description: "화물 목록을 갱신하는 중에 오류가 발생했습니다."
+        });
+      });
     }
   }, [orderCurrentPage, orderPageSize, orderFilter, refetchOrders, currentTab]);
   
@@ -282,6 +336,8 @@ export default function BrokerOrderListPage() {
       if (intervalId) clearInterval(intervalId);
     };
   }, [autoRefreshEnabled]);
+
+  
 
   // 페이지 변경 핸들러
   const handlePageChange = useCallback(
@@ -336,6 +392,15 @@ export default function BrokerOrderListPage() {
     // 실제 구현 시 지도 모달 열기
     toast.info(`화물 ${orderId}의 실시간 위치를 확인하는 기능을 준비 중입니다.`);
   };
+
+   // 다시 시도 버튼 클릭 핸들러
+   const handleRetry = useCallback(() => {
+    setErrorMessage(null);
+    refetch().catch(err => {
+      console.error('재시도 에러:', err);
+      setErrorMessage('재시도 중 오류가 발생했습니다.');
+    });
+  }, [refetch]);
 
   // 총 페이지 수 계산
   const totalPages = data ? Math.ceil((data.pagination.total || 0) / (currentTab === "request" ? orderPageSize : pageSize)) : 0;
@@ -448,66 +513,64 @@ export default function BrokerOrderListPage() {
                 <TabsContent value="request" className="mt-0">
                   {/* 운송요청 데이터 - 운송요청 전용 테이블 컴포넌트로 표시 */}
                   <Card>
-                    <CardContent>
-                      {/* 검색 필터 - 양끝에 배치*/}
-                      <div className="flex flex-col md:flex-row items-center justify-between">
-                        <div className="w-full md:w-auto">
-                          <BrokerOrderSearch />   
-                        </div>
-                        <div className="flex flex-row hidden md:flex items-center mb-6 gap-2">                  
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className={cn(autoRefreshEnabled && "bg-primary/10")}
-                            onClick={toggleAutoRefresh}
-                          >
-                            <RotateCcw className={cn("h-4 w-4 mr-1", autoRefreshEnabled && "animate-spin")} />
-                            자동 갱신 {autoRefreshEnabled ? "켜짐" : "꺼짐"}
-                          </Button>
-                          <Button className="bg-primary/10" variant="outline" size="icon" onClick={handleManualRefresh}>
-                            <RotateCcw className="h-4 w-4" />
-                          </Button>
-                          <Separator orientation="vertical" className="h-6" />
-                          
-                        </div>
+                <CardContent>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <OrderSearchVer01 />                    
+                  </div>
+
+                  {/* 로딩 상태 - 개선된 UI */}
+                  {isLoading ? (
+                    <div className="py-12 text-center">
+                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      <p className="mt-2 text-muted-foreground">데이터를 불러오는 중...</p>
+                    </div>
+                  ) : isError || errorMessage ? (
+                    // 에러 상태 - 개선된 UI
+                    <div className="py-12 text-center">
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100">
+                        <span className="text-red-500 text-2xl">!</span>
                       </div>
-
-                      {/* 로딩 상태 */}
-                      {isOrderLoading && (
-                        <div className="py-12 text-center text-lg text-muted-foreground">
-                          데이터를 불러오는 중...
+                      <p className="mt-2 text-red-500">
+                        {errorMessage || (error instanceof Error ? error.message : "데이터 조회 중 오류가 발생했습니다.")}
+                      </p>
+                      <Button
+                        variant="outline"
+                        className="mt-2"
+                        onClick={handleRetry}
+                      >
+                        다시 시도
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      {/* 데이터 표시 */}                      
+                      {!data || data.data.length === 0 ? (
+                        <div className="py-16 text-center text-muted-foreground">
+                          등록된 운송 요청이 없습니다.
                         </div>
+                      ) : (
+                        //뷰 모드에 따라 테이블 또는 카드 형태로 표시
+                        viewMode === "table" ? (
+                          <OrderTable
+                            orders={data.data as any}
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                          />
+                        ) : (
+                          // <OrderCard
+                          //   orders={data.data as any}
+                          //   currentPage={currentPage}
+                          //   totalPages={totalPages}
+                          //   onPageChange={handlePageChange}
+                          // />
+                          <></>
+                        )
                       )}
-
-                      {/* 에러 상태 */}
-                      {isOrderError && (
-                        <div className="py-12 text-center text-lg text-red-500">
-                          데이터 조회 중 오류가 발생했습니다.
-                          <Button
-                            variant="outline"
-                            className="ml-2"
-                            onClick={() => refetchOrders()}
-                          >
-                            다시 시도
-                          </Button>
-                        </div>
-                      )}
-
-                      {/* 데이터 표시 */}
-                      {!isOrderLoading && !isOrderError && convertedOrderData && (
-                        <BrokerOrderTableVer01
-                          orders={convertedOrderData.data}
-                          currentPage={orderCurrentPage}
-                          totalPages={Math.ceil(convertedOrderData.pagination.total / orderPageSize)}
-                          onPageChange={handlePageChange}
-                          onStatusChange={handleStatusChange}
-                          onEditTransportFee={handleEditTransportFee}
-                          onExportExcel={handleExportExcel}
-                          onViewMap={handleViewMap}
-                        />
-                      )}
-                    </CardContent>
-                  </Card>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
                 </TabsContent>
                 <TabsContent value="dispatched" className="mt-0">
                   {/* 배차대기 이후 데이터 - 별도 컨텐츠 불필요, 아래 공통 영역에 표시됨 */}
