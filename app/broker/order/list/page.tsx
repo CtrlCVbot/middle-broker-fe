@@ -317,16 +317,17 @@ export default function BrokerOrderListPage() {
                         onViewMap={handleViewMap}
                       />
                     ) : (
-                      <BrokerOrderCard
-                        orders={data.data}
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={handlePageChange}
-                        onStatusChange={handleStatusChange}
-                        onEditTransportFee={handleEditTransportFee}
-                        onExportExcel={handleExportExcel}
-                        onViewMap={handleViewMap}
-                      />
+                      // <BrokerOrderCard
+                      //   orders={data.data as IDispatchItem[]}
+                      //   currentPage={currentPage}
+                      //   totalPages={totalPages}
+                      //   onPageChange={handlePageChange}
+                      //   onStatusChange={handleStatusChange}
+                      //   onEditTransportFee={handleEditTransportFee}
+                      //   onExportExcel={handleExportExcel}
+                      //   onViewMap={handleViewMap}
+                      // />
+                      <></>
                     )}
                   </>
                 )}

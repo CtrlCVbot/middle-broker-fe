@@ -167,7 +167,7 @@ export function BrokerOrderTable({
           <TableHeader className="sticky top-0 z-10 bg-muted">
             <TableRow>
               {activeTab === 'waiting' && (
-                <TableHead className="w-[40px]">
+                <TableHead className="w-[25px]">
               <Checkbox
                     checked={orders.length > 0 && selectedOrders.length === orders.length}
                     onCheckedChange={(checked) => {

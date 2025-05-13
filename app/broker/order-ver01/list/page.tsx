@@ -312,112 +312,145 @@ export default function BrokerOrderListPage() {
   const tabMessage = getTabMessage();
 
   return (
-    <div className="container px-4 py-6 md:px-6 max-w-7xl">
-      {/* 제목 및 액션 버튼 */}
-      <div className="flex justify-between items-center mb-6">
+
+    <>
+    <header className="flex h-16 shrink-0 items-center gap-2 border-b">
+      <div className="flex items-center gap-2 px-4">
+        <SidebarTrigger className="-ml-1" />
+        <Separator
+          orientation="vertical"
+          className="mr-2 data-[orientation=vertical]:h-4"
+        />
         <Breadcrumb>
           <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/broker">주선사</BreadcrumbLink>
+            <BreadcrumbItem className="hidden md:block">
+              <BreadcrumbLink href="/">                  
+                홈
+              </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator />
+            <BreadcrumbSeparator className="hidden md:block" />
+            <BreadcrumbItem className="hidden md:block">
+              <BreadcrumbLink href="/broker">                  
+                주선
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>배차 관리</BreadcrumbPage>
+              <BreadcrumbPage>중개 화물 현황</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        
-        <div className="flex space-x-2">
-          <SidebarTrigger>
-            <Button variant="outline" size="sm">
-              <ListFilter className="h-4 w-4 mr-2" />
-              필터
-            </Button>
-          </SidebarTrigger>
-          
-          <Button
-            variant={autoRefreshEnabled ? "default" : "outline"}
-            size="sm"
-            onClick={toggleAutoRefresh}
-          >
-            <RotateCcw
-              className={cn(
-                "h-4 w-4 mr-2",
-                autoRefreshEnabled && "animate-spin"
-              )}
-            />
-            {autoRefreshEnabled ? "자동 갱신 중" : "자동 갱신"}
-          </Button>
-          
-          <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'table' | 'card')}>
+      </div>
+    </header>
+    <main>
+      {/* 제목 및 액션 버튼 */}
+      
+      <Card  className="border-none shadow-none">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div> 
+            <CardTitle>중개 화물 현황</CardTitle>
+            <CardDescription className="hidden md:block">중개 화물 목록을 확인할 수 있습니다.
+              <span className="text-xs text-muted-foreground px-4">
+                마지막 업데이트: {lastRefreshed.toLocaleTimeString()}
+              </span>
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            
+          </div>
+          <ToggleGroup type="single" value={viewMode} onValueChange={(value: string) => value && setViewMode(value as 'table' | 'card')}>
             <ToggleGroupItem value="table" aria-label="테이블 보기">
-              테이블
+              <ListFilter className="h-4 w-4" />
             </ToggleGroupItem>
             <ToggleGroupItem value="card" aria-label="카드 보기">
-              카드
+              <Grid3x3 className="h-4 w-4" />
             </ToggleGroupItem>
           </ToggleGroup>
-        </div>
-      </div>
-      
-      {/* 탭 네비게이션 */}
-      <div className="mb-4">
-        <BrokerOrderTabs />
-      </div>
-      
-      {/* 검색 및 필터 */}
-      <div className="mb-4">
-        <BrokerOrderSearchVer01 />
-      </div>
+        </CardHeader>
 
-      {/* 운송 수락 버튼 (요청 탭일 때만 표시) */}
-      {activeTab === 'waiting' && selectedOrders.length > 0 && (
-        <div className="mb-4">
-          <Button 
-            variant="default" 
-            className="text-sm" 
-            onClick={handleOpenAcceptModal}
-          >
-            <ThumbsUp className="h-4 w-4 mr-2" />
-            선택한 {selectedOrders.length}개 화물 운송 수락
-          </Button>
-        </div>
-      )}
+        <CardContent>
+          <Card>
+            <CardContent>
+              {/* 탭 네비게이션 */}
+              <div className="mb-4">
+                <BrokerOrderTabs />
+              </div>
+              
+              {/* 검색 및 필터 */}
+              <div className="flex flex-col md:flex-row items-center justify-between">
+                <div className="w-full md:w-auto">
+                  <BrokerOrderSearchVer01 />   
+                </div>
+                <div className="flex flex-row hidden md:flex items-center mb-6 gap-2">                  
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className={cn(autoRefreshEnabled && "bg-primary/10")}
+                    onClick={toggleAutoRefresh}
+                  >
+                    <RotateCcw className={cn("h-4 w-4 mr-1", autoRefreshEnabled && "animate-spin")} />
+                    자동 갱신 {autoRefreshEnabled ? "켜짐" : "꺼짐"}
+                  </Button>
+                  <Button className="bg-primary/10" variant="outline" size="icon" onClick={handleManualRefresh}>
+                    <RotateCcw className="h-4 w-4" />
+                  </Button>
+                  <Separator orientation="vertical" className="h-6" />
+                  
+                </div>
+              </div>
 
-      {/* 주문 정보 */}
-      {tabMessage ? (
-        <div className="py-12 text-center text-lg text-muted-foreground">
-          {tabMessage}
-        </div>
-      ) : (
-        <>
-          {viewMode === 'table' ? (
-            <BrokerOrderTableVer01
-              orders={orders}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-              onStatusChange={handleStatusChange}
-              onEditTransportFee={handleEditTransportFee}
-              onExportExcel={handleExportExcel}
-              onViewMap={handleViewMap}
-              onAcceptOrder={handleAcceptOrder}
-            />
-          ) : (
-            <BrokerOrderCard
-              orders={orders}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-              onStatusChange={handleStatusChange}
-              onEditTransportFee={handleEditTransportFee}
-              onExportExcel={handleExportExcel}
-              onViewMap={handleViewMap}
-              onAcceptOrder={handleAcceptOrder}
-            />
-          )}
-        </>
-      )}
+              {/* 운송 수락 버튼 (요청 탭일 때만 표시) */}
+              {activeTab === 'waiting' && selectedOrders.length > 0 && (
+                <div className="mb-4">
+                  <Button 
+                    variant="default" 
+                    className="text-sm" 
+                    onClick={handleOpenAcceptModal}
+                  >
+                    <ThumbsUp className="h-4 w-4 mr-2" />
+                    선택한 {selectedOrders.length}개 화물 운송 수락
+                  </Button>
+                </div>
+              )}
+
+              {/* 주문 정보 */}
+              {tabMessage ? (
+                <div className="py-12 text-center text-lg text-muted-foreground">
+                  {tabMessage}
+                </div>
+              ) : (
+                <>
+                  {viewMode === 'table' ? (
+                    <BrokerOrderTableVer01
+                      orders={orders}
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={handlePageChange}
+                      onStatusChange={handleStatusChange}
+                      onEditTransportFee={handleEditTransportFee}
+                      onExportExcel={handleExportExcel}
+                      onViewMap={handleViewMap}
+                      onAcceptOrder={handleAcceptOrder}
+                    />
+                  ) : (
+                    <BrokerOrderCard
+                      orders={orders}
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={handlePageChange}
+                      onStatusChange={handleStatusChange}
+                      onEditTransportFee={handleEditTransportFee}
+                      onExportExcel={handleExportExcel}
+                      onViewMap={handleViewMap}
+                      onAcceptOrder={handleAcceptOrder}
+                    />
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </CardContent>
+      </Card>      
       
       {/* 상세 정보 시트 */}
       <BrokerOrderDetailSheet />
@@ -429,6 +462,7 @@ export default function BrokerOrderListPage() {
         onAccept={handleAcceptSubmit}
         orderCount={selectedOrders.length}
       />
-    </div>
+    </main>
+    </>
   );
 } 
