@@ -1,5 +1,7 @@
 import { IOrder as IFrontendOrder, OrderStatusType } from "@/types/order";
 import { IOrder as IBackendOrder, OrderFlowStatus, IOrderListResponse } from "@/types/order-ver01";
+import { IBrokerOrder, IBrokerOrderResponse, IBrokerOrderSummary } from "@/types/broker-order";
+import { IOrderWithDispatchItem, IOrderWithDispatchListResponse, IOrderWithDispatchDetailResponse } from "@/types/order-with-dispatch";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 
@@ -194,4 +196,149 @@ export function formatDate(dateString: string, formatStr: string = "MM.dd (E) HH
 function calculateFee(amount: number): number {
   // 임시로 금액의 10%를 수수료로 계산
   return Math.round(amount * 0.1);
+}
+
+/**
+ * orderWithDispatch API 응답을 주선사 배차 관리용 데이터로 변환하는 함수
+ * @param apiResponse API 응답 데이터
+ * @returns 주선사 배차 관리용 데이터 구조
+ */
+export function mapApiResponseToBrokerDispatchList(
+  apiResponse: IOrderWithDispatchListResponse
+): {
+  data: any[];
+  pagination: {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
+} {
+  // 배차 정보가 있는 주문만 필터링
+  const dispatchItems = apiResponse.data.filter(item => item.dispatch !== null);
+
+  // 주선사 배차 관리용 데이터 구조로 변환
+  const data = dispatchItems.map(item => {
+    const { order, dispatch } = item;
+    
+    return {
+      orderId: order.id,
+      dispatchId: dispatch?.id,
+      flowStatus: order.flowStatus,
+      cargoName: order.cargoName,
+      dispatchDate: dispatch?.createdAt,
+      
+      // 출발지/도착지 정보
+      pickupAddress: order.pickup.address?.roadAddress || '',
+      pickupDateTime: `${order.pickup.date} ${order.pickup.time}`,
+      deliveryAddress: order.delivery.address?.roadAddress || '',
+      deliveryDateTime: `${order.delivery.date} ${order.delivery.time}`,
+      
+      // 차량 정보
+      vehicleType: order.requestedVehicleType,
+      vehicleWeight: order.requestedVehicleWeight,
+      assignedVehicleNumber: dispatch?.assignedVehicleNumber || '',
+      assignedVehicleType: dispatch?.assignedVehicleType || '',
+      
+      // 배차 상세 정보
+      driverName: dispatch?.assignedDriverSnapshot?.name || '',
+      driverPhone: dispatch?.assignedDriverPhone || '',
+      freightCost: dispatch?.agreedFreightCost || 0,
+      estimatedAmount: order.estimatedPriceAmount || 0,
+      
+      // 메모 정보
+      memo: order.memo,
+      brokerMemo: dispatch?.brokerMemo,
+    };
+  });
+  
+  return {
+    data,
+    pagination: {
+      total: apiResponse.total,
+      page: apiResponse.page,
+      pageSize: apiResponse.pageSize,
+      totalPages: apiResponse.totalPages
+    }
+  };
+}
+
+/**
+ * orderWithDispatch API 상세 응답을 주선사 배차 상세 정보로 변환하는 함수
+ * @param item API 상세 응답 데이터
+ * @returns 주선사 배차 상세 정보
+ */
+export function mapApiResponseToBrokerDispatchDetail(
+  item: IOrderWithDispatchItem
+): any {
+  const { order, dispatch } = item;
+  
+  if (!dispatch) {
+    throw new Error('배차 정보가 없습니다.');
+  }
+  
+  return {
+    orderId: order.id,
+    dispatchId: dispatch.id,
+    flowStatus: order.flowStatus,
+    cargoName: order.cargoName,
+    
+    // 주문 정보
+    requestedVehicleType: order.requestedVehicleType,
+    requestedVehicleWeight: order.requestedVehicleWeight,
+    estimatedAmount: order.estimatedPriceAmount,
+    
+    // 상하차 정보
+    pickup: {
+      name: order.pickup.name,
+      contactName: order.pickup.contactName,
+      contactPhone: order.pickup.contactPhone,
+      address: order.pickup.address,
+      date: order.pickup.date,
+      time: order.pickup.time,
+    },
+    delivery: {
+      name: order.delivery.name,
+      contactName: order.delivery.contactName,
+      contactPhone: order.delivery.contactPhone,
+      address: order.delivery.address,
+      date: order.delivery.date,
+      time: order.delivery.time,
+    },
+    
+    // 배차 정보
+    broker: {
+      companyId: dispatch.brokerCompanyId,
+      companyName: dispatch.brokerCompanySnapshot?.name || '',
+      managerId: dispatch.brokerManagerId,
+      managerName: dispatch.brokerManagerSnapshot?.name || '',
+    },
+    
+    // 배차 상세 정보
+    assignedDriver: {
+      id: dispatch.assignedDriverId,
+      name: dispatch.assignedDriverSnapshot?.name || '',
+      phone: dispatch.assignedDriverPhone,
+    },
+    
+    assignedVehicle: {
+      number: dispatch.assignedVehicleNumber,
+      type: dispatch.assignedVehicleType,
+      weight: dispatch.assignedVehicleWeight,
+      connection: dispatch.assignedVehicleConnection,
+    },
+    
+    // 배차 금액 정보
+    agreedFreightCost: dispatch.agreedFreightCost,
+    
+    // 메모 정보
+    orderMemo: order.memo,
+    brokerMemo: dispatch.brokerMemo,
+    
+    // 생성/수정 정보
+    createdAt: dispatch.createdAt,
+    updatedAt: dispatch.updatedAt,
+    createdBy: dispatch.createdBySnapshot?.name || '',
+    updatedBy: dispatch.updatedBySnapshot?.name || '',
+  };
 } 

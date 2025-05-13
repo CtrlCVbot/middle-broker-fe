@@ -4,6 +4,8 @@ import { getCurrentUser } from '@/utils/auth';
 import { validateOrderData, validateOrderDataWithErrors } from '@/utils/order-validation';
 import { showValidationError } from '@/utils/order-utils';
 import { IOrder, IOrderListResponse, OrderFlowStatus, OrderVehicleType, OrderVehicleWeight } from "@/types/order-ver01";
+import { IOrderWithDispatchListResponse, IOrderWithDispatchDetailResponse } from "@/types/order-with-dispatch";
+import { mapApiResponseToBrokerDispatchList, mapApiResponseToBrokerDispatchDetail } from '@/utils/data-mapper';
 
 // API 클라이언트 인스턴스
 const apiClient = new ApiClient();
@@ -311,4 +313,148 @@ export async function fetchOrderChangeLogs(orderId: string): Promise<any> {
   }
 
   return response.json();
+}
+
+/**
+ * 주선사 배차 목록을 조회하는 함수
+ * @param page 페이지 번호
+ * @param pageSize 페이지 크기
+ * @param filter 필터 조건
+ * @returns 배차 목록 데이터
+ */
+export async function getBrokerDispatchList(
+  page: number = 1,
+  pageSize: number = 10,
+  filter: any = {}
+) {
+  try {
+    // 파라미터 구성
+    const params = new URLSearchParams({
+      page: page.toString(),
+      pageSize: pageSize.toString(),
+      hasDispatch: 'true', // 배차 정보가 있는 주문만 조회
+    });
+
+    // 필터 추가 (주선사 관련 필터)
+    if (filter.brokerCompanyId) params.append('brokerCompanyId', filter.brokerCompanyId);
+    if (filter.vehicleType) params.append('vehicleType', filter.vehicleType);
+    if (filter.vehicleWeight) params.append('vehicleWeight', filter.vehicleWeight);
+    if (filter.status) params.append('flowStatus', filter.status);
+    if (filter.startDate) params.append('startDate', filter.startDate);
+    if (filter.endDate) params.append('endDate', filter.endDate);
+    if (filter.keyword) params.append('keyword', filter.keyword);
+
+    // API 호출
+    const response = await fetch(`/api/orders/with-dispatch?${params.toString()}`);
+
+    if (!response.ok) {
+      throw new Error('배차 목록 조회에 실패했습니다.');
+    }
+
+    const data: IOrderWithDispatchListResponse = await response.json();
+    
+    // 데이터 매핑
+    return mapApiResponseToBrokerDispatchList(data);
+  } catch (error) {
+    console.error('배차 목록 조회 중 오류:', error);
+    throw error;
+  }
+}
+
+/**
+ * 특정 배차의 상세 정보를 조회하는 함수
+ * @param orderId 주문 ID
+ * @returns 배차 상세 정보
+ */
+export async function getBrokerDispatchDetail(orderId: string) {
+  try {
+    const response = await fetch(`/api/orders/with-dispatch/${orderId}`);
+
+    if (!response.ok) {
+      throw new Error('배차 상세 정보 조회에 실패했습니다.');
+    }
+
+    const data: IOrderWithDispatchDetailResponse = await response.json();
+    
+    // 배차 정보가 없는 경우 처리
+    if (!data.data.dispatch) {
+      throw new Error('해당 주문에 배차 정보가 없습니다.');
+    }
+    
+    // 데이터 매핑
+    return mapApiResponseToBrokerDispatchDetail(data.data);
+  } catch (error) {
+    console.error('배차 상세 정보 조회 중 오류:', error);
+    throw error;
+  }
+}
+
+/**
+ * 배차 정보 업데이트 함수
+ * @param orderId 주문 ID
+ * @param dispatch 업데이트할 배차 정보
+ * @param orderStatus 변경할 주문 상태 (선택 사항)
+ * @returns 업데이트된 배차 상세 정보
+ */
+export async function updateBrokerDispatchInfo(
+  orderId: string,
+  dispatch: {
+    dispatchId: string;
+    assignedDriverId?: string;
+    assignedDriverPhone?: string;
+    assignedVehicleNumber?: string;
+    assignedVehicleType?: string;
+    assignedVehicleWeight?: string;
+    agreedFreightCost?: number;
+    memo?: string;
+  },
+  orderStatus?: string
+) {
+  try {
+    // 배차 정보 업데이트
+    const dispatchResponse = await fetch(`/api/orders/${orderId}/dispatch`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: dispatch.dispatchId,
+        assignedDriverId: dispatch.assignedDriverId,
+        assignedDriverPhone: dispatch.assignedDriverPhone,
+        assignedVehicleNumber: dispatch.assignedVehicleNumber,
+        assignedVehicleType: dispatch.assignedVehicleType,
+        assignedVehicleWeight: dispatch.assignedVehicleWeight,
+        agreedFreightCost: dispatch.agreedFreightCost,
+        brokerMemo: dispatch.memo,
+      }),
+    });
+
+    if (!dispatchResponse.ok) {
+      throw new Error('배차 정보 업데이트에 실패했습니다.');
+    }
+
+    // 주문 상태 변경이 필요한 경우
+    if (orderStatus) {
+      const statusResponse = await fetch(`/api/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          flowStatus: orderStatus,
+          reason: '배차 정보 업데이트와 함께 상태 변경',
+        }),
+      });
+
+      if (!statusResponse.ok) {
+        throw new Error('주문 상태 변경에 실패했습니다.');
+      }
+    }
+
+    // 최신 정보 조회하여 반환
+    return await getBrokerDispatchDetail(orderId);
+  } catch (error) {
+    console.error('배차 정보 업데이트 중 오류:', error);
+    throw error;
+  }
 } 
