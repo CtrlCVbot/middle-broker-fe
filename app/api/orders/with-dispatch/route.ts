@@ -271,8 +271,30 @@ export async function GET(request: NextRequest) {
         updatedBySnapshot: item.dispatchUpdatedBySnapshot || undefined,
         createdAt: item.dispatchCreatedAt?.toISOString() || '',
         updatedAt: item.dispatchUpdatedAt?.toISOString() || '',
-      } : null;
-      
+      } : 
+      //null; //대신 빈값 반환하기!
+      {
+        id: '',
+        brokerCompanyId: '',
+        brokerCompanySnapshot: undefined,
+        brokerManagerId: '',
+        brokerManagerSnapshot: undefined,
+        assignedDriverId: '',
+        assignedDriverSnapshot: undefined,
+        assignedDriverPhone: '',
+        assignedVehicleNumber: '',
+        assignedVehicleType: '',
+        assignedVehicleWeight: '',
+        assignedVehicleConnection: '',
+        agreedFreightCost: 0,
+        brokerMemo: '',
+        createdBy: '',
+        createdBySnapshot: undefined,
+        updatedBy: '',
+        updatedBySnapshot: undefined,
+        createdAt: '',
+        updatedAt: '',
+      };      
       return {
         order: orderInfo,
         dispatch: dispatchInfo,

@@ -334,7 +334,8 @@ export async function getBrokerDispatchList(
     const params = new URLSearchParams({
       page: page.toString(),
       pageSize: pageSize.toString(),
-      hasDispatch: 'true', // 배차 정보가 있는 주문만 조회
+      //hasDispatch: 'true', // 배차 정보가 있는 주문만 조회
+      hasDispatch: 'false', // 배차 정보가 없는 주문만 조회
     });
 
     // 필터 추가 (주선사 관련 필터)
