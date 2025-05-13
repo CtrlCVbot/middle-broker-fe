@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { format, isValid, parseISO } from "date-fns";
 import {
   Table,
   TableBody,
@@ -11,143 +10,43 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  ArrowBigRightDash,
-  Link2Off,
-  Truck,
 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-
-import { IOrder } from "@/types/order-ver01";
+import { IBrokerOrder, BrokerOrderStatusType } from "@/types/broker-order";
 import { formatCurrency } from "@/lib/utils";
-import { useOrderDetailStore } from "@/store/order-detail-store";
-import { ko } from "date-fns/locale";
+import { useBrokerOrderDetailStore } from "@/store/broker-order-detail-store";
+import { BrokerStatusBadge } from "./broker-status-badge";
+import { BrokerOrderContextMenu } from "./broker-order-context-menu";
+import { Badge } from "@/components/ui/badge";
+import { getStatusBadge } from "@/components/order/order-table-ver01";
 
-
-// 화물 상태에 따른 배지 색상 설정
-export const getStatusBadge = (status: string) => {
-  switch (status) {
-    case "운송요청":
-      return <Badge className="text-md" variant="destructive" >운송요청</Badge>;
-    case "배차대기":
-      return <Badge className="text-md bg-orange-500">배차대기</Badge>;
-    case "배차완료":
-      return <Badge className="text-md bg-green-500">배차완료</Badge>;
-    case "상차대기":
-      return <Badge className="text-md bg-green-800">상차대기</Badge>;
-    case "상차완료":
-      return <Badge className="text-md bg-blue-300">상차완료</Badge>;
-    case "운송중":
-      return <Badge className="text-md bg-blue-500">운송중</Badge>;
-    case "하차완료":
-      return <Badge className="text-md bg-blue-800">하차완료</Badge>;
-    case "운송마감":
-    case "운송완료":
-      return <Badge className="text-md bg-purple-500">운송마감</Badge>;
-    default:
-      return <Badge variant="outline">{status}</Badge>;
-  }
-};
-export const getStatusColor = (status: string) => {
-  switch (status) {
-    case "운송요청":
-      return "red";
-    case "배차대기":
-      return "orange";
-    case "배차완료":
-      return "green";
-    case "상차대기":
-      return "green";
-    case "상차완료":
-      return "blue";
-    case "운송중":
-      return "blue";
-    case "하차완료":
-      return "blue";
-    case "운송마감":
-    case "운송완료":
-      return "purple";
-    default:
-      return "gray";
-  }
-}
-export const getStatusColorSummary = (status: string) => {
-  switch (status) {
-    case "운송요청":
-      return "orange";
-    case "배차중":
-      return "green";    
-    case "운송중":
-      return "blue";
-    case "운송완료":
-      return "purple";
-    default:
-      return "gray";
-  }
-}
-
-
-const getDateTimeformat = (date: string) => {
-  const dateObj = new Date(date);
-  return format(dateObj, "MM.dd (E) HH:mm", { locale: ko });
-}
-
-export const getSchedule = (pickupDate: string, pickupTime: string, deliveryDate: string, deliveryTime: string) => {
-  const pickupDateObj = format(pickupDate, "MM.dd(E)", { locale: ko });
-  const deliveryDateObj = format(deliveryDate, "dd", { locale: ko });
-  if (pickupDate === deliveryDate) {
-    return pickupDateObj;
-  } else {
-    return pickupDateObj + ' - ' + deliveryDateObj;
-  }
-}
-
-export const getTime = (pickupDate: string, pickupTime: string, deliveryDate: string, deliveryTime: string) => {
-  const pickupTimeObj = format(parseISO('1970-01-01T' + pickupTime), 'HH:mm', {locale: ko});
-  let deliveryTimeObj = format(parseISO('1970-01-01T' + deliveryTime), 'HH:mm', {locale: ko});
-  const deliveryDateObj = format(deliveryDate, "dd", { locale: ko });
-  if (pickupDate === deliveryDate) {
-    deliveryTimeObj = deliveryTimeObj;
-  } else {
-    deliveryTimeObj = deliveryTimeObj + "(" + deliveryDateObj + ")";
-  }
-  if (pickupDate === deliveryDate) {
-    return pickupTimeObj + ' - ' + deliveryTimeObj;
-  } else {
-    return pickupTimeObj + ' - ' + deliveryTimeObj;
-  }
-}
-
-function formatTimeOnly(dateStr: string | Date): string {
-  const date = typeof dateStr === 'string' ? parseISO(dateStr) : dateStr;
-  return isValid(date) ? format(date, 'HH:mm', {locale: ko}) : '-';
-}
-
-interface OrderTableProps {
-  orders: IOrder[];
+interface BrokerOrderTableProps {
+  orders: IBrokerOrder[];
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  onStatusChange?: (orderId: string, newStatus: BrokerOrderStatusType) => void;
+  onEditTransportFee?: (orderId: string) => void;
+  onExportExcel?: (orderId: string) => void;
+  onViewMap?: (orderId: string) => void;
 }
 
-export function OrderTable({
+export function BrokerOrderTable({
   orders,
   currentPage,
   totalPages,
   onPageChange,
-}: OrderTableProps) {
+  onStatusChange,
+  onEditTransportFee,
+  onExportExcel,
+  onViewMap,
+}: BrokerOrderTableProps) {
   // 상세 정보 모달을 위한 스토어 액세스
-  const { openSheet } = useOrderDetailStore();
+  const { openSheet } = useBrokerOrderDetailStore();
   
   // 화물 상세 정보 열기
   const handleOrderClick = (orderId: string) => {
@@ -186,22 +85,24 @@ export function OrderTable({
             <TableRow>
               <TableHead className="w-[80px] text-center">ID</TableHead>
               <TableHead className="w-[80px] text-center">상태</TableHead>
-              <TableHead className="w-[80px] ">일정</TableHead>
-              <TableHead className="w-[120px] ">시간</TableHead>              
-              <TableHead>상차지</TableHead>
-              <TableHead>{/* 상차지 하차지 흐름 보여주는 이미지 넣는 컬럼! 지우지 마세요!*/}</TableHead>
+              <TableHead className="w-[80px] ">상차지</TableHead>
+              <TableHead className="w-[120px] ">상차일시</TableHead>              
               <TableHead>하차지</TableHead>              
-              <TableHead className="w-[100px]">품목</TableHead>              
-              <TableHead className="w-[80px] ">차량</TableHead>
-              <TableHead>기사</TableHead>
-              <TableHead className="text-right">운송비</TableHead>
+              <TableHead className="w-[120px] ">하차일시</TableHead>
+              <TableHead>차량</TableHead>
+              <TableHead>차주</TableHead>
+              <TableHead>콜센터</TableHead>
+              <TableHead>업체명</TableHead>
+              <TableHead>운송비</TableHead>
+              <TableHead>결제방식</TableHead>
+              <TableHead>관리자</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {orders.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={9}
+                  colSpan={13}
                   className="h-24 text-center text-muted-foreground"
                 >
                   표시할 화물 정보가 없습니다.
@@ -209,67 +110,69 @@ export function OrderTable({
               </TableRow>
             ) : (
               orders.map((order) => (
-                <TableRow key={order.id} className="cursor-pointer hover:bg-secondary/80" onClick={() => handleOrderClick(order.id)}>
-                  <TableCell className="font-medium text-primary underline">{order.id.slice(0, 8)}</TableCell>
-                  <TableCell className="text-center scale-90">{getStatusBadge(order.flowStatus)}</TableCell>
-                  <TableCell className="font-medium">
-                    {getSchedule(order.pickupDate, order.pickupTime, order.deliveryDate, order.deliveryTime)}
-                  </TableCell>
-                  <TableCell className="font-medium text-muted-foreground">
-                    {getTime(order.pickupDate, order.pickupTime, order.deliveryDate, order.deliveryTime)}
-                  </TableCell>
-                  
-                  <TableCell className="max-w-[100px] truncate" title={order.pickupAddressSnapshot.name}>
-                    <div className="flex flex-col">
-                      <div className="text-md font-medium text-shadow-xs">
-                        {order.pickupAddressSnapshot.name}
+                <BrokerOrderContextMenu 
+                  key={order.id} 
+                  order={order}
+                  onStatusChange={onStatusChange}
+                  onEditTransportFee={onEditTransportFee}
+                  onExportExcel={onExportExcel}
+                  onViewMap={onViewMap}
+                >                  
+                  <TableRow key={order.id} className="cursor-pointer hover:bg-secondary/80" onClick={() => handleOrderClick(order.id)}>
+                    <TableCell className="font-medium text-primary underline">{order.id.slice(0, 8)}</TableCell>
+                    <TableCell className="text-center scale-90">
+                      {getStatusBadge(order.status)}
+                      {order.gpsLocation?.status === "상차 지각" || order.gpsLocation?.status === "하차 지각" ? (
+                        <Badge variant="destructive" className="ml-1 text-[10px] px-1">지각</Badge>
+                      ) : null}
+                    </TableCell>
+                    <TableCell className="max-w-[150px] truncate" title={order.departureLocation}>
+                      {order.departureLocation}
+                    </TableCell>
+                    <TableCell>{order.departureDateTime}</TableCell>
+                    <TableCell className="max-w-[150px] truncate" title={order.arrivalLocation}>
+                      {order.arrivalLocation}
+                    </TableCell>
+                    <TableCell>{order.arrivalDateTime}</TableCell>
+                    <TableCell>
+                      {order.vehicle.type} {order.vehicle.weight}
+                    </TableCell>
+                    <TableCell>
+                      {order.driver.name || "-"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="font-normal">
+                        {order.callCenter}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="max-w-[100px] truncate" title={`${order.company} (${order.contactPerson})`}>
+                      {order.company}
+                      <span className="text-xs text-muted-foreground ml-1">
+                        ({order.contactPerson})
+                      </span>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-sm">
+                          {formatCurrency(order.chargeAmount || order.amount)}원
+                        </span>
+                        {order.chargeAmount !== order.amount && (
+                          <span className="text-xs text-muted-foreground">
+                            견적: {formatCurrency(order.amount)}원
+                          </span>
+                        )}
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        {order.pickupAddressSnapshot.roadAddress}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell><ChevronsRight className="h-5 w-5 text-muted-foreground" /></TableCell>
-                  <TableCell className="max-w-[100px] truncate" title={order.deliveryAddressSnapshot.name}>
-                    <div className="flex flex-col">
-                      <div className="text-md font-medium text-shadow-xs">
-                        {order.deliveryAddressSnapshot.name}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {order.deliveryAddressSnapshot.roadAddress}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="max-w-[150px] truncate">{order.cargoName}</TableCell>
-                  {/* <TableCell>{getDateTimeformat(order.pickupDate + ' ' + order.pickupTime)}</TableCell>                  
-                  <TableCell>{getDateTimeformat(order.deliveryDate + ' ' + order.deliveryTime)}</TableCell> */}
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <div className="text-md font-bold text-neutral-800">
-                        {order.requestedVehicleWeight}
-                      </div>
-                      <div className="text-md font-medium text-shadow-xs">
-                        {order.requestedVehicleType}
-                      </div>                      
-                    </div> 
-                  </TableCell>
-                  <TableCell>
-                    {/* {order.driver.name || "-"} */}
-                    <Badge variant="outline"  className="text-xs px-3 py-1 border-dashed text-muted-foreground">
-                      <Link2Off className="h-4 w-4 mr-1" />
-                      배차전                      
-                    </Badge>
-                    {/* <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger>{"-"}</TooltipTrigger>
-                        <TooltipContent>{"-"}</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider> */}
-                  </TableCell>
-                  <TableCell className="text-right text-primary font-bold text-md text-shadow-xs">
-                    {formatCurrency(order.estimatedPriceAmount)}원
-                  </TableCell>
-                </TableRow>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="font-normal">
+                        {order.paymentMethod}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="max-w-[100px] truncate" title={`${order.manager} (${order.managerContact})`}>
+                      {order.manager}
+                    </TableCell>
+                  </TableRow>
+                </BrokerOrderContextMenu>
               ))
             )}
           </TableBody>

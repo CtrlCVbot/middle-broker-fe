@@ -14,8 +14,10 @@ import { ListFilter, Grid3x3, RotateCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { useBrokerOrderStore } from "@/store/broker-order-store";
 import { getBrokerOrdersByPage } from "@/utils/mockdata/mock-broker-orders";
-import { BrokerOrderSearch } from "@/components/broker/order/broker-order-search";
-import { BrokerOrderTable } from "@/components/broker/order/broker-order-table";
+
+import { BrokerOrderSearch as BrokerOrderSearchVer01 } from "@/components/broker/order/broker-order-search-ver01";
+import { BrokerOrderTable as BrokerOrderTableVer01 } from "@/components/broker/order/broker-order-table-ver01";
+
 import { BrokerOrderCard } from "@/components/broker/order/broker-order-card";
 import { BrokerOrderDetailSheet } from "@/components/broker/order/broker-order-detail-sheet";
 import { Button } from "@/components/ui/button";
@@ -27,11 +29,8 @@ import { BrokerOrderStatusType } from "@/types/broker-order";
 import { toast } from "sonner";
 
 import { OverviewTopCard } from "@/components/order/overview/overview-top-card";
-import { RevenueCard } from "@/components/order/overview/revenue-card";
 import { AverageValueCard } from "@/components/order/overview/average-value-card";
-import { OrderCard as OrderCardOverview } from "@/components/order/overview/order-card";
-import { SpendingCard } from "@/components/order/overview/spending-card";
-import { EarningsCard } from "@/components/order/overview/earning-card";
+
 
 export default function BrokerOrderListPage() {
   // 자동 새로고침 상태
@@ -260,7 +259,7 @@ export default function BrokerOrderListPage() {
                 {/* 검색 필터 - 양끝에 배치*/}
                 <div className="flex flex-col md:flex-row items-center justify-between">
                     <div className="w-full md:w-auto">
-                      <BrokerOrderSearch />   
+                      <BrokerOrderSearchVer01 />   
                     </div>
                     <div className="flex flex-row hidden md:flex items-center mb-6 gap-2">                  
                       <Button 
@@ -306,7 +305,7 @@ export default function BrokerOrderListPage() {
                   <>
                     {/* 뷰 모드에 따라 테이블 또는 카드 형태로 표시 */}
                     {viewMode === "table" ? (
-                      <BrokerOrderTable
+                      <BrokerOrderTableVer01
                         orders={data.data}
                         currentPage={currentPage}
                         totalPages={totalPages}

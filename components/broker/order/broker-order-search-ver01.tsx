@@ -16,16 +16,16 @@ import {
   PopoverContent, 
   PopoverTrigger 
 } from "@/components/ui/popover";
-import { useOrderStore, getFilterSummaryText } from "@/store/order-store";
+import { useBrokerOrderStore, getFilterSummaryText } from "@/store/broker-order-store";
 import { Search, Filter, X, CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { ORDER_STATUS, OrderStatusType } from "@/types/order-ver01";
+import { BROKER_ORDER_STATUS, BrokerOrderStatusType, CallCenterType } from "@/types/broker-order";
 
-export function OrderSearch() {
+export function BrokerOrderSearch() {
   const {
     filter,
     tempFilter,
@@ -35,7 +35,7 @@ export function OrderSearch() {
     resetFilter,
     resetTempFilter,
     filterOptions
-  } = useOrderStore();
+  } = useBrokerOrderStore();
 
   // Popover 상태 관리
   const [open, setOpen] = useState(false);
@@ -75,7 +75,17 @@ export function OrderSearch() {
   
   // 배차상태 변경 시 임시 필터 업데이트
   const handleStatusChange = (value: string) => {
-    setTempFilter({ status: value === "all" ? undefined : value as OrderStatusType });
+    setTempFilter({ status: value === "all" ? undefined : value as BrokerOrderStatusType });
+  };
+  
+  // 콜센터 변경 시 임시 필터 업데이트
+  const handleCallCenterChange = (value: string) => {
+    setTempFilter({ callCenter: value === "all" ? undefined : value as CallCenterType });
+  };
+  
+  // 담당자 변경 시 임시 필터 업데이트
+  const handleManagerChange = (value: string) => {
+    setTempFilter({ manager: value === "all" ? undefined : value });
   };
   
   // 시작일 선택 핸들러
@@ -138,7 +148,9 @@ export function OrderSearch() {
     filter.weight ||
     filter.status ||
     filter.startDate ||
-    filter.endDate
+    filter.endDate ||
+    filter.callCenter ||
+    filter.manager
   );
 
   // 현재 선택된 필터 요약 텍스트
@@ -173,7 +185,7 @@ export function OrderSearch() {
           </PopoverTrigger>
           <PopoverContent className="w-[300px] p-4" align="start">
             <div className="space-y-4">
-              <h4 className="font-medium text-sm">화물 필터링</h4>
+              <h4 className="font-medium text-sm">중개 화물 필터링</h4>
               
               {/* 시작일 필터 */}
               <div className="space-y-2">
@@ -239,128 +251,178 @@ export function OrderSearch() {
                 </Popover>
               </div>
               
-              {/* 배차상태 필터 */}
+              {/* 배차상태, 콜센터 필터 */}
               <div className="space-y-2">
-                <Label htmlFor="status">배차상태</Label>
-                <Select
-                  value={tempFilter.status || "all"}
-                  onValueChange={handleStatusChange}
-                >
-                  <SelectTrigger id="status">
-                    <SelectValue placeholder="모든 상태" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">모든 상태</SelectItem>
-                    {ORDER_STATUS.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                  <Label htmlFor="status">배차상태</Label>
+                  <Select
+                    value={tempFilter.status || "all"}
+                    onValueChange={handleStatusChange}
+                  >
+                    <SelectTrigger id="status">
+                      <SelectValue placeholder="모든 상태" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">모든 상태</SelectItem>
+                      {BROKER_ORDER_STATUS.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="callCenter">콜센터</Label>
+                    <Select
+                      value={tempFilter.callCenter || "all"}
+                      onValueChange={handleCallCenterChange}
+                    >
+                      <SelectTrigger id="callCenter">
+                        <SelectValue placeholder="모든 콜센터" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">모든 콜센터</SelectItem>
+                        {filterOptions.callCenters.map((callCenter) => (
+                          <SelectItem key={callCenter} value={callCenter}>
+                            {callCenter}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
               
               {/* 출발지 필터 */}
               <div className="space-y-2">
-                <Label htmlFor="departure-city">출발지</Label>
-                <Select
-                  value={tempFilter.departureCity || "all"}
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label htmlFor="departureCity">출발지</Label>
+                    <Select
+                      value={tempFilter.departureCity || "all"}
                   onValueChange={handleDepartureCityChange}
                 >
-                  <SelectTrigger id="departure-city">
+                  <SelectTrigger id="departureCity">
                     <SelectValue placeholder="모든 출발지" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">모든 출발지</SelectItem>
-                    {(filterOptions?.cities || []).map((city) => (
-                      <SelectItem key={`dep-${city}`} value={city}>
+                    {filterOptions.cities.map((city) => (
+                      <SelectItem key={city} value={city}>
                         {city}
                       </SelectItem>
                     ))}
-                  </SelectContent>
-                </Select>
+                    </SelectContent>
+                  </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="arrivalCity">도착지</Label>
+                    <Select
+                      value={tempFilter.arrivalCity || "all"}
+                      onValueChange={handleArrivalCityChange}
+                    >
+                      <SelectTrigger id="arrivalCity">
+                        <SelectValue placeholder="모든 도착지" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">모든 도착지</SelectItem>
+                      {filterOptions.cities.map((city) => (
+                        <SelectItem key={city} value={city}>
+                          {city}
+                        </SelectItem>
+                      ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
               
-              {/* 도착지 필터 */}
+              {/*  필터 */}
+              
+              
+              {/* 차량 종류, 중량 필터 */}
               <div className="space-y-2">
-                <Label htmlFor="arrival-city">도착지</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label htmlFor="weight">중량</Label>
+                    <Select
+                          value={tempFilter.weight || "all"}
+                      onValueChange={handleWeightChange}
+                    >
+                      <SelectTrigger id="weight">
+                        <SelectValue placeholder="모든 중량" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">모든 중량</SelectItem>
+                        {filterOptions.weightTypes.map((weight) => (
+                          <SelectItem key={weight} value={weight}>
+                            {weight}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="vehicleType">차량 종류</Label>
+                    <Select
+                      value={tempFilter.vehicleType || "all"}
+                      onValueChange={handleVehicleTypeChange}
+                    >
+                      <SelectTrigger id="vehicleType">
+                        <SelectValue placeholder="모든 차량" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">모든 차량</SelectItem>
+                        {filterOptions.vehicleTypes.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* 담당자 필터 */}
+              <div className="space-y-2">
+                <Label htmlFor="manager">담당자</Label>
                 <Select
-                  value={tempFilter.arrivalCity || "all"}
-                  onValueChange={handleArrivalCityChange}
+                  value={tempFilter.manager || "all"}
+                  onValueChange={handleManagerChange}
                 >
-                  <SelectTrigger id="arrival-city">
-                    <SelectValue placeholder="모든 도착지" />
+                  <SelectTrigger id="manager">
+                    <SelectValue placeholder="모든 담당자" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">모든 도착지</SelectItem>
-                    {(filterOptions?.cities || []).map((city) => (
-                      <SelectItem key={`arr-${city}`} value={city}>
-                        {city}
+                    <SelectItem value="all">모든 담당자</SelectItem>
+                    {filterOptions.managers.map((manager) => (
+                      <SelectItem key={manager} value={manager}>
+                        {manager}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               
-              {/* 차량 종류 필터 */}
-              <div className="space-y-2">
-                <Label htmlFor="vehicle-type">차량 종류</Label>
-                <Select
-                  value={tempFilter.vehicleType || "all"}
-                  onValueChange={handleVehicleTypeChange}
-                >
-                  <SelectTrigger id="vehicle-type">
-                    <SelectValue placeholder="모든 차량" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">모든 차량</SelectItem>
-                    {(filterOptions?.vehicleTypes || []).map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {/* 중량 필터 */}
-              <div className="space-y-2">
-                <Label htmlFor="weight">중량</Label>
-                <Select
-                  value={tempFilter.weight || "all"}
-                  onValueChange={handleWeightChange}
-                >
-                  <SelectTrigger id="weight">
-                    <SelectValue placeholder="모든 중량" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">모든 중량</SelectItem>
-                    {(filterOptions?.weightTypes || []).map((weight) => (
-                      <SelectItem key={weight} value={weight}>
-                        {weight}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {/* 버튼 영역 */}
+              {/* 버튼 그룹 */}
               <div className="flex items-center justify-between pt-2">
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleResetFilter}
-                  disabled={!hasActiveFilters}
+                  onClick={handleCancelChanges}
                 >
-                  초기화
+                  취소
                 </Button>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleCancelChanges}
+                    onClick={handleResetFilter}
                   >
-                    취소
+                    초기화
                   </Button>
                   <Button
                     size="sm"
@@ -376,19 +438,20 @@ export function OrderSearch() {
       </div>
       
       {/* 검색 입력 필드 */}
-      <div className="flex items-center gap-2 w-full md:w-[300px] lg:w-[400px]">
-        <Search className="h-4 w-4 text-muted-foreground" />
+      <div className="relative w-full">
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="ID, 위치, 운전자 등으로 검색..."
-          className="flex-1"
+          type="search"
+          placeholder="화물번호, 출발지, 도착지, 차주명 검색"
+          className="w-full pl-8"
           value={filter.searchTerm || ""}
           onChange={handleSearchChange}
         />
         {filter.searchTerm && (
           <Button
             variant="ghost"
-            size="icon"
-            className="h-8 w-8"
+            size="sm"
+            className="absolute right-0 top-0 h-9 px-2"
             onClick={() => setFilter({ searchTerm: "" })}
           >
             <X className="h-4 w-4" />
