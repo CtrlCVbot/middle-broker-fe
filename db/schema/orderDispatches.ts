@@ -1,6 +1,6 @@
 // /db/schema/broker_dispatches.ts (새 파일 또는 기존 파일 수정)
 import { pgTable, uuid, varchar, numeric, timestamp, json, pgEnum } from 'drizzle-orm/pg-core';
-import { orders } from '@/db/schema/orders'; // orders 테이블 import
+import { orderFlowStatusEnum, orders } from '@/db/schema/orders'; // orders 테이블 import
 import { companies } from '@/db/schema/companies'; // companies 테이블 import (운송사, 주선사)
 import { users } from '@/db/schema/users'; // users 테이블 import (기사, 주선사 담당자)
 import { vehicleTypeEnum, vehicleWeightEnum } from '@/db/schema/orders'; // 기존 Enum 재사용 또는 필요시 분리
@@ -25,6 +25,7 @@ export const orderDispatches = pgTable('order_dispatches', {
 
   // 연결된 원본 주문 정보
   orderId: uuid('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }), // 원본 화물 주문 ID (FK)
+  brokerFlowStatus: orderFlowStatusEnum('broker_flow_status').notNull().default('배차대기'), // 흐름 상태 (Enum, 기본값: '배차대기')
 
   // 담당 주선사 정보
   brokerCompanyId: uuid('broker_company_id').notNull().references(() => companies.id), // 담당 주선사 ID (FK)
