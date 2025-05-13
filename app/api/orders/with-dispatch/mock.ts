@@ -128,7 +128,7 @@ export function generateMockDispatchData(searchParams: URLSearchParams): IOrderW
   // 최종 반환
   return {
     success: true,
-    data: mockData,
+    data: mockData as any,
     total: total,
     page: page,
     pageSize: pageSize,
