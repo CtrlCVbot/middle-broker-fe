@@ -16,15 +16,18 @@ import { generateMockDispatchData } from './mock';
  */
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const queryParams = Object.fromEntries(searchParams.entries());
+
     
-    console.log('API 요청 파라미터:', queryParams);
+     const searchParams = request.nextUrl.searchParams;
+     const queryParams = Object.fromEntries(searchParams.entries());
+    
+     console.log('API 요청 파라미터:', queryParams);
     
     // 요청 파라미터 검증
     const validatedQuery = orderWithDispatchQuerySchema.parse(queryParams);
 
-    // *** 임시: Mock 데이터 반환으로 변경 ***
+    // // *** 임시: Mock 데이터 반환으로 변경 - 삭제 금지! 테스트용! ***
+    /*
     console.log('DB 쿼리 대신 Mock 데이터 생성');
     const mockResponse = generateMockDispatchData(searchParams);
     
@@ -41,9 +44,10 @@ export async function GET(request: NextRequest) {
     });
     
     return NextResponse.json(mockResponse);
+    */
     
-    // *** 이하 원래 DB 쿼리 코드는 주석 처리 ***
-    /*
+    
+    
     // 페이지네이션 파라미터
     const page = validatedQuery.page;
     const pageSize = validatedQuery.pageSize;
@@ -297,7 +301,7 @@ export async function GET(request: NextRequest) {
     });
     
     return NextResponse.json(response);
-    */
+    
   } catch (error) {
     console.error('주문-배차 목록 조회 중 오류 발생:', error);
     
