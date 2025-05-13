@@ -265,8 +265,10 @@ export function mapApiResponseToBrokerDispatchList(
         dispatchDate: dispatch?.createdAt,
         
         // 출발지/도착지 정보
+        pickupLocation: order.pickup?.name || '',
         pickupAddress: order.pickup?.address?.roadAddress || '',
         pickupDateTime: `${order.pickup?.date || ''} ${order.pickup?.time || ''}`,
+        deliveryLocation: order.delivery?.name || '',
         deliveryAddress: order.delivery?.address?.roadAddress || '',
         deliveryDateTime: `${order.delivery?.date || ''} ${order.delivery?.time || ''}`,
         

@@ -74,8 +74,10 @@ interface IDispatchItem {
   flowStatus: string;
   cargoName: string;
   dispatchDate?: string;
+  pickupLocation?: string;
   pickupAddress: string;
   pickupDateTime: string;
+  deliveryLocation?: string;
   deliveryAddress: string;
   deliveryDateTime: string;
   vehicleType: string;
@@ -215,7 +217,7 @@ export function BrokerOrderTable({
                     <TableCell className="max-w-[100px] truncate" title={order.pickupAddress}>
                       <div className="flex flex-col">
                         <div className="text-md font-medium text-shadow-xs">
-                          {order.pickupAddress.split(' ')[0] || ""}
+                          {order.pickupLocation || order.pickupAddress.split(' ')[0] || ""}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {order.pickupAddress}
@@ -228,7 +230,7 @@ export function BrokerOrderTable({
                     <TableCell className="max-w-[100px] truncate" title={order.deliveryAddress}>
                       <div className="flex flex-col">
                         <div className="text-md font-medium text-shadow-xs">
-                          {order.deliveryAddress.split(' ')[0] || ""}
+                          {order.deliveryLocation || order.deliveryAddress.split(' ')[0] || ""}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {order.deliveryAddress}
