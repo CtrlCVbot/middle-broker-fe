@@ -28,7 +28,7 @@ export const orderDispatches = pgTable('order_dispatches', {
   brokerFlowStatus: orderFlowStatusEnum('broker_flow_status').notNull().default('배차대기'), // 흐름 상태 (Enum, 기본값: '배차대기')
 
   // 담당 주선사 정보
-  brokerCompanyId: uuid('broker_company_id').notNull().references(() => companies.id), // 담당 주선사 ID (FK)
+  brokerCompanyId: uuid('broker_company_id').references(() => companies.id), // 담당 주선사 ID (FK)
   brokerCompanySnapshot: json('broker_company_snapshot').$type<ICompanySnapshot>(), // 담당 주선사 스냅샷
   brokerManagerId: uuid('broker_manager_id').references(() => users.id), // 담당 주선사 내부 담당자 ID (FK, Nullable 가능)
   brokerManagerSnapshot: json('broker_manager_snapshot').$type<IUserSnapshot>(), // 담당 주선사 내부 담당자 스냅샷

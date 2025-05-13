@@ -61,13 +61,13 @@ export async function POST(req: NextRequest) {
       id: user.id,
       email: user.email,
       name: user.name,
-      phoneNumber: user.phone_number,
-      companyId: user.company_id,
+      phoneNumber: user.phone_number || '',
+      companyId: user.company_id || '',
       systemAccessLevel: user.system_access_level,
       domains: user.domains as any,
       status: user.status,
-      createdAt: user.created_at,
-      updatedAt: user.updated_at,
+      createdAt: user.created_at.toISOString(),
+      //updatedAt: user.updated_at.toISOString(),
     };
 
     // 토큰 ID 생성

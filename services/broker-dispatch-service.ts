@@ -170,7 +170,7 @@ export async function acceptOrders(
 
     return await response.json();
   } catch (error: any) {
-    console.error('운송 수락 처리 중 오류:', error);
+    console.error('운송 수락 처리 중 오류1:', error);
     throw new Error(`운송 수락 처리에 실패했습니다: ${error.message}`);
   }
 } 

@@ -5,6 +5,9 @@ import { orderDispatches } from '@/db/schema/orderDispatches';
 import { eq, and, inArray } from 'drizzle-orm';
 import { getCurrentUser } from '@/utils/auth';
 import { z } from 'zod';
+import { users } from '@/db/schema/users';
+import { companies } from '@/db/schema/companies';
+import { IUserSnapshot } from '@/types/order-ver01';
 
 // 요청 스키마 검증
 const acceptDispatchesSchema = z.object({
@@ -19,12 +22,50 @@ const acceptDispatchesSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
+    const requestUserId = request.headers.get('x-user-id') || '';
+
+    // 요청 사용자 정보 조회
+    const [requestUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, requestUserId))
+      .limit(1)
+      .execute();
+
+    if (!requestUser) {
+      return NextResponse.json(
+        { error: '요청 사용자를 찾을 수 없습니다.' },
+        { status: 404 }
+      );
+    }
     
-    if (!user) {
+    if (!requestUser) {
       return NextResponse.json(
         { success: false, message: '인증되지 않은 요청입니다.' },
         { status: 401 }
+      );
+    }
+
+    // user.companyId가 존재하는지 확인 후 쿼리 실행
+    if (!requestUser.company_id) {
+        return NextResponse.json(
+        { error: '회사 정보가 없습니다.' },
+        { status: 400 }
+        );
+    }
+
+    // 요청 사용자 정보 조회
+    const [requestCompany] = await db
+      .select()
+      .from(companies)
+      .where(eq(companies.id, requestUser.company_id))
+      .limit(1)
+      .execute();
+
+    if (!requestCompany) {
+      return NextResponse.json(
+        { error: '요청 회사를 찾을 수 없습니다.' },
+        { status: 404 }
       );
     }
     
@@ -52,24 +93,21 @@ export async function POST(request: NextRequest) {
       // 각 주문에 대한 배차 정보 생성
       const insertResults = [];
       
-      for (const orderId of orderIds) {
+      for (const currentOrderId of orderIds) {
         const insertResult = await tx.insert(orderDispatches).values({
-          orderId,
-          brokerCompanyId: user.companyId,
-          brokerCompanySnapshot: { name: user.company?.name || '' },
-          brokerManagerId: user.id,
-          brokerManagerSnapshot: { name: user.name },
-          assignedVehicleType: dispatchData.assignedVehicleType,
-          assignedVehicleWeight: dispatchData.assignedVehicleWeight,
-          agreedFreightCost: dispatchData.agreedFreightCost,
-          brokerMemo: dispatchData.memo,
-          createdBy: user.id,
-          createdBySnapshot: { name: user.name },
-          updatedBy: user.id,
-          updatedBySnapshot: { name: user.name },
+          orderId: currentOrderId,
+          brokerFlowStatus: '배차대기',
+          brokerCompanyId: requestUser.company_id,
+          brokerCompanySnapshot: {...requestCompany},
+          brokerManagerId: requestUserId,
+          brokerManagerSnapshot: {...requestUser},
+          createdBy: requestUserId,
+          createdBySnapshot: {...requestUser},
+          updatedBy: requestUserId,
+          updatedBySnapshot: {...requestUser},
           createdAt: new Date(),
-          updatedAt: new Date(),
-        });
+          updatedAt: new Date()
+        } as any);  //as any 필수!
         
         insertResults.push(insertResult);
       }
@@ -86,7 +124,7 @@ export async function POST(request: NextRequest) {
       data: result,
     });
   } catch (error) {
-    console.error('운송 수락 처리 중 오류 발생:', error);
+    console.error('운송 수락 처리 중 오류 발생2:', error);
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(

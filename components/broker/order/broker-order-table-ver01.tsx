@@ -164,33 +164,35 @@ export function BrokerOrderTable({
     <div className="space-y-4">
       <div className="rounded-md border overflow-x-auto">
         <Table className="min-w-[900px]">
-          {/* <TableHeader className="sticky top-0 z-10 bg-muted"> */}
-            {activeTab === 'waiting' && (
-              <TableHead className="w-[40px]">
-            <Checkbox
-                  checked={ordlength > 0 && selectedOrders.length === orders.length}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      selectAllOrders(orders.map(order => order.orderId));
-                    } else {
-                      deselectAllOrders();
-                    }
-                  }}
-                />
-              </TableHead>
-            )}
-            <TableHead className="w-[80px] text-center">ID</TableHead>
-            <TableHead className="w-[80px] text-center">상태</TableHead>
-            <TableHead className="w-[80px]">일정</TableHead>
-            <TableHead className="w-[120px]">시간</TableHead>              
-            <TableHead>상차지</TableHead>
-            <TableHead>{/* 상차지 하차지 흐름 표시 */}</TableHead>
-            <TableHead>하차지</TableHead>              
-            <TableHead className="w-[100px]">품목</TableHead>              
-            <TableHead className="w-[80px]">차량</TableHead>
-            <TableHead>기사</TableHead>
-            <TableHead className="text-right">운송비</TableHead>
-          </TableRow>
+          <TableHeader className="sticky top-0 z-10 bg-muted">
+            <TableRow>
+              {activeTab === 'waiting' && (
+                <TableHead className="w-[40px]">
+              <Checkbox
+                    checked={orders.length > 0 && selectedOrders.length === orders.length}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        selectAllOrders(orders.map(order => order.orderId));
+                      } else {
+                        deselectAllOrders();
+                      }
+                    }}
+                  />
+                </TableHead>
+              )}
+              <TableHead className="w-[80px] text-center">ID</TableHead>
+              <TableHead className="w-[80px] text-center">상태</TableHead>
+              <TableHead className="w-[80px]">일정</TableHead>
+              <TableHead className="w-[120px]">시간</TableHead>              
+              <TableHead>상차지</TableHead>
+              <TableHead>{/* 상차지 하차지 흐름 표시 */}</TableHead>
+              <TableHead>하차지</TableHead>              
+              <TableHead className="w-[100px]">품목</TableHead>              
+              <TableHead className="w-[80px]">차량</TableHead>
+              <TableHead>기사</TableHead>
+              <TableHead className="text-right">운송비</TableHead>
+            </TableRow>
+          </TableHeader> 
           <TableBody>
             {orders.length === 0 ? (
               <TableRow>
