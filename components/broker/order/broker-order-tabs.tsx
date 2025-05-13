@@ -19,10 +19,10 @@ export function BrokerOrderTabs() {
     >
       <TabsList className="grid grid-cols-3 w-full md:w-auto">
         <TabsTrigger value="waiting" className="px-4">          
-          <Badge variant="secondary" className="ml-2 bg-yellow-100 text-yellow-800">요청</Badge>
+          <Badge variant="secondary" className="ml-2 bg-yellow-100 text-yellow-800 font-bold">요청</Badge>
         </TabsTrigger>        
         <TabsTrigger value="dispatched" className="px-4">          
-          <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">진행중</Badge>
+          <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800 font-bold">진행중</Badge>
         </TabsTrigger>
         <TabsTrigger value="all" className="px-4">
           전체
