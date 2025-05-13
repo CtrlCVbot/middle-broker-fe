@@ -26,6 +26,9 @@ import { Truck, Calendar, Clock, ArrowRight, Link2Off, MapPin } from "lucide-rea
 import { format, isValid, parseISO } from "date-fns";
 import { ko } from "date-fns/locale";
 import { getStatusBadge } from "@/components/order/order-table-ver01";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useBrokerOrderStore } from "@/store/broker-order-store";
+import { cn } from "@/lib/utils";
 
 // 날짜 포맷팅 유틸리티 함수
 const getSchedule = (pickupDateTime: string, deliveryDateTime: string) => {
@@ -98,6 +101,7 @@ interface BrokerOrderCardProps {
   onEditTransportFee?: (orderId: string) => void;
   onExportExcel?: (orderId: string) => void;
   onViewMap?: (orderId: string) => void;
+  onAcceptOrder?: (orderId: string) => void;
 }
 
 export function BrokerOrderCard({
@@ -109,8 +113,10 @@ export function BrokerOrderCard({
   onEditTransportFee,
   onExportExcel,
   onViewMap,
+  onAcceptOrder,
 }: BrokerOrderCardProps) {
   const { openSheet } = useBrokerOrderDetailStore();
+  const { activeTab, selectedOrders, toggleOrderSelection } = useBrokerOrderStore();
 
   // 화물 상세 정보 열기
   const handleOrderClick = (orderId: string) => {
@@ -178,13 +184,27 @@ export function BrokerOrderCard({
             onEditTransportFee={onEditTransportFee}
             onExportExcel={onExportExcel}
             onViewMap={onViewMap}
+            onAcceptOrder={onAcceptOrder}
           >
             <Card 
               key={order.orderId} 
-              className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => handleOrderClick(order.orderId)}
+              className={cn(
+                "cursor-pointer hover:shadow-md transition-shadow",
+                activeTab === 'waiting' && selectedOrders.includes(order.orderId) && "border-primary border-2"
+              )}
+              onClick={() => activeTab === 'waiting' ? toggleOrderSelection(order.orderId) : handleOrderClick(order.orderId)}
             >
               <CardHeader className="pb-2">
+                {activeTab === 'waiting' && (
+                  <div className="absolute top-3 right-3">
+                    <Checkbox
+                      checked={selectedOrders.includes(order.orderId)}
+                      onCheckedChange={() => toggleOrderSelection(order.orderId)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="h-5 w-5"
+                    />
+                  </div>
+                )}
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle className="text-md flex items-center gap-2">
@@ -198,110 +218,109 @@ export function BrokerOrderCard({
                       {formatCurrency(order.freightCost || 0)}원
                     </div>
                     {order.estimatedAmount && order.freightCost !== order.estimatedAmount && (
-                      <div className="text-xs text-muted-foreground">
-                        견적: {formatCurrency(order.estimatedAmount)}원
+                      <div className="text-xs text-muted-foreground line-through">
+                        {formatCurrency(order.estimatedAmount)}원
                       </div>
                     )}
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="pb-2">
-                <div className="flex gap-2 items-center mb-2 text-sm">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">{getSchedule(order.pickupDateTime, order.deliveryDateTime)}</span>
-                  <Clock className="h-4 w-4 ml-2 text-muted-foreground" />
-                  <span className="text-muted-foreground">{getTime(order.pickupDateTime, order.deliveryDateTime)}</span>
-                </div>
-                
-                <div className="flex flex-col gap-2 mt-3">
-                  <div className="flex gap-2">
-                    <MapPin className="h-4 w-4 mt-1 text-muted-foreground" />
+              <CardContent className="pb-3">
+                <div className="space-y-3">
+                  {/* 일정 및 시간 */}
+                  <div className="flex items-start gap-2">
+                    <Calendar className="h-4 w-4 mt-0.5 text-muted-foreground" />
                     <div className="flex flex-col">
-                      <div className="text-sm font-medium">{order.pickupAddress.split(' ')[0] || ""}</div>
-                      <div className="text-xs text-muted-foreground">{order.pickupAddress}</div>
+                      <div className="font-medium">
+                        {getSchedule(order.pickupDateTime, order.deliveryDateTime)}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {getTime(order.pickupDateTime, order.deliveryDateTime)}
+                      </div>
                     </div>
                   </div>
                   
-                  <div className="flex justify-center my-1">
-                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  {/* 상하차지 */}
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                    <div className="flex flex-col w-full">
+                      <div className="flex items-center justify-between">
+                        <div className="font-medium">상차지</div>
+                        <div className="text-xs text-muted-foreground">
+                          {order.pickupLocation || order.pickupAddress.split(' ').slice(0, 2).join(' ')}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <div className="font-medium">하차지</div>
+                        <div className="text-xs text-muted-foreground">
+                          {order.deliveryLocation || order.deliveryAddress.split(' ').slice(0, 2).join(' ')}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   
-                  <div className="flex gap-2">
-                    <MapPin className="h-4 w-4 mt-1 text-muted-foreground" />
-                    <div className="flex flex-col">
-                      <div className="text-sm font-medium">{order.deliveryAddress.split(' ')[0] || ""}</div>
-                      <div className="text-xs text-muted-foreground">{order.deliveryAddress}</div>
+                  {/* 차량/기사 정보 */}
+                  <div className="flex items-start gap-2">
+                    <Truck className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                    <div className="flex flex-col w-full">
+                      <div className="flex items-center justify-between">
+                        <div className="font-medium">차량</div>
+                        <div className="text-xs text-muted-foreground">
+                          {order.assignedVehicleType || order.vehicleType} {order.assignedVehicleWeight || order.vehicleWeight}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <div className="font-medium">기사</div>
+                        <div className="text-xs text-muted-foreground">
+                          {order.driverName ? `${order.driverName} (${order.driverPhone})` : '미지정'}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-between items-center pt-2 border-t">
-                <div className="flex flex-row items-center gap-1">
-                  <Truck className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-semibold">{order.vehicleWeight}</span>
-                  <span className="text-xs text-muted-foreground">{order.vehicleType}</span>
-                </div>
-
-                <div>
-                  {order.driverName ? (
-                    <div className="text-sm">
-                      <span className="font-medium">{order.driverName}</span>
-                      <span className="text-xs text-muted-foreground ml-1">{order.driverPhone}</span>
-                    </div>
-                  ) : (
-                    <Badge variant="outline" className="text-xs px-2 py-1 border-dashed text-muted-foreground">
-                      <Link2Off className="h-3 w-3 mr-1" />
-                      배차전                      
-                    </Badge>
-                  )}
-                </div>
-              </CardFooter>
             </Card>
           </BrokerOrderContextMenu>
         ))}
       </div>
 
       {/* 페이지네이션 */}
-      <div className="flex items-center justify-between mt-4">
-        <div className="text-sm text-muted-foreground">
-          {totalPages > 0
-            ? `페이지 ${currentPage} / ${totalPages}`
-            : "데이터 없음"}
+      <div className="flex items-center justify-end space-x-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleFirstPage}
+          disabled={currentPage === 1}
+        >
+          <ChevronsLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handlePrevPage}
+          disabled={currentPage === 1}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <div className="text-sm font-medium">
+          {currentPage} / {totalPages || 1}
         </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleFirstPage}
-            disabled={currentPage === 1}
-          >
-            <ChevronsLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handlePrevPage}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleLastPage}
-            disabled={currentPage === totalPages}
-          >
-            <ChevronsRight className="h-4 w-4" />
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleNextPage}
+          disabled={currentPage >= totalPages}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleLastPage}
+          disabled={currentPage >= totalPages}
+        >
+          <ChevronsRight className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   );

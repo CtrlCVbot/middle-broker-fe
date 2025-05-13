@@ -76,6 +76,9 @@ interface IBrokerOrderState {
   // 탭 상태
   activeTab: DispatchTabType;
   
+  // 다중 선택 상태 추가
+  selectedOrders: string[]; // 선택된 주문 ID 배열
+  
   // 액션
   setViewMode: (mode: 'table' | 'card') => void;
   setFilter: (filter: Partial<IBrokerOrderFilter>) => void;
@@ -86,6 +89,13 @@ interface IBrokerOrderState {
   setCurrentPage: (page: number) => void;
   setPageSize: (size: number) => void;
   setActiveTab: (tab: DispatchTabType) => void;
+  
+  // 다중 선택 액션 추가
+  selectOrder: (orderId: string) => void;
+  deselectOrder: (orderId: string) => void;
+  toggleOrderSelection: (orderId: string) => void;
+  selectAllOrders: (orderIds: string[]) => void;
+  deselectAllOrders: () => void;
   
   // 필터 옵션
   filterOptions: {
@@ -122,6 +132,7 @@ export const useBrokerOrderStore = create<IBrokerOrderState>()(
       currentPage: 1,
       pageSize: 10,
       activeTab: 'all',
+      selectedOrders: [], // 선택된 주문 배열 초기화
       
       // 필터 옵션 목록
       filterOptions: {
@@ -170,6 +181,30 @@ export const useBrokerOrderStore = create<IBrokerOrderState>()(
       setActiveTab: (tab: DispatchTabType) => set({ 
         activeTab: tab,
         currentPage: 1, // 탭이 변경되면 첫 페이지로 돌아감
+        selectedOrders: [], // 탭이 변경되면 선택된 주문 초기화
+      }),
+      
+      // 다중 선택 액션 구현
+      selectOrder: (orderId: string) => set((state) => ({
+        selectedOrders: [...state.selectedOrders, orderId]
+      })),
+      
+      deselectOrder: (orderId: string) => set((state) => ({
+        selectedOrders: state.selectedOrders.filter(id => id !== orderId)
+      })),
+      
+      toggleOrderSelection: (orderId: string) => set((state) => ({
+        selectedOrders: state.selectedOrders.includes(orderId) 
+          ? state.selectedOrders.filter(id => id !== orderId)
+          : [...state.selectedOrders, orderId]
+      })),
+      
+      selectAllOrders: (orderIds: string[]) => set({
+        selectedOrders: orderIds
+      }),
+      
+      deselectAllOrders: () => set({ 
+        selectedOrders: [] 
       }),
     }),
     {

@@ -28,6 +28,9 @@ import { BrokerStatusBadge } from "./broker-status-badge";
 import { BrokerOrderContextMenu } from "./broker-order-context-menu";
 import { getStatusBadge } from "@/components/order/order-table-ver01";
 import { ko } from "date-fns/locale";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useBrokerOrderStore } from "@/store/broker-order-store";
+import { cn } from "@/lib/utils";
 
 // 날짜 포맷팅 유틸리티 함수
 const getSchedule = (pickupDateTime: string, deliveryDateTime: string) => {
@@ -102,6 +105,7 @@ interface BrokerOrderTableProps {
   onEditTransportFee?: (orderId: string) => void;
   onExportExcel?: (orderId: string) => void;
   onViewMap?: (orderId: string) => void;
+  onAcceptOrder?: (orderId: string) => void;
 }
 
 export function BrokerOrderTable({
@@ -113,9 +117,19 @@ export function BrokerOrderTable({
   onEditTransportFee,
   onExportExcel,
   onViewMap,
+  onAcceptOrder,
 }: BrokerOrderTableProps) {
   // 상세 정보 모달을 위한 스토어 액세스
   const { openSheet } = useBrokerOrderDetailStore();
+  
+  // 다중 선택을 위한 스토어 액세스
+  const { 
+    activeTab, 
+    selectedOrders, 
+    toggleOrderSelection, 
+    selectAllOrders, 
+    deselectAllOrders 
+  } = useBrokerOrderStore();
   
   // 화물 상세 정보 열기
   const handleOrderClick = (orderId: string) => {
@@ -150,26 +164,38 @@ export function BrokerOrderTable({
     <div className="space-y-4">
       <div className="rounded-md border overflow-x-auto">
         <Table className="min-w-[900px]">
-          <TableHeader className="sticky top-0 z-10 bg-muted">
-            <TableRow>
-              <TableHead className="w-[80px] text-center">ID</TableHead>
-              <TableHead className="w-[80px] text-center">상태</TableHead>
-              <TableHead className="w-[80px]">일정</TableHead>
-              <TableHead className="w-[120px]">시간</TableHead>              
-              <TableHead>상차지</TableHead>
-              <TableHead>{/* 상차지 하차지 흐름 표시 */}</TableHead>
-              <TableHead>하차지</TableHead>              
-              <TableHead className="w-[100px]">품목</TableHead>              
-              <TableHead className="w-[80px]">차량</TableHead>
-              <TableHead>기사</TableHead>
-              <TableHead className="text-right">운송비</TableHead>
-            </TableRow>
-          </TableHeader>
+          {/* <TableHeader className="sticky top-0 z-10 bg-muted"> */}
+            {activeTab === 'waiting' && (
+              <TableHead className="w-[40px]">
+            <Checkbox
+                  checked={ordlength > 0 && selectedOrders.length === orders.length}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      selectAllOrders(orders.map(order => order.orderId));
+                    } else {
+                      deselectAllOrders();
+                    }
+                  }}
+                />
+              </TableHead>
+            )}
+            <TableHead className="w-[80px] text-center">ID</TableHead>
+            <TableHead className="w-[80px] text-center">상태</TableHead>
+            <TableHead className="w-[80px]">일정</TableHead>
+            <TableHead className="w-[120px]">시간</TableHead>              
+            <TableHead>상차지</TableHead>
+            <TableHead>{/* 상차지 하차지 흐름 표시 */}</TableHead>
+            <TableHead>하차지</TableHead>              
+            <TableHead className="w-[100px]">품목</TableHead>              
+            <TableHead className="w-[80px]">차량</TableHead>
+            <TableHead>기사</TableHead>
+            <TableHead className="text-right">운송비</TableHead>
+          </TableRow>
           <TableBody>
             {orders.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={11}
+                  colSpan={activeTab === 'waiting' ? 12 : 11}
                   className="h-24 text-center text-muted-foreground"
                 >
                   표시할 화물 정보가 없습니다.
@@ -202,10 +228,28 @@ export function BrokerOrderTable({
                   onEditTransportFee={onEditTransportFee}
                   onExportExcel={onExportExcel}
                   onViewMap={onViewMap}
-                >                  
-                  <TableRow key={order.orderId} className="cursor-pointer hover:bg-secondary/80" onClick={() => handleOrderClick(order.orderId)}>
-                    <TableCell className="font-medium text-primary underline">{order.orderId.slice(0, 8)}</TableCell>
-                    <TableCell className="text-center scale-90">
+                  onAcceptOrder={onAcceptOrder}
+                >
+                  <TableRow 
+                    className={cn(
+                      "cursor-pointer hover:bg-muted/50",
+                      activeTab === 'waiting' && selectedOrders.includes(order.orderId) && "bg-primary/10"
+                    )}
+                    onClick={() => activeTab === 'waiting' ? toggleOrderSelection(order.orderId) : handleOrderClick(order.orderId)}
+                  >
+                    {activeTab === 'waiting' && (
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedOrders.includes(order.orderId)}
+                          onCheckedChange={() => toggleOrderSelection(order.orderId)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </TableCell>
+                    )}
+                    <TableCell className="text-center font-medium">
+                      #{order.orderId.slice(0, 8)}
+                    </TableCell>
+                    <TableCell className="text-center">
                       {getStatusBadge(order.flowStatus as BrokerOrderStatusType)}
                     </TableCell>
                     <TableCell className="font-medium">
@@ -267,12 +311,18 @@ export function BrokerOrderTable({
                         </Badge>
                       )}
                     </TableCell>
-                    <TableCell className="text-right text-primary font-bold text-md text-shadow-xs">
-                      {formatCurrency(order.freightCost || 0)}원
-                      {order.estimatedAmount && order.freightCost !== order.estimatedAmount && (
-                        <div className="text-xs text-muted-foreground">
-                          견적: {formatCurrency(order.estimatedAmount)}원
+                    <TableCell className="text-right font-medium">
+                      {order.freightCost ? (
+                        <div className="flex flex-col">
+                          <span>{formatCurrency(order.freightCost)}원</span>
+                          {order.estimatedAmount && order.freightCost !== order.estimatedAmount && (
+                            <span className="text-xs text-muted-foreground line-through">
+                              {formatCurrency(order.estimatedAmount)}원
+                            </span>
+                          )}
                         </div>
+                      ) : (
+                        <span className="text-muted-foreground">정보 없음</span>
                       )}
                     </TableCell>
                   </TableRow>

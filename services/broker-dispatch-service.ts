@@ -134,4 +134,43 @@ export async function cancelDispatch(
     console.error("배차 취소 중 오류:", error);
     throw error;
   }
+}
+
+/**
+ * 화물 운송 수락 API
+ * @param orderIds 수락할 화물 ID 배열
+ * @param dispatchData 배차 정보
+ * @returns 결과 정보
+ */
+export async function acceptOrders(
+  orderIds: string[],
+  dispatchData: {
+    agreedFreightCost: number;
+    assignedVehicleType: string;
+    assignedVehicleWeight: string;
+    memo?: string;
+  }
+): Promise<{ success: boolean; message: string; data: any }> {
+  try {
+    const response = await fetch(`/api/orders/accept-dispatches`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        orderIds,
+        dispatchData
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || '운송 수락 처리 중 오류가 발생했습니다');
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error('운송 수락 처리 중 오류:', error);
+    throw new Error(`운송 수락 처리에 실패했습니다: ${error.message}`);
+  }
 } 
