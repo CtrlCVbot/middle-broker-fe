@@ -31,7 +31,8 @@ import {
   MailCheck,
   Eye,
   DollarSign,
-  Check
+  Check,
+  Warehouse
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BrokerOrderInfoEditForm } from "./broker-order-info-edit-form";
@@ -312,7 +313,7 @@ export function BrokerOrderDetailSheet() {
           // 데이터 로드 완료
           <div className="h-full flex flex-col">
             {/* 헤더 - 기본 정보 */}
-            <SheetHeader className="px-6 py-4 sticky top-0 bg-background z-10 border-b">
+            <SheetHeader className="py-4 border-b sticky top-0 bg-background bg-muted/100">
               <div className="flex items-center justify-between">
                 <SheetTitle className="text-xl font-bold">
                   화물 번호: {orderData.orderNumber}
@@ -323,7 +324,7 @@ export function BrokerOrderDetailSheet() {
                   onClick={closeSheet}
                   className="h-8 w-8"
                 >
-                  <X className="h-5 w-5" />
+                  
                 </Button>
               </div>
               {/* 배차 상태 및 액션 버튼 */}
@@ -416,12 +417,14 @@ export function BrokerOrderDetailSheet() {
             <div className="flex-grow overflow-auto">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
                 {/* 화물 정보 카드 */}
-                <Card className={cn(
+                {/* <Card className={cn(
                   "overflow-hidden", 
                   "md:block", 
+                  "border-none",
                   activeTab !== "cargo" && "hidden"
-                )}>
-                  <CardHeader className="bg-muted/20 flex flex-row items-center justify-between py-3 px-4 border-b">
+                )}> */}
+                <div className="h-full bg-white shadow-md rounded-md hover:ring-2 hover:ring-primary/20 transition-all duration-150">
+                  <div className={cn("bg-orange-100 text-orange-700" + " text-sm p-2 rounded-t-md flex items-center","flex flex-row items-center justify-between py-3 px-4 border-b")}>
                     <div className="flex items-center gap-2">
                       <Package className="h-4 w-4 text-primary" />
                       <CardTitle className="text-base font-medium">
@@ -489,7 +492,8 @@ export function BrokerOrderDetailSheet() {
                         </Button>
                       )}
                     </div>
-                  </CardHeader>
+                  </div>
+                  
                   <CardContent className="p-0">
                     <div className="p-4">
                       {editMode === "cargo" ? (
@@ -560,7 +564,9 @@ export function BrokerOrderDetailSheet() {
                       )}
                     </div>
                   </CardContent>
-                </Card>
+                  
+                {/* </Card> */}
+                </div>
                 
                 {/* 차량 및 기사 정보 카드 */}
                 <Card className={cn(
