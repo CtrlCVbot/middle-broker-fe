@@ -214,53 +214,109 @@ export function mapApiResponseToBrokerDispatchList(
     totalPages: number;
   };
 } {
+  // 디버깅: 원본 API 응답 출력
+  console.log('mapApiResponseToBrokerDispatchList - API 응답 구조 확인:',
+    Object.keys(apiResponse),
+    apiResponse.data ? `데이터 항목 수: ${apiResponse.data.length}` : '데이터 없음'
+  );
+  
+  if (!apiResponse || !apiResponse.data) {
+    console.error('API 응답이 null이거나 data 프로퍼티가 없습니다.');
+    return {
+      data: [],
+      pagination: {
+        total: 0,
+        page: 1,
+        pageSize: 10,
+        totalPages: 0
+      }
+    };
+  }
+  
   // 배차 정보가 있는 주문만 필터링
-  const dispatchItems = apiResponse.data.filter(item => item.dispatch !== null);
+  const dispatchItems = apiResponse.data.filter(item => item && item.dispatch !== null);
+  console.log(`배차 정보가 있는 아이템: ${dispatchItems.length}개`);
+  
+  if (dispatchItems.length === 0) {
+    console.warn('배차 정보가 있는 주문이 없습니다.');
+  }
 
   // 주선사 배차 관리용 데이터 구조로 변환
   const data = dispatchItems.map(item => {
     const { order, dispatch } = item;
     
-    return {
-      orderId: order.id,
-      dispatchId: dispatch?.id,
-      flowStatus: order.flowStatus,
-      cargoName: order.cargoName,
-      dispatchDate: dispatch?.createdAt,
+    if (!order) {
+      console.error('주문 정보가 없는 아이템:', item);
+      return null;
+    }
+    
+    if (!dispatch) {
+      console.error('배차 정보가 없는 아이템:', item);
+      return null;
+    }
+    
+    try {
+      // 데이터 매핑
+      const mappedItem = {
+        orderId: order.id,
+        dispatchId: dispatch?.id,
+        flowStatus: order.flowStatus,
+        cargoName: order.cargoName,
+        dispatchDate: dispatch?.createdAt,
+        
+        // 출발지/도착지 정보
+        pickupAddress: order.pickup?.address?.roadAddress || '',
+        pickupDateTime: `${order.pickup?.date || ''} ${order.pickup?.time || ''}`,
+        deliveryAddress: order.delivery?.address?.roadAddress || '',
+        deliveryDateTime: `${order.delivery?.date || ''} ${order.delivery?.time || ''}`,
+        
+        // 차량 정보
+        vehicleType: order.requestedVehicleType,
+        vehicleWeight: order.requestedVehicleWeight,
+        assignedVehicleNumber: dispatch?.assignedVehicleNumber || '',
+        assignedVehicleType: dispatch?.assignedVehicleType || '',
+        
+        // 배차 상세 정보
+        driverName: dispatch?.assignedDriverSnapshot?.name || '',
+        driverPhone: dispatch?.assignedDriverPhone || '',
+        freightCost: dispatch?.agreedFreightCost || 0,
+        estimatedAmount: order.estimatedPriceAmount || 0,
+        
+        // 메모 정보
+        memo: order.memo,
+        brokerMemo: dispatch?.brokerMemo,
+      };
       
-      // 출발지/도착지 정보
-      pickupAddress: order.pickup.address?.roadAddress || '',
-      pickupDateTime: `${order.pickup.date} ${order.pickup.time}`,
-      deliveryAddress: order.delivery.address?.roadAddress || '',
-      deliveryDateTime: `${order.delivery.date} ${order.delivery.time}`,
+      // 반환 전 매핑된 데이터 필드 검증
+      if (!mappedItem.orderId) {
+        console.warn('매핑된 데이터에 orderId가 없습니다:', mappedItem);
+      }
       
-      // 차량 정보
-      vehicleType: order.requestedVehicleType,
-      vehicleWeight: order.requestedVehicleWeight,
-      assignedVehicleNumber: dispatch?.assignedVehicleNumber || '',
-      assignedVehicleType: dispatch?.assignedVehicleType || '',
-      
-      // 배차 상세 정보
-      driverName: dispatch?.assignedDriverSnapshot?.name || '',
-      driverPhone: dispatch?.assignedDriverPhone || '',
-      freightCost: dispatch?.agreedFreightCost || 0,
-      estimatedAmount: order.estimatedPriceAmount || 0,
-      
-      // 메모 정보
-      memo: order.memo,
-      brokerMemo: dispatch?.brokerMemo,
-    };
-  });
+      return mappedItem;
+    } catch (error) {
+      console.error('데이터 매핑 중 오류 발생:', error, item);
+      return null;
+    }
+  }).filter(Boolean); // null 값 필터링
   
-  return {
+  // 최종 반환 객체
+  const result = {
     data,
     pagination: {
-      total: apiResponse.total,
-      page: apiResponse.page,
-      pageSize: apiResponse.pageSize,
-      totalPages: apiResponse.totalPages
+      total: apiResponse.total || 0,
+      page: apiResponse.page || 1,
+      pageSize: apiResponse.pageSize || 10,
+      totalPages: apiResponse.totalPages || 0
     }
   };
+  
+  console.log('매핑된 데이터 결과:', {
+    length: result.data.length,
+    first: result.data.length > 0 ? '있음' : '없음',
+    pagination: result.pagination
+  });
+  
+  return result;
 }
 
 /**

@@ -58,7 +58,7 @@ export default function BrokerOrderListPage() {
   // 화물 목록 데이터 조회
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["brokerOrders", currentPage, pageSize, filter, lastRefreshed],
-    queryFn: () => {
+    queryFn: async () => {
       console.log('Query function called with:', {
         currentPage,
         pageSize,
@@ -90,14 +90,36 @@ export default function BrokerOrderListPage() {
       };
       
       // API 호출
-      return getBrokerDispatchList(
-        currentPage,
-        pageSize,
-        apiFilter
-      );
+      try {
+        const result = await getBrokerDispatchList(
+          currentPage,
+          pageSize,
+          apiFilter
+        );
+        
+        // 디버깅: API 응답 확인
+        console.log('API 응답 데이터:', result);
+        
+        // 데이터가 비어있는지 확인
+        if (!result.data || result.data.length === 0) {
+          console.warn('API에서 반환된 데이터가 없습니다.');
+        }
+        
+        return result;
+      } catch (error) {
+        console.error('API 호출 중 오류 발생:', error);
+        throw error;
+      }
     },
     staleTime: 1000 * 60, // 1분
   });
+
+  // 응답 데이터 디버깅
+  useEffect(() => {
+    if (data) {
+      console.log('쿼리 결과 데이터:', data);
+    }
+  }, [data]);
 
   // 필터 변경 시 데이터 다시 조회
   useEffect(() => {

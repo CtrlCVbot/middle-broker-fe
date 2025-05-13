@@ -6,6 +6,7 @@ import { users } from '@/db/schema/users';
 import { eq, and, ilike, or, sql, desc, asc, gte, lte } from 'drizzle-orm';
 import { orderWithDispatchQuerySchema, IOrderWithDispatchListResponse, IOrderWithDispatchItem } from '@/types/order-with-dispatch';
 import { z } from 'zod';
+import { generateMockDispatchData } from './mock';
 
 /**
  * 주문 목록을 배차 정보와 함께 조회합니다.
@@ -18,9 +19,31 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const queryParams = Object.fromEntries(searchParams.entries());
     
+    console.log('API 요청 파라미터:', queryParams);
+    
     // 요청 파라미터 검증
     const validatedQuery = orderWithDispatchQuerySchema.parse(queryParams);
+
+    // *** 임시: Mock 데이터 반환으로 변경 ***
+    console.log('DB 쿼리 대신 Mock 데이터 생성');
+    const mockResponse = generateMockDispatchData(searchParams);
     
+    // 디버깅 로그
+    console.log('Mock 응답 데이터 구조:', {
+      dataLength: mockResponse.data.length,
+      hasValidData: mockResponse.data.some(item => item.dispatch !== null),
+      pagination: {
+        total: mockResponse.total,
+        page: mockResponse.page,
+        pageSize: mockResponse.pageSize,
+        totalPages: mockResponse.totalPages
+      }
+    });
+    
+    return NextResponse.json(mockResponse);
+    
+    // *** 이하 원래 DB 쿼리 코드는 주석 처리 ***
+    /*
     // 페이지네이션 파라미터
     const page = validatedQuery.page;
     const pageSize = validatedQuery.pageSize;
@@ -262,7 +285,19 @@ export async function GET(request: NextRequest) {
       totalPages: Math.ceil(total / pageSize),
     };
     
+    console.log('API 응답 데이터 구조:', {
+      dataLength: response.data.length,
+      hasValidData: response.data.some(item => item.dispatch !== null),
+      pagination: {
+        total: response.total,
+        page: response.page,
+        pageSize: response.pageSize,
+        totalPages: response.totalPages
+      }
+    });
+    
     return NextResponse.json(response);
+    */
   } catch (error) {
     console.error('주문-배차 목록 조회 중 오류 발생:', error);
     

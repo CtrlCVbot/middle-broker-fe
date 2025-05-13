@@ -328,6 +328,8 @@ export async function getBrokerDispatchList(
   filter: any = {}
 ) {
   try {
+    console.log('getBrokerDispatchList 호출됨:', { page, pageSize, filter });
+    
     // 파라미터 구성
     const params = new URLSearchParams({
       page: page.toString(),
@@ -343,21 +345,58 @@ export async function getBrokerDispatchList(
     if (filter.startDate) params.append('startDate', filter.startDate);
     if (filter.endDate) params.append('endDate', filter.endDate);
     if (filter.keyword) params.append('keyword', filter.keyword);
+    
+    const apiUrl = `/api/orders/with-dispatch?${params.toString()}`;
+    console.log('API 요청 URL:', apiUrl);
 
     // API 호출
-    const response = await fetch(`/api/orders/with-dispatch?${params.toString()}`);
+    const response = await fetch(apiUrl);
+    
+    console.log('API 응답 상태:', response.status, response.statusText);
 
     if (!response.ok) {
-      throw new Error('배차 목록 조회에 실패했습니다.');
+      const errorText = await response.text();
+      console.error('API 오류 응답:', errorText);
+      throw new Error(`배차 목록 조회에 실패했습니다. 상태 코드: ${response.status}`);
     }
 
-    const data: IOrderWithDispatchListResponse = await response.json();
+    let responseData;
+    try {
+      responseData = await response.json();
+      console.log('API 응답 JSON 데이터 구조:', Object.keys(responseData));
+    } catch (parseError) {
+      console.error('JSON 파싱 오류:', parseError);
+      throw new Error('API 응답을 JSON으로 파싱할 수 없습니다.');
+    }
+    
+    // 응답 검증
+    if (!responseData.data) {
+      console.warn('API 응답에 data 필드가 없습니다:', responseData);
+      // 기본 구조 생성
+      responseData = {
+        data: [],
+        total: 0,
+        page: page,
+        pageSize: pageSize,
+        totalPages: 0
+      };
+    }
     
     // 데이터 매핑
-    return mapApiResponseToBrokerDispatchList(data);
+    const mappedData = mapApiResponseToBrokerDispatchList(responseData);
+    return mappedData;
   } catch (error) {
     console.error('배차 목록 조회 중 오류:', error);
-    throw error;
+    // 대체 데이터 반환 (빈 배열)
+    return {
+      data: [],
+      pagination: {
+        total: 0,
+        page: page,
+        pageSize: pageSize,
+        totalPages: 0
+      }
+    };
   }
 }
 
