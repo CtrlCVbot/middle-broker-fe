@@ -21,8 +21,32 @@ import { BrokerStatusBadge } from "./broker-status-badge";
 import { BrokerOrderContextMenu } from "./broker-order-context-menu";
 import { Badge } from "@/components/ui/badge";
 
+// API 응답 데이터 타입 정의
+interface IDispatchItem {
+  orderId: string;
+  dispatchId: string;
+  flowStatus: string;
+  cargoName: string;
+  dispatchDate?: string;
+  pickupAddress: string;
+  pickupDateTime: string;
+  deliveryAddress: string;
+  deliveryDateTime: string;
+  vehicleType: string;
+  vehicleWeight: string;
+  assignedVehicleNumber?: string;
+  assignedVehicleType?: string;
+  driverName?: string;
+  driverPhone?: string;
+  freightCost?: number;
+  estimatedAmount?: number;
+  memo?: string;
+  brokerMemo?: string;
+  // 추가 필드가 있을 수 있음
+}
+
 interface BrokerOrderCardProps {
-  orders: IBrokerOrder[];
+  orders: IDispatchItem[]; // IBrokerOrder에서 IDispatchItem으로 변경
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
@@ -84,8 +108,28 @@ export function BrokerOrderCard({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {orders.map((order) => (
               <BrokerOrderContextMenu 
-                key={order.id}
-                order={order}
+                key={order.orderId}
+                order={{
+                  id: order.orderId,
+                  status: order.flowStatus as BrokerOrderStatusType,
+                  departureLocation: order.pickupAddress,
+                  departureDateTime: order.pickupDateTime,
+                  arrivalLocation: order.deliveryAddress,
+                  arrivalDateTime: order.deliveryDateTime,
+                  vehicle: {
+                    type: order.vehicleType,
+                    weight: order.vehicleWeight
+                  },
+                  driver: {
+                    name: order.driverName || "-",
+                    contact: order.driverPhone || "-"
+                  },
+                  amount: order.estimatedAmount || 0,
+                  chargeAmount: order.freightCost || 0,
+                  fee: 0, // 수수료 정보는 계산이 필요할 수 있음
+                  cargoItem: order.cargoName,
+                  createdAt: order.dispatchDate || "",
+                } as IBrokerOrder}
                 onStatusChange={onStatusChange}
                 onEditTransportFee={onEditTransportFee}
                 onExportExcel={onExportExcel}
@@ -93,24 +137,21 @@ export function BrokerOrderCard({
               >
                 <Card
                   className="cursor-pointer hover:bg-secondary/20"
-                  onClick={() => handleOrderClick(order.id)}
+                  onClick={() => handleOrderClick(order.orderId)}
                 >
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-base text-primary underline">
-                        {order.id}
+                        {order.orderId.slice(0, 8)}
                       </CardTitle>
                       <div className="flex items-center space-x-2">
-                        <BrokerStatusBadge status={order.status} size="sm" />
-                        {order.gpsLocation?.status === "상차 지각" || order.gpsLocation?.status === "하차 지각" ? (
-                          <Badge variant="destructive" className="text-[10px] px-1">지각</Badge>
-                        ) : null}
+                        <BrokerStatusBadge status={order.flowStatus as BrokerOrderStatusType} size="sm" />
                       </div>
                     </div>
                     <CardDescription className="flex items-center justify-between">
-                      <span>등록일: {order.createdAt}</span>
+                      <span>등록일: {order.dispatchDate || "N/A"}</span>
                       <Badge variant="outline" className="font-normal">
-                        {order.callCenter}
+                        {order.assignedVehicleNumber || "차량 미지정"}
                       </Badge>
                     </CardDescription>
                   </CardHeader>
@@ -118,54 +159,53 @@ export function BrokerOrderCard({
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
                         <div className="text-xs text-muted-foreground">출발지</div>
-                        <div className="truncate font-medium" title={order.departureLocation}>
-                          {order.departureLocation}
+                        <div className="truncate font-medium" title={order.pickupAddress}>
+                          {order.pickupAddress}
                         </div>
-                        <div className="text-xs">{order.departureDateTime}</div>
+                        <div className="text-xs">{order.pickupDateTime}</div>
                       </div>
                       <div>
                         <div className="text-xs text-muted-foreground">도착지</div>
-                        <div className="truncate font-medium" title={order.arrivalLocation}>
-                          {order.arrivalLocation}
+                        <div className="truncate font-medium" title={order.deliveryAddress}>
+                          {order.deliveryAddress}
                         </div>
-                        <div className="text-xs">{order.arrivalDateTime}</div>
+                        <div className="text-xs">{order.deliveryDateTime}</div>
                       </div>
                       <div>
                         <div className="text-xs text-muted-foreground">차량</div>
                         <div className="font-medium">
-                          {order.vehicle.type} {order.vehicle.weight}
+                          {order.vehicleType} {order.vehicleWeight}
                         </div>
                       </div>
                       <div>
                         <div className="text-xs text-muted-foreground">차주</div>
-                        <div className="font-medium">{order.driver.name || "-"}</div>
+                        <div className="font-medium">{order.driverName || "-"}</div>
                       </div>
                       <div>
-                        <div className="text-xs text-muted-foreground">업체</div>
-                        <div className="truncate font-medium" title={`${order.company} (${order.contactPerson})`}>
-                          {order.company}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {order.contactPerson}
+                        <div className="text-xs text-muted-foreground">화물명</div>
+                        <div className="truncate font-medium" title={order.cargoName}>
+                          {order.cargoName || "미지정"}
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-muted-foreground">품목</div>
-                        <div className="truncate font-medium" title={order.cargoItem}>
-                          {order.cargoItem}
+                        <div className="text-xs text-muted-foreground">메모</div>
+                        <div className="truncate font-medium" title={order.memo || order.brokerMemo || ""}>
+                          {order.memo || order.brokerMemo || "-"}
                         </div>
-                        <Badge variant="secondary" className="mt-1 text-xs">
-                          {order.paymentMethod}
-                        </Badge>
                       </div>
                     </div>
                   </CardContent>
                   <CardFooter className="pt-0 justify-between">
                     <div className="text-xs text-muted-foreground">
-                      담당: {order.manager}
+                      운송비
                     </div>
                     <div className="font-medium">
-                      {formatCurrency(order.chargeAmount || order.amount)}원
+                      {formatCurrency(order.freightCost || 0)}원
+                      {order.estimatedAmount && order.estimatedAmount !== order.freightCost && (
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (견적: {formatCurrency(order.estimatedAmount)}원)
+                        </span>
+                      )}
                     </div>
                   </CardFooter>
                 </Card>

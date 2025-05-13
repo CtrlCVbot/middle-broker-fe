@@ -24,8 +24,32 @@ import { BrokerOrderContextMenu } from "./broker-order-context-menu";
 import { Badge } from "@/components/ui/badge";
 import { getStatusBadge } from "@/components/order/order-table-ver01";
 
+// API 응답 데이터 타입 정의
+interface IDispatchItem {
+  orderId: string;
+  dispatchId: string;
+  flowStatus: string;
+  cargoName: string;
+  dispatchDate?: string;
+  pickupAddress: string;
+  pickupDateTime: string;
+  deliveryAddress: string;
+  deliveryDateTime: string;
+  vehicleType: string;
+  vehicleWeight: string;
+  assignedVehicleNumber?: string;
+  assignedVehicleType?: string;
+  driverName?: string;
+  driverPhone?: string;
+  freightCost?: number;
+  estimatedAmount?: number;
+  memo?: string;
+  brokerMemo?: string;
+  // 추가 필드가 있을 수 있음
+}
+
 interface BrokerOrderTableProps {
-  orders: IBrokerOrder[];
+  orders: IDispatchItem[]; // IBrokerOrder에서 IDispatchItem으로 변경
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
@@ -91,18 +115,16 @@ export function BrokerOrderTable({
               <TableHead className="w-[120px] ">하차일시</TableHead>
               <TableHead>차량</TableHead>
               <TableHead>차주</TableHead>
-              <TableHead>콜센터</TableHead>
-              <TableHead>업체명</TableHead>
+              <TableHead>차량번호</TableHead>
               <TableHead>운송비</TableHead>
-              <TableHead>결제방식</TableHead>
-              <TableHead>관리자</TableHead>
+              <TableHead>메모</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {orders.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={13}
+                  colSpan={11}
                   className="h-24 text-center text-muted-foreground"
                 >
                   표시할 화물 정보가 없습니다.
@@ -111,65 +133,69 @@ export function BrokerOrderTable({
             ) : (
               orders.map((order) => (
                 <BrokerOrderContextMenu 
-                  key={order.id} 
-                  order={order}
+                  key={order.orderId} 
+                  order={{
+                    id: order.orderId,
+                    status: order.flowStatus as BrokerOrderStatusType,
+                    departureLocation: order.pickupAddress,
+                    departureDateTime: order.pickupDateTime,
+                    arrivalLocation: order.deliveryAddress,
+                    arrivalDateTime: order.deliveryDateTime,
+                    vehicle: {
+                      type: order.vehicleType,
+                      weight: order.vehicleWeight
+                    },
+                    driver: {
+                      name: order.driverName || "-",
+                      contact: order.driverPhone || "-"
+                    },
+                    amount: order.estimatedAmount || 0,
+                    chargeAmount: order.freightCost || 0,
+                    fee: 0 // 수수료 정보는 계산이 필요할 수 있음
+                  } as IBrokerOrder}
                   onStatusChange={onStatusChange}
                   onEditTransportFee={onEditTransportFee}
                   onExportExcel={onExportExcel}
                   onViewMap={onViewMap}
                 >                  
-                  <TableRow key={order.id} className="cursor-pointer hover:bg-secondary/80" onClick={() => handleOrderClick(order.id)}>
-                    <TableCell className="font-medium text-primary underline">{order.id.slice(0, 8)}</TableCell>
+                  <TableRow key={order.orderId} className="cursor-pointer hover:bg-secondary/80" onClick={() => handleOrderClick(order.orderId)}>
+                    <TableCell className="font-medium text-primary underline">{order.orderId.slice(0, 8)}</TableCell>
                     <TableCell className="text-center scale-90">
-                      {getStatusBadge(order.status)}
-                      {order.gpsLocation?.status === "상차 지각" || order.gpsLocation?.status === "하차 지각" ? (
-                        <Badge variant="destructive" className="ml-1 text-[10px] px-1">지각</Badge>
-                      ) : null}
+                      {getStatusBadge(order.flowStatus as BrokerOrderStatusType)}
                     </TableCell>
-                    <TableCell className="max-w-[150px] truncate" title={order.departureLocation}>
-                      {order.departureLocation}
+                    <TableCell className="max-w-[150px] truncate" title={order.pickupAddress}>
+                      {order.pickupAddress}
                     </TableCell>
-                    <TableCell>{order.departureDateTime}</TableCell>
-                    <TableCell className="max-w-[150px] truncate" title={order.arrivalLocation}>
-                      {order.arrivalLocation}
+                    <TableCell>{order.pickupDateTime}</TableCell>
+                    <TableCell className="max-w-[150px] truncate" title={order.deliveryAddress}>
+                      {order.deliveryAddress}
                     </TableCell>
-                    <TableCell>{order.arrivalDateTime}</TableCell>
+                    <TableCell>{order.deliveryDateTime}</TableCell>
                     <TableCell>
-                      {order.vehicle.type} {order.vehicle.weight}
+                      {order.vehicleType} {order.vehicleWeight}
                     </TableCell>
                     <TableCell>
-                      {order.driver.name || "-"}
+                      {order.driverName || "-"}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="font-normal">
-                        {order.callCenter}
+                        {order.assignedVehicleNumber || "-"}
                       </Badge>
-                    </TableCell>
-                    <TableCell className="max-w-[100px] truncate" title={`${order.company} (${order.contactPerson})`}>
-                      {order.company}
-                      <span className="text-xs text-muted-foreground ml-1">
-                        ({order.contactPerson})
-                      </span>
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
                       <div className="flex flex-col">
                         <span className="font-medium text-sm">
-                          {formatCurrency(order.chargeAmount || order.amount)}원
+                          {formatCurrency(order.freightCost || 0)}원
                         </span>
-                        {order.chargeAmount !== order.amount && (
+                        {order.estimatedAmount && order.freightCost !== order.estimatedAmount && (
                           <span className="text-xs text-muted-foreground">
-                            견적: {formatCurrency(order.amount)}원
+                            견적: {formatCurrency(order.estimatedAmount)}원
                           </span>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="font-normal">
-                        {order.paymentMethod}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="max-w-[100px] truncate" title={`${order.manager} (${order.managerContact})`}>
-                      {order.manager}
+                    <TableCell className="max-w-[100px] truncate" title={order.memo || order.brokerMemo || ''}>
+                      {order.memo || order.brokerMemo || "-"}
                     </TableCell>
                   </TableRow>
                 </BrokerOrderContextMenu>

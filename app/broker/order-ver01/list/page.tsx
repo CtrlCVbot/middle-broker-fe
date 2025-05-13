@@ -13,7 +13,8 @@ import {
 import { ListFilter, Grid3x3, RotateCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { useBrokerOrderStore } from "@/store/broker-order-store";
-import { getBrokerOrdersByPage } from "@/utils/mockdata/mock-broker-orders";
+// import { getBrokerOrdersByPage } from "@/utils/mockdata/mock-broker-orders";
+import { getBrokerDispatchList } from "@/services/order-service";
 
 import { BrokerOrderSearch as BrokerOrderSearchVer01 } from "@/components/broker/order/broker-order-search-ver01";
 import { BrokerOrderTable as BrokerOrderTableVer01 } from "@/components/broker/order/broker-order-table-ver01";
@@ -73,19 +74,26 @@ export default function BrokerOrderListPage() {
         manager: filter.manager
       });
       
-      return getBrokerOrdersByPage(
+      // API 필터 구성
+      const apiFilter = {
+        vehicleType: filter.vehicleType,
+        vehicleWeight: filter.weight,
+        status: filter.status,
+        startDate: filter.startDate,
+        endDate: filter.endDate,
+        keyword: filter.searchTerm,
+        // pickupCity와 deliveryCity로 변환
+        pickupCity: filter.departureCity,
+        deliveryCity: filter.arrivalCity,
+        // 브로커 관련 필터
+        brokerCompanyId: filter.manager, // 실제 구현 시 적절히 매핑 필요
+      };
+      
+      // API 호출
+      return getBrokerDispatchList(
         currentPage,
         pageSize,
-        filter.departureCity,
-        filter.arrivalCity,
-        filter.vehicleType,
-        filter.weight,
-        filter.searchTerm,
-        filter.status,
-        filter.startDate,
-        filter.endDate,
-        filter.callCenter,
-        filter.manager
+        apiFilter
       );
     },
     staleTime: 1000 * 60, // 1분
@@ -133,16 +141,31 @@ export default function BrokerOrderListPage() {
   };
   
   // 배차 상태 변경 핸들러
-  const handleStatusChange = (orderId: string, newStatus: BrokerOrderStatusType) => {
-    // 백엔드가 구현되면 실제 API 호출로 대체
-    toast.success(`화물 ${orderId}의 상태가 '${newStatus}'로 변경되었습니다.`);
-    handleManualRefresh(); // 데이터 새로고침
+  const handleStatusChange = async (orderId: string, newStatus: BrokerOrderStatusType) => {
+    try {
+      // 배차 상태 변경 API 호출 (broker-dispatch-service.ts의 changeOrderStatus 함수 사용)
+      const { changeOrderStatus } = await import('@/services/broker-dispatch-service');
+      await changeOrderStatus(orderId, newStatus);
+      
+      toast.success(`화물 ${orderId}의 상태가 '${newStatus}'로 변경되었습니다.`);
+      handleManualRefresh(); // 데이터 새로고침
+    } catch (error: any) {
+      toast.error(`상태 변경 실패: ${error.message || '알 수 없는 오류'}`);
+    }
   };
   
   // 운송비 수정 핸들러
-  const handleEditTransportFee = (orderId: string) => {
-    // 실제 구현 시 수정 모달 또는 시트 열기
-    toast.info(`화물 ${orderId}의 운송비 정보 수정 화면을 준비 중입니다.`);
+  const handleEditTransportFee = async (orderId: string) => {
+    try {
+      // 배차 상세 정보 조회
+      const { getBrokerDispatchDetail } = await import('@/services/order-service');
+      const dispatchDetail = await getBrokerDispatchDetail(orderId);
+      
+      // 여기서는 알림만 표시하지만, 실제로는 모달을 열어 수정 기능 구현
+      toast.info(`화물 ${orderId}의 운송비 정보 수정 화면을 준비 중입니다.`);
+    } catch (error: any) {
+      toast.error(`운송비 정보 조회 실패: ${error.message || '알 수 없는 오류'}`);
+    }
   };
   
   // 엑셀 내보내기 핸들러
@@ -160,17 +183,26 @@ export default function BrokerOrderListPage() {
   // 총 페이지 수 계산
   const totalPages = Math.ceil((data?.pagination.total || 0) / pageSize);
 
+  // API 응답에서 요약 정보 추출
+  const summary = {
+    totalOrders: data?.data.length || 0,
+    totalContractAmount: data?.data.reduce((sum, order) => sum + (order.estimatedAmount || 0), 0) || 0,
+    totalChargeAmount: data?.data.reduce((sum, order) => sum + (order.freightCost || 0), 0) || 0,
+    totalSupplyAmount: data?.data.reduce((sum, order) => sum + (order.freightCost * 0.9 || 0), 0) || 0,
+    totalProfit: data?.data.reduce((sum, order) => sum + (order.freightCost * 0.1 || 0), 0) || 0,
+  };
+
   // 견적금 기준 수익
-  const profitFromContract = data?.summary?.totalContractAmount ? data?.summary?.totalContractAmount - data?.summary?.totalSupplyAmount : 0;
+  const profitFromContract = summary.totalContractAmount ? summary.totalContractAmount - summary.totalSupplyAmount : 0;
 
   // 청구금 기준 수익
-  const profitFromCharge = data?.summary?.totalChargeAmount ? data?.summary?.totalChargeAmount - data?.summary?.totalSupplyAmount : 0;
+  const profitFromCharge = summary.totalChargeAmount ? summary.totalChargeAmount - summary.totalSupplyAmount : 0;
 
   // 견적금 기준 수익률
-  const profitRateFromContract = data?.summary?.totalContractAmount ? (profitFromContract / data?.summary?.totalContractAmount) * 100 : 0;
+  const profitRateFromContract = summary.totalContractAmount ? (profitFromContract / summary.totalContractAmount) * 100 : 0;
 
   // 청구금 기준 수익률
-  const profitRateFromCharge = data?.summary?.totalChargeAmount ? (profitFromCharge / data?.summary?.totalChargeAmount) * 100 : 0;
+  const profitRateFromCharge = summary.totalChargeAmount ? (profitFromCharge / summary.totalChargeAmount) * 100 : 0;
 
 
   return (
@@ -206,7 +238,7 @@ export default function BrokerOrderListPage() {
 
 
       <main>
-        {data?.summary && (
+        {data && (
           <Card  className="border-none shadow-none">            
             <CardHeader className="flex flex-row items-center justify-between">
             <div> 
@@ -236,17 +268,11 @@ export default function BrokerOrderListPage() {
               <OverviewTopCard conversionRate={profitRateFromCharge} />
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 p-4">
-                
-                {/* <OrderCardOverview ordersNumber={data.summary.totalOrders} changePercentage={4.09} progress={63} /> */}
-                {/* <RevenueCard revenue={12095} changePercentage={-5.08} /> */}
-                <AverageValueCard value={data.summary.totalOrders} valueColor="gray-500" label="총 화물 건수" memo="총 화물 건수" />
-                <AverageValueCard value={data.summary.totalContractAmount} valueColor="orange-500" label="총 견적금" memo="총 견적금" />
-                <AverageValueCard value={data.summary.totalChargeAmount} valueColor="blue-500" label="총 청구금" memo="총 청구금" />
-                <AverageValueCard value={data.summary.totalSupplyAmount} valueColor="red-500" label="총 공급가" memo="총 공급가" />
-                <AverageValueCard value={data.summary.totalProfit} valueColor="green-500" label="총 수익" memo="총 수익" />
-                {/* <SpendingCard expenses={12095} />
-                <EarningsCard current={12095} target={45000} />
-                <WeekReportCard revenue={14000} /> */}
+                <AverageValueCard value={summary.totalOrders} valueColor="gray-500" label="총 화물 건수" memo="총 화물 건수" />
+                <AverageValueCard value={summary.totalContractAmount} valueColor="orange-500" label="총 견적금" memo="총 견적금" />
+                <AverageValueCard value={summary.totalChargeAmount} valueColor="blue-500" label="총 청구금" memo="총 청구금" />
+                <AverageValueCard value={summary.totalSupplyAmount} valueColor="red-500" label="총 공급가" memo="총 공급가" />
+                <AverageValueCard value={summary.totalProfit} valueColor="green-500" label="총 수익" memo="총 수익" />
               </div>
             </div>
 
