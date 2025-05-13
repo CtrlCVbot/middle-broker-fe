@@ -18,6 +18,7 @@ import { getBrokerDispatchList } from "@/services/order-service";
 
 import { BrokerOrderSearch as BrokerOrderSearchVer01 } from "@/components/broker/order/broker-order-search-ver01";
 import { BrokerOrderTable as BrokerOrderTableVer01 } from "@/components/broker/order/broker-order-table-ver01";
+import { BrokerOrderTabs } from "@/components/broker/order/broker-order-tabs";
 
 import { BrokerOrderCard } from "@/components/broker/order/broker-order-card";
 import { BrokerOrderDetailSheet } from "@/components/broker/order/broker-order-detail-sheet";
@@ -46,6 +47,7 @@ export default function BrokerOrderListPage() {
     currentPage,
     pageSize,
     setCurrentPage,
+    activeTab
   } = useBrokerOrderStore();
   
   //const { openSheet } = useBrokerOrderDetailStore();
@@ -57,7 +59,7 @@ export default function BrokerOrderListPage() {
 
   // 화물 목록 데이터 조회
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["brokerOrders", currentPage, pageSize, filter, lastRefreshed],
+    queryKey: ["brokerOrders", currentPage, pageSize, filter, lastRefreshed, activeTab],
     queryFn: async () => {
       console.log('Query function called with:', {
         currentPage,
@@ -71,7 +73,8 @@ export default function BrokerOrderListPage() {
         startDate: filter.startDate,
         endDate: filter.endDate,
         callCenter: filter.callCenter,
-        manager: filter.manager
+        manager: filter.manager,
+        activeTab
       });
       
       // API 필터 구성
@@ -87,6 +90,9 @@ export default function BrokerOrderListPage() {
         deliveryCity: filter.arrivalCity,
         // 브로커 관련 필터
         brokerCompanyId: filter.manager, // 실제 구현 시 적절히 매핑 필요
+        // 탭에 따라 hasDispatch 값 설정
+        hasDispatch: activeTab === 'dispatched' ? 'true' : 
+                    activeTab === 'waiting' ? 'false' : undefined,
       };
       
       // API 호출
@@ -124,7 +130,7 @@ export default function BrokerOrderListPage() {
   // 필터 변경 시 데이터 다시 조회
   useEffect(() => {
     refetch();
-  }, [currentPage, pageSize, filter, refetch]);
+  }, [currentPage, pageSize, filter, activeTab, refetch]);
   
   // 자동 새로고침 기능
   useEffect(() => {
@@ -287,7 +293,14 @@ export default function BrokerOrderListPage() {
           <CardContent>     
             {/* 화물 현황 요약 카드 */}   
             <div className="mb-4 bg-muted shadow-md rounded-lg">
-              <OverviewTopCard conversionRate={profitRateFromCharge} />
+              <OverviewTopCard 
+                conversionRate={profitRateFromCharge} 
+                // title={
+                //   activeTab === 'all' ? "전체 화물 현황" :
+                //   activeTab === 'dispatched' ? "배차 완료 화물 현황" :
+                //   "배차 대기 화물 현황"
+                // }
+              />
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 p-4">
                 <AverageValueCard value={summary.totalOrders} valueColor="gray-500" label="총 화물 건수" memo="총 화물 건수" />
@@ -299,7 +312,9 @@ export default function BrokerOrderListPage() {
             </div>
 
             {/* 탭 추가 */}
-            <div></div>
+            <div className="mb-4">
+              <BrokerOrderTabs />
+            </div>
 
             {/* 화물 목록 영역 */}
             <Card>   
@@ -348,8 +363,17 @@ export default function BrokerOrderListPage() {
                   </div>
                 )}
 
+                {/* 데이터 없음 메시지 */}
+                {!isLoading && !isError && data && data.data.length === 0 && (
+                  <div className="py-12 text-center text-lg text-muted-foreground">
+                    {activeTab === 'all' && "화물 데이터가 없습니다."}
+                    {activeTab === 'dispatched' && "배차 완료된 화물이 없습니다."}
+                    {activeTab === 'waiting' && "배차 대기 중인 화물이 없습니다."}
+                  </div>
+                )}
+
                 {/* 데이터 표시 */}
-                {!isLoading && !isError && data && (
+                {!isLoading && !isError && data && data.data.length > 0 && (
                   <>
                     {/* 뷰 모드에 따라 테이블 또는 카드 형태로 표시 */}
                     {viewMode === "table" ? (

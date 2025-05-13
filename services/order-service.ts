@@ -334,9 +334,12 @@ export async function getBrokerDispatchList(
     const params = new URLSearchParams({
       page: page.toString(),
       pageSize: pageSize.toString(),
-      //hasDispatch: 'true', // 배차 정보가 있는 주문만 조회
-      hasDispatch: 'false', // 배차 정보가 없는 주문만 조회
     });
+
+    // hasDispatch 파라미터 추가 (filter에서 가져오거나 기본값 설정)
+    if (filter.hasDispatch !== undefined) {
+      params.append('hasDispatch', filter.hasDispatch);
+    }
 
     // 필터 추가 (주선사 관련 필터)
     if (filter.brokerCompanyId) params.append('brokerCompanyId', filter.brokerCompanyId);

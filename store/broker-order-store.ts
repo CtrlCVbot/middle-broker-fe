@@ -9,6 +9,9 @@ import {
 } from '@/utils/mockdata/mock-broker-orders';
 import { persist } from 'zustand/middleware';
 
+// 디스패치 탭 타입 정의
+export type DispatchTabType = 'all' | 'dispatched' | 'waiting';
+
 // 필터 옵션의 기본값 정의 (import가 실패하는 경우를 대비)
 const DEFAULT_CITIES = CITIES || ["서울", "부산", "인천", "대구", "대전", "광주", "울산", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
 const DEFAULT_VEHICLE_TYPES = VEHICLE_TYPES || ["카고", "윙바디", "탑차", "냉장", "냉동", "트레일러"];
@@ -70,6 +73,9 @@ interface IBrokerOrderState {
   currentPage: number;
   pageSize: number;
   
+  // 탭 상태
+  activeTab: DispatchTabType;
+  
   // 액션
   setViewMode: (mode: 'table' | 'card') => void;
   setFilter: (filter: Partial<IBrokerOrderFilter>) => void;
@@ -79,6 +85,7 @@ interface IBrokerOrderState {
   resetTempFilter: () => void;
   setCurrentPage: (page: number) => void;
   setPageSize: (size: number) => void;
+  setActiveTab: (tab: DispatchTabType) => void;
   
   // 필터 옵션
   filterOptions: {
@@ -114,6 +121,7 @@ export const useBrokerOrderStore = create<IBrokerOrderState>()(
       tempFilter: { ...initialFilter },
       currentPage: 1,
       pageSize: 10,
+      activeTab: 'all',
       
       // 필터 옵션 목록
       filterOptions: {
@@ -158,12 +166,18 @@ export const useBrokerOrderStore = create<IBrokerOrderState>()(
         pageSize: size,
         currentPage: 1, // 페이지 크기가 변경되면 첫 페이지로 돌아감
       }),
+      
+      setActiveTab: (tab: DispatchTabType) => set({ 
+        activeTab: tab,
+        currentPage: 1, // 탭이 변경되면 첫 페이지로 돌아감
+      }),
     }),
     {
       name: 'broker-order-storage', // 로컬 스토리지 키 이름
       partialize: (state) => ({ 
         viewMode: state.viewMode,
         filter: state.filter,
+        activeTab: state.activeTab, // 탭 상태도 저장
       }), // 지속할 상태만 선택
     }
   )

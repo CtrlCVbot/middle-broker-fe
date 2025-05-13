@@ -16,18 +16,15 @@ import { generateMockDispatchData } from './mock';
  */
 export async function GET(request: NextRequest) {
   try {
-
+    const searchParams = request.nextUrl.searchParams;
+    const queryParams = Object.fromEntries(searchParams.entries());
     
-     const searchParams = request.nextUrl.searchParams;
-     const queryParams = Object.fromEntries(searchParams.entries());
-    
-     console.log('API 요청 파라미터:', queryParams);
+    console.log('API 요청 파라미터:', queryParams);
     
     // 요청 파라미터 검증
     const validatedQuery = orderWithDispatchQuerySchema.parse(queryParams);
 
-    // // *** 임시: Mock 데이터 반환으로 변경 - 삭제 금지! 테스트용! ***
-    /*
+    // *** 임시: Mock 데이터 반환으로 변경 - 테스트용! ***
     console.log('DB 쿼리 대신 Mock 데이터 생성');
     const mockResponse = generateMockDispatchData(searchParams);
     
@@ -44,10 +41,9 @@ export async function GET(request: NextRequest) {
     });
     
     return NextResponse.json(mockResponse);
-    */
     
-    
-    
+    // 실제 DB 쿼리 코드 (테스트 후 주석 해제)
+    /*
     // 페이지네이션 파라미터
     const page = validatedQuery.page;
     const pageSize = validatedQuery.pageSize;
@@ -271,9 +267,7 @@ export async function GET(request: NextRequest) {
         updatedBySnapshot: item.dispatchUpdatedBySnapshot || undefined,
         createdAt: item.dispatchCreatedAt?.toISOString() || '',
         updatedAt: item.dispatchUpdatedAt?.toISOString() || '',
-      } : 
-      //null; //대신 빈값 반환하기!
-      {
+      } : {
         id: '',
         brokerCompanyId: '',
         brokerCompanySnapshot: undefined,
@@ -294,7 +288,8 @@ export async function GET(request: NextRequest) {
         updatedBySnapshot: undefined,
         createdAt: '',
         updatedAt: '',
-      };      
+      };
+      
       return {
         order: orderInfo,
         dispatch: dispatchInfo,
@@ -323,6 +318,7 @@ export async function GET(request: NextRequest) {
     });
     
     return NextResponse.json(response);
+    */
     
   } catch (error) {
     console.error('주문-배차 목록 조회 중 오류 발생:', error);
