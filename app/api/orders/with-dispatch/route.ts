@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const validatedQuery = orderWithDispatchQuerySchema.parse(queryParams);
 
     // *** 임시: Mock 데이터 반환으로 변경 - 테스트용! ***
-    console.log('DB 쿼리 대신 Mock 데이터 생성');
+    /*console.log('DB 쿼리 대신 Mock 데이터 생성');
     const mockResponse = generateMockDispatchData(searchParams);
     
     // 디버깅 로그
@@ -40,10 +40,9 @@ export async function GET(request: NextRequest) {
       }
     });
     
-    return NextResponse.json(mockResponse);
+    return NextResponse.json(mockResponse);*/
     
-    // 실제 DB 쿼리 코드 (테스트 후 주석 해제)
-    /*
+    // 실제 DB 쿼리 코드 (테스트 후 주석 해제)    
     // 페이지네이션 파라미터
     const page = validatedQuery.page;
     const pageSize = validatedQuery.pageSize;
@@ -318,7 +317,6 @@ export async function GET(request: NextRequest) {
     });
     
     return NextResponse.json(response);
-    */
     
   } catch (error) {
     console.error('주문-배차 목록 조회 중 오류 발생:', error);

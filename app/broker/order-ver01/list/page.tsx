@@ -367,8 +367,8 @@ export default function BrokerOrderListPage() {
                 {!isLoading && !isError && data && data.data.length === 0 && (
                   <div className="py-12 text-center text-lg text-muted-foreground">
                     {activeTab === 'all' && "화물 데이터가 없습니다."}
-                    {activeTab === 'dispatched' && "배차 완료된 화물이 없습니다."}
-                    {activeTab === 'waiting' && "배차 대기 중인 화물이 없습니다."}
+                    {activeTab === 'dispatched' && "진행 중인 화물이 없습니다."}
+                    {activeTab === 'waiting' && "요청한 화물이 없습니다."}
                   </div>
                 )}
 
