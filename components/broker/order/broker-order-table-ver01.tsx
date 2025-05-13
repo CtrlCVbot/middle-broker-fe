@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { format, isValid, parseISO } from "date-fns";
 import {
   Table,
   TableBody,
@@ -15,14 +16,56 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  ChevronsRight as ArrowRight,
+  Link2Off,
+  Truck,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { IBrokerOrder, BrokerOrderStatusType } from "@/types/broker-order";
 import { formatCurrency } from "@/lib/utils";
 import { useBrokerOrderDetailStore } from "@/store/broker-order-detail-store";
 import { BrokerStatusBadge } from "./broker-status-badge";
 import { BrokerOrderContextMenu } from "./broker-order-context-menu";
-import { Badge } from "@/components/ui/badge";
 import { getStatusBadge } from "@/components/order/order-table-ver01";
+import { ko } from "date-fns/locale";
+
+// 날짜 포맷팅 유틸리티 함수
+const getSchedule = (pickupDateTime: string, deliveryDateTime: string) => {
+  try {
+    const pickupDate = new Date(pickupDateTime);
+    const deliveryDate = new Date(deliveryDateTime);
+    
+    const pickupDateStr = format(pickupDate, "MM.dd(E)", { locale: ko });
+    const deliveryDateStr = format(deliveryDate, "dd", { locale: ko });
+    
+    if (pickupDate.toDateString() === deliveryDate.toDateString()) {
+      return pickupDateStr;
+    } else {
+      return `${pickupDateStr} - ${deliveryDateStr}`;
+    }
+  } catch (e) {
+    return "-";
+  }
+};
+
+const getTime = (pickupDateTime: string, deliveryDateTime: string) => {
+  try {
+    const pickupDate = new Date(pickupDateTime);
+    const deliveryDate = new Date(deliveryDateTime);
+    
+    const pickupTimeStr = format(pickupDate, "HH:mm", { locale: ko });
+    let deliveryTimeStr = format(deliveryDate, "HH:mm", { locale: ko });
+    
+    if (pickupDate.toDateString() !== deliveryDate.toDateString()) {
+      const deliveryDateStr = format(deliveryDate, "dd", { locale: ko });
+      deliveryTimeStr = `${deliveryTimeStr}(${deliveryDateStr})`;
+    }
+    
+    return `${pickupTimeStr} - ${deliveryTimeStr}`;
+  } catch (e) {
+    return "-";
+  }
+};
 
 // API 응답 데이터 타입 정의
 interface IDispatchItem {
@@ -109,15 +152,15 @@ export function BrokerOrderTable({
             <TableRow>
               <TableHead className="w-[80px] text-center">ID</TableHead>
               <TableHead className="w-[80px] text-center">상태</TableHead>
-              <TableHead className="w-[80px] ">상차지</TableHead>
-              <TableHead className="w-[120px] ">상차일시</TableHead>              
+              <TableHead className="w-[80px]">일정</TableHead>
+              <TableHead className="w-[120px]">시간</TableHead>              
+              <TableHead>상차지</TableHead>
+              <TableHead>{/* 상차지 하차지 흐름 표시 */}</TableHead>
               <TableHead>하차지</TableHead>              
-              <TableHead className="w-[120px] ">하차일시</TableHead>
-              <TableHead>차량</TableHead>
-              <TableHead>차주</TableHead>
-              <TableHead>차량번호</TableHead>
-              <TableHead>운송비</TableHead>
-              <TableHead>메모</TableHead>
+              <TableHead className="w-[100px]">품목</TableHead>              
+              <TableHead className="w-[80px]">차량</TableHead>
+              <TableHead>기사</TableHead>
+              <TableHead className="text-right">운송비</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -163,39 +206,72 @@ export function BrokerOrderTable({
                     <TableCell className="text-center scale-90">
                       {getStatusBadge(order.flowStatus as BrokerOrderStatusType)}
                     </TableCell>
-                    <TableCell className="max-w-[150px] truncate" title={order.pickupAddress}>
-                      {order.pickupAddress}
+                    <TableCell className="font-medium">
+                      {getSchedule(order.pickupDateTime, order.deliveryDateTime)}
                     </TableCell>
-                    <TableCell>{order.pickupDateTime}</TableCell>
-                    <TableCell className="max-w-[150px] truncate" title={order.deliveryAddress}>
-                      {order.deliveryAddress}
+                    <TableCell className="font-medium text-muted-foreground">
+                      {getTime(order.pickupDateTime, order.deliveryDateTime)}
                     </TableCell>
-                    <TableCell>{order.deliveryDateTime}</TableCell>
-                    <TableCell>
-                      {order.vehicleType} {order.vehicleWeight}
-                    </TableCell>
-                    <TableCell>
-                      {order.driverName || "-"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="font-normal">
-                        {order.assignedVehicleNumber || "-"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
+                    <TableCell className="max-w-[100px] truncate" title={order.pickupAddress}>
                       <div className="flex flex-col">
-                        <span className="font-medium text-sm">
-                          {formatCurrency(order.freightCost || 0)}원
-                        </span>
-                        {order.estimatedAmount && order.freightCost !== order.estimatedAmount && (
-                          <span className="text-xs text-muted-foreground">
-                            견적: {formatCurrency(order.estimatedAmount)}원
-                          </span>
-                        )}
+                        <div className="text-md font-medium text-shadow-xs">
+                          {order.pickupAddress.split(' ')[0] || ""}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {order.pickupAddress}
+                        </div>
                       </div>
                     </TableCell>
-                    <TableCell className="max-w-[100px] truncate" title={order.memo || order.brokerMemo || ''}>
-                      {order.memo || order.brokerMemo || "-"}
+                    <TableCell>
+                      <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                    </TableCell>
+                    <TableCell className="max-w-[100px] truncate" title={order.deliveryAddress}>
+                      <div className="flex flex-col">
+                        <div className="text-md font-medium text-shadow-xs">
+                          {order.deliveryAddress.split(' ')[0] || ""}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {order.deliveryAddress}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-[150px] truncate">
+                      {order.cargoName || "-"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <div className="text-md font-bold text-neutral-800">
+                          {order.vehicleWeight}
+                        </div>
+                        <div className="text-md font-medium text-shadow-xs">
+                          {order.vehicleType}
+                        </div>                      
+                      </div> 
+                    </TableCell>
+                    <TableCell>
+                      {order.driverName ? (
+                        <div className="flex flex-col">
+                          <div className="text-md font-medium">
+                            {order.driverName}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {order.driverPhone || "-"}
+                          </div>
+                        </div>
+                      ) : (
+                        <Badge variant="outline" className="text-xs px-3 py-1 border-dashed text-muted-foreground">
+                          <Link2Off className="h-4 w-4 mr-1" />
+                          배차전                      
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right text-primary font-bold text-md text-shadow-xs">
+                      {formatCurrency(order.freightCost || 0)}원
+                      {order.estimatedAmount && order.freightCost !== order.estimatedAmount && (
+                        <div className="text-xs text-muted-foreground">
+                          견적: {formatCurrency(order.estimatedAmount)}원
+                        </div>
+                      )}
                     </TableCell>
                   </TableRow>
                 </BrokerOrderContextMenu>
