@@ -10,7 +10,7 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
-import { ListFilter, Grid3x3, RotateCcw, ThumbsUp } from "lucide-react";
+import { ListFilter, Grid3x3, RotateCcw, ThumbsUp, PowerOff, Power } from "lucide-react";
 import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { useBrokerOrderStore } from "@/store/broker-order-store";
 // import { getBrokerOrdersByPage } from "@/utils/mockdata/mock-broker-orders";
@@ -388,11 +388,12 @@ export default function BrokerOrderListPage() {
                     className={cn(autoRefreshEnabled && "bg-primary/10")}
                     onClick={toggleAutoRefresh}
                   >
-                    <RotateCcw className={cn("h-4 w-4 mr-1", autoRefreshEnabled && "animate-spin")} />
-                    자동 갱신 {autoRefreshEnabled ? "켜짐" : "꺼짐"}
+                    {/* <RotateCcw className={cn("h-4 w-4 mr-1", autoRefreshEnabled && "animate-spin")} /> */}
+                    {autoRefreshEnabled ? <Power className="h-4 w-4 mr-1" /> : <PowerOff className="h-4 w-4 mr-1" />}
+                    자동 갱신
                   </Button>
                   <Button className="bg-primary/10" variant="outline" size="icon" onClick={handleManualRefresh}>
-                    <RotateCcw className="h-4 w-4" />
+                    <RotateCcw className={cn("h-4 w-4", autoRefreshEnabled && "animate-spin")} />
                   </Button>
                   <Separator orientation="vertical" className="h-6" />
                   

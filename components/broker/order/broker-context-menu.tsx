@@ -99,28 +99,29 @@ export function BrokerOrderContextMenu({
           </ContextMenuItem>
         )}
 
-        <ContextMenuSub>
-          <ContextMenuSubTrigger>
-            <Truck className="mr-2 h-4 w-4" />
-            <span>배차 상태 변경</span>
-          </ContextMenuSubTrigger>
-          <ContextMenuSubContent className="w-48">
-            {BROKER_ORDER_STATUS.map((status) => (
-              <ContextMenuItem
-                key={status}
-                onClick={() => handleStatusChange(status as BrokerOrderStatusType)}
-                disabled={order.status === status}
-                className={order.status === status ? "font-bold bg-secondary/50" : ""}
-              >
-                {status}
-                {order.status === status && (
-                  <ContextMenuShortcut>✓</ContextMenuShortcut>
-                )}
-              </ContextMenuItem>
-            ))}
-          </ContextMenuSubContent>
-        </ContextMenuSub>
-
+        {activeTab === 'dispatched' && (
+          <ContextMenuSub>
+            <ContextMenuSubTrigger>
+              <Truck className="mr-2 h-4 w-4" />
+              <span>배차 상태 변경</span>
+            </ContextMenuSubTrigger>
+            <ContextMenuSubContent className="w-48">
+              {BROKER_ORDER_STATUS.map((status) => (
+                <ContextMenuItem
+                  key={status}
+                  onClick={() => handleStatusChange(status as BrokerOrderStatusType)}
+                  disabled={order.status === status}
+                  className={order.status === status ? "font-bold bg-secondary/50" : ""}
+                >
+                  {status}
+                  {order.status === status && (
+                    <ContextMenuShortcut>✓</ContextMenuShortcut>
+                  )}
+                </ContextMenuItem>
+              ))}
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+        )}
         <ContextMenuItem onClick={handleEditTransportFee}>
           <DollarSign className="mr-2 h-4 w-4" />
           <span>운송비 정보 수정</span>
@@ -138,12 +139,12 @@ export function BrokerOrderContextMenu({
           </ContextMenuItem>
         )}
 
-        <ContextMenuSeparator />
+        {/* <ContextMenuSeparator />
 
         <ContextMenuItem onClick={handleExportExcel}>
           <Download className="mr-2 h-4 w-4" />
           <span>엑셀 다운로드</span>
-        </ContextMenuItem>
+        </ContextMenuItem> */}
       </ContextMenuContent>
     </ContextMenu>
   );

@@ -36,6 +36,7 @@ export function BrokerOrderSearch() {
     resetTempFilter,
     filterOptions
   } = useBrokerOrderStore();
+  const { activeTab } = useBrokerOrderStore();
 
   // Popover 상태 관리
   const [open, setOpen] = useState(false);
@@ -255,7 +256,7 @@ export function BrokerOrderSearch() {
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                  <Label htmlFor="status">배차상태</Label>
+                  <Label htmlFor="status" className="mb-2">배차상태</Label>
                   <Select
                     value={tempFilter.status || "all"}
                     onValueChange={handleStatusChange}
@@ -273,8 +274,8 @@ export function BrokerOrderSearch() {
                     </SelectContent>
                   </Select>
                   </div>
-                  <div>
-                    <Label htmlFor="callCenter">콜센터</Label>
+                  {/* <div>
+                    <Label htmlFor="callCenter" className="mb-2">콜센터</Label>
                     <Select
                       value={tempFilter.callCenter || "all"}
                       onValueChange={handleCallCenterChange}
@@ -291,15 +292,15 @@ export function BrokerOrderSearch() {
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
+                  </div> */}
                 </div>
               </div>
               
-              {/* 출발지 필터 */}
-              <div className="space-y-2">
+              {/* 출발지, 도착지 필터 */}
+              {/* <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <Label htmlFor="departureCity">출발지</Label>
+                    <Label htmlFor="departureCity" className="mb-2">출발지</Label>
                     <Select
                       value={tempFilter.departureCity || "all"}
                   onValueChange={handleDepartureCityChange}
@@ -318,7 +319,7 @@ export function BrokerOrderSearch() {
                   </Select>
                   </div>
                   <div>
-                    <Label htmlFor="arrivalCity">도착지</Label>
+                    <Label htmlFor="arrivalCity" className="mb-2">도착지</Label>
                     <Select
                       value={tempFilter.arrivalCity || "all"}
                       onValueChange={handleArrivalCityChange}
@@ -337,7 +338,7 @@ export function BrokerOrderSearch() {
                     </Select>
                   </div>
                 </div>
-              </div>
+              </div> */}
               
               {/*  필터 */}
               
@@ -346,7 +347,7 @@ export function BrokerOrderSearch() {
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <Label htmlFor="weight">중량</Label>
+                    <Label htmlFor="weight" className="mb-2">중량</Label>
                     <Select
                           value={tempFilter.weight || "all"}
                       onValueChange={handleWeightChange}
@@ -365,7 +366,7 @@ export function BrokerOrderSearch() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="vehicleType">차량 종류</Label>
+                    <Label htmlFor="vehicleType" className="mb-2">차량 종류</Label>
                     <Select
                       value={tempFilter.vehicleType || "all"}
                       onValueChange={handleVehicleTypeChange}
@@ -387,8 +388,8 @@ export function BrokerOrderSearch() {
               </div>
 
               {/* 담당자 필터 */}
-              <div className="space-y-2">
-                <Label htmlFor="manager">담당자</Label>
+              {/* <div className="space-y-2">
+                <Label htmlFor="manager" className="mb-2">담당자</Label>
                 <Select
                   value={tempFilter.manager || "all"}
                   onValueChange={handleManagerChange}
@@ -405,7 +406,7 @@ export function BrokerOrderSearch() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </div> */}
               
               {/* 버튼 그룹 */}
               <div className="flex items-center justify-between pt-2">
