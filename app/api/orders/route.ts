@@ -10,7 +10,8 @@ import { orderFlowStatusEnum, vehicleTypeEnum, vehicleWeightEnum } from '@/db/sc
 import { format } from 'date-fns';
 
 export async function GET(request: NextRequest) {
-  try {
+  try {    
+
     const searchParams = request.nextUrl.searchParams;
     
     // 페이지네이션 파라미터
@@ -213,6 +214,7 @@ export async function POST(request: NextRequest) {
 
     const orderData = validationResult.data;
     const requestUserId = request.headers.get('x-user-id') || '';
+    console.log('requestUserId:', requestUserId);
 
     // 요청 사용자 정보 조회
     const [requestUser] = await db

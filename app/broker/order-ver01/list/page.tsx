@@ -34,6 +34,7 @@ import { OverviewTopCard } from "@/components/order/overview/overview-top-card";
 import { AverageValueCard } from "@/components/order/overview/average-value-card";
 import { BrokerOrderAcceptModal } from "@/components/broker/order/broker-order-accept-modal";
 import { acceptOrders } from "@/services/broker-dispatch-service";
+import { getCurrentUser } from '@/utils/auth';
 
 
 export default function BrokerOrderListPage() {
@@ -230,23 +231,25 @@ export default function BrokerOrderListPage() {
     }
     setIsAcceptModalOpen(true);
   };
+ 
   
   // 다중 운송 수락 제출 핸들러
-  const handleAcceptSubmit = async (dispatchData: {
-    agreedFreightCost: number;
-    assignedVehicleType: string;
-    assignedVehicleWeight: string;
-    memo?: string;
-  }) => {
+  const handleAcceptSubmit = async () => {
     try {
       setIsAcceptModalOpen(false);
       
       toast.loading(`${selectedOrders.length}개 화물에 대한 운송 수락 처리 중...`);
-      
-      const result = await acceptOrders(selectedOrders, dispatchData);
-      
-      toast.dismiss();
-      toast.success(result.message || `${selectedOrders.length}개 화물에 대한 운송 수락 처리가 완료되었습니다.`);
+
+      const currentUser = await getCurrentUser();
+      if (currentUser) {
+        const result = await acceptOrders(selectedOrders, currentUser);
+
+        toast.dismiss();
+        toast.success(result.message || `${selectedOrders.length}개 화물에 대한 운송 수락 처리가 완료되었습니다.`);
+      } else {
+        toast.error('사용자 정보를 불러올 수 없습니다.');
+        return;
+      }
       
       // 선택 상태 초기화 및 데이터 새로고침
       deselectAllOrders();
@@ -425,8 +428,6 @@ export default function BrokerOrderListPage() {
         onClose={() => setIsAcceptModalOpen(false)}
         onAccept={handleAcceptSubmit}
         orderCount={selectedOrders.length}
-        vehicleTypes={filterOptions.vehicleTypes}
-        vehicleWeights={filterOptions.weightTypes}
       />
     </div>
   );

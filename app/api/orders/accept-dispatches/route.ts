@@ -12,17 +12,29 @@ import { IUserSnapshot } from '@/types/order-ver01';
 // 요청 스키마 검증
 const acceptDispatchesSchema = z.object({
   orderIds: z.array(z.string()),
-  dispatchData: z.object({
-    agreedFreightCost: z.number(),
-    assignedVehicleType: z.string(),
-    assignedVehicleWeight: z.string(),
-    memo: z.string().optional(),
-  }),
+  currentUser: z.any()
 });
 
 export async function POST(request: NextRequest) {
   try {
-    const requestUserId = request.headers.get('x-user-id') || '';
+    
+    
+    // 요청 데이터 파싱 및 검증
+    const requestData = await request.json();
+    const validatedData = acceptDispatchesSchema.parse(requestData);
+    
+    const { orderIds, currentUser } = validatedData;
+
+    const requestUserId = currentUser.id;
+   //console.log('request:', request);
+    console.log('requestUserId:', requestUserId);
+
+    if (!requestUserId || requestUserId.length < 1) {
+        return NextResponse.json(
+          { error: '요청 사용자를 찾을 수 없습니다.' },
+          { status: 404 }
+        );
+      }
 
     // 요청 사용자 정보 조회
     const [requestUser] = await db
@@ -31,13 +43,7 @@ export async function POST(request: NextRequest) {
       .where(eq(users.id, requestUserId))
       .limit(1)
       .execute();
-
-    if (!requestUser) {
-      return NextResponse.json(
-        { error: '요청 사용자를 찾을 수 없습니다.' },
-        { status: 404 }
-      );
-    }
+    
     
     if (!requestUser) {
       return NextResponse.json(
@@ -68,12 +74,6 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
-    
-    // 요청 데이터 파싱 및 검증
-    const requestData = await request.json();
-    const validatedData = acceptDispatchesSchema.parse(requestData);
-    
-    const { orderIds, dispatchData } = validatedData;
     
     if (orderIds.length === 0) {
       return NextResponse.json(
