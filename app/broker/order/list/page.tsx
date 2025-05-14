@@ -18,6 +18,7 @@ import { BrokerOrderSearch } from "@/components/broker/order/broker-order-search
 import { BrokerOrderTable } from "@/components/broker/order/broker-order-table";
 import { BrokerOrderCard } from "@/components/broker/order/broker-order-card";
 import { BrokerOrderDetailSheet } from "@/components/broker/order/broker-order-detail-sheet";
+
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
@@ -338,7 +339,7 @@ export default function BrokerOrderListPage() {
         )}
         
         {/* 화물 상세 정보 모달 */}
-        <BrokerOrderDetailSheet />
+        <BrokerOrderDetailSheet/>
       </main>
     </>
   );

@@ -22,6 +22,7 @@ import { BrokerOrderTabs } from "@/components/broker/order/broker-order-tabs";
 
 import { BrokerOrderCard } from "@/components/broker/order/broker-order-card";
 import { BrokerOrderDetailSheet } from "@/components/broker/order/broker-order-detail-sheet";
+import { BrokerOrderDetailSheet as BrokerOrderDetailSheetVer01 } from "@/components/broker/order/broker-order-detail-sheet-ver01";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
@@ -454,7 +455,7 @@ export default function BrokerOrderListPage() {
       </Card>      
       
       {/* 상세 정보 시트 */}
-      <BrokerOrderDetailSheet />
+      <BrokerOrderDetailSheetVer01 />
       
       {/* 운송 수락 모달 */}
       <BrokerOrderAcceptModal
