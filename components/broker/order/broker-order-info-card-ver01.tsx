@@ -90,6 +90,8 @@ interface BrokerOrderInfoCardProps {
 export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: BrokerOrderInfoCardProps) {
   const [isShipperInfoOpen, setIsShipperInfoOpen] = useState(true);
   const [isWarningsVisible, setIsWarningsVisible] = useState(false);
+  const [isLocationInfoOpen, setIsLocationInfoOpen] = useState(true);
+  const [isCargoInfoOpen, setIsCargoInfoOpen] = useState(true);
 
   // 날짜와 시간을 합쳐서 dateTime 형식으로 변환
   const departureDateTime = `${departure.date} ${departure.time}${departure.loadingMethod ? ` / ${departure.loadingMethod}` : ''}`;
@@ -111,11 +113,10 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
 
   return (
     <div className="space-y-4">
-      {/* 화주 정보 */}
-      
+
+      {/* 화주 정보 */}      
       <div>
-        <CardHeader className="p-3">
-            
+        <CardHeader className="p-3">            
           <CardTitle>
 
             <div className="flex items-center justify-between w-full">
@@ -154,11 +155,9 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
           </CardTitle>
         </CardHeader>
 
-        
-
         {isShipperInfoOpen && (
         <div> 
-        <Separator className="" /> 
+        {/* <Separator className="" />  */}
         <CardContent className="p-3">     
 
           {/* 기본 화주 정보 */}
@@ -212,216 +211,101 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
       {/* 분리선 */}
       <Separator className="my-4" />
 
-        {/* <div> 
-          <div className="h-full bg-white  rounded-md ">
-            
-            <div className={cn("bg-green-100 text-green-700" + " text-sm p-2 rounded-t-md flex items-center")}>          
-              <Badge variant="default" className="mr-2 bg-green-700 text-white">
-              <LogOut className="inline h-4 w-4" />
-              </Badge>
-              <span className="text-sm text-gray-700">{departureDateTime}</span>
-            </div>
-
-            <CardHeader className="p-3 flex justify-between items-center">            
-              <CardTitle className="text-md font-semibold flex items-center">
-              
-                <Warehouse className="h-4 w-4 mr-2 text-gray-500" />
-                {departure.company}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                >
-                </Button>
-              
-              </CardTitle>
-            </CardHeader>
-
-            <CardContent className="p-3 border-t border-gray-200">            
-
-              
-              <div className="text-md font-medium mt-2">
-                주소
-              </div>
-              <div className="flex items-center text-sm text-gray-700">
-                <MapPin className="h-4 w-4 mr-1 text-gray-500" />              
-                {departure.address}
-              </div>
-            </CardContent>
-          </div>
-        </div> */}
-
-        <div               
-              className="h-full bg-white  rounded-md "
-              //onClick={() => handleOrderClick(order.id)}
-            >   
-
-              {/* <div className={cn("bg-gray-100" + " text-gray-700" + " text-sm p-2 rounded-t-md flex items-center")}>
-                                
-                 <button 
-                  className="flex items-center gap-2"
-                  onClick={() => setIsShipperInfoOpen(!isShipperInfoOpen)}
-                >
-                  <LogOut className="h-4 w-4 mr-2 text-gray-500" />
-                  <div className="text-md">상,하차지 정보</div>
-                </button>
-                
-              </div> */}
-
-              <CardHeader className="p-3">
-                  
-                <CardTitle>
-
-                  <div className="flex items-center justify-between w-full">
-                    <button 
-                      className="flex items-center gap-2"
-                      onClick={() => setIsShipperInfoOpen(!isShipperInfoOpen)}
-                    >
-                      <MapPin className="h-4 w-4" />
-                      상/하차 정보                      
-                    </button>
-                    <div className="flex items-center gap-2">
-                      
-                      {isShipperInfoOpen ? (
-                        <ChevronUp className="h-4 w-4 text-muted-foreground" onClick={() => setIsShipperInfoOpen(false)} />
-                      ) : (
-                        <ChevronDown className="h-4 w-4 text-muted-foreground" onClick={() => setIsShipperInfoOpen(true)} />
-                      )}
-                    </div>
-                  </div>
-                
-                  
-                
-                </CardTitle>
-              </CardHeader>
-              
-              <div className=" px-3 py-2 space-y-4 border-b border-gray-200 ">
-                
-                <div className="flex items-center justify-between  ">
-                  {/* 상차지 정보 */}
-                  <div className="grid grid-cols-3 flex items-center gap-5">                    
-
-                    {/* <ArrowUp className="h-8 w-8 text-green-500" /> */}
-                    <div>
-                      <div className="font-medium text-gray-700 line-clamp-1 ml-0">{format(departure.date, "MM.dd(E)", { locale: ko })}</div>
-                      <div className="text-sm text-muted-foreground truncate">({departure.time})</div>                
-                    </div>
-                    <div className="col-span-2 items-left">
-                      <div className="font-medium line-clamp-1 ml-0"> {departure.company}</div>
-                      <div className="text-sm text-muted-foreground truncate">({departure.address})</div>    
-                      <div className="text-sm text-muted-foreground truncate">{departure.name}/{departure.contact}</div>             
-                    </div>
-                    
-                  </div>
-                 
-                </div>
-              </div>
-
-              <div className=" px-3 py-2 space-y-4 border-b border-gray-200 ">
-                
-                <div className="flex items-center justify-between  ">
-                  {/* 상차지 정보 */}
-                  <div className="grid grid-cols-3 flex items-center gap-5">                    
-
-                    {/* <ArrowUp className="h-8 w-8 text-green-500" /> */}
-                    <div>
-                      <div className="font-medium text-gray-700 line-clamp-1 ml-0">{format(destination.date, "MM.dd(E)", { locale: ko })}</div>
-                      <div className="text-sm text-muted-foreground truncate">({destination.time})</div>                
-                    </div>
-                    <div className="col-span-2 items-left">
-                      <div className="font-medium line-clamp-1 ml-0"> {destination.company}</div>
-                      <div className="text-sm text-muted-foreground truncate">({destination.address})</div>    
-                      <div className="text-sm text-muted-foreground truncate">{destination.name}/{destination.contact}</div>             
-                    </div>
-                    
-                  </div>
-                 
-                </div>
-              </div>
-            
-              {/* 하단 정보: 차량 및 차주 */}
-              <div className="flex items-center justify-between px-4  pt-2 pb-2">
-                <div className="text-sm font-medium px-2 py-1 rounded-md text-foreground flex items-center">
-                  <Truck className="h-4 w-4 mr-1" />
-                  <span className="text-lg font-medium">{cargo.weight}/{cargo.vehicleType}</span>
-                </div>
-
-                {/* 차주명/연락처 */}                
-                <Button variant="outline" size="sm" className="text-xs px-3 py-1 border-dashed">
-                  <Link2Off className="h-4 w-4 mr-1" />
-                  배차전
-                </Button>
-              </div>
-
-            </div>
-
       {/* 상/하차지 정보*/}
-      <div>      
-        <div className="space-y-3">
-          {/* 상차지 정보 */}
-          <div className="flex items-center gap-2 text-primary">
-            <MapPin className="h-4 w-4" />
-            <h4 className="font-medium">상/하차 정보</h4>
-          </div>
+      <div className="h-full bg-white  rounded-md ">               
+        <CardHeader className="p-3">                  
+          <CardTitle>
+
+            <div className="flex items-center justify-between w-full">
+              <button 
+                className="flex items-center gap-2"
+                onClick={() => setIsLocationInfoOpen(!isLocationInfoOpen)}
+              >
+                <MapPin className="h-4 w-4 mr-2 text-gray-500"/>
+                상/하차 정보                      
+              </button>
+              <div className="flex items-center gap-2">
+                
+                {isLocationInfoOpen ? (
+                  <ChevronUp className="h-4 w-4 text-muted-foreground" onClick={() => setIsLocationInfoOpen(false)} />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" onClick={() => setIsLocationInfoOpen(true)} />
+                )}
+              </div>
+            </div>
+
+          </CardTitle>
+        </CardHeader>
+        
+        <div className=" px-3 py-2 space-y-4 ">
           
-          <div className="grid grid-cols-3 gap-2 text-sm">
-            <div className="text-muted-foreground">상차 주소</div>
-            <div className="col-span-2 font-bold">{departure.address}</div>
+          <div className="flex items-center justify-between  ">
+            {/* 상차지 정보 */}
+            <div className="grid grid-cols-12 flex items-center gap-5">                   
 
-            <div className="text-muted-foreground">하차 주소</div>
-            <div className="col-span-2 font-bold">{destination.address}</div>
-
-            <div className="text-muted-foreground">상차 일시</div>
-            <div className="col-span-2 font-medium">{departureDateTime}</div>
-
-            <div className="text-muted-foreground">하차 일시</div>
-            <div className="col-span-2 font-medium">{destinationDateTime}</div>
+              <ArrowUp className="col-span-1 h-8 w-8 text-green-500" />
+              <div className="col-span-3">                      
+                <div className="font-medium text-gray-700 line-clamp-1 ml-0">{format(departure.date, "MM.dd(E)", { locale: ko })}</div>
+                <div className="text-sm text-muted-foreground truncate">({departure.time})</div>                
+              </div>
+              <div className="col-span-8 items-left">
+                <div className="font-medium line-clamp-1 ml-0"> {departure.company}</div>
+                <div className="text-sm text-gray-800 truncate">({departure.address})</div>   
+                {isLocationInfoOpen && ( 
+                <div className="text-sm text-muted-foreground truncate">{departure.name}/{departure.contact}
+                {departure.contact && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-6 px-2 text-xs ml-2"
+                    onClick={() => handleSendMessage(departure.name, departure.contact || '', '상차')}
+                  >
+                    <MessageSquare className="h-2 w-2 mr-1" />                          
+                  </Button>
+                )}
+                </div>    
+                          
+                )}
+                
+              </div>
+              
+            </div>
             
-            {departure.name && (
-              <>
-                <div className="text-muted-foreground">상차 담당</div>
-                <div className="col-span-2 font-medium flex items-center gap-2">
-                  <span>
-                    {departure.name}
-                    {departure.contact && ` / ${departure.contact}`}
-                  </span>
-                  {departure.contact && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-6 px-2 text-xs"
-                      onClick={() => handleSendMessage(departure.name, departure.contact || '', '상차')}
-                    >
-                      <MessageSquare className="h-3 w-3 mr-1" />
-                      문자
-                    </Button>
-                  )}
-                </div>
-              </>
-            )}
+          </div>
+        </div>
+
+        <div className=" px-3 py-2 space-y-4">
+          
+          <div className="flex items-center justify-between  ">
+            {/* 하차지 정보 */}
+            <div className="grid grid-cols-12 flex items-center gap-5">                   
+
+              <ArrowDown className="col-span-1 h-8 w-8 text-blue-500" />
+              <div className="col-span-3">                      
+                <div className="font-medium text-gray-700 line-clamp-1 ml-0">{format(destination.date, "MM.dd(E)", { locale: ko })}</div>
+                <div className="text-sm text-muted-foreground truncate">({destination.time})</div>                
+              </div>
+              <div className="col-span-8 items-left">
+                <div className="font-medium line-clamp-1 ml-0"> {destination.company}</div>
+                <div className="text-sm text-gray-800 truncate">({destination.address})</div>    
+                {isLocationInfoOpen && ( 
+                <div className="text-sm text-muted-foreground truncate">{destination.name}/{destination.contact}
+                {destination.contact && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-6 px-2 text-xs ml-2"
+                    onClick={() => handleSendMessage(destination.name, destination.contact || '', '하차')}
+                  >
+                    <MessageSquare className="h-2 w-2 mr-1" />                          
+                  </Button>
+                )}
+                </div>             
+                )}
+              </div>
+              
+            </div>
             
-            {destination.name && (
-              <>
-                <div className="text-muted-foreground">하차 담당</div>
-                <div className="col-span-2 font-medium flex items-center gap-2">
-                  <span>
-                    {destination.name}
-                    {destination.contact && ` / ${destination.contact}`}
-                  </span>
-                  {destination.contact && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-6 px-2 text-xs"
-                      onClick={() => handleSendMessage(destination.name, destination.contact || '', '하차')}
-                    >
-                      <MessageSquare className="h-3 w-3 mr-1" />
-                      문자
-                    </Button>
-                  )}
-                </div>
-              </>
-            )}
           </div>
         </div>
       </div>
@@ -430,13 +314,33 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
       <Separator className="my-4" />
 
       {/* 화물 정보 */}
-      <div>
-        <div className="flex items-center gap-2">
-          <Package className="h-4 w-4 text-primary" />
-          <h4 className="font-medium">화물 상세</h4>
-        </div>
+      <div>        
+
+        <CardHeader className="p-3">                  
+          <CardTitle>
+
+            <div className="flex items-center justify-between w-full">
+              <button 
+                className="flex items-center gap-2"
+                onClick={() => setIsCargoInfoOpen(!isCargoInfoOpen)}
+              >
+                <Package className="h-4 w-4 mr-2 text-gray-500"/>
+                화물 상세                    
+              </button>
+              <div className="flex items-center gap-2">
+                
+                {isCargoInfoOpen ? (
+                  <ChevronUp className="h-4 w-4 text-muted-foreground" onClick={() => setIsCargoInfoOpen(false)} />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" onClick={() => setIsCargoInfoOpen(true)} />
+                )}
+              </div>
+            </div>
+
+          </CardTitle>
+        </CardHeader>
         
-        <div className="grid grid-cols-3 gap-2 text-sm py-2">
+        <div className="grid grid-cols-3 gap-2 text-sm p-3">
           <div className="text-muted-foreground">운송 옵션</div>
           <div className="col-span-2 font-medium">
             <div className="flex flex-wrap items-center gap-2">
@@ -458,10 +362,10 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
             </div>
           </div>
 
-          <div className="text-muted-foreground">화물 종류</div>
+          <div className="text-muted-foreground">화물 품목</div>
           <div className="col-span-2 font-medium">{cargo.type}</div>
           
-          {cargo.remark && (
+          {isCargoInfoOpen && cargo.remark && (
             <>
               <div className="text-muted-foreground">비고</div>
               <div className="col-span-2 font-medium text-xs">
