@@ -109,12 +109,12 @@ export function BrokerOrderTimeline({
 
           <div className="flex items-center gap-2">
                 
-                {isTimelineOpen ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" onClick={() => setIsTimelineOpen(false)} />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" onClick={() => setIsTimelineOpen(true)} />
-                )}
-              </div>
+            {isTimelineOpen ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" onClick={() => setIsTimelineOpen(false)} />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" onClick={() => setIsTimelineOpen(true)} />
+            )}
+          </div>
         </div>
 
         {/* 타임라인 프로그레스 바 */}

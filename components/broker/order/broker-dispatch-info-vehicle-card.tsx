@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Phone, MessageSquare, Fuel, Eye, Pencil } from "lucide-react";
+import { Phone, MessageSquare, Fuel, Eye, Pencil, ChevronUp, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 
@@ -33,7 +33,7 @@ export function VehicleCard({
 }: IVehicleCardProps) {
   const [editMode, setEditMode] = useState(false);
 
-  
+  const [isDriverInfoOpen, setIsDriverInfoOpen] = useState(true);
 
   const handleMessage = () => {
     if (onMessage) {
@@ -115,15 +115,21 @@ export function VehicleCard({
       )} */}
       <Separator className="my-3" />
       
-      {/* 운전자 정보 */}
-      
+      {/* 운전자 정보 */}      
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
         <div className="flex-shrink-0 w-7 h-7 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
             <div className="text-xl">👤</div>
           </div>
           <div>
-            <p className="text-sm font-medium">{driverInfo.name}</p>            
+            <p className="text-sm font-medium">
+              {driverInfo.name}
+              {isDriverInfoOpen ? (
+                <ChevronUp className="h-4 w-4 text-muted-foreground" onClick={() => setIsDriverInfoOpen(false)} />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-muted-foreground" onClick={() => setIsDriverInfoOpen(true)} />
+              )}
+            </p>            
           </div>
         </div>
         
