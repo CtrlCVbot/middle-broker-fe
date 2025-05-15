@@ -63,7 +63,7 @@ export function CompanyCard({
   ];
 
   return (
-    <div className="bg-white rounded-lg border border-gray-100 p-4 mb-4 shadow-sm">
+    <div className="bg-white px-4 py-4 rounded-t-lg ">
 
       {/* 오더 정보 */}
       <div className="flex items-center justify-between mb-3 border-b border-gray-200 pb-3">
@@ -74,9 +74,6 @@ export function CompanyCard({
           </div>
         </div>
 
-        
-        
-        {/* 통화 및 메시지 버튼 */}
         <div className="flex gap-2">
           <Button 
             variant="outline" 
@@ -84,7 +81,7 @@ export function CompanyCard({
             className="h-6" 
             onClick={handleCall}
           >
-            <Copy className="h-2 w-2 mr-1" />
+            <Copy className="h-2 w-2" />
           </Button>          
         </div>
       </div>
@@ -97,7 +94,7 @@ export function CompanyCard({
           </div>
           <div>
             <p className="text-base font-semibold">{companyInfo.name}</p>            
-            <p className="text-sm text-gray-500">#{companyInfo.id}</p>
+            <p className="text-xs text-gray-500">요청 업체</p>
           </div>
         </div>
         

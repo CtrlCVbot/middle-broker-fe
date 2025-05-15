@@ -427,7 +427,7 @@ export function BrokerOrderDetailSheet() {
             
             {/* 메인 컨텐츠 - 그리드 레이아웃 */}
             <div className="flex-grow overflow-auto">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50">
                 {/* 화물 정보 카드 */} 
                 <div>
                   {editMode === "cargo" ? (

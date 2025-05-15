@@ -32,6 +32,8 @@ import { getSchedule, getStatusColor } from "@/components/order/order-table-ver0
 import { format, isValid, parseISO } from "date-fns";
 import { BrokerOrderStatusCard } from "./broker-order-info-status-card";
 import { CompanyCard } from "./broker-order-info-company-card";
+import { CargoCard } from "./broker-order-info-cargo-card";
+import { BrokerOrderTimeline } from "./broker-order-timeline";
 
 // 업체 주의사항 인터페이스
 interface CompanyWarning {
@@ -124,6 +126,14 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper, st
     });
   };
 
+  // 타임라인 새로고침 함수
+  const handleRefreshTimeline = () => {
+    toast({
+      title: "타임라인 새로고침",
+      description: "배송 상태 정보가 업데이트되었습니다.",
+    });
+  };
+
   // 목업 데이터 - 화주 주의사항
   const companyWarnings = shipper.warnings || [
     { id: '1', date: '2023-05-15', content: '결제 지연 이력 있음', severity: 'medium' },
@@ -170,228 +180,105 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper, st
     avatar: "/images/driver-placeholder.png"
   };
 
+  const cargoInfo = {
+    name: cargo.type,
+    vehicleType: cargo.vehicleType || "",
+    weight: cargo.weight || "",
+    options: cargo.options || [],
+    remark: cargo.remark || "",
+    paymentMethod: cargo.paymentMethod || "인수증"
+  };
+
+  const scheduleInfo = {
+    from: {
+      fromDate : departure.date, 
+      fromTime : departure.time
+    },
+    to: {
+      toDate : destination.date,
+      toTime : destination.time
+    }
+  };
+  console.log("scheduleInfo", scheduleInfo);
+
+  // 타임라인 데이터
+  const timelineEvents = [
+    {
+      date: "Nov 19, 2024",
+      time: "09:15",
+      status: "in_delivery",
+      location: "6841 Oak Avenue, Springfield",
+      isActive: true
+    },
+    {
+      date: "Nov 18, 2024",
+      time: "10:21",
+      status: "arrived",
+      location: "1352 Elm Street, Springfield",
+      isActive: false
+    },
+    {
+      date: "Nov 17, 2024",
+      time: "17:04",
+      status: "in_transit",
+      location: "6813 Oakmont Avenue, Springfield",
+      isActive: false
+    },
+    {
+      date: "Nov 17, 2024",
+      time: "12:18",
+      status: "confirmed",
+      location: "8429 Maple Lane, Springfield",
+      isActive: false
+    }
+  ];
+
   return (
     <div className="space-y-4">
 
-      
-
-      {/* 회사 정보 카드 추가 */}
-      <CompanyCard 
-        orderId={orderId}
-        companyInfo={companyInfo}
-        managerInfo={managerInfo}
-        onCall={handleCallDriver}
-        onMessage={handleMessageDriver}
-      />
-      
-
-      {/* 배송 상태 카드 추가 */}
-      <BrokerOrderStatusCard 
-          status={status}
-          from={fromAddressData}
-          to={toAddressData}
-        />
-
-
-      {/* 화주 정보 */}      
-      <div>
-        <CardHeader className="p-3">            
-          <CardTitle>
-
-            <div className="flex items-center justify-between w-full">
-              <button 
-                className="flex items-center gap-2"
-                onClick={() => setIsShipperInfoOpen(!isShipperInfoOpen)}
-              >
-                <Warehouse className="h-4 w-4 mr-2 text-gray-500" />
-                {shipper.name}
-              </button>
-              <div className="flex items-center gap-2">
-                {/* 주의사항 버튼 */}
-                <Button
-                  variant="outline" 
-                  size="sm"
-                  className="h-7 px-2 text-xs"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsWarningsVisible(!isWarningsVisible);
-                    if (!isShipperInfoOpen) {
-                      setIsShipperInfoOpen(true);
-                    }
-                  }}
-                >
-                  <AlertTriangle className="mr-1 h-3.5 w-3.5 text-amber-500" />
-                  주의사항 {isWarningsVisible ? '접기' : '보기'}
-                </Button>
-                {isShipperInfoOpen ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" onClick={() => setIsShipperInfoOpen(false)} />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" onClick={() => setIsShipperInfoOpen(true)} />
-                )}
-              </div>
-            </div>
-          
-          </CardTitle>
-        </CardHeader>
-
-        {isShipperInfoOpen && (
-        <div> 
-        {/* <Separator className="" />  */}
-        <CardContent className="p-3">     
-
-          {/* 기본 화주 정보 */}
-            <div className="grid grid-cols-3 gap-2 text-sm">              
-              <div className="text-muted-foreground">담당자</div>
-              <div className="col-span-2 font-medium">{shipper.manager} / {shipper.contact}</div>
-              <div className="text-muted-foreground">이메일</div>
-              <div className="col-span-2 font-medium">{shipper.email}</div>
-            </div>       
-
-          
-          {/* 주의사항 섹션 - 확장 시 표시 */}
-          {isWarningsVisible && (
-            <>
-              <Separator className="my-3" />
-              <div className="mt-3 space-y-2 bg-muted/10 rounded-md">
-                <h5 className="text-sm font-medium flex items-center gap-1">
-                  <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-                  업체 주의사항
-                </h5>
-                
-                {companyWarnings.length > 0 ? (
-                  <ul className="space-y-2">
-                    {companyWarnings.map((warning) => (
-                      <li key={warning.id} className="flex items-start gap-2 text-sm">
-                        <Badge 
-                          variant="outline" 
-                          className={`
-                            ${warning.severity === 'high' ? 'bg-red-50 text-red-700' : 
-                              warning.severity === 'medium' ? 'bg-amber-50 text-amber-700' : 
-                              'bg-blue-50 text-blue-700'}
-                          `}
-                        >
-                          {warning.date}
-                        </Badge>
-                        <span>{warning.content}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-muted-foreground">주의사항이 없습니다.</p>
-                )}
-              </div>
-            </>
-            )}
-        </CardContent>
-        </div>
-        )}
-      </div>  
-
-      {/* 상/하차지 정보*/}
-      <div className="h-full bg-white  rounded-md ">               
-        <CardHeader className="p-3">                  
-          <CardTitle>
-
-            <div className="flex items-center justify-between w-full">
-              <button 
-                className="flex items-center gap-2"
-                onClick={() => setIsLocationInfoOpen(!isLocationInfoOpen)}
-              >
-                <MapPin className="h-4 w-4 mr-2 text-gray-500"/>
-                상/하차 정보                      
-              </button>
-              <div className="flex items-center gap-2">
-                
-                {isLocationInfoOpen ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" onClick={() => setIsLocationInfoOpen(false)} />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" onClick={() => setIsLocationInfoOpen(true)} />
-                )}
-              </div>
-            </div>
-
-          </CardTitle>
-        </CardHeader>        
-        
-        {/* 상차지 정보 */}
-        <div className=" px-3 py-2 space-y-4 ">          
-          <div className="flex items-center justify-between  ">
-            
-            <div className="grid grid-cols-12 flex items-center gap-5">                   
-
-              <ArrowUp className="col-span-1 h-8 w-8 text-green-500" />
-              <div className="col-span-3">                      
-                <div className="font-medium text-gray-700 line-clamp-1 ml-0">{format(departure.date, "MM.dd(E)", { locale: ko })}</div>
-                <div className="text-sm text-muted-foreground truncate">({departure.time})</div>                
-              </div>
-              <div className="col-span-8 items-left">
-                <div className="font-medium line-clamp-1 ml-0"> {departure.company}</div>
-                <div className="text-sm text-gray-800 truncate">({departure.address})</div>   
-                {isLocationInfoOpen && ( 
-                <div className="text-sm text-muted-foreground truncate">{departure.name}/{departure.contact}
-                {departure.contact && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-6 px-2 text-xs ml-2"
-                    onClick={() => handleSendMessage(departure.name, departure.contact || '', '상차')}
-                  >
-                    <MessageSquare className="h-2 w-2 mr-1" />                          
-                  </Button>
-                )}
-                </div>    
-                          
-                )}
-                
-              </div>
-              
-            </div>            
-          </div>
+      <div className="bg-muted/50 rounded-lg border border-gray-100 shadow-sm">
+        {/* 회사 정보 카드 추가 */}
+        <div className="mb-2 rounded-t-lg">
+          <CompanyCard 
+            orderId={orderId}
+            companyInfo={companyInfo}
+            managerInfo={managerInfo}
+            onCall={handleCallDriver}
+            onMessage={handleMessageDriver}
+          />
         </div>
 
-        {/* 하차지 정보 */}
-        <div className=" px-3 py-2 space-y-4">          
-          <div className="flex items-center justify-between  ">
-            
-            <div className="grid grid-cols-12 flex items-center gap-5">                   
-
-              <ArrowDown className="col-span-1 h-8 w-8 text-blue-500" />
-              <div className="col-span-3">                      
-                <div className="font-medium text-gray-700 line-clamp-1 ml-0">{format(destination.date, "MM.dd(E)", { locale: ko })}</div>
-                <div className="text-sm text-muted-foreground truncate">({destination.time})</div>                
-              </div>
-              <div className="col-span-8 items-left">
-                <div className="font-medium line-clamp-1 ml-0"> {destination.company}</div>
-                <div className="text-sm text-gray-800 truncate">({destination.address})</div>    
-                {isLocationInfoOpen && ( 
-                <div className="text-sm text-muted-foreground truncate">{destination.name}/{destination.contact}
-                {destination.contact && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-6 px-2 text-xs ml-2"
-                    onClick={() => handleSendMessage(destination.name, destination.contact || '', '하차')}
-                  >
-                    <MessageSquare className="h-2 w-2 mr-1" />                          
-                  </Button>
-                )}
-                </div>             
-                )}
-              </div>
-              
-            </div>
-            
-          </div>
+        {/* 화물 정보 */}
+        <div className="rounded-b-lg">
+          <CargoCard
+            orderId={orderId}
+            cargoInfo={cargoInfo}          
+          />
+        </div>
+      </div>
+     
+      <div className="bg-muted/50 rounded-lg border border-gray-100 shadow-sm">
+        {/* 배송 상태 카드 추가 */}
+        <div className="mb-2 rounded-t-lg">
+          <BrokerOrderStatusCard 
+            status={status}
+            from={fromAddressData}
+            to={toAddressData}
+          />
         </div>
 
+        {/* 타임라인 추가 */}
+        <div className="rounded-b-lg">
+          <BrokerOrderTimeline 
+            scheduleInfo={scheduleInfo}
+            events={timelineEvents}
+            totalTime="14 hr 20 min"
+            onRefresh={handleRefreshTimeline}
+          />
+        </div>
       </div>
 
-      {/* 분리선 */}
-      <Separator className="my-4" />
-
-      {/* 화물 정보 */}
       <div>        
-
         <CardHeader className="p-3">                  
           <CardTitle>
 
