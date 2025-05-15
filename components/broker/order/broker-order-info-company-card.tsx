@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Phone, MessageSquare, Fuel, AlertTriangle, MessageSquareOff } from "lucide-react";
+import { Phone, MessageSquare, Fuel, AlertTriangle, MessageSquareOff, Copy } from "lucide-react";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 
@@ -15,6 +15,7 @@ interface ICompanyWarning {
 }
 
 interface ICompanyCardProps {
+  orderId: string;
   companyInfo: {
     name: string;
     year: string;
@@ -35,6 +36,7 @@ interface ICompanyCardProps {
 }
 
 export function CompanyCard({ 
+  orderId,
   companyInfo, 
   managerInfo, 
   onCall, 
@@ -63,8 +65,32 @@ export function CompanyCard({
   return (
     <div className="bg-white rounded-lg border border-gray-100 p-4 mb-4 shadow-sm">
 
+      {/* 오더 정보 */}
+      <div className="flex items-center justify-between mb-3 border-b border-gray-200 pb-3">
+        <div className="flex items-center gap-3">          
+          <div>
+            <p className="text-xs text-gray-900 truncate">화물 번호:</p>
+            <p className="text-sm font-medium truncate">#{orderId}</p>                        
+          </div>
+        </div>
+
+        
+        
+        {/* 통화 및 메시지 버튼 */}
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="h-6" 
+            onClick={handleCall}
+          >
+            <Copy className="h-2 w-2 mr-1" />
+          </Button>          
+        </div>
+      </div>
+
       {/* 업체 정보 */}      
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
             <div className="text-xl">🏢</div>
@@ -91,7 +117,6 @@ export function CompanyCard({
           </Button>
         </div>
       </div>
-
       
       {/* 주의사항 섹션 - 확장 시 표시 */}
       {isWarningsVisible && (
@@ -127,14 +152,12 @@ export function CompanyCard({
           </div>
         </>
       )}
-            
-      <Separator className="my-3" />
       
       {/* 담당자 정보 */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between rounded-md border-2 border-gray-100 p-1 px-2">
         <div className="flex items-center gap-3">
-          <div className="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
-            <div className="text-xl">👤</div>
+          <div className="flex-shrink-0 w-7 h-7 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
+            <div className="text-lg">👤</div>
           </div>
           <div>
             <p className="text-sm font-medium">{managerInfo.name}</p>            

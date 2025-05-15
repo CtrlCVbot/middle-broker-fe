@@ -88,9 +88,10 @@ interface BrokerOrderInfoCardProps {
   cargo: CargoInfo;
   shipper: ShipperInfo;
   status: string;
+  orderId: string;
 }
 
-export function BrokerOrderInfoCard({ departure, destination, cargo, shipper, status }: BrokerOrderInfoCardProps) {
+export function BrokerOrderInfoCard({ departure, destination, cargo, shipper, status, orderId }: BrokerOrderInfoCardProps) {
   const [isShipperInfoOpen, setIsShipperInfoOpen] = useState(true);
   const [isWarningsVisible, setIsWarningsVisible] = useState(false);
   const [isLocationInfoOpen, setIsLocationInfoOpen] = useState(true);
@@ -176,6 +177,7 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper, st
 
       {/* 회사 정보 카드 추가 */}
       <CompanyCard 
+        orderId={orderId}
         companyInfo={companyInfo}
         managerInfo={managerInfo}
         onCall={handleCallDriver}

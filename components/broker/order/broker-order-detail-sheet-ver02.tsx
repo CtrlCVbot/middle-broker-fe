@@ -428,160 +428,79 @@ export function BrokerOrderDetailSheet() {
             {/* 메인 컨텐츠 - 그리드 레이아웃 */}
             <div className="flex-grow overflow-auto">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-                {/* 화물 정보 카드 */}
-                {/* <Card className={cn(
-                  "overflow-hidden", 
-                  "md:block", 
-                  "border-none",
-                  activeTab !== "cargo" && "hidden"
-                )}> */}
-                <div className="h-full bg-white shadow-md rounded-md hover:ring-2 hover:ring-primary/20 transition-all duration-150">
-                  <div className={cn("bg-orange-100 text-orange-700" + " text-sm p-2 rounded-t-md flex items-center","flex flex-row items-center justify-between py-3 px-4 border-b")}>
-                    <div className="flex items-center gap-2">
-                      <Package className="h-4 w-4 text-primary" />
-                      <CardTitle className="text-base font-medium">
-                        화물 정보
-                      </CardTitle>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {/* 화주 문자 발송 */}
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button 
-                              variant="outline" 
-                              size="icon" 
-                              onClick={handleSendCompleteMessage}
-                              className="h-7 w-7"
-                            >
-                              <MailCheck className="h-3.5 w-3.5" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>완료 문자 발송</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button 
-                              variant="outline" 
-                              size="icon" 
-                              onClick={handleSendCancelMessage}
-                              className="h-7 w-7"
-                            >
-                              <MailX className="h-3.5 w-3.5" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>취소 문자 발송</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      
-                      {/* 편집 모드 전환 버튼 */}
-                      {editMode === "cargo" ? (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={handleCancelEdit}
-                          className="h-7 px-2"
-                        >
-                          <Eye className="h-3.5 w-3.5 mr-1" />
-                          보기
-                        </Button>
-                      ) : (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleSetEditMode("cargo")}
-                          className="h-7 px-2"
-                        >
-                          <Pencil className="h-3.5 w-3.5 mr-1" />
-                          편집
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <CardContent className="p-0">
-                    <div className="p-4">
-                      {editMode === "cargo" ? (
-                        <BrokerOrderInfoEditForm
-                          initialData={{
-                            cargo: {
-                              type: orderData.cargo.type || "",
-                              weight: orderData.cargo.weight || "",
-                              options: orderData.cargo.options || [],
-                              remark: orderData.cargo.remark || "",
-                              vehicleType: orderData.vehicle?.type || ""
-                            },
-                            departure: {
-                              address: orderData.departure.address || "",
-                              date: orderData.departure.date || "",
-                              time: orderData.departure.time || "",
-                              name: orderData.departure.name || "",
-                              company: orderData.departure.company || "",
-                              contact: orderData.departure.contact || "",
-                            },
-                            destination: {
-                              address: orderData.destination.address || "",
-                              date: orderData.destination.date || "",
-                              time: orderData.destination.time || "",
-                              name: orderData.destination.name || "",
-                              company: orderData.destination.company || "",
-                              contact: orderData.destination.contact || "",
-                            },
-                            shipper: {
-                              name: orderData.departure.company || "",
-                              manager: orderData.departure.name || "",
-                              contact: orderData.departure.contact || "",
-                              email: "info@" + (orderData.departure.company || "example.com").toLowerCase().replace(/\s+/g, "") + ".com",
-                            },
-                          }}
-                          onSave={handleSaveCargoInfo}
-                          onCancel={handleCancelEdit}
-                        />
-                      ) : (
-                        <BrokerOrderInfoCardVer02
-                          status={orderData.status}
-                          departure={{
-                            address: orderData.departure.address,
-                            name: orderData.departure.name,
-                            company: orderData.departure.company,
-                            contact: orderData.departure.contact,
-                            time: orderData.departure.time,
-                            date: orderData.departure.date
-                          }}
-                          destination={{
-                            address: orderData.destination.address,
-                            name: orderData.destination.name,
-                            company: orderData.destination.company,
-                            contact: orderData.destination.contact,
-                            time: orderData.destination.time,
-                            date: orderData.destination.date
-                          }}
-                          cargo={{
-                            ...orderData.cargo,
-                            vehicleType: orderData.vehicle?.type
-                          }}
-                          shipper={{
-                            name: orderData.departure.company,
-                            contact: orderData.departure.contact,
-                            manager: orderData.departure.name,
-                            email: "info@" + orderData.departure.company.toLowerCase().replace(/\s+/g, "") + ".com"
-                          }}
-                        />
-                      )}
-                    </div>
-                  </CardContent>
-                  
-                {/* </Card> */}
+                {/* 화물 정보 카드 */} 
+                <div>
+                  {editMode === "cargo" ? (
+                    <BrokerOrderInfoEditForm
+                      initialData={{
+                        cargo: {
+                          type: orderData.cargo.type || "",
+                          weight: orderData.cargo.weight || "",
+                          options: orderData.cargo.options || [],
+                          remark: orderData.cargo.remark || "",
+                          vehicleType: orderData.vehicle?.type || ""
+                        },
+                        departure: {
+                          address: orderData.departure.address || "",
+                          date: orderData.departure.date || "",
+                          time: orderData.departure.time || "",
+                          name: orderData.departure.name || "",
+                          company: orderData.departure.company || "",
+                          contact: orderData.departure.contact || "",
+                        },
+                        destination: {
+                          address: orderData.destination.address || "",
+                          date: orderData.destination.date || "",
+                          time: orderData.destination.time || "",
+                          name: orderData.destination.name || "",
+                          company: orderData.destination.company || "",
+                          contact: orderData.destination.contact || "",
+                        },
+                        shipper: {
+                          name: orderData.departure.company || "",
+                          manager: orderData.departure.name || "",
+                          contact: orderData.departure.contact || "",
+                          email: "info@" + (orderData.departure.company || "example.com").toLowerCase().replace(/\s+/g, "") + ".com",
+                        },
+                      }}
+                      onSave={handleSaveCargoInfo}
+                      onCancel={handleCancelEdit}
+                    />
+                  ) : (
+                    <BrokerOrderInfoCardVer02
+                      orderId={orderData.orderNumber}
+                      status={orderData.status}
+                      departure={{
+                        address: orderData.departure.address,
+                        name: orderData.departure.name,
+                        company: orderData.departure.company,
+                        contact: orderData.departure.contact,
+                        time: orderData.departure.time,
+                        date: orderData.departure.date
+                      }}
+                      destination={{
+                        address: orderData.destination.address,
+                        name: orderData.destination.name,
+                        company: orderData.destination.company,
+                        contact: orderData.destination.contact,
+                        time: orderData.destination.time,
+                        date: orderData.destination.date
+                      }}
+                      cargo={{
+                        ...orderData.cargo,
+                        vehicleType: orderData.vehicle?.type
+                      }}
+                      shipper={{
+                        name: orderData.departure.company,
+                        contact: orderData.departure.contact,
+                        manager: orderData.departure.name,
+                        email: "info@" + orderData.departure.company.toLowerCase().replace(/\s+/g, "") + ".com"
+                      }}
+                    />
+                  )}
                 </div>
                 
-                {/* 차량 및 기사 정보 카드 */}
+                {/* 배차 정보 카드 */}
                 <Card className={cn(
                   "overflow-hidden", 
                   "md:block", 
