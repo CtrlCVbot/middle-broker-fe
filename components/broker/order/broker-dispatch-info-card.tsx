@@ -106,10 +106,10 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
             </div>
             
             <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-2 text-sm">
+              {/* <div className="grid grid-cols-3 gap-2 text-sm">
                 <div className="text-muted-foreground">예상 배차 금액</div>
                 <div className="col-span-2 font-medium">{formatCurrency(amountNumber)}원</div>
-              </div>
+              </div> */}
               
               <Button 
                 className="w-full" 

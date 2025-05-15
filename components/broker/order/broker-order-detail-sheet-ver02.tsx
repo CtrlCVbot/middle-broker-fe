@@ -54,7 +54,7 @@ import { BrokerOrderDriverInfoEditForm } from "./broker-order-driver-info-edit-f
 // 운임/정산 정보 카드
 import { BrokerOrderSettlementInfoCard } from "./broker-order-settlement-info-card";
 import { BrokerOrderSettlementInfoEditForm } from "./broker-order-settlement-info-edit-form";
-import { FinanceSummaryCard } from "./finance-summary-card";
+import { FinanceSummaryCard } from "./broker-dispatch-info-cost-card";
 
 import { toast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -492,19 +492,19 @@ export function BrokerOrderDetailSheet() {
                           onCancel={handleCancelEdit}
                         />
                       ) : isAssigned ? (
-                        <>
-                          {/* 금융 요약 카드 추가 */}
-                          <div className="mb-4">
-                            <FinanceSummaryCard />
-                          </div>
-                          
+                        <>                                                    
                           <BrokerOrderDriverInfoCardVer01 
                             driver={orderData?.vehicle?.driver || { name: "정보 없음" }}                            
                             vehicle={orderData?.vehicle || { type: "정보 없음" }}
                             status={orderData?.status || "배차대기"}
                             amount={orderData?.amount || "0"}
                             onSendMessage={() => handleSendMessage("기사님")}
-                          />                          
+                          /> 
+
+                          {/* 금융 요약 카드 추가 */}
+                          <div className="mb-4 mt-4">
+                            <FinanceSummaryCard />
+                          </div>                         
                         </>
                       ) : (
                         <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">

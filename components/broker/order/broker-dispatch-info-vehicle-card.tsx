@@ -52,9 +52,9 @@ export function VehicleCard({
   return (
     <div className="bg-white rounded-lg p-4 space-y-4">
       {/* 차량 정보 */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-3">
-          <div className="flex-shrink-0 w-12 h-12 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
+          <div className="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
             <div className="text-2xl">🚚</div>
           </div>
           <div>
@@ -122,7 +122,7 @@ export function VehicleCard({
             <span className="text-sm font-medium">80%</span>
           </div>
         </div>
-      )} */}
+      )} */}a
       <Separator className="my-3" />
       
       {/* 운전자 정보 */}
