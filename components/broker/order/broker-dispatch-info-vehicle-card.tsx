@@ -50,7 +50,7 @@ export function VehicleCard({
   };
 
   return (
-    <div className="bg-white rounded-t-lg p-4 space-y-4">
+    <div className="bg-white rounded-lg p-4 space-y-4">
       {/* 차량 정보 */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
@@ -59,20 +59,20 @@ export function VehicleCard({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-base font-semibold">{vehicleInfo.type}</h3>
+              <h3 className="text-base font-semibold">{vehicleInfo.licensePlate && <span> #{vehicleInfo.licensePlate}</span>}</h3>
               {vehicleInfo.connection && (
                 <Badge variant="outline" className={`${
-                  vehicleInfo.connection === 'connected' 
+                  vehicleInfo.connection === '화물맨' 
                     ? 'bg-green-50 text-green-600 border-green-200' 
                     : 'bg-gray-50 text-gray-600 border-gray-200'
                 } ml-2 px-2 py-0.5 text-xs rounded-full`}>
-                  {vehicleInfo.connection === 'connected' ? '연결됨' : '연결 안됨'}
+                  {vehicleInfo.connection}
                 </Badge>
               )}
             </div>
             <div className="flex gap-2 text-sm text-gray-500">
-              {vehicleInfo.weight && <span>{vehicleInfo.weight}</span>}
-              {vehicleInfo.licensePlate && <span>| {vehicleInfo.licensePlate}</span>}
+              {vehicleInfo.weight && <span>{vehicleInfo.weight} | {vehicleInfo.type}</span>}
+              
             </div>
           </div>
         </div>
@@ -152,7 +152,7 @@ export function VehicleCard({
             onClick={handleCall}
           >
             <Phone className="h-4 w-4 mr-1" />
-            <span className="text-sm">통화</span>
+            <span className="text-xs">{driverInfo.contact}</span>
           </Button>
           <Button 
             variant="default" 

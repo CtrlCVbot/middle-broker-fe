@@ -46,7 +46,7 @@ export function DriverHistory({
   const driverWarnings = warnings.length > 0 ? warnings : defaultWarnings;
 
   return (
-    <div className="bg-white rounded-lg p-4">
+    <div className="bg-white rounded-b-lg">
       <Tabs defaultValue="history" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-2">
           <TabsTrigger value="history" className="flex items-center gap-2">
