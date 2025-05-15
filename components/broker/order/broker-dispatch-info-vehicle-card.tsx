@@ -20,7 +20,7 @@ interface IVehicleCardProps {
     avatar?: string;
   };
   
-  onCall?: (driverName: string) => void;
+  
   onMessage?: (driverName: string) => void;
 }
 
@@ -28,17 +28,12 @@ interface IVehicleCardProps {
 
 export function VehicleCard({ 
   vehicleInfo, 
-  driverInfo, 
-  onCall, 
+  driverInfo,   
   onMessage 
 }: IVehicleCardProps) {
   const [editMode, setEditMode] = useState(false);
 
-  const handleCall = () => {
-    if (onCall) {
-      onCall(driverInfo.name);
-    }
-  };
+  
 
   const handleMessage = () => {
     if (onMessage) {
@@ -47,7 +42,7 @@ export function VehicleCard({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-100 p-4 mb-4 shadow-sm">
+    <div className="bg-white rounded-t-lg p-4">
       {/* 차량 정보 */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
@@ -128,8 +123,7 @@ export function VehicleCard({
             <div className="text-xl">👤</div>
           </div>
           <div>
-            <p className="text-sm font-medium">{driverInfo.name}</p>
-            <p className="text-xs text-gray-500">{driverInfo.role}</p>
+            <p className="text-sm font-medium">{driverInfo.name}</p>            
           </div>
         </div>
         
@@ -138,8 +132,7 @@ export function VehicleCard({
           <Button 
             variant="outline" 
             size="sm" 
-            className="px-3 py-1 h-8" 
-            onClick={handleCall}
+            className="px-3 py-1 h-8"             
           >
             <Phone className="h-4 w-4 mr-1" />
             <span className="text-sm">{driverInfo.contact}</span>
