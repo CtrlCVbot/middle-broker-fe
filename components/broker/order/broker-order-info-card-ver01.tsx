@@ -30,6 +30,8 @@ import { cn, formatCurrency } from "@/lib/utils";
 import { ko } from "date-fns/locale";
 import { getSchedule, getStatusColor } from "@/components/order/order-table-ver01";
 import { format, isValid, parseISO } from "date-fns";
+import { DeliveryStatusCard } from "./broker-order-info-status-card";
+import { CompanyCard } from "./broker-order-info-company-card";
 
 // 업체 주의사항 인터페이스
 interface CompanyWarning {
@@ -105,11 +107,65 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
     });
   };
 
+  // 운전자에게 전화/문자 보내기 함수
+  const handleCallDriver = (driverName: string) => {
+    toast({
+      title: "운전자에게 전화 발신",
+      description: `${driverName} 운전자에게 전화를 발신합니다.`,
+    });
+  };
+
+  const handleMessageDriver = (driverName: string) => {
+    toast({
+      title: "운전자에게 메시지 발송",
+      description: `${driverName} 운전자에게 메시지를 발송합니다.`,
+    });
+  };
+
   // 목업 데이터 - 화주 주의사항
   const companyWarnings = shipper.warnings || [
     { id: '1', date: '2023-05-15', content: '결제 지연 이력 있음', severity: 'medium' },
     { id: '2', date: '2023-06-20', content: '화물 취소 이력', severity: 'low' },
   ];
+
+  // 배송 상태 카드에 전달할 주소 데이터
+  const fromAddressData = {
+    address: departure.address.split(',')[0] || departure.address,
+    name: departure.company,
+    state: departure.address.split(',')[1] || 'IL',
+    zipCode: '62702',
+    country: '대한민국',
+    contactName: departure.name,
+    contactPhone: departure.contact,
+  };
+
+  const toAddressData = {
+    address: destination.address.split(',')[0] || destination.address,
+    name: destination.company,
+    state: destination.address.split(',')[1] || 'MA',
+    zipCode: '01103',
+    country: '대한민국',
+    contactName: destination.name,
+    contactPhone: destination.contact,
+  };
+
+  // 차량 정보 데이터
+  const companyInfo = {
+    name: shipper.name,
+    year: "2018",
+    id: "WOS 70757",
+    isLive: true,
+    fuelLevel: 87
+  };
+
+  // 운전자 정보 데이터
+  const managerInfo = {
+    name: shipper.manager,
+    contact: shipper.contact,
+    email: shipper.email,
+    role: "Carrier",
+    avatar: "/images/driver-placeholder.png"
+  };
 
   return (
     <div className="space-y-4">
@@ -208,8 +264,23 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
         )}
       </div>  
 
+      {/* 차량 정보 카드 추가 */}
+      <CompanyCard 
+        companyInfo={companyInfo}
+        managerInfo={managerInfo}
+        onCall={handleCallDriver}
+        onMessage={handleMessageDriver}
+      />
+
       {/* 분리선 */}
       <Separator className="my-4" />
+
+      {/* 배송 상태 카드 추가 */}
+      <DeliveryStatusCard 
+          status="Ongoing"
+          from={fromAddressData}
+          to={toAddressData}
+        />
 
       {/* 상/하차지 정보*/}
       <div className="h-full bg-white  rounded-md ">               
@@ -236,6 +307,8 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
 
           </CardTitle>
         </CardHeader>
+        
+        
         
         <div className=" px-3 py-2 space-y-4 ">
           
