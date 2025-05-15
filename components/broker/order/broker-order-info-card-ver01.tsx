@@ -30,7 +30,7 @@ import { cn, formatCurrency } from "@/lib/utils";
 import { ko } from "date-fns/locale";
 import { getSchedule, getStatusColor } from "@/components/order/order-table-ver01";
 import { format, isValid, parseISO } from "date-fns";
-import { DeliveryStatusCard } from "./broker-order-info-status-card";
+import { BrokerOrderStatusCard } from "./broker-order-info-status-card";
 import { CompanyCard } from "./broker-order-info-company-card";
 
 // 업체 주의사항 인터페이스
@@ -155,7 +155,8 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
     year: "2018",
     id: "WOS 70757",
     isLive: true,
-    fuelLevel: 87
+    fuelLevel: 87,
+    warnings: companyWarnings
   };
 
   // 운전자 정보 데이터
@@ -169,6 +170,25 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
 
   return (
     <div className="space-y-4">
+
+      
+
+      {/* 회사 정보 카드 추가 */}
+      <CompanyCard 
+        companyInfo={companyInfo}
+        managerInfo={managerInfo}
+        onCall={handleCallDriver}
+        onMessage={handleMessageDriver}
+      />
+      
+
+      {/* 배송 상태 카드 추가 */}
+      <BrokerOrderStatusCard 
+          status="Ongoing"
+          from={fromAddressData}
+          to={toAddressData}
+        />
+
 
       {/* 화주 정보 */}      
       <div>
@@ -263,24 +283,6 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
         </div>
         )}
       </div>  
-
-      {/* 차량 정보 카드 추가 */}
-      <CompanyCard 
-        companyInfo={companyInfo}
-        managerInfo={managerInfo}
-        onCall={handleCallDriver}
-        onMessage={handleMessageDriver}
-      />
-
-      {/* 분리선 */}
-      <Separator className="my-4" />
-
-      {/* 배송 상태 카드 추가 */}
-      <DeliveryStatusCard 
-          status="Ongoing"
-          from={fromAddressData}
-          to={toAddressData}
-        />
 
       {/* 상/하차지 정보*/}
       <div className="h-full bg-white  rounded-md ">               

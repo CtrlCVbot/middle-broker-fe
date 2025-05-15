@@ -1,9 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Phone, MessageSquare, Fuel } from "lucide-react";
+import { Phone, MessageSquare, Fuel, AlertTriangle } from "lucide-react";
 import Image from "next/image";
+import { Separator } from "@/components/ui/separator";
+
+// 업체 주의사항 인터페이스
+interface ICompanyWarning {
+  id: string;
+  date: string;
+  content: string;
+  severity: 'low' | 'medium' | 'high';
+}
 
 interface ICompanyCardProps {
   companyInfo: {
@@ -12,6 +21,7 @@ interface ICompanyCardProps {
     id: string;
     isLive?: boolean;
     fuelLevel?: number;
+    warnings?: ICompanyWarning[];
   };
   managerInfo: {
     name: string;
@@ -30,6 +40,8 @@ export function CompanyCard({
   onCall, 
   onMessage 
 }: ICompanyCardProps) {
+  const [isWarningsVisible, setIsWarningsVisible] = useState(false);
+  
   const handleCall = () => {
     if (onCall) {
       onCall(managerInfo.name);
@@ -42,48 +54,81 @@ export function CompanyCard({
     }
   };
 
+  // 목업 데이터 - 회사 주의사항
+  const companyWarnings = companyInfo.warnings || [
+    { id: '1', date: '2023-05-15', content: '결제 지연 이력 있음', severity: 'medium' },
+    { id: '2', date: '2023-06-20', content: '화물 취소 이력', severity: 'low' },
+  ];
+
   return (
     <div className="bg-white rounded-lg border border-gray-100 p-4 mb-4 shadow-sm">
-      <div className="flex items-center justify-between mb-3">
+
+      {/* 업체 정보 */}      
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex-shrink-0 w-12 h-12 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
-            {/* 차량 이미지 */}
-            <div className="text-2xl">🏢</div>
+          <div className="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
+            <div className="text-xl">🏢</div>
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-semibold">{companyInfo.name}</h3>
-              {companyInfo.isLive && (
-                <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 ml-2 px-2 py-0.5 text-xs rounded-full">
-                  Live
-                </Badge>
-              )}
-              
-            </div>
+            <p className="text-base font-semibold">{companyInfo.name}</p>            
             <p className="text-sm text-gray-500">#{companyInfo.id}</p>
           </div>
         </div>
-      </div>
-      
-      {/* 연료 상태 */}
-      {companyInfo.fuelLevel !== undefined && (
-        <div className="mb-4">
-          <div className="flex items-center mb-1">
-            <Fuel className="h-4 w-4 mr-1 text-orange-500" />
-            <span className="text-sm font-medium">연료</span>
-          </div>
-          <div className="flex items-center">
-            <div className="flex-1 mr-2">
-              <Progress 
-                value={companyInfo.fuelLevel} 
-                className="h-3" 
-                //indicatorClassName="bg-gradient-to-r from-orange-500 to-red-500"
-              />
-            </div>
-            <span className="text-sm font-medium">{companyInfo.fuelLevel}%</span>
-          </div>
+        
+        {/* 주의사항 버튼 */}
+        <div className="flex gap-2">          
+          <Button
+            variant="outline" 
+            size="sm"
+            className="px-3 py-1 h-8"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsWarningsVisible(!isWarningsVisible);
+            }}
+          >
+            <AlertTriangle className="mr-1 h-3.5 w-3.5 text-amber-500" />
+            주의사항 
+          </Button>
         </div>
+      </div>
+
+      
+      {/* 주의사항 섹션 - 확장 시 표시 */}
+      {isWarningsVisible && (
+        <>
+          <Separator className="my-3" />
+          <div className="mb-3 space-y-2 bg-muted/10 rounded-md p-2">
+            <h5 className="text-sm font-medium flex items-center gap-1">
+              <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+              업체 주의사항
+            </h5>
+            
+            {companyWarnings.length > 0 ? (
+              <ul className="space-y-2">
+                {companyWarnings.map((warning) => (
+                  <li key={warning.id} className="flex items-start gap-2 text-sm">
+                    <Badge 
+                      variant="outline" 
+                      className={`
+                        ${warning.severity === 'high' ? 'bg-red-50 text-red-700' : 
+                          warning.severity === 'medium' ? 'bg-amber-50 text-amber-700' : 
+                          'bg-blue-50 text-blue-700'}
+                      `}
+                    >
+                      {warning.date}
+                    </Badge>
+                    <span>{warning.content}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">주의사항이 없습니다.</p>
+            )}
+          </div>
+        </>
       )}
+            
+      <Separator className="my-3" />
       
       {/* 운전자 정보 */}
       <div className="flex items-center justify-between">
@@ -120,6 +165,7 @@ export function CompanyCard({
           </Button>
         </div>
       </div>
+
     </div>
   );
 } 

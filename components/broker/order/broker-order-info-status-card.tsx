@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
-interface IDeliveryStatusCardProps {
+interface IBrokerOrderStatusCardProps {
   status: "Ongoing" | "Completed" | "Canceled" | "Pending";
   from: {
     address: string;
@@ -25,7 +25,7 @@ interface IDeliveryStatusCardProps {
   };
 }
 
-export function DeliveryStatusCard({ status, from, to }: IDeliveryStatusCardProps) {
+export function BrokerOrderStatusCard({ status, from, to }: IBrokerOrderStatusCardProps) {
   // 상태에 따른 배지 색상 지정
   const getStatusColor = (status: string) => {
     switch (status) {
