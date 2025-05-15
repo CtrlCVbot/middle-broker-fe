@@ -49,10 +49,14 @@ export function VehicleCard({
     setIsDriverInfoOpen(!isDriverInfoOpen);
   };
 
+  const toggleEditMode = () => {
+    setEditMode(!editMode);
+  };
+
   return (
     <div className="bg-white rounded-lg py-2 px-2 space-y-4">
       {/* 차량 정보 */}
-      <div className="flex items-center justify-between mb-1 hover:cursor-pointer hover:bg-gray-100 py-2 px-2 rounded-md">
+      <div className="flex items-center justify-between mb-1 hover:cursor-pointer hover:bg-gray-100 py-2 px-2 rounded-md"  onClick={toggleEditMode}>
         <div className="flex items-center gap-3">
           <div className="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
             <div className="text-2xl">🚚</div>
@@ -126,11 +130,11 @@ export function VehicleCard({
       
       {/* 운전자 정보 */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3 hover:cursor-pointer hover:bg-gray-100 py-2 px-2 rounded-md">
+        <div className="flex items-center gap-3 hover:cursor-pointer hover:bg-gray-100 py-2 px-2 rounded-md"  onClick={toggleDriverInfo}>
           <div className="flex-shrink-0 w-7 h-7 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
             <div className="text-xl">👤</div>
           </div>
-          <div className="flex items-center cursor-pointer" onClick={toggleDriverInfo}>
+          <div className="flex items-center cursor-pointer">
             <p className="text-sm font-medium">{driverInfo.name}</p>
             <div className="ml-2">
               {isDriverInfoOpen ? (
@@ -142,7 +146,7 @@ export function VehicleCard({
           </div>
         </div>
         
-        {/* 통화 및 메시지 버튼 */}
+        {/* 연락처 복사 및 메시지 버튼 */}
         <div className="flex gap-2 py-2 px-2">
           <Button 
             variant="outline" 
