@@ -27,7 +27,7 @@ interface IBrokerOrderStatusCardProps {
 }
 
 export function BrokerOrderStatusCard({ status, from, to }: IBrokerOrderStatusCardProps) {
-  console.log("status", status);
+  
   // 상태에 따른 배지 색상 지정
   const getStatusColor = (status: string) => {
     switch (status) {

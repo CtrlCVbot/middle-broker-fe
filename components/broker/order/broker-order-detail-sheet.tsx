@@ -109,7 +109,7 @@ export function BrokerOrderDetailSheet() {
         // 개발 환경에서는 오류가 발생했을 때 첫 번째 목업 데이터를 반환
         if (process.env.NODE_ENV === 'development') {
           // 첫 번째 유효한 데이터를 반환 (fallback 처리)
-          const fallbackId = "BRO-001001";
+          const fallbackId = "BRO-001003";
           console.warn(`개발 환경 - 폴백 데이터를 사용합니다. (ID: ${fallbackId})`);
           return getBrokerOrderDetailById(fallbackId);
         }

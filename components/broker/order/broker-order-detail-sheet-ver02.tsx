@@ -47,6 +47,7 @@ import { BrokerOrderInfoEditForm as BrokerOrderInfoEditFormVer01 } from "./broke
 
 // 배차 정보 카드
 import { BrokerOrderDriverInfoCard } from "./broker-order-driver-info-card";
+import { BrokerOrderDriverInfoCard as BrokerOrderDriverInfoCardVer01 } from "./broker-dispatch-info-card";
 import { BrokerOrderDriverInfoEditForm } from "./broker-order-driver-info-edit-form";
 
 
@@ -68,6 +69,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { VehicleCard } from "./broker-dispatch-info-vehicle-card";
 
 // 전체적인 상태 관리를 위한 타입 정의
 type EditMode = "cargo" | "driver" | "settlement" | null;
@@ -116,7 +118,7 @@ export function BrokerOrderDetailSheet() {
       }
       
       try {
-        // ID가 실제 존재하는지 확인
+        // ID가 실제 존재하는지 확인        
         const data = await getBrokerOrderDetailById(selectedOrderId);
         return data;
       } catch (err) {
@@ -125,7 +127,7 @@ export function BrokerOrderDetailSheet() {
         // 개발 환경에서는 오류가 발생했을 때 첫 번째 목업 데이터를 반환
         if (process.env.NODE_ENV === 'development') {
           // 첫 번째 유효한 데이터를 반환 (fallback 처리)
-          const fallbackId = "BRO-001001";
+          const fallbackId = "BRO-001003";
           console.warn(`개발 환경 - 폴백 데이터를 사용합니다. (ID: ${fallbackId})`);
           return getBrokerOrderDetailById(fallbackId);
         }
@@ -167,6 +169,8 @@ export function BrokerOrderDetailSheet() {
     role: "Carrier",
     avatar: "/images/driver-placeholder.png"
   };
+
+  
   
   // 배차 상태 확인 (배차 전/후 상태 구분)
   const isAfterAssignment = orderData?.statusProgress !== '배차대기' && orderData?.vehicle?.driver;
@@ -460,62 +464,14 @@ export function BrokerOrderDetailSheet() {
                 </div>
                 
                 {/* 배차 정보 카드 */}
-                <Card className={cn(
+                <div className={cn(
                   "overflow-hidden", 
                   "md:block", 
                   activeTab !== "driver" && "hidden"
                 )}>
-                  <CardHeader className="bg-muted/20 flex flex-row items-center justify-between py-3 px-4 border-b">
-                    <div className="flex items-center gap-2">
-                      <Truck className="h-4 w-4 text-primary" />
-                      <CardTitle className="text-base font-medium">배차 정보</CardTitle>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {/* 배차 문자 발송 */}
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button 
-                              variant="outline" 
-                              size="icon" 
-                              onClick={handleSendAssignMessage}
-                              className="h-7 w-7"
-                            >
-                              <MailPlus className="h-3.5 w-3.5" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>배차 안내 문자 발송</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-
-                      {/* 편집 모드 전환 버튼 */}
-                      {editMode === "driver" ? (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={handleCancelEdit}
-                          className="h-7 px-2"
-                        >
-                          <Eye className="h-3.5 w-3.5 mr-1" />
-                          보기
-                        </Button>
-                      ) : (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleSetEditMode("driver")}
-                          className="h-7 px-2"
-                        >
-                          <Pencil className="h-3.5 w-3.5 mr-1" />
-                          편집
-                        </Button>
-                      )}
-                    </div>
-                  </CardHeader>
+                  
                   <CardContent className="p-0">
-                    <div className="p-4">
+                    <div className="">
                       {editMode === "driver" ? (
                         <BrokerOrderDriverInfoEditForm
                           initialData={{
@@ -536,13 +492,14 @@ export function BrokerOrderDetailSheet() {
                         />
                       ) : isAssigned ? (
                         <>
-                          <BrokerOrderDriverInfoCard 
-                            driver={orderData?.vehicle?.driver || { name: "정보 없음" }}
-                            onSendMessage={() => handleSendMessage("기사님")}
+                          <BrokerOrderDriverInfoCardVer01 
+                            driver={orderData?.vehicle?.driver || { name: "정보 없음" }}                            
                             vehicle={orderData?.vehicle || { type: "정보 없음" }}
                             status={orderData?.status || "배차대기"}
                             amount={orderData?.amount || "0"}
+                            onSendMessage={() => handleSendMessage("기사님")}
                           />
+                          
                         </>
                       ) : (
                         <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
@@ -560,7 +517,7 @@ export function BrokerOrderDetailSheet() {
                       )}
                     </div>
                   </CardContent>
-                </Card>
+                </div>
                 
                 {/* 운임/정산 정보 카드 */}
                 <Card className={cn(

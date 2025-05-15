@@ -1,26 +1,30 @@
-import React from "react";
+import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Phone, MessageSquare, Fuel } from "lucide-react";
+import { Phone, MessageSquare, Fuel, Eye, Pencil } from "lucide-react";
 import Image from "next/image";
+import { Separator } from "@/components/ui/separator";
 
 interface IVehicleCardProps {
   vehicleInfo: {
-    model: string;
-    year: string;
-    id: string;
-    isLive?: boolean;
-    fuelLevel?: number;
+    type: string;
+    weight: string;
+    licensePlate: string;
+    connection: string;
   };
   driverInfo: {
     name: string;
-    role: string;
+    contact?: string;
+    role?: string;
     avatar?: string;
   };
+  
   onCall?: (driverName: string) => void;
   onMessage?: (driverName: string) => void;
 }
+
+
 
 export function VehicleCard({ 
   vehicleInfo, 
@@ -28,6 +32,8 @@ export function VehicleCard({
   onCall, 
   onMessage 
 }: IVehicleCardProps) {
+  const [editMode, setEditMode] = useState(false);
+
   const handleCall = () => {
     if (onCall) {
       onCall(driverInfo.name);
@@ -42,28 +48,59 @@ export function VehicleCard({
 
   return (
     <div className="bg-white rounded-lg border border-gray-100 p-4 mb-4 shadow-sm">
+      {/* 차량 정보 */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div className="flex-shrink-0 w-12 h-12 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
+          
+          <div className="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
             {/* 차량 이미지 */}
             <div className="text-2xl">🚚</div>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-base font-semibold">{vehicleInfo.year} {vehicleInfo.model}</h3>
-              {vehicleInfo.isLive && (
+              <h3 className="text-base font-semibold">#{vehicleInfo.licensePlate}</h3>
+              {/* {vehicleInfo.isLive && (
                 <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 ml-2 px-2 py-0.5 text-xs rounded-full">
                   Live
                 </Badge>
-              )}
+              )} */}
+              <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 ml-2 px-2 py-0.5 text-xs rounded-full">
+                {vehicleInfo.connection}
+              </Badge>
             </div>
-            <p className="text-sm text-gray-500">#{vehicleInfo.id}</p>
+            <p className="text-sm text-gray-500">{vehicleInfo.weight}/{vehicleInfo.type}</p>
           </div>
+        </div>
+
+        {/* 주의사항 버튼 */}
+        <div className="flex gap-2">          
+          {/* 편집 모드 전환 버튼 */}
+          {editMode ? (
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              onClick={() => setEditMode(false)}
+              className="h-7 px-2"
+            >
+              <Eye className="h-3.5 w-3.5 mr-1" />
+              보기
+            </Button>
+          ) : (
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              onClick={() => setEditMode(true)}
+              className="h-7 px-2"
+            >
+              <Pencil className="h-3.5 w-3.5 mr-1" />
+              편집
+            </Button>
+          )}
         </div>
       </div>
       
       {/* 연료 상태 */}
-      {vehicleInfo.fuelLevel !== undefined && (
+      {/* {vehicleInfo.licensePlate !== undefined && (
         <div className="mb-4">
           <div className="flex items-center mb-1">
             <Fuel className="h-4 w-4 mr-1 text-orange-500" />
@@ -72,20 +109,22 @@ export function VehicleCard({
           <div className="flex items-center">
             <div className="flex-1 mr-2">
               <Progress 
-                value={vehicleInfo.fuelLevel} 
+                value={80} 
                 className="h-3" 
                 //indicatorClassName="bg-gradient-to-r from-orange-500 to-red-500"
               />
             </div>
-            <span className="text-sm font-medium">{vehicleInfo.fuelLevel}%</span>
+            <span className="text-sm font-medium">80%</span>
           </div>
         </div>
-      )}
+      )} */}
+      <Separator className="my-3" />
       
       {/* 운전자 정보 */}
+      
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
+        <div className="flex-shrink-0 w-7 h-7 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
             <div className="text-xl">👤</div>
           </div>
           <div>
@@ -103,7 +142,7 @@ export function VehicleCard({
             onClick={handleCall}
           >
             <Phone className="h-4 w-4 mr-1" />
-            <span className="text-sm">통화</span>
+            <span className="text-sm">{driverInfo.contact}</span>
           </Button>
           <Button 
             variant="default" 

@@ -42,6 +42,7 @@ export interface IBrokerOrderDetail {
     remark?: string;
   };
   vehicle: {
+    connection?: string;
     type: string;
     weight?: string;
     licensePlate?: string;
@@ -155,6 +156,7 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
       remark: "충격에 주의"
     },
     vehicle: {
+      connection: "화물맨",
       type: "탑차",
       weight: "2.5톤",
       licensePlate: "12가 3456",
@@ -223,6 +225,7 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
       remark: "냉장고 포함"
     },
     vehicle: {
+      connection: "화물맨",
       type: "윙바디",
       weight: "5톤",
       licensePlate: "34나 5678",
@@ -299,6 +302,7 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
       remark: "정밀기계 포함"
     },
     vehicle: {
+      connection: "24시",
       type: "카고",
       weight: "5톤",
       licensePlate: "56다 7890",
@@ -383,6 +387,7 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
       remark: "항공부품 취급주의"
     },
     vehicle: {
+      connection: "화물맨",
       type: "윙바디",
       weight: "5톤",
       licensePlate: "78라 9012",
@@ -475,6 +480,7 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
       remark: "고가의류 포함"
     },
     vehicle: {
+      connection: "화물맨",
       type: "탑차",
       weight: "2.5톤",
       licensePlate: "90마 1234",
@@ -576,6 +582,7 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
       remark: "정밀실험장비 취급주의"
     },
     vehicle: {
+      connection: "화물맨",
       type: "탑차",
       weight: "2.5톤"
     },
@@ -632,6 +639,7 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
       remark: "냉장 식품"
     },
     vehicle: {
+      connection: "화물맨",
       type: "냉장",
       weight: "2.5톤",
       licensePlate: "12바 3456",
@@ -677,7 +685,7 @@ export const getBrokerOrderDetailById = (id: string): Promise<IBrokerOrderDetail
         console.warn(`ID ${id}에 해당하는 중개 화물 정보를 찾을 수 없습니다. 기본 데이터를 반환합니다.`);
         
         // 목록의 첫 번째 항목을 대체 데이터로 사용 (객체의 첫 번째 키를 가져옴)
-        const firstId = Object.keys(mockBrokerOrderDetails)[0];
+        const firstId = Object.keys(mockBrokerOrderDetails)[2];
         const defaultData = {...mockBrokerOrderDetails[firstId]};
         
         // 조회된 ID로 orderNumber 값 변경
