@@ -9,6 +9,14 @@ export interface IBrokerOrderDetail {
   fee?: string;
   registeredAt: string;
   statusProgress: BrokerOrderStatusType;
+  shipper: {
+    name: string;
+    manager: {
+      name: string;
+      contact: string;
+      email: string;
+    }
+  };
   departure: {
     address: string;
     detailedAddress?: string;
@@ -58,6 +66,14 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
     fee: "45,000",
     registeredAt: "2023-03-15 14:30",
     statusProgress: "배차대기",
+    shipper: {
+      name: "ABC화주",
+      manager: {
+        name: "김철수",
+        contact: "010-1234-5678",
+        email: "kim@example.com"
+      }
+    },
     departure: {
       address: "서울특별시 강남구 테헤란로 152",
       detailedAddress: "강남파이낸스센터 3층",
@@ -106,6 +122,14 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
     fee: "55,000",
     registeredAt: "2023-03-16 10:15",
     statusProgress: "배차완료",
+    shipper: {
+      name: "송도화주",
+      manager: {
+        name: "김철수",
+        contact: "010-1234-5678",
+        email: "kim@example.com"
+      }
+    },
     departure: {
       address: "인천광역시 연수구 컨벤시아대로 165",
       detailedAddress: "송도컨벤시아 1층",
@@ -166,6 +190,14 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
     fee: "65,000",
     registeredAt: "2023-03-17 09:45",
     statusProgress: "상차완료",
+    shipper: {
+      name: "판교화주",
+      manager: {
+        name: "김철수",
+        contact: "010-1234-5678",
+        email: "kim@example.com"
+      }
+    },
     departure: {
       address: "경기도 성남시 분당구 판교로 228",
       detailedAddress: "판교테크노밸리 3층",
@@ -234,6 +266,14 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
     fee: "75,000",
     registeredAt: "2023-03-18 11:30",
     statusProgress: "운송중",
+    shipper: {
+      name: "대구화주",
+      manager: {
+        name: "김철수",
+        contact: "010-1234-5678",
+        email: "kim@example.com"
+      }
+    },
     departure: {
       address: "대구광역시 동구 동대구로 489",
       detailedAddress: "대구무역회관 2층",
@@ -310,6 +350,14 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
     fee: "85,000",
     registeredAt: "2023-03-19 13:20",
     statusProgress: "하차완료",
+    shipper: {
+      name: "광주화주",
+      manager: {
+        name: "김철수",
+        contact: "010-1234-5678",
+        email: "kim@example.com"
+      }
+    },
     departure: {
       address: "광주광역시 광산구 첨단과기로 123",
       detailedAddress: "광주과학기술원 1층",
@@ -394,6 +442,14 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
     fee: "95,000",
     registeredAt: "2023-03-20 15:10",
     statusProgress: "운송마감",
+    shipper: {
+      name: "부산화주",
+      manager: {
+        name: "김철수",
+        contact: "010-1234-5678",
+        email: "kim@example.com"
+      }
+    },
     departure: {
       address: "부산광역시 해운대구 APEC로 55",
       detailedAddress: "부산항 국제전시컨벤션센터 2층",
@@ -487,6 +543,14 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
     fee: "50,000",
     registeredAt: "2023-03-21 09:30",
     statusProgress: "배차대기",
+    shipper: {
+      name: "대전화주",
+      manager: {
+        name: "김철수",
+        contact: "010-1234-5678",
+        email: "kim@example.com"
+      }
+    },
     departure: {
       address: "대전광역시 유성구 대학로 99",
       detailedAddress: "대전대학교 2층",
@@ -535,6 +599,14 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
     fee: "60,000",
     registeredAt: "2023-03-22 11:40",
     statusProgress: "배차완료",
+    shipper: {
+      name: "수원화주",
+      manager: {
+        name: "김철수",
+        contact: "010-1234-5678",
+        email: "kim@example.com"
+      }
+    },
     departure: {
       address: "경기도 수원시 영통구 광교중앙로 145",
       detailedAddress: "광교테크노밸리 3층",

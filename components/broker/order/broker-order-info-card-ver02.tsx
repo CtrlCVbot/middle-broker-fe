@@ -161,7 +161,7 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper, st
     contactPhone: destination.contact,
   };
 
-  // 차량 정보 데이터
+  // 업체 정보 데이터
   const companyInfo = {
     name: shipper.name,
     year: "2018",
@@ -171,7 +171,7 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper, st
     warnings: companyWarnings
   };
 
-  // 운전자 정보 데이터
+  // 담당자 정보 데이터
   const managerInfo = {
     name: shipper.manager,
     contact: shipper.contact,
@@ -272,79 +272,12 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper, st
           <BrokerOrderTimeline 
             scheduleInfo={scheduleInfo}
             events={timelineEvents}
-            totalTime="14 hr 20 min"
             onRefresh={handleRefreshTimeline}
           />
         </div>
       </div>
 
-      <div>        
-        <CardHeader className="p-3">                  
-          <CardTitle>
-
-            <div className="flex items-center justify-between w-full">
-              <button 
-                className="flex items-center gap-2"
-                onClick={() => setIsCargoInfoOpen(!isCargoInfoOpen)}
-              >
-                <Package className="h-4 w-4 mr-2 text-gray-500"/>
-                화물 상세                    
-              </button>
-              <div className="flex items-center gap-2">
-                
-                {isCargoInfoOpen ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" onClick={() => setIsCargoInfoOpen(false)} />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" onClick={() => setIsCargoInfoOpen(true)} />
-                )}
-              </div>
-            </div>
-
-          </CardTitle>
-        </CardHeader>
-        
-        <div className="grid grid-cols-3 gap-2 text-sm p-3">
-          <div className="text-muted-foreground">운송 옵션</div>
-          <div className="col-span-2 font-medium">
-            <div className="flex flex-wrap items-center gap-2">
-              {cargo.vehicleType && (
-                <span className="inline-flex items-center bg-primary/10 px-2 py-0.5 rounded text-sm">
-                  {cargo.vehicleType}
-                </span>
-              )}
-              {cargo.weight && (
-                <span className="inline-flex items-center bg-primary/10 px-2 py-0.5 rounded text-sm">
-                  {cargo.weight}
-                </span>
-              )}
-              {cargo.options && cargo.options.length > 0 && cargo.options.map((option, index) => (
-                <Badge key={index} variant="outline" className="text-xs">
-                  {option}
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          <div className="text-muted-foreground">화물 품목</div>
-          <div className="col-span-2 font-medium">{cargo.type}</div>
-          
-          {isCargoInfoOpen && cargo.remark && (
-            <>
-              <div className="text-muted-foreground">비고</div>
-              <div className="col-span-2 font-medium text-xs">
-                {cargo.remark}
-              </div>
-            </>
-          )}
-          
-          {/* 결제 방법 추가 */}
-          <div className="text-muted-foreground">결제 방법</div>
-          <div className="col-span-2 font-medium flex items-center gap-1">
-            <CreditCard className="h-3.5 w-3.5 text-primary" />
-            <span>{cargo.paymentMethod || "인수증"}</span>
-          </div>
-        </div>
-      </div>
+      
     </div>
   );
 } 

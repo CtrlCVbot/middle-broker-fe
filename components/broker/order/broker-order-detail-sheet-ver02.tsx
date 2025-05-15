@@ -32,7 +32,8 @@ import {
   Eye,
   DollarSign,
   Check,
-  Warehouse
+  Warehouse,
+  Copy
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -41,6 +42,7 @@ import { BrokerOrderInfoCard } from "./broker-order-info-card";
 import { BrokerOrderInfoEditForm } from "./broker-order-info-edit-form";
 import { BrokerOrderInfoCard as BrokerOrderInfoCardVer01 } from "./broker-order-info-card-ver01";
 import { BrokerOrderInfoCard as BrokerOrderInfoCardVer02 } from "./broker-order-info-card-ver02";
+import { CompanyCard } from "./broker-order-info-company-card";
 import { BrokerOrderInfoEditForm as BrokerOrderInfoEditFormVer01 } from "./broker-order-info-edit-form-ver01";
 
 // 배차 정보 카드
@@ -96,6 +98,8 @@ export function BrokerOrderDetailSheet() {
   const availableStatuses = [
     "배차대기", "배차진행중", "배차완료", "상차완료", "하차완료", "운송중", "운송마감"
   ];
+
+  
   
   // TanStack Query를 사용하여 화물 상세 정보 조회
   const { 
@@ -147,6 +151,22 @@ export function BrokerOrderDetailSheet() {
       setOrderDetail(orderData);
     }
   }, [orderData, isLoading, isError, error, setLoading, setError, setOrderDetail]);
+
+
+  // 업체 정보 데이터
+  const companyInfo = {
+    name: orderData?.shipper.name
+    
+  };
+
+  // 담당자 정보 데이터
+  const managerInfo = {
+    name: orderData?.shipper.manager.name,
+    contact: orderData?.shipper.manager.contact,
+    email: orderData?.shipper.manager.email,
+    role: "Carrier",
+    avatar: "/images/driver-placeholder.png"
+  };
   
   // 배차 상태 확인 (배차 전/후 상태 구분)
   const isAfterAssignment = orderData?.statusProgress !== '배차대기' && orderData?.vehicle?.driver;
@@ -326,83 +346,22 @@ export function BrokerOrderDetailSheet() {
           <div className="h-full flex flex-col">
             {/* 헤더 - 기본 정보 */}
             <SheetHeader className="py-4 border-b sticky top-0 bg-background bg-muted/100">
-              <div className="flex items-center justify-between">
-                <SheetTitle className="text-xl font-bold">
-                  화물 번호: {orderData.orderNumber}
-                </SheetTitle>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={closeSheet}
-                  className="h-8 w-8"
-                >
-                  
-                </Button>
-              </div>
-              {/* 배차 상태 및 액션 버튼 */}
-              <div className="flex items-center justify-between mt-3">
-                <div className="flex items-center">
-                  <Popover open={statusPopoverOpen} onOpenChange={setStatusPopoverOpen}>
-                    <PopoverTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="flex items-center gap-2 border-dashed"
-                      >
-                        <Badge 
-                          variant={orderData.status === "운송마감" ? "default" : "secondary"}
-                          className="font-semibold"
-                        >
-                          {orderData.status}
-                        </Badge>
-                        <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80 p-4">
-                      <div className="space-y-4">
-                        <h4 className="font-medium">배차 상태 변경</h4>
-                        <div className="flex flex-col gap-3">
-                          <Select
-                            value={selectedStatus}
-                            onValueChange={setSelectedStatus}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="상태 선택" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {availableStatuses.map(status => (
-                                <SelectItem key={status} value={status}>
-                                  {status}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <div className="flex items-center justify-end gap-2 mt-2">
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
-                              onClick={cancelStatusChange}
-                            >
-                              취소
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="default" 
-                              onClick={handleChangeStatus}
-                              className="gap-1"
-                            >
-                              <Check className="h-3.5 w-3.5" />
-                              변경 확인
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                  
+              
+              <div className="flex items-center gap-3">          
+                <div>
+                  <p className="text-xs text-gray-900 truncate">화물 번호:</p>
+                  <p className="text-sm font-medium truncate">#{orderData.orderNumber}
+                  <Button 
+                    variant="outline"                     
+                    className="h-4 w-8 ml-2" 
+                    //onClick={handleCall}
+                  >
+                    <Copy className="h-1.5 w-1.5" />
+                  </Button> </p>    
+                                      
                 </div>
-                <BrokerOrderActionButtons orderNumber={orderData.orderNumber} />
-              </div>
+              </div>              
+              
             </SheetHeader>
             
             {/* 모바일 전용 탭 메뉴 */}

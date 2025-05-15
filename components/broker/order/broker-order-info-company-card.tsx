@@ -17,11 +17,7 @@ interface ICompanyWarning {
 interface ICompanyCardProps {
   orderId: string;
   companyInfo: {
-    name: string;
-    year: string;
-    id: string;
-    isLive?: boolean;
-    fuelLevel?: number;
+    name: string;    
     warnings?: ICompanyWarning[];
   };
   managerInfo: {
@@ -66,7 +62,7 @@ export function CompanyCard({
     <div className="bg-white px-4 py-4 rounded-t-lg ">
 
       {/* 오더 정보 */}
-      <div className="flex items-center justify-between mb-3 border-b border-gray-200 pb-3">
+      {/* <div className="flex items-center justify-between mb-3 border-b border-gray-200 pb-3">
         <div className="flex items-center gap-3">          
           <div>
             <p className="text-xs text-gray-900 truncate">화물 번호:</p>
@@ -84,7 +80,7 @@ export function CompanyCard({
             <Copy className="h-2 w-2" />
           </Button>          
         </div>
-      </div>
+      </div> */}
 
       {/* 업체 정보 */}      
       <div className="flex items-center justify-between mb-3">
@@ -110,7 +106,7 @@ export function CompanyCard({
             }}
           >
             <AlertTriangle className="mr-1 h-3.5 w-3.5 text-amber-500" />
-            주의사항 
+            <span className="text-xs">주의사항</span>
           </Button>
         </div>
       </div>

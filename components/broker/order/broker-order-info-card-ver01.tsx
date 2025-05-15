@@ -174,13 +174,7 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper, st
 
       
 
-      {/* 회사 정보 카드 추가 */}
-      <CompanyCard 
-        companyInfo={companyInfo}
-        managerInfo={managerInfo}
-        onCall={handleCallDriver}
-        onMessage={handleMessageDriver}
-      />
+      
       
 
       {/* 배송 상태 카드 추가 */}
