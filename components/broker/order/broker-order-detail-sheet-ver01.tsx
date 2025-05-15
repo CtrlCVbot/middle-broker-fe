@@ -40,6 +40,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BrokerOrderInfoCard } from "./broker-order-info-card";
 import { BrokerOrderInfoEditForm } from "./broker-order-info-edit-form";
 import { BrokerOrderInfoCard as BrokerOrderInfoCardVer01 } from "./broker-order-info-card-ver01";
+import { BrokerOrderInfoCard as BrokerOrderInfoCardVer02 } from "./broker-order-info-card-ver02";
 import { BrokerOrderInfoEditForm as BrokerOrderInfoEditFormVer01 } from "./broker-order-info-edit-form-ver01";
 
 // 배차 정보 카드
@@ -544,7 +545,8 @@ export function BrokerOrderDetailSheet() {
                           onCancel={handleCancelEdit}
                         />
                       ) : (
-                        <BrokerOrderInfoCardVer01
+                        <BrokerOrderInfoCardVer02
+                          status={orderData.status}
                           departure={{
                             address: orderData.departure.address,
                             name: orderData.departure.name,

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Phone, MessageSquare, Fuel, AlertTriangle } from "lucide-react";
+import { Phone, MessageSquare, Fuel, AlertTriangle, MessageSquareOff } from "lucide-react";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 
@@ -130,7 +130,7 @@ export function CompanyCard({
             
       <Separator className="my-3" />
       
-      {/* 운전자 정보 */}
+      {/* 담당자 정보 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
@@ -151,8 +151,8 @@ export function CompanyCard({
             className="px-3 py-1 h-8" 
             onClick={handleCall}
           >
-            <Phone className="h-4 w-4 mr-1" />
-            <span className="text-sm">통화</span>
+            <MessageSquareOff className="h-4 w-4 mr-1" />
+            <span className="text-sm">취소</span>
           </Button>
           <Button 
             variant="default" 
@@ -161,7 +161,7 @@ export function CompanyCard({
             onClick={handleMessage}
           >
             <MessageSquare className="h-4 w-4 mr-1" />
-            <span className="text-sm">메시지</span>
+            <span className="text-sm">완료</span>
           </Button>
         </div>
       </div>

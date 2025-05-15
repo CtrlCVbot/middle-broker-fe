@@ -2,9 +2,10 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 
 interface IBrokerOrderStatusCardProps {
-  status: "Ongoing" | "Completed" | "Canceled" | "Pending";
+  status: string;
   from: {
     address: string;
     name: string;
@@ -26,17 +27,20 @@ interface IBrokerOrderStatusCardProps {
 }
 
 export function BrokerOrderStatusCard({ status, from, to }: IBrokerOrderStatusCardProps) {
+  console.log("status", status);
   // 상태에 따른 배지 색상 지정
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Ongoing":
+      case "배차대기":
         return "bg-amber-50 text-amber-600 border-amber-200";
-      case "Completed":
+      case "배차완료":
         return "bg-green-50 text-green-600 border-green-200";
-      case "Canceled":
+      case "배차취소":
         return "bg-red-50 text-red-600 border-red-200";
-      case "Pending":
+      case "운송중":
         return "bg-blue-50 text-blue-600 border-blue-200";
+      case "운송완료":
+        return "bg-green-50 text-green-600 border-green-200";
       default:
         return "bg-gray-50 text-gray-600 border-gray-200";
     }
@@ -45,16 +49,18 @@ export function BrokerOrderStatusCard({ status, from, to }: IBrokerOrderStatusCa
   // 상태에 따른 한글 텍스트 매핑
   const getStatusText = (status: string) => {
     switch (status) {
-      case "Ongoing":
-        return "배송 중";
-      case "Completed":
-        return "배송 완료";
-      case "Canceled":
+      case "배차대기":
+        return "배차 대기";
+      case "배차완료":
+        return "배차 완료";
+      case "배차취소":
         return "배송 취소";
-      case "Pending":
-        return "배송 대기";
+      case "운송중":
+        return "배송 중";
+      case "운송완료":
+        return "배송 완료";
       default:
-        return "상태 미정";
+        return status;
     }
   };
 
@@ -67,11 +73,13 @@ export function BrokerOrderStatusCard({ status, from, to }: IBrokerOrderStatusCa
     <div className="bg-white rounded-lg border border-gray-100 p-4 mb-4 shadow-sm">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-base font-medium text-gray-700">배송 상태</h3>
-        <button 
-          className={`rounded-full px-3 py-1 text-sm ${getStatusColor(status)}`}
+        <Button 
+          variant="outline"
+          size="sm"          
+          className={` px-3 py-1 text-sm ${getStatusColor(status)}`}
         >
           {getStatusText(status)}
-        </button>
+        </Button>
       </div>
       <Separator className="my-4" />
       <div className="grid grid-cols-5 gap-2">
