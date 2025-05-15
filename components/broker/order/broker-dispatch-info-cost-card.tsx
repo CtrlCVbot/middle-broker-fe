@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { ChevronRight } from "lucide-react";
+import React, { useState } from "react";
+import { ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 
@@ -40,6 +40,14 @@ export function FinanceSummaryCard({
   balance = 3455994,
   className,
 }: IFinanceSummaryCardProps) {
+  // 상세 항목 표시 여부 상태
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  // 토글 함수
+  const toggleDetails = () => {
+    setIsDetailsOpen(!isDetailsOpen);
+  };
+  
   // 총액 계산
   const totalEstimate = estimate?.reduce((sum, item) => sum + item.amount, 0) || 0;
   const totalIncome = income?.reduce((sum, item) => sum + item.amount, 0) || 0;
@@ -49,10 +57,25 @@ export function FinanceSummaryCard({
   return (
     <div className={cn("flex flex-col gap-1 bg-gray-800 text-white p-4 px-6 rounded-lg", className)}>
       {/* 카드 헤더 */}
-      <div className="space-y-1 mb-4">
-        <h3 className="text-md font-bold">{title}</h3>
-        <p className="text-gray-400">{date}</p>
+      
+
+      <div className="flex justify-between items-center mb-4 " onClick={toggleDetails}>
+        <div className="flex items-center gap-2 cursor-pointer" >
+          <div className="space-y-1">
+            <h3 className="text-md font-bold">{title}</h3>
+            <p className="text-gray-400">{date}</p>
+          </div>
+        </div>
+        <div>
+          {isDetailsOpen ? (
+            <ChevronUp className="h-5 w-5 text-gray-400" />
+          ) : (
+            <ChevronDown className="h-5 w-5 text-gray-400" />
+          )}
+        </div>
       </div>
+
+      
 
       {/* 견적 */}
       <div className="flex justify-between items-center mb-2">
@@ -62,15 +85,18 @@ export function FinanceSummaryCard({
           <ChevronRight className="h-5 w-5 text-gray-400" />
         </div>
       </div>
-      {/* 견적 추가 항목 상세 */}
-      <div className="ml-8 space-y-1 mb-2">
-        {estimate?.map((item, index) => (
-          <div key={index} className="flex justify-between items-center">
-            <p className="text-gray-400">{item.label}</p>
-            <p className="text-md">{new Intl.NumberFormat('ko-KR').format(item.amount)}원</p>
-          </div>
-        ))}
-      </div>
+      
+      {/* 견적 추가 항목 상세 - 펼쳐진 상태일 때만 표시 */}
+      {isDetailsOpen && (
+        <div className="ml-8 space-y-1 mb-2">
+          {estimate?.map((item, index) => (
+            <div key={index} className="flex justify-between items-center">
+              <p className="text-gray-400">{item.label}</p>
+              <p className="text-md">{new Intl.NumberFormat('ko-KR').format(item.amount)}원</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* 청구 */}
       <div className="flex justify-between items-center mb-2">
@@ -81,15 +107,17 @@ export function FinanceSummaryCard({
         </div>
       </div>
 
-      {/* 청구 추가 항목 상세 */}
-      <div className="ml-8 space-y-1 mb-2">
-        {income?.map((item, index) => (
-          <div key={index} className="flex justify-between items-center">
-            <p className="text-gray-400">{item.label}</p>
-            <p className="text-md">{new Intl.NumberFormat('ko-KR').format(item.amount)}원</p>
-          </div>
-        ))}
-      </div>
+      {/* 청구 추가 항목 상세 - 펼쳐진 상태일 때만 표시 */}
+      {isDetailsOpen && (
+        <div className="ml-8 space-y-1 mb-2">
+          {income?.map((item, index) => (
+            <div key={index} className="flex justify-between items-center">
+              <p className="text-gray-400">{item.label}</p>
+              <p className="text-md">{new Intl.NumberFormat('ko-KR').format(item.amount)}원</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* 배차 */}
       <div className="flex justify-between items-center mb-2">
@@ -100,17 +128,17 @@ export function FinanceSummaryCard({
         </div>
       </div>
 
-      {/* 배차 추가 항목 상세 */}
-      <div className="ml-8 space-y-1 mb-2">
-        {expense?.map((item, index) => (
-          <div key={index} className="flex justify-between items-center">
-            <p className="text-gray-400">{item.label}</p>
-            <p className="text-md">{new Intl.NumberFormat('ko-KR').format(item.amount)}원</p>
-          </div>
-        ))}
-      </div>
-
-      
+      {/* 배차 추가 항목 상세 - 펼쳐진 상태일 때만 표시 */}
+      {isDetailsOpen && (
+        <div className="ml-8 space-y-1 mb-2">
+          {expense?.map((item, index) => (
+            <div key={index} className="flex justify-between items-center">
+              <p className="text-gray-400">{item.label}</p>
+              <p className="text-md">{new Intl.NumberFormat('ko-KR').format(item.amount)}원</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       <Separator className="bg-gray-700 my-5" />
 
@@ -122,4 +150,4 @@ export function FinanceSummaryCard({
       </div>
     </div>
   );
-} 
+}
