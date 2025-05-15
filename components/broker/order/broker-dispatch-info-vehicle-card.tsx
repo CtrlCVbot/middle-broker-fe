@@ -5,13 +5,14 @@ import { Progress } from "@/components/ui/progress";
 import { Phone, MessageSquare, Fuel, Eye, Pencil, ChevronUp, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
+import { DriverHistory } from "./broker-driver-history";
 
 interface IVehicleCardProps {
   vehicleInfo: {
     type: string;
-    weight: string;
-    licensePlate: string;
-    connection: string;
+    weight?: string;
+    licensePlate?: string;
+    connection?: string;
   };
   driverInfo: {
     name: string;
@@ -19,21 +20,24 @@ interface IVehicleCardProps {
     role?: string;
     avatar?: string;
   };
-  
-  
+  onCall?: (driverName: string) => void;
   onMessage?: (driverName: string) => void;
 }
 
-
-
 export function VehicleCard({ 
   vehicleInfo, 
-  driverInfo,   
+  driverInfo, 
+  onCall, 
   onMessage 
 }: IVehicleCardProps) {
   const [editMode, setEditMode] = useState(false);
+  const [isDriverInfoOpen, setIsDriverInfoOpen] = useState(false);
 
-  const [isDriverInfoOpen, setIsDriverInfoOpen] = useState(true);
+  const handleCall = () => {
+    if (onCall) {
+      onCall(driverInfo.name);
+    }
+  };
 
   const handleMessage = () => {
     if (onMessage) {
@@ -41,29 +45,35 @@ export function VehicleCard({
     }
   };
 
+  const toggleDriverInfo = () => {
+    setIsDriverInfoOpen(!isDriverInfoOpen);
+  };
+
   return (
-    <div className="bg-white rounded-t-lg p-4">
+    <div className="bg-white rounded-t-lg p-4 space-y-4">
       {/* 차량 정보 */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          
-          <div className="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
-            {/* 차량 이미지 */}
+          <div className="flex-shrink-0 w-12 h-12 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
             <div className="text-2xl">🚚</div>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-base font-semibold">#{vehicleInfo.licensePlate}</h3>
-              {/* {vehicleInfo.isLive && (
-                <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 ml-2 px-2 py-0.5 text-xs rounded-full">
-                  Live
+              <h3 className="text-base font-semibold">{vehicleInfo.type}</h3>
+              {vehicleInfo.connection && (
+                <Badge variant="outline" className={`${
+                  vehicleInfo.connection === 'connected' 
+                    ? 'bg-green-50 text-green-600 border-green-200' 
+                    : 'bg-gray-50 text-gray-600 border-gray-200'
+                } ml-2 px-2 py-0.5 text-xs rounded-full`}>
+                  {vehicleInfo.connection === 'connected' ? '연결됨' : '연결 안됨'}
                 </Badge>
-              )} */}
-              <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 ml-2 px-2 py-0.5 text-xs rounded-full">
-                {vehicleInfo.connection}
-              </Badge>
+              )}
             </div>
-            <p className="text-sm text-gray-500">{vehicleInfo.weight}/{vehicleInfo.type}</p>
+            <div className="flex gap-2 text-sm text-gray-500">
+              {vehicleInfo.weight && <span>{vehicleInfo.weight}</span>}
+              {vehicleInfo.licensePlate && <span>| {vehicleInfo.licensePlate}</span>}
+            </div>
           </div>
         </div>
 
@@ -115,21 +125,21 @@ export function VehicleCard({
       )} */}
       <Separator className="my-3" />
       
-      {/* 운전자 정보 */}      
+      {/* 운전자 정보 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-        <div className="flex-shrink-0 w-7 h-7 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
+          <div className="flex-shrink-0 w-7 h-7 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
             <div className="text-xl">👤</div>
           </div>
-          <div>
-            <p className="text-sm font-medium">
-              {driverInfo.name}
+          <div className="flex items-center cursor-pointer" onClick={toggleDriverInfo}>
+            <p className="text-sm font-medium">{driverInfo.name}</p>
+            <div className="ml-2">
               {isDriverInfoOpen ? (
-                <ChevronUp className="h-4 w-4 text-muted-foreground" onClick={() => setIsDriverInfoOpen(false)} />
+                <ChevronUp className="h-4 w-4 text-muted-foreground" />
               ) : (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" onClick={() => setIsDriverInfoOpen(true)} />
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               )}
-            </p>            
+            </div>
           </div>
         </div>
         
@@ -138,10 +148,11 @@ export function VehicleCard({
           <Button 
             variant="outline" 
             size="sm" 
-            className="px-3 py-1 h-8"             
+            className="px-3 py-1 h-8" 
+            onClick={handleCall}
           >
             <Phone className="h-4 w-4 mr-1" />
-            <span className="text-sm">{driverInfo.contact}</span>
+            <span className="text-sm">통화</span>
           </Button>
           <Button 
             variant="default" 
@@ -154,6 +165,13 @@ export function VehicleCard({
           </Button>
         </div>
       </div>
+
+      {/* 운전자 정보가 열려있을 때 배차 이력과 특이사항 표시 */}
+      {isDriverInfoOpen && (
+        <div className="mt-3">
+          <DriverHistory />
+        </div>
+      )}
     </div>
   );
 } 
