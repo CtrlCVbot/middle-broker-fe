@@ -33,7 +33,7 @@ import { format, isValid, parseISO } from "date-fns";
 import { BrokerOrderStatusCard } from "./broker-order-info-status-card";
 import { CompanyCard } from "./broker-order-info-company-card";
 import { CargoCard } from "./broker-order-info-cargo-card";
-import { BrokerOrderTimeline } from "./broker-order-timeline";
+import { BrokerOrderTimeline } from "./broker-order-info-timeline";
 
 // 업체 주의사항 인터페이스
 interface CompanyWarning {
