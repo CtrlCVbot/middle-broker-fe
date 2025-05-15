@@ -50,9 +50,9 @@ export function VehicleCard({
   };
 
   return (
-    <div className="bg-white rounded-lg p-4 space-y-4">
+    <div className="bg-white rounded-lg py-2 px-2 space-y-4">
       {/* 차량 정보 */}
-      <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center justify-between mb-1 hover:cursor-pointer hover:bg-gray-100 py-2 px-2 rounded-md">
         <div className="flex items-center gap-3">
           <div className="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
             <div className="text-2xl">🚚</div>
@@ -77,34 +77,33 @@ export function VehicleCard({
           </div>
         </div>
 
-        {/* 주의사항 버튼 */}
+        {/* 편집 버튼 */}
         <div className="flex gap-2">          
           {/* 편집 모드 전환 버튼 */}
           {editMode ? (
             <Button 
-              variant="secondary" 
+              variant="ghost" 
               size="sm" 
               onClick={() => setEditMode(false)}
-              className="h-7 px-2"
+              className="h-7 px-2 text-gray-500"
             >
               <Eye className="h-3.5 w-3.5 mr-1" />
-              보기
+              
             </Button>
           ) : (
             <Button 
-              variant="secondary" 
+              variant="ghost" 
               size="sm" 
               onClick={() => setEditMode(true)}
-              className="h-7 px-2"
+              className="h-7 px-2 text-gray-500"
             >
-              <Pencil className="h-3.5 w-3.5 mr-1" />
-              편집
+              <Pencil className="h-3.5 w-3.5 mr-1" />              
             </Button>
           )}
         </div>
       </div>
       
-      {/* 연료 상태 */}
+      {/* 연료 상태 - 주석 없애지마! */}
       {/* {vehicleInfo.licensePlate !== undefined && (
         <div className="mb-4">
           <div className="flex items-center mb-1">
@@ -122,12 +121,12 @@ export function VehicleCard({
             <span className="text-sm font-medium">80%</span>
           </div>
         </div>
-      )} */}a
-      <Separator className="my-3" />
+      )} */}
+      <Separator className="my-1" />
       
       {/* 운전자 정보 */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 hover:cursor-pointer hover:bg-gray-100 py-2 px-2 rounded-md">
           <div className="flex-shrink-0 w-7 h-7 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
             <div className="text-xl">👤</div>
           </div>
@@ -144,11 +143,11 @@ export function VehicleCard({
         </div>
         
         {/* 통화 및 메시지 버튼 */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 py-2 px-2">
           <Button 
             variant="outline" 
             size="sm" 
-            className="px-3 py-1 h-8" 
+            className="px-3 py-1 h-8 hover:cursor-pointer hover:bg-gray-100" 
             onClick={handleCall}
           >
             <Phone className="h-4 w-4 mr-1" />
@@ -157,7 +156,7 @@ export function VehicleCard({
           <Button 
             variant="default" 
             size="sm" 
-            className="px-3 py-1 h-8 bg-gray-800" 
+            className="px-3 py-1 h-8 hover:cursor-pointer hover:bg-gray-600" 
             onClick={handleMessage}
           >
             <MessageSquare className="h-4 w-4 mr-1" />

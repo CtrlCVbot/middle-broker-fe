@@ -55,17 +55,21 @@ export function FinanceSummaryCard({
   const totalBalance = totalIncome - totalExpense;
 
   return (
-    <div className={cn("flex flex-col gap-1 bg-gray-800 text-white p-4 px-6 rounded-lg", className)}>
+    <div className={cn("flex flex-col gap-1 bg-gray-800 text-white p-2 rounded-lg", className)}>
       {/* 카드 헤더 */}
       
 
-      <div className="flex justify-between items-center mb-4 " onClick={toggleDetails}>
-        <div className="flex items-center gap-2 cursor-pointer" >
-          <div className="space-y-1">
-            <h3 className="text-md font-bold">{title}</h3>
-            <p className="text-gray-400">{date}</p>
+      <div className="flex justify-between items-center mb-3 hover:cursor-pointer hover:bg-gray-700 p-2 px-2 rounded-md" onClick={toggleDetails}>
+        <div className="flex items-center gap-3">
+          <div className="flex-shrink-0 w-10 h-10 bg-gray-600 rounded-md overflow-hidden flex items-center justify-center">
+            <div className="text-xl">🧾</div>
+          </div>
+          <div>
+            <p className="text-md font-semibold">{title}</p>
+            <p className="text-sm text-gray-400">{date}</p>
           </div>
         </div>
+        
         <div>
           {isDetailsOpen ? (
             <ChevronUp className="h-5 w-5 text-gray-400" />
@@ -78,8 +82,8 @@ export function FinanceSummaryCard({
       
 
       {/* 견적 */}
-      <div className="flex justify-between items-center mb-2">
-        <p className="text-md">견적</p>
+      <div className="flex justify-between items-center hover:cursor-pointer hover:bg-gray-700 pt-1 pb-1 px-4 rounded-md">
+        <p className="text-md">견적({estimate.length-1})</p>
         <div className="flex items-center">
           <span className="text-lg font-bold mr-1">{new Intl.NumberFormat('ko-KR').format(totalEstimate)}원</span>
           <ChevronRight className="h-5 w-5 text-gray-400" />
@@ -88,7 +92,7 @@ export function FinanceSummaryCard({
       
       {/* 견적 추가 항목 상세 - 펼쳐진 상태일 때만 표시 */}
       {isDetailsOpen && (
-        <div className="ml-8 space-y-1 mb-2">
+        <div className="ml-8 space-y-1 mb-2 px-6">
           {estimate?.map((item, index) => (
             <div key={index} className="flex justify-between items-center">
               <p className="text-gray-400">{item.label}</p>
@@ -99,8 +103,8 @@ export function FinanceSummaryCard({
       )}
 
       {/* 청구 */}
-      <div className="flex justify-between items-center mb-2">
-        <p className="text-md">청구</p>
+      <div className="flex justify-between items-center hover:cursor-pointer hover:bg-gray-700 pt-1 pb-1 px-4 rounded-md">
+        <p className="text-md">청구({income.length-1})</p>
         <div className="flex items-center">
           <span className="text-xl font-bold mr-1">{new Intl.NumberFormat('ko-KR').format(totalIncome)}원</span>
           <ChevronRight className="h-5 w-5 text-gray-400" />
@@ -109,7 +113,7 @@ export function FinanceSummaryCard({
 
       {/* 청구 추가 항목 상세 - 펼쳐진 상태일 때만 표시 */}
       {isDetailsOpen && (
-        <div className="ml-8 space-y-1 mb-2">
+        <div className="ml-8 space-y-1 mb-2 px-6">
           {income?.map((item, index) => (
             <div key={index} className="flex justify-between items-center">
               <p className="text-gray-400">{item.label}</p>
@@ -120,8 +124,8 @@ export function FinanceSummaryCard({
       )}
 
       {/* 배차 */}
-      <div className="flex justify-between items-center mb-2">
-        <p className="text-md">배차</p>
+      <div className="flex justify-between items-center hover:cursor-pointer hover:bg-gray-700 pt-1 pb-1 px-4 rounded-md">
+        <p className="text-md">배차({expense.length-1})</p>
         <div className="flex items-center">
           <span className="text-xl font-bold mr-1">{new Intl.NumberFormat('ko-KR').format(totalExpense)}원</span>
           <ChevronRight className="h-5 w-5 text-gray-400" />
@@ -130,7 +134,7 @@ export function FinanceSummaryCard({
 
       {/* 배차 추가 항목 상세 - 펼쳐진 상태일 때만 표시 */}
       {isDetailsOpen && (
-        <div className="ml-8 space-y-1 mb-2">
+        <div className="ml-8 space-y-1 mb-2 px-6">
           {expense?.map((item, index) => (
             <div key={index} className="flex justify-between items-center">
               <p className="text-gray-400">{item.label}</p>
@@ -143,7 +147,7 @@ export function FinanceSummaryCard({
       <Separator className="bg-gray-700 my-5" />
 
       {/* 남은 금액 */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center pb-2 px-4">
         <p className="text-xl">수익 금액</p>
         <p className={cn("text-2xl font-bold", totalBalance > 0 ? "text-blue-400" : "text-red-400")}>
           {new Intl.NumberFormat('ko-KR').format(totalBalance)}원</p>
