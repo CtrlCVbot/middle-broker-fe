@@ -72,6 +72,15 @@ import {
 } from "@/components/ui/popover";
 import { VehicleCard } from "./broker-dispatch-info-vehicle-card";
 
+// Dialog import 추가
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog";
+import { BrokerOrderDriverInfoEditForm as VehicleEditForm } from "./broker-dispatch-info-vehicle-form";
+
 // 전체적인 상태 관리를 위한 타입 정의
 type EditMode = "cargo" | "driver" | "settlement" | null;
 
@@ -88,6 +97,9 @@ export function BrokerOrderDetailSheet() {
   // 편집 모드 상태 관리 통합
   const [editMode, setEditMode] = useState<EditMode>(null);
   const [isStatusHistoryOpen, setIsStatusHistoryOpen] = useState(false);
+  
+  // Dialog 상태 추가
+  const [isDriverEditDialogOpen, setIsDriverEditDialogOpen] = useState(false);
   
   // 배차 상태 관련 상태와 핸들러 추가
   const [isChangingStatus, setIsChangingStatus] = useState(false);
@@ -238,6 +250,11 @@ export function BrokerOrderDetailSheet() {
     setTimeout(() => refetch(), 300);
   };
   
+  // 배차 정보 입력 Dialog 열기 핸들러
+  const handleOpenDriverEditDialog = () => {
+    setIsDriverEditDialogOpen(true);
+  };
+  
   // 배차 정보 수정 저장 핸들러
   const handleSaveDriverInfo = (formData: any) => {
     console.log("저장된 배차 데이터:", formData);
@@ -250,6 +267,7 @@ export function BrokerOrderDetailSheet() {
     
     // 편집 모드 종료
     setEditMode(null);
+    setIsDriverEditDialogOpen(false);
     
     // 실제 구현에서는 refetch로 최신 데이터 조회
     setTimeout(() => refetch(), 300);
@@ -515,7 +533,7 @@ export function BrokerOrderDetailSheet() {
                           <div className="flex gap-2">                            
                             <Button 
                               type="button" 
-                              onClick={() => handleSetEditMode("driver")}
+                              onClick={handleOpenDriverEditDialog}
                             >
                               <Truck className="h-4 w-4 mr-2" />
                               배차 정보 입력하기
@@ -615,6 +633,32 @@ export function BrokerOrderDetailSheet() {
           </div>
         ) : null}
       </SheetContent>
+      
+      {/* 배차 정보 편집 Dialog 추가 */}
+      <Dialog open={isDriverEditDialogOpen} onOpenChange={setIsDriverEditDialogOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>배차 정보 입력</DialogTitle>
+          </DialogHeader>
+          <VehicleEditForm
+            initialData={{
+              driver: {
+                name: orderData?.vehicle?.driver?.name || "",
+                contact: orderData?.vehicle?.driver?.contact || ""
+              },
+              vehicle: {
+                type: orderData?.vehicle?.type || "",
+                weight: orderData?.vehicle?.weight || "",
+                licensePlate: orderData?.vehicle?.licensePlate || ""
+              },
+              callCenter: "24시",
+              specialNotes: []
+            }}
+            onSave={handleSaveDriverInfo}
+            onCancel={() => setIsDriverEditDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </Sheet>
   );
 } 
