@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -44,11 +44,14 @@ import {
   User,
   X,
   Info,
-  Factory
+  Factory,
+  Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BROKER_VEHICLE_TYPES, BROKER_WEIGHT_TYPES } from "@/types/broker-order";
 import { Textarea } from "@/components/ui/textarea";
+import { useBrokerDriverStore } from "@/store/broker-driver-store";
+import { mapDriversForDispatchForm } from "@/utils/driver-mapper";
 
 // 콜센터 목록
 const CALL_CENTER_OPTIONS = [
@@ -57,16 +60,6 @@ const CALL_CENTER_OPTIONS = [
   "원콜",
   "기타"
 ];
-
-// 차주 목록 (실제로는 API에서 가져올 데이터)
-const DRIVER_LIST = [
-  { id: '1', name: '김운송', contact: '010-1234-5678', vehicle: { type: '카고', weight: '5톤', licensePlate: '서울12가3456' } },
-  { id: '2', name: '이차주', contact: '010-2345-6789', vehicle: { type: '윙바디', weight: '8톤', licensePlate: '경기34나5678' } },
-  { id: '3', name: '박기사', contact: '010-3456-7890', vehicle: { type: '카고', weight: '2.5톤', licensePlate: '인천56다7890' } },
-  { id: '4', name: '최드라', contact: '010-4567-8901', vehicle: { type: '탑차', weight: '4.5톤', licensePlate: '서울78라9012' } },
-  { id: '5', name: '정기사', contact: '010-5678-9012', vehicle: { type: '윙바디', weight: '11톤', licensePlate: '경기90마1234' } }
-];
-
 
 // 중요도 옵션
 const SEVERITY_OPTIONS = [
@@ -138,6 +131,16 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
     severity: 'medium' as 'low' | 'medium' | 'high'
   });
   
+  // 차주 검색 관련 상태 가져오기
+  const { searchDrivers, searchResults, isSearching, searchError, clearSearchResults } = useBrokerDriverStore();
+  
+  // 차주 검색 상태
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  
+  // 차주 검색 결과를 폼에서 사용 가능한 형태로 변환
+  const formattedDrivers = mapDriversForDispatchForm(searchResults);
+  
   // React Hook Form 설정
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -156,6 +159,39 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
     }
   });
   
+  // 디바운스 적용된 검색어 변경 핸들러
+  const debouncedSearch = useCallback(
+    (value: string) => {
+      const timeoutId = setTimeout(() => {
+        if (value.trim()) {
+          searchDrivers(value);
+        }
+      }, 500);
+      
+      return () => clearTimeout(timeoutId);
+    },
+    [searchDrivers]
+  );
+  
+  // 검색어 변경 시 디바운스 적용 검색 실행
+  useEffect(() => {
+    const cleanup = debouncedSearch(searchTerm);
+    return cleanup;
+  }, [searchTerm, debouncedSearch]);
+  
+  // 팝오버가 닫힐 때 검색 결과 초기화
+  useEffect(() => {
+    if (!isOpen) {
+      clearSearchResults();
+      setSearchTerm('');
+    }
+  }, [isOpen, clearSearchResults]);
+  
+  // 차주 검색 입력 핸들러
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+  };
+  
   // 차주 조회 선택 시 정보 채우기
   const selectDriver = (driver: any) => {
     form.setValue('driver.name', driver.name);
@@ -163,9 +199,10 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
     form.setValue('vehicle.type', driver.vehicle.type);
     form.setValue('vehicle.weight', driver.vehicle.weight);
     form.setValue('vehicle.licensePlate', driver.vehicle.licensePlate);
+    
+    // 팝오버 닫기
+    setIsOpen(false);
   };
-  
-  
   
   // 특이사항 추가
   const addSpecialNote = () => {
@@ -219,7 +256,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
             <div className="grid grid-cols-3 gap-3 items-center mb-3">
               <Label className="text-muted-foreground text-sm">차주 조회</Label>
               <div className="col-span-2">
-                <Popover>
+                <Popover open={isOpen} onOpenChange={setIsOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -232,11 +269,26 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
                   </PopoverTrigger>
                   <PopoverContent className="w-[300px] p-0">
                     <Command>
-                      <CommandInput placeholder="차주 검색..." />
+                      <CommandInput 
+                        placeholder="차주 검색..." 
+                        value={searchTerm}
+                        onValueChange={handleSearchChange}
+                      />
+                      {isSearching && (
+                        <div className="flex items-center justify-center py-2">
+                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                          <span className="ml-2 text-sm text-muted-foreground">검색 중...</span>
+                        </div>
+                      )}
+                      {searchError && (
+                        <div className="py-2 px-3 text-sm text-red-500">
+                          오류: {searchError}
+                        </div>
+                      )}
                       <CommandEmpty>차주를 찾을 수 없습니다.</CommandEmpty>
                       <CommandGroup>
                         <CommandList>
-                          {DRIVER_LIST.map(driver => (
+                          {formattedDrivers.map(driver => (
                             <CommandItem
                               key={driver.id}
                               value={driver.name}

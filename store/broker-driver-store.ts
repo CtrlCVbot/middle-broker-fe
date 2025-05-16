@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { DriverStatus, IBrokerDriver, IBrokerDriverFilter, TonnageType, VehicleType, IDriverNote } from '@/types/broker-driver';
 import { DRIVER_STATUS, DISPATCH_COUNT_OPTIONS, TONNAGE_TYPES, VEHICLE_TYPES, getBrokerDriverById, updateBrokerDriver } from '@/utils/mockdata/mock-broker-drivers';
-import { registerDriver, updateDriver as updateDriverApi, deleteDriver, getDriverNotes, addDriverNote, updateDriverNote, deleteDriverNote } from '@/services/driver-service';
+import { registerDriver, updateDriver as updateDriverApi, deleteDriver, getDriverNotes, addDriverNote, updateDriverNote, deleteDriverNote, searchDrivers } from '@/services/driver-service';
 import { toast } from 'sonner';
 import { mapApiResponseToNotesList } from '@/utils/driver-mapper';
 
@@ -67,6 +67,11 @@ interface IBrokerDriverState {
   isLoadingNotes: boolean;
   notesError: string | null;
   
+  // 검색 관련 상태 추가
+  searchResults: IBrokerDriver[];
+  isSearching: boolean;
+  searchError: string | null;
+  
   // 액션
   setViewMode: (mode: 'table' | 'card') => void;
   setFilter: (filter: Partial<IBrokerDriverFilter>) => void;
@@ -101,6 +106,10 @@ interface IBrokerDriverState {
     statuses: DriverStatus[];
     dispatchCountOptions: typeof DISPATCH_COUNT_OPTIONS;
   };
+  
+  // 검색 관련 액션 추가
+  searchDrivers: (term: string) => Promise<IBrokerDriver[]>;
+  clearSearchResults: () => void;
 }
 
 // 목업 데이터 저장소 (실제 구현에서는 API 호출로 대체)
@@ -138,6 +147,11 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
       driverNotes: {},
       isLoadingNotes: false,
       notesError: null,
+      
+      // 검색 관련 상태 초기화
+      searchResults: [],
+      isSearching: false,
+      searchError: null,
       
       // 필터 옵션
       filterOptions: {
@@ -521,6 +535,41 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
           
           throw error;
         }
+      },
+      
+      // 검색 관련 액션 구현
+      searchDrivers: async (term) => {
+        try {
+          set({ isSearching: true, searchError: null });
+          
+          // 검색어가 없는 경우 결과 초기화
+          if (!term.trim()) {
+            set({ searchResults: [], isSearching: false });
+            return [];
+          }
+          
+          // API 호출하여 차주 검색
+          console.log('차주 검색 API 호출:', term);
+          const results = await searchDrivers(term);
+          console.log('차주 검색 결과:', results);
+          
+          // 상태 업데이트
+          set({ searchResults: results, isSearching: false });
+          return results;
+        } catch (error) {
+          console.error('차주 검색 오류:', error);
+          
+          set({
+            isSearching: false,
+            searchError: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+          });
+          
+          return [];
+        }
+      },
+      
+      clearSearchResults: () => {
+        set({ searchResults: [], searchError: null });
       },
     }),
     {

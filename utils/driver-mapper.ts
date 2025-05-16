@@ -328,4 +328,66 @@ export function mapNoteToApiRequest(note: any, driverId: string): any {
     content: note.content || '',
     date: note.date instanceof Date ? note.date.toISOString() : new Date().toISOString()
   };
+}
+
+/**
+ * API 응답 데이터를 배차 정보 입력 폼의 차주 선택 컴포넌트에 적합한 형태로 변환
+ * @param driver API 응답의 차주 데이터
+ * @returns 배차 정보 입력 폼에 맞는 차주 데이터
+ */
+export function mapDriverForDispatchForm(driver: any): {
+  id: string;
+  name: string;
+  contact: string;
+  vehicle: {
+    type: string;
+    weight: string;
+    licensePlate: string;
+  }
+} {
+  if (!driver) {
+    return {
+      id: '',
+      name: '',
+      contact: '',
+      vehicle: {
+        type: '',
+        weight: '',
+        licensePlate: ''
+      }
+    };
+  }
+  
+  return {
+    id: driver.id || '',
+    name: driver.name || '',
+    contact: driver.phoneNumber || '',
+    vehicle: {
+      type: driver.vehicleType || '',
+      weight: driver.vehicleWeight || driver.tonnage || '',
+      licensePlate: driver.vehicleNumber || ''
+    }
+  };
+}
+
+/**
+ * API 응답 데이터 배열을 배차 정보 입력 폼의 차주 선택 컴포넌트에 적합한 형태로 변환
+ * @param drivers API 응답의 차주 데이터 배열
+ * @returns 배차 정보 입력 폼에 맞는 차주 데이터 배열
+ */
+export function mapDriversForDispatchForm(drivers: any[]): Array<{
+  id: string;
+  name: string;
+  contact: string;
+  vehicle: {
+    type: string;
+    weight: string;
+    licensePlate: string;
+  }
+}> {
+  if (!Array.isArray(drivers)) {
+    return [];
+  }
+  
+  return drivers.map(driver => mapDriverForDispatchForm(driver));
 } 

@@ -432,4 +432,51 @@ export const deleteDriverNote = async (noteId: string): Promise<{ message: strin
     console.error('특이사항 삭제 API 오류:', error);
     throw error;
   }
+};
+
+/**
+ * 차주 검색 (배차 입력 폼에서 사용)
+ * @param searchTerm 검색어 (차주명, 연락처, 차량번호 등)
+ * @returns 검색된 차주 목록
+ */
+export const searchDrivers = async (searchTerm: string): Promise<IBrokerDriver[]> => {
+  try {
+    console.log('searchDrivers 호출됨: searchTerm', searchTerm);
+    
+    // 검색어가 없는 경우 빈 배열 반환
+    if (!searchTerm.trim()) {
+      return [];
+    }
+    
+    // 쿼리 파라미터 구성
+    const queryParams = new URLSearchParams();
+    queryParams.append('searchTerm', searchTerm);
+    queryParams.append('pageSize', '10'); // 최대 10개 결과만 가져옴
+    
+    const response = await fetch(`${API_BASE_URL}?${queryParams.toString()}`, {
+      headers: getAuthHeaders()
+    });
+    
+    console.log('API 응답 상태:', response.status, response.statusText);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      console.error('API 오류 응답:', errorData);
+      throw new Error(errorData?.error || '차주 검색 중 오류가 발생했습니다.');
+    }
+    
+    const data = await response.json();
+    console.log('API 응답 데이터:', data);
+    
+    // 응답 데이터 매핑
+    const drivers = Array.isArray(data.data) 
+      ? data.data.map((item: any) => mapApiResponseToDriver(item)) 
+      : [];
+    
+    console.log('매핑된 차주 데이터:', drivers);
+    return drivers;
+  } catch (error) {
+    console.error('차주 검색 API 오류:', error);
+    throw error;
+  }
 }; 
