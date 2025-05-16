@@ -259,11 +259,42 @@ export function mapApiResponseToNote(apiNote: any): IDriverNote {
  * @returns 프론트엔드 특이사항 배열
  */
 export function mapApiResponseToNotesList(apiResponse: any): IDriverNote[] {
-  if (!apiResponse || !apiResponse.data || !Array.isArray(apiResponse.data)) {
+  console.log('mapApiResponseToNotesList 입력 데이터:', JSON.stringify(apiResponse));
+  
+  // 응답이 없는 경우
+  if (!apiResponse) {
+    console.warn('mapApiResponseToNotesList: 응답 데이터가 없음');
     return [];
   }
   
-  return apiResponse.data.map(mapApiResponseToNote);
+  // 응답 구조 분석
+  let notesData = apiResponse;
+  
+  // 데이터가 data 속성 내에 있는 경우 (표준 페이지네이션 응답)
+  if (apiResponse.data && Array.isArray(apiResponse.data)) {
+    console.log('표준 페이지네이션 응답 구조 감지: data 속성에서 배열 추출');
+    notesData = apiResponse.data;
+  } 
+  // 응답이 이미 배열인 경우
+  else if (Array.isArray(apiResponse)) {
+    console.log('배열 형태의 응답 구조 감지');
+    notesData = apiResponse;
+  }
+  // 응답이 배열이 아니거나 data 속성이 없는 경우
+  else {
+    console.warn('mapApiResponseToNotesList: 지원되지 않는 응답 형식', apiResponse);
+    return [];
+  }
+  
+  // 배열 항목 매핑
+  const mappedNotes = notesData.map((item: any) => {
+    const mappedNote = mapApiResponseToNote(item);
+    console.log(`특이사항 항목 매핑: ${item.id} -> ${JSON.stringify(mappedNote)}`);
+    return mappedNote;
+  });
+  
+  console.log(`매핑 완료: ${mappedNotes.length}개 항목`);
+  return mappedNotes;
 }
 
 /**

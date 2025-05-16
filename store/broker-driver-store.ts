@@ -298,9 +298,28 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
           const apiResponse = await getDriverNotes(driverId);
           console.log('특이사항 API 응답:', apiResponse);
           
+          // API 응답 데이터가 null, undefined, 빈 배열인 경우 확인
+          if (!apiResponse || !Array.isArray(apiResponse) || apiResponse.length === 0) {
+            console.log('API 응답이 비어있음. 빈 배열 반환');
+            
+            // 빈 배열로 상태 초기화
+            set(state => ({
+              driverNotes: {
+                ...state.driverNotes,
+                [driverId]: []
+              },
+              isLoadingNotes: false
+            }));
+            
+            return [];
+          }
+          
           // API 응답 데이터를 프론트엔드 형식으로 변환
           const notes = mapApiResponseToNotesList(apiResponse);
           console.log('변환된 특이사항 목록:', notes);
+          
+          // null 체크를 하여 안전하게 변환
+          const safeNotes = notes || [];
           
           // 상태 업데이트
           set(state => {
@@ -309,7 +328,7 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
             const updated = {
               driverNotes: {
                 ...state.driverNotes,
-                [driverId]: notes
+                [driverId]: safeNotes
               },
               isLoadingNotes: false
             };
@@ -318,9 +337,18 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
             return updated;
           });
           
-          return notes;
+          // 변환된 목록 반환
+          return safeNotes;
         } catch (error) {
           console.error('특이사항 목록 조회 API 오류:', error);
+          
+          // 더 자세한 오류 정보 로깅
+          if (error instanceof Error) {
+            console.error('오류 메시지:', error.message);
+            console.error('오류 스택:', error.stack);
+          } else {
+            console.error('알 수 없는 오류 유형:', typeof error);
+          }
           
           set({
             isLoadingNotes: false,
@@ -331,6 +359,7 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
             description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
           });
           
+          // 에러 발생해도 빈 배열 반환하여 UI에서 처리 가능하게 함
           return [];
         }
       },

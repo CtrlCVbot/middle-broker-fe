@@ -100,11 +100,17 @@ export function BrokerDriverNotesForm({
     queryFn: async () => {
       if (!driverId) return [];
       addLog(`API 호출 시작: fetchDriverNotes(${driverId})`)
-      const notes = await fetchDriverNotes(driverId);
-      addLog(`API 응답 완료: ${notes.length}개 항목`)
-      return notes;
+      
+      try {
+        const notes = await fetchDriverNotes(driverId);
+        addLog(`API 응답 완료: ${notes.length}개 항목 (상세: ${JSON.stringify(notes)})`)
+        return notes;
+      } catch (error) {
+        addLog(`API 호출 오류: ${error instanceof Error ? error.message : String(error)}`)
+        throw error;
+      }
     },
-    enabled: !!driverId, // 차주 ID가 있는 경우에만 쿼리 활성화
+    enabled: !!driverId && !isNewDriver, // 차주 ID가 있고 기존 차주인 경우에만 쿼리 활성화
     staleTime: 1000 * 30, // 30초
     refetchOnWindowFocus: false,
   });
@@ -120,30 +126,56 @@ export function BrokerDriverNotesForm({
   
   // 디버깅: 특이사항 목록 상태 - 의존성 배열에 모든 관련 변수 포함
   useEffect(() => {
-    addLog(`apiNotes 갱신: ${apiNotes.length}개`)
+    addLog(`apiNotes 갱신: ${apiNotes.length}개 (${JSON.stringify(apiNotes)})`)
     addLog(`formNotes 갱신: ${formNotes.length}개`)
     addLog(`notes 사용: ${notes.length}개 (${isNewDriver ? 'formNotes' : 'apiNotes'})`)
   }, [apiNotes, formNotes, notes, isNewDriver])
 
   // 기존 차주인 경우 API에서 특이사항 목록 가져오기
+  // React Query를 사용하므로 이 useEffect는 제거
+  // useEffect(() => {
+  //   if (driverId && !isNewDriver) {
+  //     addLog(`useEffect에서 fetchDriverNotes 호출: ${driverId}`)
+  //     fetchDriverNotes(driverId).then((fetchedNotes) => {
+  //       addLog(`fetchDriverNotes 응답: ${fetchedNotes.length}개 항목`)
+  //       
+  //       // 폼 값에도 API에서 가져온 특이사항 설정
+  //       form.setValue("notes.notes", fetchedNotes, { 
+  //         shouldValidate: true,
+  //         shouldDirty: false, // API에서 가져온 데이터는 dirty 상태로 표시하지 않음
+  //       });
+  //       
+  //       addLog(`폼 업데이트 완료: notes.notes를 ${fetchedNotes.length}개 항목으로 설정`)
+  //     }).catch(err => {
+  //       addLog(`fetchDriverNotes 오류: ${err.message}`)
+  //     });
+  //   }
+  // }, [driverId, fetchDriverNotes, form, isNewDriver]);
+  
+  // React Query 응답에 따라 폼 값 설정
   useEffect(() => {
-    if (driverId && !isNewDriver) {
-      addLog(`useEffect에서 fetchDriverNotes 호출: ${driverId}`)
-      fetchDriverNotes(driverId).then((fetchedNotes) => {
-        addLog(`fetchDriverNotes 응답: ${fetchedNotes.length}개 항목`)
-        
-        // 폼 값에도 API에서 가져온 특이사항 설정
-        form.setValue("notes.notes", fetchedNotes, { 
-          shouldValidate: true,
-          shouldDirty: false, // API에서 가져온 데이터는 dirty 상태로 표시하지 않음
-        });
-        
-        addLog(`폼 업데이트 완료: notes.notes를 ${fetchedNotes.length}개 항목으로 설정`)
-      }).catch(err => {
-        addLog(`fetchDriverNotes 오류: ${err.message}`)
+    if (notesData && driverId && !isNewDriver) {
+      addLog(`React Query 응답에 따라 폼 값 설정: ${notesData.length}개 항목`)
+      
+      // 폼 값에 API에서 가져온 특이사항 설정
+      form.setValue("notes.notes", notesData, { 
+        shouldValidate: true,
+        shouldDirty: false,
+      });
+      
+      addLog(`폼 업데이트 완료: notes.notes를 ${notesData.length}개 항목으로 설정`)
+    }
+  }, [notesData, driverId, isNewDriver, form]);
+  
+  // 특이사항 목록이 없을 때 강제로 데이터 다시 불러오기
+  useEffect(() => {
+    if (driverId && !isNewDriver && !isLoading && !error && notes.length === 0 && apiNotes.length === 0) {
+      addLog('특이사항 데이터가 없어 강제로 다시 불러오기 시도')
+      refetch().then(() => {
+        addLog('강제 refetch 완료')
       });
     }
-  }, [driverId, fetchDriverNotes, form, isNewDriver]);
+  }, [driverId, isNewDriver, isLoading, error, notes.length, apiNotes.length, refetch]);
   
   // 폼 상태 변화 감지
   useEffect(() => {
@@ -400,6 +432,12 @@ export function BrokerDriverNotesForm({
           <p>formNotes 길이: {formNotes.length}</p>
           <p>isLoading: {isLoading ? 'true' : 'false'}</p>
           <p>notesError: {notesError || '없음'}</p>
+          <button 
+            onClick={() => refetch()} 
+            className="text-xs mt-1 bg-blue-500 text-white px-2 py-1 rounded"
+          >
+            데이터 강제 새로고침
+          </button>
           <details>
             <summary>최근 로그 ({logMessages.length}개)</summary>
             <pre className="mt-2 p-1 bg-gray-100 max-h-40 overflow-y-auto">

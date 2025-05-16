@@ -271,10 +271,40 @@ export const getDriverNotes = async (driverId: string): Promise<any[]> => {
       throw new Error(errorData?.error || '차주 특이사항 조회 중 오류가 발생했습니다.');
     }
     
-    const data = await response.json();
-    console.log('API 응답 데이터:', data);
+    // 전체 응답 로깅 
+    const responseText = await response.text();
+    console.log('API 응답 원본:', responseText);
     
-    return data.data || [];
+    // JSON 파싱 시도
+    let data;
+    try {
+      data = JSON.parse(responseText);
+      console.log('API 응답 데이터 구조:', {
+        isArray: Array.isArray(data),
+        hasData: !!data.data,
+        dataIsArray: data.data ? Array.isArray(data.data) : false,
+        dataLength: data.data && Array.isArray(data.data) ? data.data.length : 'N/A'
+      });
+    } catch (parseError) {
+      console.error('API 응답 JSON 파싱 오류:', parseError);
+      throw new Error('서버 응답을 파싱할 수 없습니다: ' + responseText);
+    }
+    
+    // data 속성이 있는 경우 반환
+    if (data.data) {
+      console.log('데이터 속성 반환:', data.data);
+      return data.data;
+    }
+    
+    // 응답 자체가 배열인 경우
+    if (Array.isArray(data)) {
+      console.log('배열 형태 응답 반환:', data);
+      return data;
+    }
+    
+    // 기본적으로 빈 배열 반환
+    console.log('응답 형식 인식 실패. 빈 배열 반환');
+    return [];
   } catch (error) {
     console.error('차주 특이사항 조회 API 오류:', error);
     throw error;
