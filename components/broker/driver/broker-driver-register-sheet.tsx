@@ -244,6 +244,7 @@ export function BrokerDriverRegisterSheet({
           console.log("차주 등록 서비스 호출 시작");
           
           // 서비스 레이어 직접 호출 (driver-service.ts의 registerDriver 함수)
+          // getAuthHeaders()를 통해 현재 로그인한 사용자 정보가 자동으로 요청에 포함됨
           const registeredDriver = await registerDriver({
             basicInfo: {
               name: data.basicInfo.name,

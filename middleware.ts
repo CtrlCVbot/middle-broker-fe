@@ -36,24 +36,38 @@ export async function middleware(request: NextRequest) {
     const response = NextResponse.next();
     
     // 개발 환경에서는 차주 등록 테스트를 위해 임시 사용자 ID 설정
-    if (process.env.NODE_ENV !== 'production') {
-      // 테스트용 사용자 ID (시스템에 실제 존재하는 ID로 변경 필요)
-      const testUserId = '1';
-      console.log(`개발 환경 - API 요청에 테스트 사용자 ID 추가: ${testUserId}`);
-      response.headers.set('x-user-id', testUserId);
-    } else {
-      // 프로덕션에서는 토큰에서 추출한 실제 사용자 ID 사용
-      const accessTokenCookie = request.cookies.get('access_token')?.value
+    // if (process.env.NODE_ENV !== 'production') {
+    //   // 테스트용 사용자 ID (실제 DB에 존재하는 UUID 형식)
+    //   const testUserId = '123e4567-e89b-12d3-a456-426614174000';
+    //   console.log(`개발 환경 - API 요청에 테스트 사용자 ID 추가: ${testUserId}`);
+    //   response.headers.set('x-user-id', testUserId);
+    // } else {
+    //   // 프로덕션에서는 토큰에서 추출한 실제 사용자 ID 사용
+    //   const accessTokenCookie = request.cookies.get('access_token')?.value
       
-      if (accessTokenCookie) {
-        try {
-          const payload = await verifyAccessToken(accessTokenCookie)
-          if (payload && payload.id) {
-            response.headers.set('x-user-id', payload.id);
-          }
-        } catch (error) {
-          console.error('JWT 토큰 검증 오류:', error)
+    //   if (accessTokenCookie) {
+    //     try {
+    //       const payload = await verifyAccessToken(accessTokenCookie)
+    //       if (payload && payload.id) {
+    //         response.headers.set('x-user-id', payload.id);
+    //       }
+    //     } catch (error) {
+    //       console.error('JWT 토큰 검증 오류:', error)
+    //     }
+    //   }
+    // }
+
+    const accessTokenCookie = request.cookies.get('access_token')?.value
+      
+    if (accessTokenCookie) {
+      try {
+        const payload = await verifyAccessToken(accessTokenCookie)
+        if (payload && payload.id) {
+          response.headers.set('x-user-id', payload.id);
+          console.log('JWT 토큰 검증 성공:', payload.id);
         }
+      } catch (error) {
+        console.error('JWT 토큰 검증 오류:', error)
       }
     }
     

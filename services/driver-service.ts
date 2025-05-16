@@ -1,5 +1,6 @@
 import { IBrokerDriver } from "@/types/broker-driver";
 import { mapDriverFormToApiRequest, mapApiResponseToDriver } from "@/utils/driver-mapper";
+import { getAuthHeaders } from "@/utils/auth-header";
 
 const API_BASE_URL = '/api/drivers';
 
@@ -33,7 +34,9 @@ export const getDrivers = async (params: {
   if (params.endDate) queryParams.append('endDate', params.endDate);
   
   // API 호출
-  const response = await fetch(`${API_BASE_URL}?${queryParams.toString()}`);
+  const response = await fetch(`${API_BASE_URL}?${queryParams.toString()}`, {
+    headers: getAuthHeaders()
+  });
   
   if (!response.ok) {
     const errorData = await response.json().catch(() => null);
@@ -58,7 +61,9 @@ export const getDrivers = async (params: {
  * @returns 차주 상세 정보
  */
 export const getDriverById = async (id: string): Promise<IBrokerDriver> => {
-  const response = await fetch(`${API_BASE_URL}/${id}`);
+  const response = await fetch(`${API_BASE_URL}/${id}`, {
+    headers: getAuthHeaders()
+  });
   
   if (!response.ok) {
     const errorData = await response.json().catch(() => null);
@@ -84,15 +89,14 @@ export const registerDriver = async (driverData: any): Promise<IBrokerDriver> =>
   try {
     console.log("API 요청 URL:", API_BASE_URL);
     console.log("요청 메서드:", "POST");
-    console.log("요청 헤더:", {
-      'Content-Type': 'application/json',
-    });
+    
+    // 인증 헤더 가져오기
+    const headers = getAuthHeaders();
+    console.log("요청 헤더:", headers);
     
     const response = await fetch(API_BASE_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: headers,
       body: JSON.stringify(requestData),
     });
     
@@ -137,9 +141,7 @@ export const updateDriver = async (id: string, driverData: any): Promise<IBroker
   
   const response = await fetch(`${API_BASE_URL}/${id}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify(requestData),
   });
   
@@ -168,9 +170,7 @@ export const updateDriverFields = async (
 ): Promise<IBrokerDriver> => {
   const response = await fetch(`${API_BASE_URL}/${id}/fields`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify({
       fields,
       reason
@@ -202,6 +202,7 @@ export const deleteDriver = async (id: string, reason?: string): Promise<{ messa
   
   const response = await fetch(url.toString(), {
     method: 'DELETE',
+    headers: getAuthHeaders()
   });
   
   if (!response.ok) {

@@ -186,6 +186,17 @@ export async function POST(request: NextRequest) {
     const requestUserId = request.headers.get('x-user-id') || '';
     console.log('요청 사용자 ID:', requestUserId);
 
+    // 사용자 ID가 UUID 형식인지 확인
+    const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestUserId);
+    
+    if (!isValidUUID) {
+      console.error('유효하지 않은 UUID 형식의 사용자 ID:', requestUserId);
+      return NextResponse.json(
+        { error: '유효하지 않은 사용자 ID 형식입니다.' },
+        { status: 400 }
+      );
+    }
+
     // 요청 사용자 정보 조회
     console.log('사용자 정보 조회 시작...');
     const [requestUser] = await db
