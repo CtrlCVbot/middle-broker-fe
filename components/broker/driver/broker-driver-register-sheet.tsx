@@ -53,12 +53,12 @@ const vehicleInfoSchema = z.object({
 });
 
 // 계정 정보 스키마
-const accountInfoSchema = z.object({
-  id: z.string().min(4, "아이디는 최소 4자 이상이어야 합니다"),
-  password: z.string().min(6, "비밀번호는 최소 6자 이상이어야 합니다"),
-  email: z.string().email("유효한 이메일 주소를 입력해주세요").optional().or(z.literal("")),
-  permission: z.enum(["일반", "관리자"]).default("일반"),
-});
+// const accountInfoSchema = z.object({
+//   id: z.string().min(4, "아이디는 최소 4자 이상이어야 합니다"),
+//   password: z.string().min(6, "비밀번호는 최소 6자 이상이어야 합니다"),
+//   email: z.string().email("유효한 이메일 주소를 입력해주세요").optional().or(z.literal("")),
+//   permission: z.enum(["일반", "관리자"]).default("일반"),
+// });
 
 // 특이사항 스키마
 const noteSchema = z.object({
@@ -75,7 +75,7 @@ const noteSchema = z.object({
 const driverSchema = z.object({
   basicInfo: basicInfoSchema,
   vehicleInfo: vehicleInfoSchema,
-  accountInfo: accountInfoSchema,
+  // accountInfo: accountInfoSchema,
   notes: noteSchema,
 });
 
@@ -304,11 +304,11 @@ export function BrokerDriverRegisterSheet({
             length: data.vehicleInfo.cargoBoxLength || ""
           },
           manufactureYear: data.vehicleInfo.manufactureYear || "",
-          account: {
-            id: data.accountInfo.id,
-            email: data.accountInfo.email || "",
-            permission: data.accountInfo.permission as PermissionType
-          },
+          // account: {
+          //   id: data.accountInfo.id,
+          //   email: data.accountInfo.email || "",
+          //   permission: data.accountInfo.permission as PermissionType
+          // },
           notes: data.notes.notes,
         };
         
@@ -355,13 +355,14 @@ export function BrokerDriverRegisterSheet({
         checkStepCompletion('vehicle', true);
         setActiveTab("account-info");
       }
-    } else if (activeTab === "account-info") {
-      isValid = await form.trigger("accountInfo", { shouldFocus: true });
-      if (isValid) {
-        checkStepCompletion('account', true);
-        setActiveTab("notes");
-      }
-    }
+    } 
+    // else if (activeTab === "account-info") {
+    //   isValid = await form.trigger("accountInfo", { shouldFocus: true });
+    //   if (isValid) {
+    //     checkStepCompletion('account', true);
+    //     setActiveTab("notes");
+    //   }
+    // }
   };
 
   // 이전 탭으로 이동
@@ -434,7 +435,7 @@ export function BrokerDriverRegisterSheet({
                       <Check className="h-3 w-3 absolute -top-1 -right-1 text-green-600" />
                     )}
                   </TabsTrigger>
-                  <TabsTrigger 
+                  {/* <TabsTrigger 
                     value="account-info"
                     className="relative"
                   >
@@ -442,7 +443,7 @@ export function BrokerDriverRegisterSheet({
                     {formStatus.account && (
                       <Check className="h-3 w-3 absolute -top-1 -right-1 text-green-600" />
                     )}
-                  </TabsTrigger>
+                  </TabsTrigger> */}
                   <TabsTrigger 
                     value="notes"
                     className="relative"
@@ -480,7 +481,7 @@ export function BrokerDriverRegisterSheet({
                   />
                 </TabsContent>
 
-                <TabsContent value="account-info">
+                {/* <TabsContent value="account-info">
                   <Alert className="mb-4">
                     <AlertTitle>계정 정보 입력</AlertTitle>
                     <AlertDescription>
@@ -491,7 +492,7 @@ export function BrokerDriverRegisterSheet({
                     form={form}
                     onComplete={() => checkStepCompletion('account', true)}
                   />
-                </TabsContent>
+                </TabsContent> */}
 
                 <TabsContent value="notes">
                   <Alert className="mb-4">

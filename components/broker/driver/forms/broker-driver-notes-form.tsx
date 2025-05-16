@@ -46,7 +46,7 @@ const noteSchema = z.object({
 type DriverFormValues = {
   basicInfo: any;
   vehicleInfo: any;
-  accountInfo: any;
+  // accountInfo: any;
   notes: z.infer<typeof noteSchema>;
 }
 
