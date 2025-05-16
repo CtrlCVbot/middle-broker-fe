@@ -36,6 +36,7 @@ export interface IBrokerDriver {
   vehicleType: VehicleType;
   tonnage: TonnageType;
   address: string;  
+  companyName?: string;
   businessNumber: string;
   dispatchCount?: number;
   status: DriverStatus;

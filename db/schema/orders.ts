@@ -38,10 +38,13 @@ export const vehicleTypeEnum = pgEnum('vehicle_type', [
 
 export const vehicleWeightEnum = pgEnum('vehicle_weight', [
   '1톤',
+  '1.4톤',
   '2.5톤',
   '3.5톤',
   '5톤',
+  '8톤',
   '11톤',
+  '18톤',
   '25톤'
 ]);
 
