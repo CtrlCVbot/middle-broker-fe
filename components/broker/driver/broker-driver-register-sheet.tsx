@@ -31,6 +31,7 @@ import {
   PermissionType 
 } from "@/types/broker-driver";
 import { useBrokerDriverStore } from "@/store/broker-driver-store";
+import { registerDriver } from "@/services/driver-service";
 
 // 차주 기본 정보 스키마
 const basicInfoSchema = z.object({
@@ -114,7 +115,7 @@ export function BrokerDriverRegisterSheet({
     notes: false,
   });
   
-  const { updateDriver } = useBrokerDriverStore();
+  const { updateDriver, registerDriverWithAPI } = useBrokerDriverStore();
 
   // 외부에서 제어되는 경우 내부 상태 동기화
   useEffect(() => {
@@ -234,61 +235,105 @@ export function BrokerDriverRegisterSheet({
   // 폼 제출 핸들러
   const onSubmit = async (data: DriverFormValues) => {
     setIsSubmitting(true);
+    console.log("제출된 폼 데이터:", data);
     
     try {
-      // API 호출 대신 목업 데이터로 처리
-      // IBrokerDriver 형식으로 변환
-      const formattedDriver: IBrokerDriver = {
-        id: driver?.id || Math.random().toString(36).substring(2, 11),
-        name: data.basicInfo.name,
-        phoneNumber: data.basicInfo.phone,
-        businessNumber: data.basicInfo.businessNumber || "",
-        address: data.basicInfo.address || "",
-        status: data.basicInfo.status as DriverStatus,
-        vehicleNumber: data.vehicleInfo.vehicleNumber,
-        vehicleType: data.vehicleInfo.vehicleType as VehicleType,
-        tonnage: data.vehicleInfo.tonnage as TonnageType,
-        cargoBox: {
-          type: data.vehicleInfo.cargoBoxType || "",
-          length: data.vehicleInfo.cargoBoxLength || ""
-        },
-        manufactureYear: data.vehicleInfo.manufactureYear || "",
-        account: {
-          id: data.accountInfo.id,
-          email: data.accountInfo.email || "",
-          permission: data.accountInfo.permission as PermissionType
-        },
-        notes: data.notes.notes,
-      };
-      
-      // 성공 처리 (목업)
-      setTimeout(() => {
-        if (mode === 'register') {
+      if (mode === 'register') {
+        // 차주 등록 모드
+        try {
+          console.log("차주 등록 서비스 호출 시작");
+          
+          // 서비스 레이어 직접 호출 (driver-service.ts의 registerDriver 함수)
+          const registeredDriver = await registerDriver({
+            basicInfo: {
+              name: data.basicInfo.name,
+              phone: data.basicInfo.phone,
+              businessNumber: data.basicInfo.businessNumber || "0000000000",
+              address: data.basicInfo.address || "",
+              status: data.basicInfo.status
+            },
+            vehicleInfo: {
+              vehicleNumber: data.vehicleInfo.vehicleNumber,
+              vehicleType: data.vehicleInfo.vehicleType,
+              tonnage: data.vehicleInfo.tonnage, // API에서는 vehicleWeight로 매핑됨
+              cargoBoxType: data.vehicleInfo.cargoBoxType || "",
+              cargoBoxLength: data.vehicleInfo.cargoBoxLength || "",
+              manufactureYear: data.vehicleInfo.manufactureYear || ""
+            }
+          });
+          
+          console.log("차주 등록 성공:", registeredDriver);
+          
+          // 성공 메시지 표시
           toast.success("차주가 성공적으로 등록되었습니다", {
             description: `${data.basicInfo.name} 차주가 등록되었습니다.`,
           });
+          
+          // 성공 콜백 호출
           if (onRegisterSuccess) {
-            onRegisterSuccess(formattedDriver);
+            onRegisterSuccess(registeredDriver);
           }
-        } else {
-          toast.success("차주 정보가 성공적으로 수정되었습니다", {
-            description: `${data.basicInfo.name} 차주 정보가 수정되었습니다.`,
+          
+          // 폼 닫기
+          handleOpenChange(false);
+        } catch (apiError) {
+          console.error("차주 등록 API 오류:", apiError);
+          // 오류 메시지 표시
+          toast.error("차주 등록에 실패했습니다", {
+            description: apiError instanceof Error 
+              ? apiError.message 
+              : "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
           });
-          // 스토어 업데이트
-          updateDriver(formattedDriver);
-          if (onUpdateSuccess) {
-            onUpdateSuccess(formattedDriver);
-          }
+        }
+      } else {
+        // 차주 수정 모드 (기존 코드 유지)
+        // IBrokerDriver 형식으로 변환
+        const formattedDriver: IBrokerDriver = {
+          id: driver?.id || Math.random().toString(36).substring(2, 11),
+          name: data.basicInfo.name,
+          phoneNumber: data.basicInfo.phone,
+          businessNumber: data.basicInfo.businessNumber || "",
+          address: data.basicInfo.address || "",
+          status: data.basicInfo.status as DriverStatus,
+          vehicleNumber: data.vehicleInfo.vehicleNumber,
+          vehicleType: data.vehicleInfo.vehicleType as VehicleType,
+          tonnage: data.vehicleInfo.tonnage as TonnageType,
+          cargoBox: {
+            type: data.vehicleInfo.cargoBoxType || "",
+            length: data.vehicleInfo.cargoBoxLength || ""
+          },
+          manufactureYear: data.vehicleInfo.manufactureYear || "",
+          account: {
+            id: data.accountInfo.id,
+            email: data.accountInfo.email || "",
+            permission: data.accountInfo.permission as PermissionType
+          },
+          notes: data.notes.notes,
+        };
+        
+        // 성공 메시지 표시
+        toast.success("차주 정보가 성공적으로 수정되었습니다", {
+          description: `${data.basicInfo.name} 차주 정보가 수정되었습니다.`,
+        });
+        
+        // 스토어 업데이트
+        updateDriver(formattedDriver);
+        
+        // 성공 콜백 호출
+        if (onUpdateSuccess) {
+          onUpdateSuccess(formattedDriver);
         }
         
+        // 폼 닫기
         handleOpenChange(false);
-        setIsSubmitting(false);
-      }, 1000);
+      }
     } catch (error) {
-      console.error("차주 등록/수정 오류:", error);
+      console.error("차주 등록/수정 처리 중 오류 발생:", error);
+      // 오류 메시지 표시
       toast.error(`차주 ${mode === 'register' ? '등록' : '수정'}에 실패했습니다`, {
-        description: "잠시 후 다시 시도해주세요.",
+        description: "서버와의 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
       });
+    } finally {
       setIsSubmitting(false);
     }
   };
