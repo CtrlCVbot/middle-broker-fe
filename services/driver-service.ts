@@ -246,4 +246,160 @@ export const deleteDriver = async (id: string, reason?: string): Promise<{ messa
   }
   
   return await response.json();
+};
+
+// --------------- 차주 특이사항 관련 API 함수 ---------------
+
+/**
+ * 차주 특이사항 목록 조회
+ * @param driverId 차주 ID
+ * @returns 특이사항 목록
+ */
+export const getDriverNotes = async (driverId: string): Promise<any[]> => {
+  try {
+    console.log('getDriverNotes 호출됨: driverId', driverId);
+    
+    const response = await fetch(`/api/drivers/notes?driverId=${driverId}`, {
+      headers: getAuthHeaders()
+    });
+    
+    console.log('API 응답 상태:', response.status, response.statusText);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      console.error('API 오류 응답:', errorData);
+      throw new Error(errorData?.error || '차주 특이사항 조회 중 오류가 발생했습니다.');
+    }
+    
+    const data = await response.json();
+    console.log('API 응답 데이터:', data);
+    
+    return data.data || [];
+  } catch (error) {
+    console.error('차주 특이사항 조회 API 오류:', error);
+    throw error;
+  }
+};
+
+/**
+ * 차주 특이사항 상세 조회
+ * @param noteId 특이사항 ID
+ * @returns 특이사항 상세 정보
+ */
+export const getDriverNoteById = async (noteId: string): Promise<any> => {
+  try {
+    const response = await fetch(`/api/drivers/notes/${noteId}`, {
+      headers: getAuthHeaders()
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.error || '특이사항 상세 정보 조회 중 오류가 발생했습니다.');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('특이사항 상세 조회 API 오류:', error);
+    throw error;
+  }
+};
+
+/**
+ * 차주 특이사항 추가
+ * @param driverId 차주 ID
+ * @param content 특이사항 내용
+ * @returns 추가된 특이사항 정보
+ */
+export const addDriverNote = async (driverId: string, content: string): Promise<any> => {
+  try {
+    console.log('addDriverNote 호출됨:', { driverId, content });
+    
+    const response = await fetch('/api/drivers/notes', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ driverId, content }),
+    });
+    
+    console.log('API 응답 상태:', response.status, response.statusText);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      console.error('API 오류 응답:', errorData);
+      throw new Error(errorData?.error || '특이사항 추가 중 오류가 발생했습니다.');
+    }
+    
+    const data = await response.json();
+    console.log('API 응답 데이터:', data);
+    
+    return data.data;
+  } catch (error) {
+    console.error('특이사항 추가 API 오류:', error);
+    throw error;
+  }
+};
+
+/**
+ * 차주 특이사항 수정
+ * @param noteId 특이사항 ID
+ * @param content 수정할 특이사항 내용
+ * @returns 수정된 특이사항 정보
+ */
+export const updateDriverNote = async (noteId: string, content: string): Promise<any> => {
+  try {
+    console.log('updateDriverNote 호출됨:', { noteId, content });
+    
+    const response = await fetch(`/api/drivers/notes/${noteId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ content }),
+    });
+    
+    console.log('API 응답 상태:', response.status, response.statusText);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      console.error('API 오류 응답:', errorData);
+      throw new Error(errorData?.error || '특이사항 수정 중 오류가 발생했습니다.');
+    }
+    
+    const data = await response.json();
+    console.log('API 응답 데이터:', data);
+    
+    return data.data;
+  } catch (error) {
+    console.error('특이사항 수정 API 오류:', error);
+    throw error;
+  }
+};
+
+/**
+ * 차주 특이사항 삭제
+ * @param noteId 특이사항 ID
+ * @returns 삭제 성공 메시지
+ */
+export const deleteDriverNote = async (noteId: string): Promise<{ message: string }> => {
+  try {
+    console.log('deleteDriverNote 호출됨:', { noteId });
+    
+    const response = await fetch(`/api/drivers/notes/${noteId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    
+    console.log('API 응답 상태:', response.status, response.statusText);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      console.error('API 오류 응답:', errorData);
+      throw new Error(errorData?.error || '특이사항 삭제 중 오류가 발생했습니다.');
+    }
+    
+    const data = await response.json();
+    console.log('API 응답 데이터:', data);
+    
+    return data;
+  } catch (error) {
+    console.error('특이사항 삭제 API 오류:', error);
+    throw error;
+  }
 }; 

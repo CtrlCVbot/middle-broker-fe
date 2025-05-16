@@ -27,6 +27,9 @@ import {
 import { Plus, Trash2, Edit, Save, X } from "lucide-react"
 import { format } from "date-fns"
 import { ko } from "date-fns/locale"
+import { useBrokerDriverStore } from "@/store/broker-driver-store"
+import { toast } from "sonner"
+import { useQuery } from "@tanstack/react-query"
 
 // 특이사항 스키마
 const noteSchema = z.object({
@@ -50,18 +53,61 @@ type DriverFormValues = {
 interface IBrokerDriverNotesFormProps {
   form: UseFormReturn<DriverFormValues>;
   onComplete?: () => void;
+  driverId?: string; // 차주 ID 프롭 추가
 }
 
 export function BrokerDriverNotesForm({
   form,
   onComplete,
+  driverId,
 }: IBrokerDriverNotesFormProps) {
   const [newNote, setNewNote] = useState("")
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
   const [editContent, setEditContent] = useState("")
+  
+  // 차주 ID가 없는 경우 (신규 등록) 폼에서 직접 관리
+  const isNewDriver = !driverId;
 
-  // 현재 특이사항 목록
-  const notes = form.watch("notes.notes") || []
+  // Zustand 스토어에서 특이사항 관련 상태 및 액션 가져오기
+  const {
+    driverNotes,
+    isLoadingNotes,
+    notesError,
+    fetchDriverNotes,
+    addDriverNote: addNote,
+    updateDriverNote: updateNote,
+    deleteDriverNote: deleteNote,
+  } = useBrokerDriverStore();
+
+  // 특이사항 목록 조회 (기존 차주인 경우)
+  const { data: notesData, isLoading, error, refetch } = useQuery({
+    queryKey: ['driverNotes', driverId],
+    queryFn: () => driverId ? fetchDriverNotes(driverId) : Promise.resolve([]),
+    enabled: !!driverId, // 차주 ID가 있는 경우에만 쿼리 활성화
+    staleTime: 1000 * 60, // 1분
+  });
+
+  // 현재 차주의 특이사항 목록
+  const apiNotes = driverId ? (driverNotes[driverId] || []) : [];
+  
+  // 폼 값 특이사항 목록 (신규 차주)
+  const formNotes = form.watch("notes.notes") || [];
+  
+  // 실제 사용할 특이사항 목록 (기존 차주: API 데이터, 신규 차주: 폼 데이터)
+  const notes = isNewDriver ? formNotes : apiNotes;
+
+  // 기존 차주인 경우 API에서 특이사항 목록 가져오기
+  useEffect(() => {
+    if (driverId && !isNewDriver) {
+      fetchDriverNotes(driverId).then((fetchedNotes) => {
+        // 폼 값에도 API에서 가져온 특이사항 설정 (선택 사항)
+        form.setValue("notes.notes", fetchedNotes, { 
+          shouldValidate: true,
+          shouldDirty: false, // API에서 가져온 데이터는 dirty 상태로 표시하지 않음
+        });
+      });
+    }
+  }, [driverId, fetchDriverNotes, form, isNewDriver]);
   
   // 폼 상태 변화 감지
   useEffect(() => {
@@ -74,66 +120,115 @@ export function BrokerDriverNotesForm({
     return () => subscription.unsubscribe();
   }, [form, onComplete]);
   
-  // 특이사항 추가
-  const addNote = () => {
+  // 특이사항 추가 핸들러
+  const handleAddNote = async () => {
     if (!newNote.trim()) return;
     
-    const updatedNotes = [
-      ...notes,
-      {
-        id: uuidv4(),
-        content: newNote.trim(),
-        date: new Date(),
-      },
-    ];
-    
-    form.setValue("notes.notes", updatedNotes, { 
-      shouldValidate: true,
-      shouldDirty: true,
-    });
-    
-    setNewNote("");
+    try {
+      if (isNewDriver) {
+        // 신규 차주: 폼 상태로 관리
+        const updatedNotes = [
+          ...formNotes,
+          {
+            id: uuidv4(),
+            content: newNote.trim(),
+            date: new Date(),
+          },
+        ];
+        
+        form.setValue("notes.notes", updatedNotes, { 
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      } else {
+        // 기존 차주: API 호출
+        await addNote(driverId!, newNote.trim());
+        
+        // 폼 값도 업데이트 (선택적)
+        refetch();
+      }
+      
+      setNewNote("");
+    } catch (error) {
+      console.error('특이사항 추가 실패:', error);
+    }
   };
   
-  // 특이사항 삭제
-  const removeNote = (id: string) => {
-    const updatedNotes = notes.filter((note) => note.id !== id);
-    form.setValue("notes.notes", updatedNotes, { 
-      shouldValidate: true,
-      shouldDirty: true,
-    });
+  // 특이사항 삭제 핸들러
+  const handleRemoveNote = async (id: string) => {
+    try {
+      if (isNewDriver) {
+        // 신규 차주: 폼 상태로 관리
+        const updatedNotes = formNotes.filter((note) => note.id !== id);
+        form.setValue("notes.notes", updatedNotes, { 
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      } else {
+        // 기존 차주: API 호출
+        await deleteNote(id, driverId!);
+        
+        // 폼 값도 업데이트 (선택적)
+        refetch();
+      }
+    } catch (error) {
+      console.error('특이사항 삭제 실패:', error);
+    }
   };
 
   // 특이사항 편집 모드 시작
-  const startEditingNote = (note: { id: string; content: string }) => {
+  const handleStartEditingNote = (note: { id: string; content: string }) => {
     setEditingNoteId(note.id);
     setEditContent(note.content);
   };
 
   // 특이사항 편집 취소
-  const cancelEditingNote = () => {
+  const handleCancelEditingNote = () => {
     setEditingNoteId(null);
     setEditContent("");
   };
 
   // 특이사항 편집 저장
-  const saveEditedNote = () => {
+  const handleSaveEditedNote = async () => {
     if (!editContent.trim() || !editingNoteId) return;
 
-    const updatedNotes = notes.map(note => 
-      note.id === editingNoteId
-        ? { ...note, content: editContent.trim(), date: new Date() }
-        : note
-    );
+    try {
+      if (isNewDriver) {
+        // 신규 차주: 폼 상태로 관리
+        const updatedNotes = formNotes.map(note => 
+          note.id === editingNoteId
+            ? { ...note, content: editContent.trim(), date: new Date() }
+            : note
+        );
 
-    form.setValue("notes.notes", updatedNotes, { 
-      shouldValidate: true,
-      shouldDirty: true,
-    });
+        form.setValue("notes.notes", updatedNotes, { 
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      } else {
+        // 기존 차주: API 호출
+        await updateNote(editingNoteId, editContent.trim(), driverId!);
+        
+        // 폼 값도 업데이트 (선택적)
+        refetch();
+      }
 
-    setEditingNoteId(null);
-    setEditContent("");
+      setEditingNoteId(null);
+      setEditContent("");
+    } catch (error) {
+      console.error('특이사항 수정 실패:', error);
+    }
   };
+  
+  // 로딩 상태 표시
+  if (isLoading && !isNewDriver) {
+    return <div className="py-4 text-center text-muted-foreground">특이사항을 불러오는 중...</div>;
+  }
+  
+  // 에러 상태 표시
+  if (error && !isNewDriver) {
+    return <div className="py-4 text-center text-destructive">특이사항을 불러오는 중 오류가 발생했습니다.</div>;
+  }
   
   return (
     <div className="space-y-4">
@@ -148,7 +243,7 @@ export function BrokerDriverNotesForm({
           />
           <Button 
             type="button" 
-            onClick={addNote}
+            onClick={handleAddNote}
             disabled={!newNote.trim()}
             className="self-start"
           >
@@ -189,7 +284,7 @@ export function BrokerDriverNotesForm({
                             type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={saveEditedNote}
+                            onClick={handleSaveEditedNote}
                             className="h-8 w-8 text-primary"
                           >
                             <Save className="h-4 w-4" />
@@ -198,7 +293,7 @@ export function BrokerDriverNotesForm({
                             type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={cancelEditingNote}
+                            onClick={handleCancelEditingNote}
                             className="h-8 w-8 text-muted-foreground"
                           >
                             <X className="h-4 w-4" />
@@ -210,7 +305,7 @@ export function BrokerDriverNotesForm({
                             type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={() => startEditingNote(note)}
+                            onClick={() => handleStartEditingNote(note)}
                             className="h-8 w-8 text-primary"
                           >
                             <Edit className="h-4 w-4" />
@@ -219,7 +314,7 @@ export function BrokerDriverNotesForm({
                             type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={() => removeNote(note.id)}
+                            onClick={() => handleRemoveNote(note.id)}
                             className="h-8 w-8 text-destructive"
                           >
                             <Trash2 className="h-4 w-4" />

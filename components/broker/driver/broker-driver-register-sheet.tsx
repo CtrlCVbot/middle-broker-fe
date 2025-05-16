@@ -503,6 +503,7 @@ export function BrokerDriverRegisterSheet({
                   <BrokerDriverNotesForm 
                     form={form}
                     onComplete={() => checkStepCompletion('notes', true)}
+                    driverId={mode === 'edit' ? driver?.id : undefined}
                   />
                 </TabsContent>
             </Tabs>

@@ -93,6 +93,7 @@ export function mapApiResponseToDriver(apiResponse: any): IBrokerDriver {
     cargoBox: mapCargoBox(apiResponse),
     manufactureYear: apiResponse.manufactureYear || '',
     account: mapDriverAccount(apiResponse),
+    notes: apiResponse.notes ? apiResponse.notes.map(mapApiResponseToNote) : undefined,
   };
   
   console.log('mapApiResponseToDriver 변환 후 데이터:', driver);
@@ -226,5 +227,74 @@ export function mapApiResponseToDriverList(apiResponse: any): {
   return {
     data,
     pagination
+  };
+}
+
+// --------------- 차주 특이사항 관련 매핑 함수 ---------------
+
+/**
+ * API 응답을 특이사항 객체로 변환
+ * @param apiNote API 응답의 특이사항 데이터
+ * @returns 프론트엔드 특이사항 객체
+ */
+export function mapApiResponseToNote(apiNote: any): IDriverNote {
+  if (!apiNote) {
+    return {
+      id: '',
+      content: '',
+      date: new Date()
+    };
+  }
+  
+  return {
+    id: apiNote.id || '',
+    content: apiNote.content || '',
+    date: apiNote.date ? new Date(apiNote.date) : new Date()
+  };
+}
+
+/**
+ * 특이사항 배열 API 응답을 프론트엔드 형식으로 변환
+ * @param apiResponse API 응답 데이터
+ * @returns 프론트엔드 특이사항 배열
+ */
+export function mapApiResponseToNotesList(apiResponse: any): IDriverNote[] {
+  if (!apiResponse || !apiResponse.data || !Array.isArray(apiResponse.data)) {
+    return [];
+  }
+  
+  return apiResponse.data.map(mapApiResponseToNote);
+}
+
+/**
+ * 프론트엔드 폼 특이사항 배열을 API 요청 형식으로 변환
+ * @param notes 프론트엔드 특이사항 배열
+ * @param driverId 차주 ID
+ * @returns API 요청 데이터 배열
+ */
+export function mapNotesToApiRequests(notes: any[], driverId: string): any[] {
+  if (!notes || !Array.isArray(notes)) {
+    return [];
+  }
+  
+  return notes.map(note => ({
+    id: note.id, // 새로운 특이사항이면 백엔드에서 생성
+    driverId,
+    content: note.content,
+    date: note.date instanceof Date ? note.date.toISOString() : new Date().toISOString()
+  }));
+}
+
+/**
+ * 프론트엔드 폼 특이사항을 API 요청 형식으로 변환
+ * @param note 프론트엔드 특이사항
+ * @param driverId 차주 ID
+ * @returns API 요청 데이터
+ */
+export function mapNoteToApiRequest(note: any, driverId: string): any {
+  return {
+    driverId,
+    content: note.content || '',
+    date: note.date instanceof Date ? note.date.toISOString() : new Date().toISOString()
   };
 } 
