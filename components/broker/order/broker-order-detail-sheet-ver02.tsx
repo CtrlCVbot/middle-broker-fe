@@ -527,7 +527,7 @@ export function BrokerOrderDetailSheet() {
                         </>
                       ) : (
                         <>                        
-                        <div className="flex flex-col items-center justify-center py-8 border border-dashed rounded-md bg-muted/30">
+                        <div className="flex flex-col items-center justify-center py-8 border border-dashed border-gray-800 rounded-md bg-gray-200">
                           <AlertCircle className="h-10 w-10 text-muted-foreground mb-2" />
                           <p className="text-sm text-muted-foreground mb-4">아직 배차되지 않았습니다.</p>
                           <div className="flex gap-2">                            
@@ -551,67 +551,8 @@ export function BrokerOrderDetailSheet() {
                   </CardContent>
                 </div>
                 
-                {/* 운임/정산 정보 카드 */}
-                <Card className={cn(
-                  "overflow-hidden", 
-                  "md:block", 
-                  activeTab !== "settlement" && "hidden"
-                )}>
-                  <CardHeader className="bg-muted/20 flex flex-row items-center justify-between py-3 px-4 border-b">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-primary" />
-                      <CardTitle className="text-base font-medium">운임/정산 정보</CardTitle>
-                    </div>
-                    <div className="flex gap-2">
-                      {/* 편집 모드 전환 버튼 */}
-                      {editMode === "settlement" ? (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={handleCancelEdit}
-                          className="h-7 px-2"
-                        >
-                          <Eye className="h-3.5 w-3.5 mr-1" />
-                          보기
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleSetEditMode("settlement")}
-                          className="h-7 px-2"
-                        >
-                          <Pencil className="h-3.5 w-3.5 mr-1" />
-                          편집
-                        </Button>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <div className="p-4">
-                      {editMode === "settlement" ? (
-                        <BrokerOrderSettlementInfoEditForm 
-                          initialData={{
-                            baseAmount: orderData?.amount || 0,
-                            additionalFees: []
-                          }}
-                          status={orderData?.status || "배차대기"}
-                          onSave={handleSaveSettlementInfo}
-                          onCancel={handleCancelEdit}
-                        />
-                      ) : (
-                        <BrokerOrderSettlementInfoCard 
-                          fee={{
-                            estimated: orderData?.amount,
-                            contracted: orderData?.amount,
-                          }}
-                          settlement={orderData?.settlement}
-                          status={orderData?.status || "배차대기"}
-                        />
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                {/* 아직 준비안된 카드 */}
+                
               </div>
             </div>
             
