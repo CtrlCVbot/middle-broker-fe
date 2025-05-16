@@ -65,6 +65,33 @@ export async function getDispatchByOrderId(orderId: string) {
 }
 
 /**
+ * 주문-배차 상세 정보를 조회하는 함수
+ * @param orderId 주문 ID
+ * @returns 주문-배차 상세 정보
+ */
+export async function getOrderWithDispatchDetail(orderId: string) {
+  try {
+    const response = await fetch(`/api/orders/with-dispatch/${orderId}`);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "주문-배차 정보 조회에 실패했습니다.");
+    }
+
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.error || "주문-배차 정보 조회에 실패했습니다.");
+    }
+    
+    return data.data;
+  } catch (error) {
+    console.error("주문-배차 정보 조회 중 오류:", error);
+    throw error;
+  }
+}
+
+/**
  * 배차 정보를 업데이트하는 함수 (dispatch API 대신 order/dispatch API 사용)
  * @param orderId 주문 ID
  * @param dispatchId 배차 ID

@@ -7,10 +7,7 @@ import {
   SheetHeader, 
   SheetTitle
 } from "@/components/ui/sheet";
-import { useQuery } from "@tanstack/react-query";
 import { useBrokerOrderDetailStore } from "@/store/broker-order-detail-store";
-import { getBrokerOrderDetailById } from "@/utils/mockdata/mock-broker-orders-detail";
-
 
 import { BrokerOrderStatusLog } from "./broker-order-status-log";
 import { BrokerOrderActionButtons } from "./broker-order-action-buttons";
@@ -89,9 +86,10 @@ export function BrokerOrderDetailSheet() {
     isSheetOpen, 
     selectedOrderId, 
     closeSheet, 
-    setOrderDetail, 
-    setLoading, 
-    setError 
+    orderDetail, 
+    isLoading, 
+    error,
+    fetchOrderDetail 
   } = useBrokerOrderDetailStore();
   
   // 편집 모드 상태 관리 통합
@@ -114,58 +112,22 @@ export function BrokerOrderDetailSheet() {
     "배차대기", "배차진행중", "배차완료", "상차완료", "하차완료", "운송중", "운송마감"
   ];
 
+  // 주문 데이터 저장
+  const orderData = orderDetail;
   
-  
-  // TanStack Query를 사용하여 화물 상세 정보 조회
-  const { 
-    data: orderData, 
-    isLoading, 
-    isError, 
-    error,
-    refetch 
-  } = useQuery({
-    queryKey: ["brokerOrderDetail", selectedOrderId],
-    queryFn: async () => {
-      if (!selectedOrderId) {
-        throw new Error("화물 ID가 없습니다.");
-      }
-      
-      try {
-        // ID가 실제 존재하는지 확인        
-        const data = await getBrokerOrderDetailById(selectedOrderId);
-        return data;
-      } catch (err) {
-        console.error(`화물 정보 조회 실패 (ID: ${selectedOrderId}):`, err);
-        
-        // 개발 환경에서는 오류가 발생했을 때 첫 번째 목업 데이터를 반환
-        if (process.env.NODE_ENV === 'development') {
-          // 첫 번째 유효한 데이터를 반환 (fallback 처리)
-          const fallbackId = "BRO-001003";
-          console.warn(`개발 환경 - 폴백 데이터를 사용합니다. (ID: ${fallbackId})`);
-          return getBrokerOrderDetailById(fallbackId);
-        }
-        throw err;
-      }
-    },
-    enabled: !!selectedOrderId && isSheetOpen,
-    staleTime: 1000 * 60 * 5, // 5분
-    retry: 1, // 오류 발생 시 1번만 재시도
-  });
-  
-  // 상태 업데이트
+  // 선택된 ID가 변경될 때마다 데이터 가져오기
   useEffect(() => {
-    setLoading(isLoading);
-    
-    if (isError && error instanceof Error) {
-      setError(error.message);
-    } else {
-      setError(null);
+    if (selectedOrderId && isSheetOpen) {
+      fetchOrderDetail(selectedOrderId);
     }
-    
+  }, [selectedOrderId, isSheetOpen, fetchOrderDetail]);
+  
+  // orderData가 변경될 때마다 selectedStatus 업데이트
+  useEffect(() => {
     if (orderData) {
-      setOrderDetail(orderData);
+      setSelectedStatus(orderData.status);
     }
-  }, [orderData, isLoading, isError, error, setLoading, setError, setOrderDetail]);
+  }, [orderData]);
 
 
   // 업체 정보 데이터
@@ -246,8 +208,12 @@ export function BrokerOrderDetailSheet() {
     // 편집 모드 종료
     setEditMode(null);
     
-    // 실제 구현에서는 refetch로 최신 데이터 조회
-    setTimeout(() => refetch(), 300);
+    // 실제 구현에서는 fetchOrderDetail로 최신 데이터 조회
+    setTimeout(() => {
+      if (selectedOrderId) {
+        fetchOrderDetail(selectedOrderId);
+      }
+    }, 300);
   };
   
   // 배차 정보 입력 Dialog 열기 핸들러
@@ -269,8 +235,12 @@ export function BrokerOrderDetailSheet() {
     setEditMode(null);
     setIsDriverEditDialogOpen(false);
     
-    // 실제 구현에서는 refetch로 최신 데이터 조회
-    setTimeout(() => refetch(), 300);
+    // 실제 구현에서는 fetchOrderDetail로 최신 데이터 조회
+    setTimeout(() => {
+      if (selectedOrderId) {
+        fetchOrderDetail(selectedOrderId);
+      }
+    }, 300);
   };
   
   // 운임/정산 정보 수정 저장 핸들러
@@ -286,8 +256,12 @@ export function BrokerOrderDetailSheet() {
     // 편집 모드 종료
     setEditMode(null);
     
-    // 실제 구현에서는 refetch로 최신 데이터 조회
-    setTimeout(() => refetch(), 300);
+    // 실제 구현에서는 fetchOrderDetail로 최신 데이터 조회
+    setTimeout(() => {
+      if (selectedOrderId) {
+        fetchOrderDetail(selectedOrderId);
+      }
+    }, 300);
   };
   
   // 배차 상태 변경 핸들러
@@ -305,8 +279,12 @@ export function BrokerOrderDetailSheet() {
       
       setStatusPopoverOpen(false);
       
-      // 실제 구현에서는 refetch로 최신 데이터 조회
-      setTimeout(() => refetch(), 300);
+      // 실제 구현에서는 fetchOrderDetail로 최신 데이터 조회
+      setTimeout(() => {
+        if (selectedOrderId) {
+          fetchOrderDetail(selectedOrderId);
+        }
+      }, 300);
     }
   };
   
@@ -323,14 +301,7 @@ export function BrokerOrderDetailSheet() {
     setIsChangingStatus(false);
     setStatusPopoverOpen(false);
   };
-  
-  // orderData가 변경될 때마다 selectedStatus 업데이트
-  useEffect(() => {
-    if (orderData) {
-      setSelectedStatus(orderData.status);
-    }
-  }, [orderData]);
-  
+
   return (
     <Sheet 
       open={isSheetOpen} 
@@ -351,17 +322,6 @@ export function BrokerOrderDetailSheet() {
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="text-muted-foreground">중개 화물 정보를 불러오는 중...</p>
-            </div>
-          </div>
-        ) : isError ? (
-          // 에러 상태
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center text-destructive">
-              <AlertTriangle className="h-12 w-12 mx-auto mb-4" />
-              <p className="text-lg font-semibold">오류가 발생했습니다</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                {error instanceof Error ? error.message : "중개 화물 정보를 불러오는데 실패했습니다."}
-              </p>
             </div>
           </div>
         ) : orderData ? (

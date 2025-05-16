@@ -19,11 +19,32 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { orderId: string } }
 ) {
+  // 구조 분해 할당으로 orderId를 직접 추출
+  const { orderId } = await params;
+  console.log('orderId: ', orderId);
+  
   try {
-    // 1. orderId 유효성 검증
-    const orderId = orderIdSchema.parse(params.orderId);
+    // 1. orderId가 존재하는지 확인
     
-    // 2. 주문 정보 조회
+
+    // 2. orderId 유효성 검증
+   
+    
+    try {
+      const checkedOrderId = orderIdSchema.parse(orderId);
+      console.log('checkedOrderId: ', checkedOrderId);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return NextResponse.json({
+          success: false,
+          error: '유효하지 않은 주문 ID 형식입니다.',
+          details: error.errors
+        }, { status: 400 });
+      }
+      throw error;
+    }
+    
+    // 3. 주문 정보 조회
     const orderResult = await db
       .select()
       .from(orders)
@@ -39,16 +60,16 @@ export async function GET(
     
     const order = orderResult[0];
     
-    // 3. 연결된 배차 정보 조회 (없을 수도 있음)
+    // 4. 연결된 배차 정보 조회 (없을 수도 있음)
     const dispatchResult = await db
       .select()
       .from(orderDispatches)
-      .where(eq(orderDispatches.orderId, orderId))
+      .where(eq(orderDispatches.orderId, order.id))
       .limit(1);
     
     const dispatch = dispatchResult.length > 0 ? dispatchResult[0] : null;
     
-    // 4. 응답 데이터 구성
+    // 5. 응답 데이터 구성
     const orderDetail = {
       id: order.id,
       flowStatus: order.flowStatus || '',

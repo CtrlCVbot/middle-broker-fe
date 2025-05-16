@@ -4,6 +4,7 @@ import { IBrokerOrder, IBrokerOrderResponse, IBrokerOrderSummary } from "@/types
 import { IOrderWithDispatchItem, IOrderWithDispatchListResponse, IOrderWithDispatchDetailResponse } from "@/types/order-with-dispatch";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+import { IBrokerOrderDetail } from "@/utils/mockdata/mock-broker-orders-detail";
 
 /**
  * 백엔드 API 응답을 프론트엔드 데이터 구조로 변환
@@ -399,4 +400,130 @@ export function mapApiResponseToBrokerDispatchDetail(
     createdBy: dispatch.createdBySnapshot?.name || '',
     updatedBy: dispatch.updatedBySnapshot?.name || '',
   };
+}
+
+/**
+ * orderWithDispatch API 응답을 IBrokerOrderDetail 형식으로 변환하는 함수
+ * @param item API 응답 데이터 (IOrderWithDispatchItem)
+ * @returns IBrokerOrderDetail 형식의 데이터
+ */
+export function mapApiResponseToBrokerOrderDetail(
+  item: IOrderWithDispatchItem
+): IBrokerOrderDetail {
+  const { order, dispatch } = item;
+  
+  if (!order) {
+    throw new Error('주문 정보가 없습니다.');
+  }
+
+  // 주문 상태를 UI 상태로 변환
+  const statusProgress = mapFlowStatusToUiStatus(order.flowStatus as any);
+  
+  // 금액 포맷팅 (숫자에 콤마 추가)
+  const formatAmount = (amount: number | null | undefined): string => {
+    if (amount === null || amount === undefined) return '0';
+    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+  
+  // 현재 날짜와 시간
+  const now = new Date();
+  const formattedDate = format(now, 'yyyy-MM-dd HH:mm', { locale: ko });
+  
+  // 로그 데이터 생성
+  const logs = [
+    {
+      status: statusProgress as any,
+      time: format(now, 'HH:mm'),
+      date: format(now, 'yyyy-MM-dd'),
+      handler: '시스템',
+      remark: '화물 등록 완료'
+    }
+  ];
+  
+  // 배차 정보가 있는 경우 로그 추가
+  if (dispatch) {
+    try {
+      const dispatchDate = new Date(dispatch.createdAt);
+      logs.push({
+        status: '배차완료',
+        time: format(dispatchDate, 'HH:mm'),
+        date: format(dispatchDate, 'yyyy-MM-dd'),
+        handler: dispatch.createdBySnapshot?.name || '시스템',
+        remark: '배차 완료'
+      });
+    } catch (error) {
+      console.error('배차 로그 생성 중 오류:', error);
+    }
+  }
+  
+  // IBrokerOrderDetail 형식으로 변환
+  const brokerOrderDetail: IBrokerOrderDetail = {
+    orderNumber: order.id.substring(0, 8).toUpperCase(),
+    status: statusProgress as any,
+    amount: formatAmount(order.estimatedPriceAmount),
+    fee: formatAmount(order.estimatedPriceAmount ? order.estimatedPriceAmount * 0.1 : 0),
+    registeredAt: order.createdAt ? formatDate(order.createdAt, 'yyyy-MM-dd HH:mm') : formattedDate,
+    statusProgress: statusProgress as any,
+    
+    // 화주 정보
+    shipper: {
+      name: order.companySnapshot?.name || '화주정보 없음',
+      manager: {
+        name: order.pickup.contactName || '담당자 없음',
+        contact: order.pickup.contactPhone || '',
+        //email: `info@${(order.companySnapshot?.name || 'example').toLowerCase().replace(/\s+/g, '')}.com`
+        email: order.companySnapshot?.email || ''
+      }
+    },
+    
+    // 출발지 정보
+    departure: {
+      address: order.pickup.address?.roadAddress || '',
+      detailedAddress: order.pickup.address?.detailAddress || '',
+      name: order.pickup.contactName || '',
+      company: order.pickup.name || '',
+      contact: order.pickup.contactPhone || '',
+      time: order.pickup.time || '',
+      date: order.pickup.date || ''
+    },
+    
+    // 도착지 정보
+    destination: {
+      address: order.delivery.address?.roadAddress || '',
+      detailedAddress: order.delivery.address?.detailAddress || '',
+      name: order.delivery.contactName || '',
+      company: order.delivery.name || '',
+      contact: order.delivery.contactPhone || '',
+      time: order.delivery.time || '',
+      date: order.delivery.date || ''
+    },
+    
+    // 화물 정보
+    cargo: {
+      type: order.cargoName || '일반화물',
+      options: [],
+      weight: order.requestedVehicleWeight || '',
+      remark: order.memo || ''
+    },
+    
+    // 차량 정보
+    vehicle: {
+      type: order.requestedVehicleType || '',
+      weight: order.requestedVehicleWeight || '',
+      connection: dispatch?.assignedVehicleConnection || '',
+      licensePlate: dispatch?.assignedVehicleNumber || '',
+      driver: dispatch ? {
+        name: dispatch.assignedDriverSnapshot?.name || '',
+        contact: dispatch.assignedDriverPhone || ''
+      } : undefined
+    },
+    
+    // 로그 및 정산 정보
+    logs,
+    settlement: {
+      status: '정산대기'
+    }
+  };
+  
+  return brokerOrderDetail;
 } 
