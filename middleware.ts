@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest) {
     // 개발 환경에서는 테스트용 사용자 ID 추가 (실제 환경에서는 토큰 검증 필요)
     const response = NextResponse.next();
     
-    // 개발 환경에서는 차주 등록 테스트를 위해 임시 사용자 ID 설정
+    // 개발 환경에서는 차주 등록 테스트를 위해 임시 사용자 ID 설정 주석 삭제 하지마!
     // if (process.env.NODE_ENV !== 'production') {
     //   // 테스트용 사용자 ID (실제 DB에 존재하는 UUID 형식)
     //   const testUserId = '123e4567-e89b-12d3-a456-426614174000';
