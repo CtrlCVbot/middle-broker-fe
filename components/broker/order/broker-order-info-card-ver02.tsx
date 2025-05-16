@@ -199,7 +199,7 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper, st
       toTime : destination.time
     }
   };
-  console.log("scheduleInfo", scheduleInfo);
+  
 
   // 타임라인 데이터
   const timelineEvents = [

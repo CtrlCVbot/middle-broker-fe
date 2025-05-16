@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { logOrderChange } from '@/utils/order-change-logger';
 import { orderFlowStatusEnum, vehicleTypeEnum, vehicleWeightEnum } from '@/db/schema/orders';
 import { format } from 'date-fns';
+import { companies } from '@/db/schema/companies';
 
 export async function GET(request: NextRequest) {
   try {    
@@ -230,6 +231,19 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
+    const [requestUserCompany] = await db
+      .select()
+      .from(companies)
+      .where(eq(companies.id, orderData.companyId))
+      .limit(1)
+      .execute();
+
+    if (!requestUserCompany) {
+      return NextResponse.json(
+        { error: '화주 회사를 찾을 수 없습니다.' },
+        { status: 404 }
+      );
+    }
 
     // 현재 시간
     const now = new Date();
@@ -239,7 +253,7 @@ export async function POST(request: NextRequest) {
       .insert(orders)
       .values({
         companyId: orderData.companyId,
-        companySnapshot: orderData.companySnapshot,
+        companySnapshot: requestUserCompany,
         contactUserId: requestUserId,
         contactUserMail: requestUser.email,
         contactUserPhone: requestUser.phone_number,

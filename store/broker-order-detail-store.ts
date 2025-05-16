@@ -78,7 +78,7 @@ export const useBrokerOrderDetailStore = create<IBrokerOrderDetailState>((set, g
       
       // API 호출
       const response = await getOrderWithDispatchDetail(orderId);
-      
+      console.log('response: ', response);
       // 응답 데이터 매핑
       const orderDetail = mapApiResponseToBrokerOrderDetail(response);
       

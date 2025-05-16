@@ -12,6 +12,11 @@ export interface IOrderWithDispatchOrderDetail {
   cargoName: string;
   requestedVehicleType: string;
   requestedVehicleWeight: string;
+  
+  companyId: string;
+  companySnapshot?: ICompanySnapshot;
+  contactUserSnapshot: IUserSnapshot;
+  
   pickup: {
     name: string;
     contactName: string;
@@ -34,8 +39,7 @@ export interface IOrderWithDispatchOrderDetail {
   taxType: string;
   memo?: string;
   isCanceled: boolean;
-  companyId: string;
-  companySnapshot?: ICompanySnapshot;
+  
   createdAt: string;
   updatedAt: string;
 }

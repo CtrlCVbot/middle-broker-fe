@@ -59,7 +59,7 @@ export function BrokerOrderTimeline({
   if (!events || events.length === 0) {
     return null;
   }
-  console.log("scheduleInfo", scheduleInfo);
+  
   // 각 이벤트에 대한 상태 텍스트 매핑
   const getStatusText = (status: string): string => {
     const statusMap: Record<string, string> = {

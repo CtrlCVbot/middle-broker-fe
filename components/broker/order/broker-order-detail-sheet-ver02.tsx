@@ -487,7 +487,7 @@ export function BrokerOrderDetailSheet() {
                         </>
                       ) : (
                         <>                        
-                        <div className="flex flex-col items-center justify-center py-8 border border-dashed border-gray-800 rounded-md bg-gray-200">
+                        <div className="flex flex-col items-center justify-center py-8 border-4 border-dashed border-gray-500 rounded-md bg-gray-200">
                           <AlertCircle className="h-10 w-10 text-muted-foreground mb-2" />
                           <p className="text-sm text-muted-foreground mb-4">아직 배차되지 않았습니다.</p>
                           <div className="flex gap-2">                            

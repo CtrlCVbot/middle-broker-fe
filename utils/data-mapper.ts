@@ -455,6 +455,8 @@ export function mapApiResponseToBrokerOrderDetail(
       console.error('배차 로그 생성 중 오류:', error);
     }
   }
+
+  console.log('변환전 order: ', order);
   
   // IBrokerOrderDetail 형식으로 변환
   const brokerOrderDetail: IBrokerOrderDetail = {
@@ -469,10 +471,10 @@ export function mapApiResponseToBrokerOrderDetail(
     shipper: {
       name: order.companySnapshot?.name || '화주정보 없음',
       manager: {
-        name: order.pickup.contactName || '담당자 없음',
-        contact: order.pickup.contactPhone || '',
+        name: order.contactUserSnapshot?.name || '담당자 없음',
+        contact: order.contactUserSnapshot?.mobile || '',
         //email: `info@${(order.companySnapshot?.name || 'example').toLowerCase().replace(/\s+/g, '')}.com`
-        email: order.companySnapshot?.email || ''
+        email: order.contactUserSnapshot?.email || ''
       }
     },
     

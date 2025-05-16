@@ -4,7 +4,7 @@ import { orders } from '@/db/schema/orders';
 import { orderDispatches } from '@/db/schema/orderDispatches';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { IOrderWithDispatchDetailResponse, IOrderWithDispatchItem } from '@/types/order-with-dispatch';
+import { IOrderWithDispatchDetailResponse, IOrderWithDispatchDispatchDetail, IOrderWithDispatchItem, IOrderWithDispatchOrderDetail } from '@/types/order-with-dispatch';
 
 // orderId 파라미터 검증 스키마
 const orderIdSchema = z.string().uuid('유효한 주문 ID 형식이 아닙니다.');
@@ -59,6 +59,7 @@ export async function GET(
     }
     
     const order = orderResult[0];
+    console.log('order: ', order);
     
     // 4. 연결된 배차 정보 조회 (없을 수도 있음)
     const dispatchResult = await db
@@ -76,6 +77,11 @@ export async function GET(
       cargoName: order.cargoName || '',
       requestedVehicleType: order.requestedVehicleType || '',
       requestedVehicleWeight: order.requestedVehicleWeight || '',
+
+      companyId: order.companyId || '',
+      companySnapshot: order.companySnapshot || undefined,
+      contactUserSnapshot: order.contactUserSnapshot || undefined,
+
       pickup: {
         name: order.pickupName || '',
         contactName: order.pickupContactName || '',
@@ -98,8 +104,7 @@ export async function GET(
       taxType: order.taxType || '',
       memo: order.memo || '',
       isCanceled: order.isCanceled || false,
-      companyId: order.companyId || '',
-      companySnapshot: order.companySnapshot || undefined,
+      
       createdAt: order.createdAt?.toISOString() || '',
       updatedAt: order.updatedAt?.toISOString() || '',
     };
@@ -133,8 +138,8 @@ export async function GET(
     
     // 응답 데이터 구성
     const responseData: IOrderWithDispatchItem = {
-      order: orderDetail,
-      dispatch: dispatchDetail,
+      order: orderDetail as IOrderWithDispatchOrderDetail,
+      dispatch: dispatchDetail as IOrderWithDispatchDispatchDetail,
     };
     
     // 응답 반환

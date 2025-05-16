@@ -319,7 +319,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                 {editMode && originalData && (
                   <div className="pt-2">
                     <div className="text-sm font-medium text-muted-foreground mb-2">배차 진행 상태</div>
-                    <StatusFlow currentStatus={originalData.status} />
+                    <StatusFlow currentStatus={originalData.status as any} />
                   </div>
                 )}
               </CardHeader>
