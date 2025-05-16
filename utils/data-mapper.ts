@@ -524,7 +524,10 @@ export function mapApiResponseToBrokerOrderDetail(
     logs,
     settlement: {
       status: '정산대기'
-    }
+    },
+    
+    // dispatchId 필드 추가
+    dispatchId: item.dispatch?.id || "",
   };
   
   return brokerOrderDetail;

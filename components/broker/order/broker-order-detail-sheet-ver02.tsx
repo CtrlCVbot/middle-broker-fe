@@ -225,22 +225,20 @@ export function BrokerOrderDetailSheet() {
   const handleSaveDriverInfo = (formData: any) => {
     console.log("저장된 배차 데이터:", formData);
     
-    toast({
-      title: "배차 정보 수정 완료",
-      description: "배차 정보가 성공적으로 업데이트되었습니다.",
-      variant: "default"
-    });
-    
     // 편집 모드 종료
     setEditMode(null);
     setIsDriverEditDialogOpen(false);
     
     // 실제 구현에서는 fetchOrderDetail로 최신 데이터 조회
-    setTimeout(() => {
-      if (selectedOrderId) {
-        fetchOrderDetail(selectedOrderId);
-      }
-    }, 300);
+    if (selectedOrderId) {
+      fetchOrderDetail(selectedOrderId);
+      
+      toast({
+        title: "배차 정보 업데이트 완료",
+        description: "화물 정보가 업데이트되었습니다.",
+        variant: "default"
+      });
+    }
   };
   
   // 운임/정산 정보 수정 저장 핸들러
@@ -454,6 +452,7 @@ export function BrokerOrderDetailSheet() {
                       {editMode === "driver" ? (
                         <BrokerOrderDriverInfoEditForm
                           initialData={{
+                            status: orderData?.status || "배차대기",
                             driver: orderData?.vehicle?.driver || { 
                               name: "", 
                               contact: "" 
@@ -464,7 +463,8 @@ export function BrokerOrderDetailSheet() {
                               licensePlate: orderData?.vehicle?.licensePlate || ""
                             },
                             callCenter: "24시",
-                            specialNotes: []
+                            specialNotes: [],
+                            dispatchId: orderData?.dispatchId || ""
                           }}
                           onSave={handleSaveDriverInfo}
                           onCancel={handleCancelEdit}
@@ -553,7 +553,8 @@ export function BrokerOrderDetailSheet() {
                 licensePlate: orderData?.vehicle?.licensePlate || ""
               },
               callCenter: "24시",
-              specialNotes: []
+              specialNotes: [],
+              dispatchId: orderData?.dispatchId || ""
             }}
             onSave={handleSaveDriverInfo}
             onCancel={() => setIsDriverEditDialogOpen(false)}

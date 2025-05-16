@@ -56,6 +56,7 @@ export interface IBrokerOrderDetail {
     id?: string;
     status?: string;
   };
+  dispatchId?: string;
 }
 
 // 목업 중개 화물 상세 데이터

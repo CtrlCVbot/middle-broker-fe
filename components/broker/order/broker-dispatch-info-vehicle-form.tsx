@@ -52,6 +52,7 @@ import { BROKER_VEHICLE_TYPES, BROKER_WEIGHT_TYPES } from "@/types/broker-order"
 import { Textarea } from "@/components/ui/textarea";
 import { useBrokerDriverStore } from "@/store/broker-driver-store";
 import { mapDriversForDispatchForm } from "@/utils/driver-mapper";
+import { updateDispatchFields } from "@/services/broker-dispatch-service";
 
 // 콜센터 목록
 const CALL_CENTER_OPTIONS = [
@@ -114,6 +115,7 @@ interface BrokerOrderDriverInfoEditFormProps {
       taxInvoiceType: string;
       deliveryMethod: string;
     };
+    dispatchId?: string;
   };
   onSave: (data: any) => void;
   onCancel: () => void;
@@ -231,15 +233,62 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
   };
   
   // 폼 제출 핸들러
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
-    // 특이사항을 데이터에 추가
-    const formData = {
-      ...data,
-      specialNotes
-    };
-    
-    // 폼 데이터 저장
-    onSave(formData);
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    try {
+      // 로딩 상태 표시
+      toast({
+        title: "저장 중...",
+        description: "배차 정보를 저장하고 있습니다.",
+      });
+      
+      // 폼 데이터에서 업데이트할 필드 추출
+      const fields = {        
+        assignedDriverPhone: data.driver.contact,
+        assignedVehicleNumber: data.vehicle.licensePlate,
+        assignedVehicleType: data.vehicle.type,
+        assignedVehicleWeight: data.vehicle.weight,
+        assignedVehicleConnection: data.callCenter || "24시"
+      };
+      
+      // 특이사항이 있는 경우 메모로 추가
+      // if (specialNotes.length > 0) {
+      //   const noteTexts = specialNotes.map(note => 
+      //     `[${note.date}] ${note.severity === 'high' ? '⚠️ ' : note.severity === 'medium' ? '⚠ ' : 'ℹ️ '}${note.content}`
+      //   );
+      //   fields.brokerMemo = noteTexts.join('\n');
+      // }
+      
+      // 배차 상태가 '배차대기'인 경우 '배차완료'로 변경
+      //fields.brokerFlowStatus = '배차완료';
+      
+      // API 호출하여 배차 정보 업데이트
+      const dispatchId = initialData.dispatchId;
+      if (!dispatchId) {
+        throw new Error("배차 ID가 없습니다.");
+      }
+      
+      // 배차 필드 업데이트 API 호출
+      await updateDispatchFields(dispatchId, fields, "배차 정보 등록");
+      
+      // 성공 메시지 표시
+      toast({
+        title: "배차 정보 저장 완료",
+        description: "배차 정보가 성공적으로 업데이트되었습니다.",
+        variant: "default"
+      });
+      
+      // 폼 데이터 저장
+      onSave(data);
+    } catch (error) {
+      console.error("배차 정보 저장 중 오류:", error);
+      
+      // 오류 메시지 표시
+      toast({
+        title: "저장 실패",
+        description: error instanceof Error ? error.message : "배차 정보 저장 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
   };
   
   return (

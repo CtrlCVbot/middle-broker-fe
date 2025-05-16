@@ -174,6 +174,7 @@ interface SpecialNote {
 
 interface BrokerOrderDriverInfoEditFormProps {
   initialData: {
+    status: string;
     driver: {
       name: string;
       contact: string;
@@ -196,6 +197,7 @@ interface BrokerOrderDriverInfoEditFormProps {
       taxInvoiceType: string;
       deliveryMethod: string;
     };
+    dispatchId: string;
   };
   onSave: (data: any) => void;
   onCancel: () => void;

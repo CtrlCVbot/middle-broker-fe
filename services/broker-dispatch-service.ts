@@ -200,4 +200,40 @@ export async function acceptOrders(
     console.error('운송 수락 처리 중 오류1:', error);
     throw new Error(`운송 수락 처리에 실패했습니다: ${error.message}`);
   }
+}
+
+/**
+ * 배차 필드만 업데이트하는 함수
+ * @param dispatchId 배차 ID
+ * @param fields 업데이트할 필드 (key-value 객체)
+ * @param reason 업데이트 사유 (선택사항)
+ * @returns 업데이트된 배차 정보
+ */
+export async function updateDispatchFields(
+  dispatchId: string,
+  fields: Record<string, any>,
+  reason?: string
+): Promise<any> {
+  try {
+    const response = await fetch(`/api/broker/dispatches/${dispatchId}/fields`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        fields,
+        reason
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "배차 필드 업데이트에 실패했습니다.");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("배차 필드 업데이트 중 오류:", error);
+    throw error;
+  }
 } 
