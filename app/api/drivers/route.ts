@@ -6,6 +6,7 @@ import { users } from '@/db/schema/users';
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
 import { vehicleTypeEnum, vehicleWeightEnum } from '@/db/schema/orders';
+import { logDriverChange } from '@/utils/driver-change-logger';
 
 // 차주 목록 조회 API (GET /api/drivers)
 export async function GET(request: NextRequest) {
@@ -223,6 +224,23 @@ export async function POST(request: NextRequest) {
         updatedBySnapshot: userSnapshot
       }as any)
       .returning();
+
+    // 변경 이력 기록
+    await logDriverChange({
+      driverId: createdDriver.id,
+      changedBy: requestUser.id,
+      changedByName: requestUser.name || '',
+      changedByEmail: requestUser.email || '',
+      changedByAccessLevel: requestUser.system_access_level || 'user',
+      changeType: 'create',
+      oldData: null,
+      newData: {
+        ...createdDriver,
+        createdAt: createdDriver.createdAt?.toISOString(),
+        updatedAt: createdDriver.updatedAt?.toISOString()
+      },
+      reason: '차주 등록'
+    });
 
     return NextResponse.json({
       message: '차주가 성공적으로 등록되었습니다.',
