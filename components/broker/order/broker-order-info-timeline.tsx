@@ -4,7 +4,8 @@ import { RefreshCw, Circle, MessageSquare, ChevronDown, ChevronUp } from "lucide
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { getSchedule } from "@/components/order/order-table-ver01";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 
 interface IScheduleInfo {
   from: {
@@ -33,10 +34,16 @@ interface IBrokerOrderTimelineProps {
 }
 
 function calculateTotalTime(schedule: IScheduleInfo): string {
+  // 시간 문자열에서 초(seconds) 부분을 제거하거나 처리
+  const fromTime = schedule.from.fromTime.split(':').slice(0, 2).join(':');
+  const toTime = schedule.to.toTime.split(':').slice(0, 2).join(':');
+  
   // 시작 시간과 종료 시간을 합쳐서 Date 객체로 변환
-  const start = new Date(`${schedule.from.fromDate}T${schedule.from.fromTime}:00`);
-  const end = new Date(`${schedule.to.toDate}T${schedule.to.toTime}:00`);
+  const start = new Date(`${schedule.from.fromDate}T${fromTime}:00`);
+  const end = new Date(`${schedule.to.toDate}T${toTime}:00`);
 
+  console.log("start", start);
+  console.log("end", end);
   // 시간 차이를 밀리초 단위로 계산
   const diffMs = Math.abs(end.getTime() - start.getTime());
 
@@ -85,6 +92,33 @@ export function BrokerOrderTimeline({
     }
   };
 
+  const getSchedule = (pickupDate: string, pickupTime: string, deliveryDate: string, deliveryTime: string) => {
+    
+    const pickupDateObj = format(pickupDate, "MM.dd(E)", { locale: ko });
+    const deliveryDateObj = format(deliveryDate, "dd", { locale: ko });
+
+    if (pickupDate === deliveryDate) {
+      return pickupDateObj;
+    } else {
+      return pickupDateObj + ' - ' + deliveryDateObj;
+    }
+  }
+  
+
+  const getTime = (pickupDate: string, pickupTime: string, deliveryDate: string, deliveryTime: string) => {
+    
+    const pickupDateObj = format(pickupDate, "MM.dd(E)", { locale: ko });
+    const deliveryDateObj = format(deliveryDate, "(E)", { locale: ko });
+    const pickupTimeObj = pickupTime.toString().slice(0, 5);
+    const deliveryTimeObj = deliveryTime.toString().slice(0, 5) + deliveryDateObj;
+
+    if (pickupDate === deliveryDate) {
+      return pickupTimeObj + ' - ' + deliveryTimeObj;
+    } else {
+      return pickupTimeObj + ' - ' + deliveryTimeObj + deliveryDateObj;
+    }
+  }
+
   const handleRefresh = () => {
     if (onRefresh) {
       onRefresh();
@@ -102,6 +136,11 @@ export function BrokerOrderTimeline({
             <h3 className="text-base font-medium text-gray-900">일정</h3>
             <Badge className="ml-2 text-md bg-gray-100 text-gray-900 hover:bg-gray-200" variant="secondary">
               {getSchedule(scheduleInfo.from.fromDate, scheduleInfo.from.fromTime, scheduleInfo.to.toDate, scheduleInfo.to.toTime)}
+            </Badge>
+            <Badge className="ml-2 text-md bg-gray-100 text-gray-900 hover:bg-gray-200" variant="secondary">
+              <p className="text-sm">
+                {getTime(scheduleInfo.from.fromDate, scheduleInfo.from.fromTime, scheduleInfo.to.toDate, scheduleInfo.to.toTime)}
+              </p>
             </Badge>
             
           </div>
@@ -126,8 +165,8 @@ export function BrokerOrderTimeline({
           
           {/* 시간 레이블 */}
           <div className="flex justify-between text-xs text-gray-900 mb-4">
-            <span>{scheduleInfo.from.fromTime}</span>            
-            <span>{scheduleInfo.to.toTime}</span>
+            <span>{scheduleInfo.from.fromTime.toString().slice(0, 5)}</span>            
+            <span>{scheduleInfo.to.toTime.toString().slice(0, 5)}</span>
           </div>
 
           {/* 총 시간 */}

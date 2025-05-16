@@ -54,10 +54,8 @@ import { Textarea } from "@/components/ui/textarea";
 const CALL_CENTER_OPTIONS = [
   "24시",
   "화물맨",
-  "오늘의화물",
-  "화물25",
-  "화물119",
-  "직접입력"
+  "원콜",
+  "기타"
 ];
 
 // 차주 목록 (실제로는 API에서 가져올 데이터)
@@ -69,69 +67,6 @@ const DRIVER_LIST = [
   { id: '5', name: '정기사', contact: '010-5678-9012', vehicle: { type: '윙바디', weight: '11톤', licensePlate: '경기90마1234' } }
 ];
 
-// 운송 거래처 목록 (실제로는 API에서 가져올 데이터)
-const CARRIER_LIST = [
-  { 
-    id: '1', 
-    businessName: '화물왕운송', 
-    businessNumber: '123-45-67890', 
-    businessType: '일반사업자',
-    representative: '김대표',
-    bankName: '국민',
-    accountHolder: '화물왕운송',
-    accountNumber: '123456789012',
-    taxInvoiceType: '전자',
-    deliveryMethod: '이메일'
-  },
-  { 
-    id: '2', 
-    businessName: '신속물류', 
-    businessNumber: '234-56-78901', 
-    businessType: '법인사업자',
-    representative: '이사장',
-    bankName: '신한',
-    accountHolder: '신속물류(주)',
-    accountNumber: '234567890123',
-    taxInvoiceType: '전자',
-    deliveryMethod: '이메일'
-  },
-  { 
-    id: '3', 
-    businessName: '민트익스프레스', 
-    businessNumber: '345-67-89012', 
-    businessType: '개인사업자',
-    representative: '박사장',
-    bankName: '우리',
-    accountHolder: '민트익스프레스',
-    accountNumber: '345678901234',
-    taxInvoiceType: '수기',
-    deliveryMethod: '종이'
-  },
-  { 
-    id: '4', 
-    businessName: '한국종합물류', 
-    businessNumber: '456-78-90123', 
-    businessType: '법인사업자',
-    representative: '최회장',
-    bankName: '하나',
-    accountHolder: '한국종합물류(주)',
-    accountNumber: '456789012345',
-    taxInvoiceType: '전자',
-    deliveryMethod: '이메일'
-  },
-  { 
-    id: '5', 
-    businessName: '드림로지스', 
-    businessNumber: '567-89-01234', 
-    businessType: '개인사업자',
-    representative: '정사업',
-    bankName: '농협',
-    accountHolder: '드림로지스',
-    accountNumber: '567890123456',
-    taxInvoiceType: '면세',
-    deliveryMethod: '팩스'
-  }
-];
 
 // 중요도 옵션
 const SEVERITY_OPTIONS = [
@@ -152,17 +87,7 @@ const formSchema = z.object({
     licensePlate: z.string().min(1, "차량번호를 입력해주세요")
   }),
   callCenter: z.string().optional(),
-  carrier: z.object({
-    businessName: z.string().min(1, "사업자명을 입력해주세요"),
-    businessNumber: z.string().min(1, "사업자번호를 입력해주세요"),
-    businessType: z.string().min(1, "유형을 선택해주세요"),
-    representative: z.string().min(1, "대표자명을 입력해주세요"),
-    bankName: z.string().min(1, "은행명을 입력해주세요"),
-    accountHolder: z.string().min(1, "예금주를 입력해주세요"),
-    accountNumber: z.string().min(1, "계좌번호를 입력해주세요"),
-    taxInvoiceType: z.string().min(1, "계산서 유형을 선택해주세요"),
-    deliveryMethod: z.string().min(1, "배송 방법을 선택해주세요")
-  })
+  
 });
 
 interface SpecialNote {
@@ -227,17 +152,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
         licensePlate: initialData.vehicle.licensePlate || ""
       },
       callCenter: initialData.callCenter || "24시",
-      carrier: {
-        businessName: initialData.carrier?.businessName || "재형운송",
-        businessNumber: initialData.carrier?.businessNumber || "111-11-11111",
-        businessType: initialData.carrier?.businessType || "일반사업자",
-        representative: initialData.carrier?.representative || "박재형",
-        bankName: initialData.carrier?.bankName || "국민",
-        accountHolder: initialData.carrier?.accountHolder || "재형운송",
-        accountNumber: initialData.carrier?.accountNumber || "1111111111",
-        taxInvoiceType: initialData.carrier?.taxInvoiceType || "수기",
-        deliveryMethod: initialData.carrier?.deliveryMethod || "종이"
-      }
+      
     }
   });
   
@@ -250,23 +165,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
     form.setValue('vehicle.licensePlate', driver.vehicle.licensePlate);
   };
   
-  // 운송 거래처 선택 시 정보 채우기
-  const selectCarrier = (carrier: any) => {
-    form.setValue('carrier.businessName', carrier.businessName);
-    form.setValue('carrier.businessNumber', carrier.businessNumber);
-    form.setValue('carrier.businessType', carrier.businessType);
-    form.setValue('carrier.representative', carrier.representative);
-    form.setValue('carrier.bankName', carrier.bankName);
-    form.setValue('carrier.accountHolder', carrier.accountHolder);
-    form.setValue('carrier.accountNumber', carrier.accountNumber);
-    form.setValue('carrier.taxInvoiceType', carrier.taxInvoiceType);
-    form.setValue('carrier.deliveryMethod', carrier.deliveryMethod);
-    
-    toast({
-      title: "거래처 정보 불러오기 완료",
-      description: `${carrier.businessName} 정보가 적용되었습니다.`,
-    });
-  };
+  
   
   // 특이사항 추가
   const addSpecialNote = () => {

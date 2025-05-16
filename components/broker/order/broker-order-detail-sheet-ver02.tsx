@@ -433,10 +433,10 @@ export function BrokerOrderDetailSheet() {
                         vehicleType: orderData.vehicle?.type
                       }}
                       shipper={{
-                        name: orderData.departure.company,
-                        contact: orderData.departure.contact,
-                        manager: orderData.departure.name,
-                        email: "info@" + orderData.departure.company.toLowerCase().replace(/\s+/g, "") + ".com"
+                        name: orderData.shipper.name,
+                        contact: orderData.shipper.manager.contact,
+                        manager: orderData.shipper.manager.name,
+                        email: orderData.shipper.manager.email
                       }}
                     />
                   )}
