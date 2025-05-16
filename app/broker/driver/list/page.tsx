@@ -13,7 +13,7 @@ import {
 import { Truck, Grid3x3, ListFilter, BarChart2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useBrokerDriverStore } from "@/store/broker-driver-store";
-import { TONNAGE_TYPES, getBrokerDriversByPage } from "@/utils/mockdata/mock-broker-drivers";
+import { TONNAGE_TYPES } from "@/utils/mockdata/mock-broker-drivers";
 import { BrokerDriverSearch } from "@/components/broker/driver/broker-driver-search";
 import { BrokerDriverTable } from "@/components/broker/driver/broker-driver-table";
 import { BrokerDriverCardGrid } from "@/components/broker/driver/broker-driver-card";
@@ -29,6 +29,7 @@ import { ToggleGroupItem } from "@/components/ui/toggle-group";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 import { BrokerDriverRegisterSheet } from "@/components/broker/driver/broker-driver-register-sheet";
+import { getDrivers } from "@/services/driver-service";
 
 // 결과 타입 정의
 interface DriverQueryResult {
@@ -73,7 +74,46 @@ export default function BrokerDriverPage() {
   // 차주 목록 데이터 조회
   const { data, isLoading, isError, refetch } = useQuery<DriverQueryResult>({
     queryKey: ["brokerDrivers", filter, currentPage, pageSize, lastRefreshed],
-    queryFn: () => getBrokerDriversByPage(currentPage, pageSize, filter),
+    queryFn: async () => {
+      console.log('API 호출 시작: 필터', filter);
+      
+      // 프론트엔드 필터를 API 필터로 변환
+      const apiParams: any = {
+        page: currentPage,
+        pageSize: pageSize
+      };
+
+      // 검색어 처리
+      if (filter.searchTerm) {
+        apiParams.searchTerm = filter.searchTerm;
+      }
+
+      // 차량 종류 처리
+      if (filter.vehicleType) {
+        apiParams.vehicleType = filter.vehicleType;
+      }
+
+      // 톤수 처리 (tonnage -> vehicleWeight)
+      if (filter.tonnage) {
+        apiParams.vehicleWeight = filter.tonnage;
+      }
+
+      // 상태 처리 (활성/비활성)
+      if (filter.status) {
+        apiParams.isActive = filter.status === '활성';
+      }
+
+      // 날짜 필터 처리
+      if (filter.startDate) {
+        apiParams.startDate = filter.startDate;
+      }
+      if (filter.endDate) {
+        apiParams.endDate = filter.endDate;
+      }
+
+      console.log('변환된 API 매개변수:', apiParams);
+      return await getDrivers(apiParams);
+    },
     staleTime: 1000 * 60 * 5, // 5분
   });
 

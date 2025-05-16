@@ -51,28 +51,51 @@ export function mapDriverFormToApiRequest(formData: any): any {
  * @returns 프론트엔드 차주 객체
  */
 export function mapApiResponseToDriver(apiResponse: any): IBrokerDriver {
+  console.log('mapApiResponseToDriver 변환 전 원본 데이터:', apiResponse);
+  
+  // 응답 값이 null이거나 undefined인 경우 안전하게 처리
+  if (!apiResponse) {
+    console.warn('mapApiResponseToDriver에 유효하지 않은 응답 데이터가 전달되었습니다:', apiResponse);
+    return {
+      id: '',
+      name: '',
+      phoneNumber: '',
+      vehicleNumber: '',
+      vehicleType: '기타' as VehicleType,
+      tonnage: '기타' as TonnageType,
+      address: '',
+      businessNumber: '',
+      status: '비활성' as DriverStatus
+    };
+  }
+  
   // 백엔드 응답 데이터 구조 분석 및 프론트엔드 데이터 구조로 변환
   const driver: IBrokerDriver = {
-    id: apiResponse.id,
-    name: apiResponse.name,
-    phoneNumber: apiResponse.phoneNumber,
-    vehicleNumber: apiResponse.vehicleNumber,
-    vehicleType: apiResponse.vehicleType as VehicleType,
-    tonnage: apiResponse.vehicleWeight as TonnageType, // vehicleWeight → tonnage로 매핑
-    address: getAddressFromSnapshot(apiResponse.address),
-    businessNumber: apiResponse.businessNumber,
+    id: apiResponse.id || '',
+    code: apiResponse.code || `DR${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`, // 임시 코드 생성
+    name: apiResponse.name || '',
+    phoneNumber: apiResponse.phoneNumber || '',
+    vehicleNumber: apiResponse.vehicleNumber || '',
+    vehicleType: (apiResponse.vehicleType || '기타') as VehicleType,
+    tonnage: (apiResponse.vehicleWeight || '기타') as TonnageType, // vehicleWeight → tonnage로 매핑
+    address: getAddressFromSnapshot(apiResponse.address || apiResponse.addressSnapshot),
+    businessNumber: apiResponse.businessNumber || '',
+    dispatchCount: apiResponse.dispatchCount || 0, // API에서 제공되지 않는 경우 0으로 설정
     status: apiResponse.isActive ? '활성' : '비활성' as DriverStatus,
-    createdAt: apiResponse.createdAt,
-    lastDispatchedAt: apiResponse.lastDispatchedAt,
-    isActive: apiResponse.isActive,
-    inactiveReason: apiResponse.inactiveReason,
+    createdAt: apiResponse.createdAt || '',
+    lastDispatchedAt: apiResponse.lastDispatchedAt || null,
+    lastSettlementStatus: apiResponse.lastSettlementStatus || '-' as '완료' | '미정산' | '-',
+    unsettledAmount: apiResponse.unsettledAmount || 0,
+    isActive: !!apiResponse.isActive, // boolean으로 명시적 변환
+    inactiveReason: apiResponse.inactiveReason || '',
     
     // 추가 속성
     cargoBox: mapCargoBox(apiResponse),
-    manufactureYear: apiResponse.manufactureYear,
+    manufactureYear: apiResponse.manufactureYear || '',
     account: mapDriverAccount(apiResponse),
   };
   
+  console.log('mapApiResponseToDriver 변환 후 데이터:', driver);
   return driver;
 }
 
@@ -81,15 +104,67 @@ export function mapApiResponseToDriver(apiResponse: any): IBrokerDriver {
  * @param addressSnapshot 주소 스냅샷 객체
  * @returns 주소 문자열
  */
-function getAddressFromSnapshot(addressSnapshot: IAddressSnapshot | any): string {
-  if (!addressSnapshot) return '';
+function getAddressFromSnapshot(addressSnapshot: any): string {
+  console.log('getAddressFromSnapshot 입력 값:', addressSnapshot);
   
+  // null 또는 undefined인 경우
+  if (!addressSnapshot) {
+    return '';
+  }
+  
+  // 문자열인 경우 직접 반환
   if (typeof addressSnapshot === 'string') {
     return addressSnapshot;
   }
   
-  // 주소 스냅샷에서 도로명 주소 추출
-  return addressSnapshot.roadAddress || '';
+  // JSON 문자열인 경우
+  if (typeof addressSnapshot === 'string' && (addressSnapshot.startsWith('{') || addressSnapshot.startsWith('['))) {
+    try {
+      const parsedAddress = JSON.parse(addressSnapshot);
+      if (parsedAddress.roadAddress) {
+        return parsedAddress.roadAddress;
+      } else if (parsedAddress.jibunAddress) {
+        return parsedAddress.jibunAddress;
+      }
+    } catch (e) {
+      console.warn('주소 JSON 파싱 실패:', e);
+      return addressSnapshot;
+    }
+  }
+  
+  // 객체인 경우
+  if (typeof addressSnapshot === 'object') {
+    // 도로명 주소가 있는 경우 우선 사용
+    if (addressSnapshot.roadAddress) {
+      return addressSnapshot.roadAddress;
+    }
+    
+    // 지번 주소가 있는 경우 사용
+    if (addressSnapshot.jibunAddress) {
+      return addressSnapshot.jibunAddress;
+    }
+    
+    // 시도, 시군구, 상세주소 등이 있는 경우 조합
+    const addressParts = [];
+    
+    if (addressSnapshot.sido) addressParts.push(addressSnapshot.sido);
+    if (addressSnapshot.sigungu) addressParts.push(addressSnapshot.sigungu);
+    if (addressSnapshot.bname) addressParts.push(addressSnapshot.bname);
+    if (addressSnapshot.roadname) addressParts.push(addressSnapshot.roadname);
+    if (addressSnapshot.detailAddress) addressParts.push(addressSnapshot.detailAddress);
+    
+    if (addressParts.length > 0) {
+      return addressParts.join(' ');
+    }
+  }
+  
+  // 마지막 대안으로 JSON 형태로 변환
+  try {
+    return JSON.stringify(addressSnapshot);
+  } catch (e) {
+    console.warn('주소 정보 변환 실패:', e);
+    return '주소 정보 없음';
+  }
 }
 
 /**

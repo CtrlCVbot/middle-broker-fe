@@ -19,40 +19,75 @@ export const getDrivers = async (params: {
   companyType?: string;
   startDate?: string;
   endDate?: string;
+  tonnage?: string;
+  status?: string;
+  dispatchCount?: string;
 }) => {
+  console.log('getDrivers 호출됨: params', params);
+  
   // 쿼리 파라미터 구성
   const queryParams = new URLSearchParams();
   
   if (params.page) queryParams.append('page', params.page.toString());
   if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString());
   if (params.searchTerm) queryParams.append('searchTerm', params.searchTerm);
+  
+  // vehicleType 처리
   if (params.vehicleType) queryParams.append('vehicleType', params.vehicleType);
-  if (params.vehicleWeight) queryParams.append('vehicleWeight', params.vehicleWeight);
-  if (params.isActive !== undefined) queryParams.append('isActive', params.isActive.toString());
+  
+  // tonnage → vehicleWeight 변환 처리
+  if (params.tonnage) {
+    queryParams.append('vehicleWeight', params.tonnage);
+  } else if (params.vehicleWeight) {
+    queryParams.append('vehicleWeight', params.vehicleWeight);
+  }
+  
+  // isActive 처리 (status → isActive 변환)
+  if (params.status) {
+    const isActive = params.status === '활성';
+    queryParams.append('isActive', isActive.toString());
+  } else if (params.isActive !== undefined) {
+    queryParams.append('isActive', params.isActive.toString());
+  }
+  
   if (params.companyType) queryParams.append('companyType', params.companyType);
   if (params.startDate) queryParams.append('startDate', params.startDate);
   if (params.endDate) queryParams.append('endDate', params.endDate);
   
-  // API 호출
-  const response = await fetch(`${API_BASE_URL}?${queryParams.toString()}`, {
-    headers: getAuthHeaders()
-  });
+  console.log('API 요청 URL:', `${API_BASE_URL}?${queryParams.toString()}`);
   
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => null);
-    throw new Error(errorData?.error || '차주 목록 조회 중 오류가 발생했습니다.');
+  try {
+    // API 호출
+    const response = await fetch(`${API_BASE_URL}?${queryParams.toString()}`, {
+      headers: getAuthHeaders()
+    });
+    
+    console.log('API 응답 상태:', response.status, response.statusText);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      console.error('API 오류 응답:', errorData);
+      throw new Error(errorData?.error || '차주 목록 조회 중 오류가 발생했습니다.');
+    }
+    
+    const data = await response.json();
+    console.log('API 응답 데이터:', data);
+    
+    // 응답 데이터 매핑
+    const result = {
+      data: Array.isArray(data.data) ? data.data.map((item: any) => mapApiResponseToDriver(item)) : [],
+      total: data.total || 0,
+      page: data.page || 1,
+      pageSize: data.pageSize || 10,
+      totalPages: data.totalPages || 1
+    };
+    
+    console.log('매핑된 응답 데이터:', result);
+    return result;
+  } catch (error) {
+    console.error('차주 목록 조회 API 오류:', error);
+    throw error;
   }
-  
-  const data = await response.json();
-  
-  // 응답 데이터 매핑
-  return {
-    data: data.data.map((item: any) => mapApiResponseToDriver(item)),
-    total: data.total,
-    page: data.page,
-    pageSize: data.pageSize,
-    totalPages: data.totalPages
-  };
 };
 
 /**
