@@ -499,6 +499,7 @@ export function BrokerOrderDetailSheet() {
                             status={orderData?.status || "배차대기"}
                             amount={orderData?.amount || "0"}
                             onSendMessage={() => handleSendMessage("기사님")}
+                            onSaveDriverInfo={handleSaveDriverInfo}
                           /> 
 
                           {/* 금융 요약 카드 추가 */}
@@ -507,18 +508,26 @@ export function BrokerOrderDetailSheet() {
                           </div>                         
                         </>
                       ) : (
-                        <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
-                          <AlertCircle className="mb-2 h-10 w-10 opacity-20" />
-                          <p>아직 배차되지 않았습니다.</p>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="mt-4"
-                            onClick={() => handleSetEditMode("driver")}
-                          >
-                            배차 정보 입력하기
-                          </Button>
+                        <>                        
+                        <div className="flex flex-col items-center justify-center py-8 border border-dashed rounded-md bg-muted/30">
+                          <AlertCircle className="h-10 w-10 text-muted-foreground mb-2" />
+                          <p className="text-sm text-muted-foreground mb-4">아직 배차되지 않았습니다.</p>
+                          <div className="flex gap-2">                            
+                            <Button 
+                              type="button" 
+                              onClick={() => handleSetEditMode("driver")}
+                            >
+                              <Truck className="h-4 w-4 mr-2" />
+                              배차 정보 입력하기
+                            </Button>
+                          </div>
                         </div>
+
+                        {/* 금융 요약 카드 추가 */}
+                        <div className="mb-4 mt-4">
+                          <FinanceSummaryCard />
+                        </div>     
+                      </>
                       )}
                     </div>
                   </CardContent>

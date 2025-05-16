@@ -685,7 +685,7 @@ export const getBrokerOrderDetailById = (id: string): Promise<IBrokerOrderDetail
         console.warn(`ID ${id}에 해당하는 중개 화물 정보를 찾을 수 없습니다. 기본 데이터를 반환합니다.`);
         
         // 목록의 첫 번째 항목을 대체 데이터로 사용 (객체의 첫 번째 키를 가져옴)
-        const firstId = Object.keys(mockBrokerOrderDetails)[2];
+        const firstId = Object.keys(mockBrokerOrderDetails)[0];
         const defaultData = {...mockBrokerOrderDetails[firstId]};
         
         // 조회된 ID로 orderNumber 값 변경

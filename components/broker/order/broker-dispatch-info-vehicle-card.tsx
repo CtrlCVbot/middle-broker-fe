@@ -6,6 +6,13 @@ import { Phone, MessageSquare, Fuel, Eye, Pencil, ChevronUp, ChevronDown } from 
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 import { DriverHistory } from "./broker-driver-history";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog";
+import { BrokerOrderDriverInfoEditForm as VehicleEditForm } from "./broker-dispatch-info-vehicle-form";
 
 interface IVehicleCardProps {
   vehicleInfo: {
@@ -22,16 +29,19 @@ interface IVehicleCardProps {
   };
   onCall?: (driverName: string) => void;
   onMessage?: (driverName: string) => void;
+  onSaveDriverInfo?: (data: any) => void;
 }
 
 export function VehicleCard({ 
   vehicleInfo, 
   driverInfo, 
   onCall, 
-  onMessage 
+  onMessage,
+  onSaveDriverInfo
 }: IVehicleCardProps) {
   const [editMode, setEditMode] = useState(false);
   const [isDriverInfoOpen, setIsDriverInfoOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleCall = () => {
     if (onCall) {
@@ -50,11 +60,23 @@ export function VehicleCard({
   };
 
   const toggleEditMode = () => {
-    setEditMode(!editMode);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setIsEditDialogOpen(false);
+  };
+
+  const handleSaveDriverInfo = (data: any) => {
+    if (onSaveDriverInfo) {
+      onSaveDriverInfo(data);
+    }
+    setIsEditDialogOpen(false);
   };
 
   return (
     <div className="bg-white rounded-lg py-2 px-2 space-y-4">
+      
       {/* 차량 정보 */}
       <div className="flex items-center justify-between mb-1 hover:cursor-pointer hover:bg-gray-100 py-2 px-2 rounded-md"  onClick={toggleEditMode}>
         <div className="flex items-center gap-3">
@@ -84,26 +106,17 @@ export function VehicleCard({
         {/* 편집 버튼 */}
         <div className="flex gap-2">          
           {/* 편집 모드 전환 버튼 */}
-          {editMode ? (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setEditMode(false)}
-              className="h-7 px-2 text-gray-500"
-            >
-              <Eye className="h-3.5 w-3.5 mr-1" />
-              
-            </Button>
-          ) : (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setEditMode(true)}
-              className="h-7 px-2 text-gray-500"
-            >
-              <Pencil className="h-3.5 w-3.5 mr-1" />              
-            </Button>
-          )}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleEditMode();
+            }}
+            className="h-7 px-2 text-gray-500"
+          >
+            <Pencil className="h-3.5 w-3.5 mr-1" />              
+          </Button>
         </div>
       </div>
       
@@ -175,6 +188,32 @@ export function VehicleCard({
           <DriverHistory />
         </div>
       )}
+
+      {/* 배차 정보 편집 다이얼로그 */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>배차 정보 수정</DialogTitle>
+          </DialogHeader>
+          <VehicleEditForm
+            initialData={{
+              driver: {
+                name: driverInfo.name || "",
+                contact: driverInfo.contact || ""
+              },
+              vehicle: {
+                type: vehicleInfo.type || "",
+                weight: vehicleInfo.weight || "",
+                licensePlate: vehicleInfo.licensePlate || ""
+              },
+              callCenter: vehicleInfo.connection || "24시",
+              specialNotes: []
+            }}
+            onSave={handleSaveDriverInfo}
+            onCancel={handleDialogClose}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 } 

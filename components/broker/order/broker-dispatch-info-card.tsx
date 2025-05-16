@@ -20,6 +20,7 @@ import {
 import { BrokerOrderStatusType } from "@/types/broker-order";
 import { formatCurrency } from "@/lib/utils";
 import { VehicleCard } from "./broker-dispatch-info-vehicle-card";
+import { toast } from "@/components/ui/use-toast";
 
 interface VehicleInfo {
   type: string;
@@ -45,6 +46,7 @@ interface BrokerOrderDriverInfoCardProps {
   amount: string;
   driver: DriverInfo;
   onSendMessage: () => void;
+  onSaveDriverInfo?: (data: any) => void;
 }
 
 // 목업 데이터 - 위치 정보
@@ -54,7 +56,14 @@ const locationData = {
   current: { name: "경기도 용인시 처인구" }
 };
 
-export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onSendMessage }: BrokerOrderDriverInfoCardProps) {
+export function BrokerOrderDriverInfoCard({ 
+  vehicle, 
+  status, 
+  amount, 
+  driver, 
+  onSendMessage,
+  onSaveDriverInfo 
+}: BrokerOrderDriverInfoCardProps) {
   const [isMapVisible, setIsMapVisible] = useState(false);
 
   const dispatchVehicleInfo = {
@@ -93,6 +102,18 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
   
   // 문자열 금액을 숫자로 변환 (콤마 제거)
   const amountNumber = parseInt(amount.replace(/,/g, ''), 10) || 0;
+
+  // 배차 정보 저장 핸들러
+  const handleSaveDriverInfo = (data: any) => {
+    if (onSaveDriverInfo) {
+      onSaveDriverInfo(data);
+    } else {
+      toast({
+        title: "배차 정보 수정",
+        description: "배차 정보가 성공적으로 수정되었습니다.",
+      });
+    }
+  };
   
   return (
     <div className="space-y-4">
@@ -130,6 +151,7 @@ export function BrokerOrderDriverInfoCard({ vehicle, status, amount, driver, onS
               vehicleInfo={dispatchVehicleInfo.vehicleInfo}
               driverInfo={dispatchVehicleInfo.driverInfo}
               onMessage={onSendMessage}
+              onSaveDriverInfo={handleSaveDriverInfo}
             />
           </div>
         </>
