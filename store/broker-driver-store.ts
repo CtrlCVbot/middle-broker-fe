@@ -296,18 +296,27 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
           
           // API 호출하여 특이사항 목록 조회
           const apiResponse = await getDriverNotes(driverId);
+          console.log('특이사항 API 응답:', apiResponse);
           
           // API 응답 데이터를 프론트엔드 형식으로 변환
           const notes = mapApiResponseToNotesList(apiResponse);
+          console.log('변환된 특이사항 목록:', notes);
           
           // 상태 업데이트
-          set(state => ({
-            driverNotes: {
-              ...state.driverNotes,
-              [driverId]: notes
-            },
-            isLoadingNotes: false
-          }));
+          set(state => {
+            console.log('특이사항 상태 업데이트 전:', state.driverNotes[driverId] || []);
+            
+            const updated = {
+              driverNotes: {
+                ...state.driverNotes,
+                [driverId]: notes
+              },
+              isLoadingNotes: false
+            };
+            
+            console.log('특이사항 상태 업데이트 후:', updated.driverNotes[driverId]);
+            return updated;
+          });
           
           return notes;
         } catch (error) {
@@ -332,31 +341,34 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
           
           // API 호출하여 특이사항 추가
           const addedNote = await addDriverNote(driverId, content);
+          console.log('API 응답 (추가된 특이사항):', addedNote);
           
-          // 특이사항 목록 상태 업데이트
-          set(state => {
-            const currentNotes = state.driverNotes[driverId] || [];
-            const newNote: IDriverNote = {
-              id: addedNote.id,
-              content: addedNote.content,
-              date: addedNote.date ? new Date(addedNote.date) : new Date()
-            };
-            
-            return {
-              driverNotes: {
-                ...state.driverNotes,
-                [driverId]: [newNote, ...currentNotes]
-              }
-            };
-          });
+          // 특이사항 목록 상태 업데이트 (이전 상태 확인)
+          const state = get();
+          const currentNotes = state.driverNotes[driverId] || [];
+          console.log('추가 전 특이사항 목록:', currentNotes);
           
-          toast.success('특이사항이 추가되었습니다.');
-          
-          return {
+          // 새 특이사항 객체 생성
+          const newNote = {
             id: addedNote.id,
             content: addedNote.content,
             date: addedNote.date ? new Date(addedNote.date) : new Date()
           };
+          
+          // 최신 항목이 맨 위에 오도록 목록 업데이트
+          const updatedNotes = [newNote, ...currentNotes];
+          console.log('추가 후 특이사항 목록:', updatedNotes);
+          
+          // 상태 업데이트
+          set({
+            driverNotes: {
+              ...state.driverNotes,
+              [driverId]: updatedNotes
+            }
+          });
+          
+          toast.success('특이사항이 추가되었습니다.');
+          return newNote;
         } catch (error) {
           console.error('특이사항 추가 API 오류:', error);
           
@@ -372,29 +384,60 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
         try {
           console.log('updateDriverNote 호출됨:', { noteId, content, driverId });
           
+          // 기존 상태 확인
+          const state = get();
+          const currentNotes = state.driverNotes[driverId] || [];
+          console.log('수정 전 특이사항 목록:', currentNotes);
+          
+          // 먼저 UI 업데이트를 위해 로컬 상태 변경
+          const updatedLocalNotes = currentNotes.map(note => 
+            note.id === noteId
+              ? {
+                  ...note,
+                  content,
+                  date: new Date()
+                }
+              : note
+          );
+          
+          console.log('로컬 상태 업데이트 후:', updatedLocalNotes);
+          
+          // 로컬 상태 먼저 업데이트
+          set({
+            driverNotes: {
+              ...state.driverNotes,
+              [driverId]: updatedLocalNotes
+            }
+          });
+          
           // API 호출하여 특이사항 수정
           const updatedNote = await updateDriverNote(noteId, content);
+          console.log('API 응답 (수정된 특이사항):', updatedNote);
           
-          // 특이사항 목록 상태 업데이트
-          set(state => {
-            const currentNotes = state.driverNotes[driverId] || [];
-            const updatedNotes = currentNotes.map(note => 
+          // 서버 응답과 동기화할 필요가 있을 경우
+          if (updatedNote && updatedNote.date) {
+            const serverDate = new Date(updatedNote.date);
+            
+            // 응답의 date로 로컬 상태 재조정
+            const syncedNotes = updatedLocalNotes.map(note => 
               note.id === noteId
                 ? {
                     ...note,
-                    content,
-                    date: updatedNote.date ? new Date(updatedNote.date) : new Date()
+                    date: serverDate
                   }
                 : note
             );
             
-            return {
+            // 상태 최종 업데이트
+            set({
               driverNotes: {
                 ...state.driverNotes,
-                [driverId]: updatedNotes
+                [driverId]: syncedNotes
               }
-            };
-          });
+            });
+            
+            console.log('서버 응답 동기화 후:', syncedNotes);
+          }
           
           toast.success('특이사항이 수정되었습니다.');
           
@@ -418,21 +461,26 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
         try {
           console.log('deleteDriverNote 호출됨:', { noteId, driverId });
           
+          // 기존 상태 확인
+          const state = get();
+          const currentNotes = state.driverNotes[driverId] || [];
+          console.log('삭제 전 특이사항 목록:', currentNotes);
+          
+          // 먼저 UI 업데이트를 위해 로컬 상태 변경
+          const updatedNotes = currentNotes.filter(note => note.id !== noteId);
+          console.log('삭제 후 특이사항 목록:', updatedNotes);
+          
+          // 상태 업데이트
+          set({
+            driverNotes: {
+              ...state.driverNotes,
+              [driverId]: updatedNotes
+            }
+          });
+          
           // API 호출하여 특이사항 삭제
           await deleteDriverNote(noteId);
-          
-          // 특이사항 목록 상태 업데이트
-          set(state => {
-            const currentNotes = state.driverNotes[driverId] || [];
-            const updatedNotes = currentNotes.filter(note => note.id !== noteId);
-            
-            return {
-              driverNotes: {
-                ...state.driverNotes,
-                [driverId]: updatedNotes
-              }
-            };
-          });
+          console.log('API 삭제 완료');
           
           toast.success('특이사항이 삭제되었습니다.');
         } catch (error) {
