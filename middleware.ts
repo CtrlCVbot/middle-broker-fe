@@ -27,9 +27,37 @@ const apiRoutes = ['/api']
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
   
-  // API 경로는 미들웨어 처리 제외
+  // API 경로는 별도 처리
   if (apiRoutes.some(route => path.startsWith(route))) {
-    return NextResponse.next()
+    // 디버깅: API 경로의 요청을 로깅합니다
+    console.log(`API 경로 요청 감지: ${path}`);
+    
+    // 개발 환경에서는 테스트용 사용자 ID 추가 (실제 환경에서는 토큰 검증 필요)
+    const response = NextResponse.next();
+    
+    // 개발 환경에서는 차주 등록 테스트를 위해 임시 사용자 ID 설정
+    if (process.env.NODE_ENV !== 'production') {
+      // 테스트용 사용자 ID (시스템에 실제 존재하는 ID로 변경 필요)
+      const testUserId = '1';
+      console.log(`개발 환경 - API 요청에 테스트 사용자 ID 추가: ${testUserId}`);
+      response.headers.set('x-user-id', testUserId);
+    } else {
+      // 프로덕션에서는 토큰에서 추출한 실제 사용자 ID 사용
+      const accessTokenCookie = request.cookies.get('access_token')?.value
+      
+      if (accessTokenCookie) {
+        try {
+          const payload = await verifyAccessToken(accessTokenCookie)
+          if (payload && payload.id) {
+            response.headers.set('x-user-id', payload.id);
+          }
+        } catch (error) {
+          console.error('JWT 토큰 검증 오류:', error)
+        }
+      }
+    }
+    
+    return response;
   }
   
   // 액세스 토큰 쿠키 확인

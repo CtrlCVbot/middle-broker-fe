@@ -150,11 +150,28 @@ const CreateDriverSchema = z.object({
 // 차주 등록 API (POST /api/drivers)
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    console.log('차주 등록 API 호출됨');
+    
+    const requestBody = await request.text();
+    console.log('요청 원본 데이터:', requestBody);
+    
+    let body;
+    try {
+      body = JSON.parse(requestBody);
+      console.log('파싱된 요청 데이터:', body);
+    } catch (parseError) {
+      console.error('요청 본문 파싱 오류:', parseError);
+      return NextResponse.json(
+        { error: '유효하지 않은 JSON 데이터입니다.' },
+        { status: 400 }
+      );
+    }
 
     // 요청 데이터 검증
+    console.log('데이터 유효성 검증 시작...');
     const validationResult = CreateDriverSchema.safeParse(body);
     if (!validationResult.success) {
+      console.error('유효성 검증 실패:', validationResult.error.errors);
       return NextResponse.json(
         {
           error: '잘못된 요청 형식입니다.',
@@ -163,11 +180,14 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    console.log('데이터 유효성 검증 성공');
 
     const driverData = validationResult.data;
     const requestUserId = request.headers.get('x-user-id') || '';
+    console.log('요청 사용자 ID:', requestUserId);
 
     // 요청 사용자 정보 조회
+    console.log('사용자 정보 조회 시작...');
     const [requestUser] = await db
       .select()
       .from(users)
@@ -176,13 +196,16 @@ export async function POST(request: NextRequest) {
       .execute();
 
     if (!requestUser) {
+      console.error('요청 사용자를 찾을 수 없음:', requestUserId);
       return NextResponse.json(
         { error: '요청 사용자를 찾을 수 없습니다.' },
         { status: 404 }
       );
     }
+    console.log('조회된 사용자 정보:', { id: requestUser.id, name: requestUser.name, email: requestUser.email });
 
     // 차량번호 중복 검사
+    console.log('차량번호 중복 검사 시작...', driverData.vehicleNumber);
     const [existingDriver] = await db
       .select()
       .from(drivers)
@@ -191,63 +214,93 @@ export async function POST(request: NextRequest) {
       .execute();
 
     if (existingDriver) {
+      console.error('중복된 차량번호 발견:', driverData.vehicleNumber);
       return NextResponse.json(
         { error: '이미 등록된 차량번호입니다.' },
         { status: 400 }
       );
     }
+    console.log('차량번호 중복 검사 통과');
 
     // 사용자 스냅샷 생성
     const userSnapshot = {
       ...requestUser
     };
+    console.log('사용자 스냅샷 생성 완료');
 
     // 차주 등록
-    const [createdDriver] = await db
-      .insert(drivers)
-      .values({
-        name: driverData.name,
-        phoneNumber: driverData.phoneNumber,
-        vehicleNumber: driverData.vehicleNumber,
-        vehicleType: driverData.vehicleType,
-        vehicleWeight: driverData.vehicleWeight,
-        addressSnapshot: driverData.address,
-        companyType: driverData.companyType,
-        companyId: driverData.companyId,
-        businessNumber: driverData.businessNumber,
-        manufactureYear: driverData.manufactureYear,
-        isActive: driverData.isActive,
-        inactiveReason: driverData.inactiveReason,
-        createdBy: requestUser.id,
-        createdBySnapshot: userSnapshot,
-        updatedBy: requestUser.id,
-        updatedBySnapshot: userSnapshot
-      }as any)
-      .returning();
-
-    // 변경 이력 기록
-    await logDriverChange({
-      driverId: createdDriver.id,
-      changedBy: requestUser.id,
-      changedByName: requestUser.name || '',
-      changedByEmail: requestUser.email || '',
-      changedByAccessLevel: requestUser.system_access_level || 'user',
-      changeType: 'create',
-      oldData: null,
-      newData: {
-        ...createdDriver,
-        createdAt: createdDriver.createdAt?.toISOString(),
-        updatedAt: createdDriver.updatedAt?.toISOString()
-      },
-      reason: '차주 등록'
+    console.log('차주 DB 등록 시작...');
+    console.log('등록할 차주 데이터:', {
+      name: driverData.name,
+      phoneNumber: driverData.phoneNumber,
+      vehicleNumber: driverData.vehicleNumber,
+      vehicleType: driverData.vehicleType,
+      vehicleWeight: driverData.vehicleWeight,
+      companyType: driverData.companyType,
+      businessNumber: driverData.businessNumber
     });
+    
+    try {
+      const [createdDriver] = await db
+        .insert(drivers)
+        .values({
+          name: driverData.name,
+          phoneNumber: driverData.phoneNumber,
+          vehicleNumber: driverData.vehicleNumber,
+          vehicleType: driverData.vehicleType,
+          vehicleWeight: driverData.vehicleWeight,
+          addressSnapshot: driverData.address,
+          companyType: driverData.companyType,
+          companyId: driverData.companyId,
+          businessNumber: driverData.businessNumber,
+          manufactureYear: driverData.manufactureYear,
+          isActive: driverData.isActive,
+          inactiveReason: driverData.inactiveReason,
+          createdBy: requestUser.id,
+          createdBySnapshot: userSnapshot,
+          updatedBy: requestUser.id,
+          updatedBySnapshot: userSnapshot
+        }as any)
+        .returning();
+      
+      console.log('차주 DB 등록 성공:', createdDriver);
 
-    return NextResponse.json({
-      message: '차주가 성공적으로 등록되었습니다.',
-      data: createdDriver
-    });
+      // 변경 이력 기록
+      console.log('차주 변경 이력 기록 시작...');
+      await logDriverChange({
+        driverId: createdDriver.id,
+        changedBy: requestUser.id,
+        changedByName: requestUser.name || '',
+        changedByEmail: requestUser.email || '',
+        changedByAccessLevel: requestUser.system_access_level || 'user',
+        changeType: 'create',
+        oldData: null,
+        newData: {
+          ...createdDriver,
+          createdAt: createdDriver.createdAt?.toISOString(),
+          updatedAt: createdDriver.updatedAt?.toISOString()
+        },
+        reason: '차주 등록'
+      });
+      console.log('차주 변경 이력 기록 완료');
+
+      console.log('차주 등록 API 완료 - 응답 데이터:', createdDriver);
+      return NextResponse.json({
+        message: '차주가 성공적으로 등록되었습니다.',
+        data: createdDriver
+      });
+    } catch (dbError) {
+      console.error('차주 DB 등록 오류:', dbError);
+      throw dbError;
+    }
   } catch (error) {
     console.error('차주 등록 중 오류 발생:', error);
+    console.error('오류 세부 정보:', {
+      name: error instanceof Error ? error.name : 'UnknownError',
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }

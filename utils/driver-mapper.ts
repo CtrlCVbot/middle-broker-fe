@@ -7,36 +7,42 @@ import { IAddressSnapshot } from "@/types/order-ver01";
  * @returns API 요청 데이터
  */
 export function mapDriverFormToApiRequest(formData: any): any {
-  // broker-driver-register-sheet.tsx의 폼 구조 분석
-  // 기본 정보, 차량 정보, 계정 정보, 특이사항으로 구분됨
+  console.log('mapDriverFormToApiRequest 호출됨 - 입력 폼 데이터:', formData);
   
-  // 주소 스냅샷 생성
-  const addressSnapshot: IAddressSnapshot = {
-    roadAddress: formData.basicInfo.address || ''
-  }as any;
+  // 주소 정보 추출 및 가공
+  const address = formData.basicInfo.address || '';
+  console.log('추출된 주소 정보:', address);
+  
+  // API 요청에 필요한 주소 객체 생성
+  const addressObject = {
+    roadAddress: address,
+    postalCode: '00000', // 임시값
+    detailAddress: '',
+    sido: '서울특별시', // 임시값, 실제로는 주소 파싱 필요
+    sigungu: '강남구', // 임시값, 실제로는 주소 파싱 필요
+    bname: '역삼동', // 임시값, 실제로는 주소 파싱 필요
+    roadname: '테헤란로', // 임시값, 실제로는 주소 파싱 필요
+    jibunAddress: address // 일단 동일한 값 사용
+  };
+  console.log('생성된 주소 객체:', addressObject);
   
   // API 요청 형식으로 변환
-  return {
+  const requestData = {
     name: formData.basicInfo.name,
     phoneNumber: formData.basicInfo.phone,
     vehicleNumber: formData.vehicleInfo.vehicleNumber,
-    vehicleType: formData.vehicleInfo.vehicleType as VehicleType,
-    vehicleWeight: formData.vehicleInfo.tonnage as any, // tonnage → vehicleWeight로 매핑
-    address: {
-      roadAddress: formData.basicInfo.address || '',
-      postalCode: '',
-      detailAddress: '',
-      sido: '',
-      sigungu: '',
-      bname: '',
-      roadname: ''
-    },
+    vehicleType: formData.vehicleInfo.vehicleType,
+    vehicleWeight: formData.vehicleInfo.tonnage, // tonnage → vehicleWeight로 매핑
+    address: addressObject,
     companyType: '개인', // 기본값
-    businessNumber: formData.basicInfo.businessNumber || '',
+    businessNumber: formData.basicInfo.businessNumber || '0000000000',
     manufactureYear: formData.vehicleInfo.manufactureYear || '',
     isActive: formData.basicInfo.status === '활성',
     inactiveReason: formData.basicInfo.status === '비활성' ? '사용자에 의한 비활성화' : '',
   };
+  
+  console.log('생성된 API 요청 데이터:', requestData);
+  return requestData;
 }
 
 /**

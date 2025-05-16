@@ -10,11 +10,18 @@ if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL is not defined');
 }
 
+// 데이터베이스 연결 정보 출력
+console.log('데이터베이스 연결 URL:', process.env.DATABASE_URL.replace(/\/\/([^:]+):[^@]+@/, '//***:***@'));
+
 const queryClient = postgres(process.env.DATABASE_URL, {
   max: 10,
   idle_timeout: 20,
   connect_timeout: 10,
   max_lifetime: 60 * 30,
+  debug: true, // SQL 쿼리 디버깅 활성화
+  onnotice: (notice) => {
+    console.log('데이터베이스 알림:', notice);
+  },
 });
 
 export const db = drizzle(queryClient, { schema });

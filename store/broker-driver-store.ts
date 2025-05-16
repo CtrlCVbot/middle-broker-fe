@@ -205,8 +205,12 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
       // 실제 API 호출 메서드 추가
       registerDriverWithAPI: async (driverData) => {
         try {
+          console.log('registerDriverWithAPI 호출됨 - 입력 데이터:', driverData);
+          
           // API 호출하여 차주 등록
           const registeredDriver = await registerDriver(driverData);
+          
+          console.log('API 응답 성공 - 등록된 차주:', registeredDriver);
           
           // 선택적으로 성공 메시지 표시
           toast.success(`${registeredDriver.name} 차주가 성공적으로 등록되었습니다.`);
@@ -214,6 +218,12 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
           return registeredDriver;
         } catch (error) {
           console.error('차주 등록 API 호출 실패:', error);
+          console.error('오류 세부 정보:', {
+            name: error instanceof Error ? error.name : 'UnknownError',
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined
+          });
+          
           toast.error('차주 등록에 실패했습니다.', {
             description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
           });
