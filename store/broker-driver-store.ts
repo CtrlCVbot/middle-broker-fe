@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { DriverStatus, IBrokerDriver, IBrokerDriverFilter, TonnageType, VehicleType } from '@/types/broker-driver';
 import { DRIVER_STATUS, DISPATCH_COUNT_OPTIONS, TONNAGE_TYPES, VEHICLE_TYPES, getBrokerDriverById, updateBrokerDriver } from '@/utils/mockdata/mock-broker-drivers';
+import { registerDriver, updateDriver as updateDriverApi, deleteDriver } from '@/services/driver-service';
+import { toast } from 'sonner';
 
 // 필터 요약 문구 생성 함수
 export const getFilterSummaryText = (filter: IBrokerDriverFilter): string => {
@@ -74,6 +76,11 @@ interface IBrokerDriverState {
   
   // 차주 데이터 관리
   updateDriver: (driver: IBrokerDriver) => void;
+  
+  // API 호출 메서드 (실제 백엔드 통신)
+  registerDriverWithAPI: (driverData: any) => Promise<IBrokerDriver>;
+  updateDriverWithAPI: (driverId: string, driverData: any) => Promise<IBrokerDriver>;
+  deleteDriverWithAPI: (driverId: string, reason?: string) => Promise<void>;
   
   // 필터 옵션
   filterOptions: {
@@ -178,7 +185,7 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
       
       clearSelectedDriverIds: () => set({ selectedDriverIds: [] }),
       
-      // 차주 데이터 업데이트
+      // 차주 데이터 업데이트 (기존 Mock 메서드 유지)
       updateDriver: (updatedDriver) => {
         try {
           // 목업 데이터 업데이트
@@ -192,6 +199,64 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
           }));
         } catch (error) {
           console.error('차주 정보 업데이트 실패:', error);
+        }
+      },
+      
+      // 실제 API 호출 메서드 추가
+      registerDriverWithAPI: async (driverData) => {
+        try {
+          // API 호출하여 차주 등록
+          const registeredDriver = await registerDriver(driverData);
+          
+          // 선택적으로 성공 메시지 표시
+          toast.success(`${registeredDriver.name} 차주가 성공적으로 등록되었습니다.`);
+          
+          return registeredDriver;
+        } catch (error) {
+          console.error('차주 등록 API 호출 실패:', error);
+          toast.error('차주 등록에 실패했습니다.', {
+            description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+          });
+          throw error;
+        }
+      },
+      
+      updateDriverWithAPI: async (driverId, driverData) => {
+        try {
+          // API 호출하여 차주 정보 수정
+          const updatedDriver = await updateDriverApi(driverId, driverData);
+          
+          // 선택적으로 성공 메시지 표시
+          toast.success(`${updatedDriver.name} 차주 정보가 성공적으로 수정되었습니다.`);
+          
+          return updatedDriver;
+        } catch (error) {
+          console.error('차주 정보 수정 API 호출 실패:', error);
+          toast.error('차주 정보 수정에 실패했습니다.', {
+            description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+          });
+          throw error;
+        }
+      },
+      
+      deleteDriverWithAPI: async (driverId, reason) => {
+        try {
+          // API 호출하여 차주 삭제
+          await deleteDriver(driverId, reason);
+          
+          // 선택된 차주 ID 목록에서 삭제된 차주 제거
+          set((state) => ({
+            selectedDriverIds: state.selectedDriverIds.filter(id => id !== driverId)
+          }));
+          
+          // 선택적으로 성공 메시지 표시
+          toast.success('차주가 성공적으로 삭제되었습니다.');
+        } catch (error) {
+          console.error('차주 삭제 API 호출 실패:', error);
+          toast.error('차주 삭제에 실패했습니다.', {
+            description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+          });
+          throw error;
         }
       },
     }),
