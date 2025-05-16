@@ -1,3 +1,5 @@
+import { ICompanySnapshot } from "./order-ver01";
+
 // 차주 관련 타입 정의
 export type DriverStatus = '활성' | '비활성';
 export type VehicleType = '카고' | '윙바디' | '냉동' | '탑차' | '리프트' | '기타';
@@ -28,13 +30,12 @@ export interface IDriverNote {
 export interface IBrokerDriver {
   id: string;
   code?: string;
-  name: string;
+  name: string;  
   phoneNumber: string;
   vehicleNumber: string;
   vehicleType: VehicleType;
   tonnage: TonnageType;
-  address: string;
-  companyName?: string;
+  address: string;  
   businessNumber: string;
   dispatchCount?: number;
   status: DriverStatus;
