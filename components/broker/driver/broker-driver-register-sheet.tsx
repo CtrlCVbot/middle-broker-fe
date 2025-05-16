@@ -353,7 +353,13 @@ export function BrokerDriverRegisterSheet({
       isValid = await form.trigger("vehicleInfo", { shouldFocus: true });
       if (isValid) {
         checkStepCompletion('vehicle', true);
-        setActiveTab("account-info");
+        // 수정 모드일 때만 특이사항 탭으로 이동, 등록 모드에서는 완료 처리
+        if (mode === 'edit') {
+          setActiveTab("notes");
+        } else {
+          // 등록 모드에서는 차량 정보까지 입력 후 제출
+          await form.handleSubmit(onSubmit)();
+        }
       }
     } 
     // else if (activeTab === "account-info") {
@@ -372,7 +378,7 @@ export function BrokerDriverRegisterSheet({
     } else if (activeTab === "account-info") {
       setActiveTab("vehicle-info");
     } else if (activeTab === "notes") {
-      setActiveTab("account-info");
+      setActiveTab("vehicle-info");
     }
   };
 
@@ -416,7 +422,7 @@ export function BrokerDriverRegisterSheet({
                 onValueChange={setActiveTab}
                 className="w-full px-6"
               >
-                <TabsList className="grid grid-cols-4 mb-4">
+                <TabsList className={`grid ${mode === 'edit' ? 'grid-cols-3' : 'grid-cols-2'} mb-4`}>
                   <TabsTrigger 
                     value="basic-info"
                     className="relative"
@@ -444,15 +450,17 @@ export function BrokerDriverRegisterSheet({
                       <Check className="h-3 w-3 absolute -top-1 -right-1 text-green-600" />
                     )}
                   </TabsTrigger> */}
-                  <TabsTrigger 
-                    value="notes"
-                    className="relative"
-                  >
-                    특이사항
-                    {formStatus.notes && (
-                      <Check className="h-3 w-3 absolute -top-1 -right-1 text-green-600" />
-                    )}
-                  </TabsTrigger>
+                  {mode === 'edit' && (
+                    <TabsTrigger 
+                      value="notes"
+                      className="relative"
+                    >
+                      특이사항
+                      {formStatus.notes && (
+                        <Check className="h-3 w-3 absolute -top-1 -right-1 text-green-600" />
+                      )}
+                    </TabsTrigger>
+                  )}
                 </TabsList>
 
                 <TabsContent value="basic-info">
@@ -494,19 +502,21 @@ export function BrokerDriverRegisterSheet({
                   />
                 </TabsContent> */}
 
-                <TabsContent value="notes">
-                  <Alert className="mb-4">
-                    <AlertTitle>특이사항 입력</AlertTitle>
-                    <AlertDescription>
-                      차주에 대한 특이사항이 있다면 기록해주세요.
-                    </AlertDescription>
-                  </Alert>
-                  <BrokerDriverNotesForm 
-                    form={form}
-                    onComplete={() => checkStepCompletion('notes', true)}
-                    driverId={mode === 'edit' ? driver?.id : undefined}
-                  />
-                </TabsContent>
+                {mode === 'edit' && (
+                  <TabsContent value="notes">
+                    <Alert className="mb-4">
+                      <AlertTitle>특이사항 입력</AlertTitle>
+                      <AlertDescription>
+                        차주에 대한 특이사항이 있다면 기록해주세요.
+                      </AlertDescription>
+                    </Alert>
+                    <BrokerDriverNotesForm 
+                      form={form}
+                      onComplete={() => checkStepCompletion('notes', true)}
+                      driverId={mode === 'edit' ? driver?.id : undefined}
+                    />
+                  </TabsContent>
+                )}
             </Tabs>
 
             <SheetFooter className="flex flex-row justify-between mt-6 gap-2">
@@ -523,7 +533,7 @@ export function BrokerDriverRegisterSheet({
                 )}
               </div>
               <div className="flex gap-2">
-                {activeTab !== "notes" ? (
+                {(mode === 'edit' && activeTab !== "notes") || (mode === 'register' && activeTab !== "vehicle-info") ? (
                   <Button 
                     type="button" 
                     onClick={handleNextTab}

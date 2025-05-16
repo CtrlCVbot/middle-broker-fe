@@ -126,31 +126,11 @@ export function BrokerDriverNotesForm({
   
   // 디버깅: 특이사항 목록 상태 - 의존성 배열에 모든 관련 변수 포함
   useEffect(() => {
-    addLog(`apiNotes 갱신: ${apiNotes.length}개 (${JSON.stringify(apiNotes)})`)
-    addLog(`formNotes 갱신: ${formNotes.length}개`)
-    addLog(`notes 사용: ${notes.length}개 (${isNewDriver ? 'formNotes' : 'apiNotes'})`)
-  }, [apiNotes, formNotes, notes, isNewDriver])
-
-  // 기존 차주인 경우 API에서 특이사항 목록 가져오기
-  // React Query를 사용하므로 이 useEffect는 제거
-  // useEffect(() => {
-  //   if (driverId && !isNewDriver) {
-  //     addLog(`useEffect에서 fetchDriverNotes 호출: ${driverId}`)
-  //     fetchDriverNotes(driverId).then((fetchedNotes) => {
-  //       addLog(`fetchDriverNotes 응답: ${fetchedNotes.length}개 항목`)
-  //       
-  //       // 폼 값에도 API에서 가져온 특이사항 설정
-  //       form.setValue("notes.notes", fetchedNotes, { 
-  //         shouldValidate: true,
-  //         shouldDirty: false, // API에서 가져온 데이터는 dirty 상태로 표시하지 않음
-  //       });
-  //       
-  //       addLog(`폼 업데이트 완료: notes.notes를 ${fetchedNotes.length}개 항목으로 설정`)
-  //     }).catch(err => {
-  //       addLog(`fetchDriverNotes 오류: ${err.message}`)
-  //     });
-  //   }
-  // }, [driverId, fetchDriverNotes, form, isNewDriver]);
+    // 로그를 매번 남기는 대신 변화가 있을 때만 남기도록 수정
+    if (driverId) {
+      addLog(`특이사항 목록 상태 업데이트 - apiNotes: ${apiNotes.length}개, notes: ${notes.length}개`)
+    }
+  }, [driverId, apiNotes.length, notes.length]);
   
   // React Query 응답에 따라 폼 값 설정
   useEffect(() => {
@@ -162,20 +142,21 @@ export function BrokerDriverNotesForm({
         shouldValidate: true,
         shouldDirty: false,
       });
-      
-      addLog(`폼 업데이트 완료: notes.notes를 ${notesData.length}개 항목으로 설정`)
     }
   }, [notesData, driverId, isNewDriver, form]);
   
-  // 특이사항 목록이 없을 때 강제로 데이터 다시 불러오기
+  // 특이사항 목록이 없을 때 강제로 데이터 다시 불러오기 - 무한 루프 방지를 위한 flag 추가
+  const [hasTriedRefetch, setHasTriedRefetch] = useState(false);
+  
   useEffect(() => {
-    if (driverId && !isNewDriver && !isLoading && !error && notes.length === 0 && apiNotes.length === 0) {
+    if (driverId && !isNewDriver && !isLoading && !error && notes.length === 0 && apiNotes.length === 0 && !hasTriedRefetch) {
+      setHasTriedRefetch(true); // 한 번만 시도하도록 flag 업데이트
       addLog('특이사항 데이터가 없어 강제로 다시 불러오기 시도')
       refetch().then(() => {
         addLog('강제 refetch 완료')
       });
     }
-  }, [driverId, isNewDriver, isLoading, error, notes.length, apiNotes.length, refetch]);
+  }, [driverId, isNewDriver, isLoading, error, notes.length, apiNotes.length, refetch, hasTriedRefetch]);
   
   // 폼 상태 변화 감지
   useEffect(() => {
