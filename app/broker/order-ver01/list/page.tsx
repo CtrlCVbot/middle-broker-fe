@@ -262,35 +262,7 @@ export default function BrokerOrderListPage() {
     }
   };
   
-  // 데이터 로딩 및 에러 처리
-  if (isLoading) {
-    return (
-      <div className="container mx-auto py-8">
-        <Card>
-          <CardContent className="py-8">
-            <div className="text-center">데이터를 불러오는 중입니다...</div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="container mx-auto py-8">
-        <Card>
-          <CardContent className="py-8">
-            <div className="text-center text-destructive">
-              데이터를 불러오는 중 오류가 발생했습니다. 다시 시도해 주세요.
-            </div>
-            <div className="text-center mt-4">
-              <Button onClick={() => refetch()}>다시 시도</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+ 
   
   // 데이터 가져오기
   const orders = data?.data || [];
@@ -371,6 +343,16 @@ export default function BrokerOrderListPage() {
         </CardHeader>
 
         <CardContent>
+          {/* isLoading 상태일 때 로딩 표시 */}
+          {isLoading ? (
+            <div className="py-8">
+              <div className="text-center">데이터를 불러오는 중입니다...</div>
+            </div>
+          ) : isError ? (
+            <div className="py-8">
+              <div className="text-center">데이터를 불러오는 중 오류가 발생했습니다. 다시 시도해 주세요.</div>
+            </div>
+          ) : (
           <Card>
             <CardContent>
               {/* 탭 네비게이션 */}
@@ -452,6 +434,7 @@ export default function BrokerOrderListPage() {
               )}
             </CardContent>
           </Card>
+          )}
         </CardContent>
       </Card>      
       
