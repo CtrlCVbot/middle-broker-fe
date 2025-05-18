@@ -53,6 +53,7 @@ export async function PATCH(
         { status: 404 }
       );
     }
+    console.log("검색된 requestUser : ", requestUser);
 
     // 요청 데이터 파싱
     const body = await request.json();
@@ -82,6 +83,7 @@ export async function PATCH(
     // 업데이트 가능한 필드 목록
     const allowedFields = [
       'assignedDriverId',
+      'assignedDriverSnapshot',
       'assignedDriverPhone',
       'assignedVehicleNumber',
       'assignedVehicleType',
@@ -96,6 +98,8 @@ export async function PATCH(
     const invalidFields = Object.keys(fields).filter(
       (field) => !allowedFields.includes(field)
     );
+    console.log("invalidFields : ", invalidFields);
+    console.log("fields : ", fields);
 
     if (invalidFields.length > 0) {
       return NextResponse.json(
@@ -110,9 +114,9 @@ export async function PATCH(
       updatedAt: new Date(),
       updatedBy: requestUserId,
       updatedBySnapshot: {
-        id: request.headers.get('x-user-id') || uuidv4(),
-        name: request.headers.get('x-user-name') || 'System',
-        email: request.headers.get('x-user-email') || 'system@example.com',
+        id: requestUser.id || uuidv4(),
+        name: requestUser.name || 'System',
+        email: requestUser.email || 'system@example.com',
       }
     };
 

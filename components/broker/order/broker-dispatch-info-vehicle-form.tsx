@@ -133,6 +133,9 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
     severity: 'medium' as 'low' | 'medium' | 'high'
   });
   
+  // 선택된 차주 정보 상태 추가
+  const [selectedDriver, setSelectedDriver] = useState<any>(null);
+  
   // 차주 검색 관련 상태 가져오기
   const { searchDrivers, searchResults, isSearching, searchError, clearSearchResults } = useBrokerDriverStore();
   
@@ -140,8 +143,22 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
   const [searchTerm, setSearchTerm] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   
+  // 디버깅 추가: 원본 검색 결과 출력
+  useEffect(() => {
+    if (searchResults && searchResults.length > 0) {
+      console.log("원본 검색 결과:", searchResults);
+    }
+  }, [searchResults]);
+  
   // 차주 검색 결과를 폼에서 사용 가능한 형태로 변환
   const formattedDrivers = mapDriversForDispatchForm(searchResults);
+  
+  // 디버깅 추가: 변환된 검색 결과 출력
+  useEffect(() => {
+    if (formattedDrivers && formattedDrivers.length > 0) {
+      console.log("변환된 검색 결과:", formattedDrivers);
+    }
+  }, [formattedDrivers]);
   
   // React Hook Form 설정
   const form = useForm<z.infer<typeof formSchema>>({
@@ -196,6 +213,18 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
   
   // 차주 조회 선택 시 정보 채우기
   const selectDriver = (driver: any) => {
+    // 변환된 드라이버 객체에서 원본 검색 결과에서의 인덱스 찾기
+    const originalIndex = formattedDrivers.findIndex(d => d.id === driver.id);
+    
+    // 원본 검색 결과가 있으면 그것을 사용
+    const originalDriver = originalIndex !== -1 ? searchResults[originalIndex] : null;
+    
+    console.log("선택된 차주 (변환된):", driver);
+    console.log("선택된 차주 (원본):", originalDriver);
+    
+    // 선택된 차주 정보 저장 - 원본 데이터 우선 사용
+    setSelectedDriver(originalDriver || driver);
+    
     form.setValue('driver.name', driver.name);
     form.setValue('driver.contact', driver.contact);
     form.setValue('vehicle.type', driver.vehicle.type);
@@ -240,15 +269,36 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
         title: "저장 중...",
         description: "배차 정보를 저장하고 있습니다.",
       });
+  
+      console.log("selectedDriver : ", selectedDriver);
+      
+      // 선택된 차주가 없으면 알림 표시
+      if (!selectedDriver) {
+        toast({
+          title: "차주 정보 필요",
+          description: "차주 검색을 통해 차주를 선택해주세요.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // 사용자 ID 필드 찾기
+      const driverId = selectedDriver.id || selectedDriver.userId || null;
+      
+      console.log("사용할 차주 ID:", driverId);
       
       // 폼 데이터에서 업데이트할 필드 추출
-      const fields = {        
+      const fields = {    
+        assignedDriverId: driverId, 
+        assignedDriverSnapshot: selectedDriver ? JSON.stringify(selectedDriver) : null,   
         assignedDriverPhone: data.driver.contact,
         assignedVehicleNumber: data.vehicle.licensePlate,
         assignedVehicleType: data.vehicle.type,
         assignedVehicleWeight: data.vehicle.weight,
-        assignedVehicleConnection: data.callCenter || "24시"
+        assignedVehicleConnection: data.callCenter || "기타"
       };
+      
+      console.log("업데이트할 필드:", fields);
       
       // 특이사항이 있는 경우 메모로 추가
       // if (specialNotes.length > 0) {

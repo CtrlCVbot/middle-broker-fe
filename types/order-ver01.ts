@@ -268,6 +268,14 @@ export interface IUserSnapshot {
   department?: string;
   position?: string;
 }
+//
+export interface IDriverSnapshot {
+  name: string;
+  email: string;
+  mobile?: string;
+  department?: string;
+  position?: string;
+}
 
 // 가격 스냅샷 인터페이스
 export interface IPriceSnapshot {

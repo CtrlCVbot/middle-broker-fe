@@ -5,7 +5,8 @@ import { companies } from '@/db/schema/companies'; // companies 테이블 import
 import { users } from '@/db/schema/users'; // users 테이블 import (기사, 주선사 담당자)
 import { vehicleTypeEnum, vehicleWeightEnum } from '@/db/schema/orders'; // 기존 Enum 재사용 또는 필요시 분리
 import { dispatchStatusEnum } from '@/db/schema/orders'; // 현재는 기존 것 사용 가정
-import { ICompanySnapshot, IUserSnapshot } from '@/types/order-ver01';
+import { ICompanySnapshot, IDriverSnapshot, IUserSnapshot } from '@/types/order-ver01';
+import { drivers } from './drivers';
 
 // (선택적) 주선사 배차 관련 스냅샷 타입 정의
 // interface IBrokerCarrierSnapshot { ... }
@@ -38,8 +39,8 @@ export const orderDispatches = pgTable('order_dispatches', {
   //assignedCarrierId: uuid('assigned_carrier_id').references(() => companies.id), // 할당된 운송사 ID (FK, Nullable)
 
   // 할당된 기사 정보 (배차가 된 경우)
-  assignedDriverId: uuid('assigned_driver_id').references(() => users.id), // 할당된 기사 ID (FK, Nullable)
-  assignedDriverSnapshot: json('assigned_driver_snapshot').$type<IUserSnapshot>(), // 할당된 기사 스냅샷
+  assignedDriverId: uuid('assigned_driver_id').references(() => drivers.id), // 할당된 기사 ID (FK, Nullable)
+  assignedDriverSnapshot: json('assigned_driver_snapshot').$type<IDriverSnapshot>(), // 할당된 기사 스냅샷
   assignedDriverPhone: varchar('assigned_driver_phone', { length: 100 }), // 할당된 기사 전화번호
   
 
