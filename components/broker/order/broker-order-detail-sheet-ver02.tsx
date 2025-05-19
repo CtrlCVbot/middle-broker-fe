@@ -458,27 +458,7 @@ export function BrokerOrderDetailSheet() {
                   
                   <CardContent className="p-0">
                     <div className="">
-                      {editMode === "driver" ? (
-                        <BrokerOrderDriverInfoEditForm
-                          initialData={{
-                            status: orderData?.status || "배차대기",
-                            driver: orderData?.vehicle?.driver || { 
-                              name: "", 
-                              contact: "" 
-                            },
-                            vehicle: {
-                              type: orderData?.vehicle?.type || "",
-                              weight: orderData?.vehicle?.weight || "",
-                              licensePlate: orderData?.vehicle?.licensePlate || ""
-                            },
-                            callCenter: "24시",
-                            specialNotes: [],
-                            dispatchId: orderData?.dispatchId || ""
-                          }}
-                          onSave={handleSaveDriverInfo}
-                          onCancel={handleCancelEdit}
-                        />
-                      ) : hasDriverInfo ? (
+                      {hasDriverInfo ? (
                         <>                                                    
                           <BrokerOrderDriverInfoCardVer01 
                             dispatchId={orderData?.dispatchId || ""}
@@ -558,6 +538,7 @@ export function BrokerOrderDetailSheet() {
                 contact: orderData?.vehicle?.driver?.contact || ""
               },
               vehicle: {
+                id: orderData?.vehicle?.id || "",
                 type: orderData?.vehicle?.type || "",
                 weight: orderData?.vehicle?.weight || "",
                 licensePlate: orderData?.vehicle?.licensePlate || ""

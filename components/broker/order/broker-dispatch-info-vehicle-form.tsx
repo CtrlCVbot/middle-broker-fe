@@ -98,6 +98,7 @@ interface BrokerOrderDriverInfoEditFormProps {
       contact: string;
     };
     vehicle: {
+      id: string;
       type: string;
       weight: string;
       licensePlate: string;
@@ -148,7 +149,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
     if (initialData && initialData.driver && (initialData.driver.name || initialData.driver.contact)) {
       // 기존 데이터로부터 차주 정보 생성
       const existingDriver = {
-        id: '', 
+        id: initialData.vehicle.id, 
         name: initialData.driver.name,
         contact: initialData.driver.contact,
         vehicle: {
@@ -308,7 +309,17 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
           variant: "destructive"
         });
         return;
-      }
+      };
+
+      const assignedDriverSnapshot = {
+        name: data.driver.name,
+        contact: data.driver.contact,
+        vehicle: {
+          type: data.vehicle.type,
+          weight: data.vehicle.weight,
+          licensePlate: data.vehicle.licensePlate
+        }
+      };
       
       // 사용자 ID 필드 찾기
       const driverId = finalDriver.id || null;
@@ -319,7 +330,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
       const fields = {    
         // driverId가 있을 때만 assignedDriverId 필드 추가
         ...(driverId ? { assignedDriverId: driverId } : {}),
-        assignedDriverSnapshot: finalDriver ? JSON.stringify(finalDriver) : null,   
+        ...(!driverId ? { assignedDriverSnapshot: JSON.stringify(assignedDriverSnapshot) } : {}),
         assignedDriverPhone: data.driver.contact,
         assignedVehicleNumber: data.vehicle.licensePlate,
         assignedVehicleType: data.vehicle.type,

@@ -17,6 +17,7 @@ import { BrokerOrderDriverInfoEditForm as VehicleEditForm } from "./broker-dispa
 interface IVehicleCardProps {
   dispatchId: string;
   vehicleInfo: {
+    id: string;
     type: string;
     weight?: string;
     licensePlate?: string;
@@ -204,6 +205,7 @@ export function VehicleCard({
                 contact: driverInfo.contact || ""
               },
               vehicle: {
+                id: vehicleInfo.id || "",
                 type: vehicleInfo.type || "",
                 weight: vehicleInfo.weight || "",
                 licensePlate: vehicleInfo.licensePlate || ""

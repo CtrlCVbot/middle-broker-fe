@@ -24,6 +24,7 @@ import { VehicleCard } from "./broker-dispatch-info-vehicle-card";
 import { toast } from "@/components/ui/use-toast";
 
 interface VehicleInfo {
+  id?: string;
   type: string;
   weight?: string;
   licensePlate?: string;
@@ -69,7 +70,8 @@ export function BrokerOrderDriverInfoCard({
 }: BrokerOrderDriverInfoCardProps) {
   const [isMapVisible, setIsMapVisible] = useState(false);
 
-  const dispatchVehicleInfo = {
+  const dispatchVehicleInfo = {    
+    id: vehicle?.id || "",
     vehicleInfo: {
       type: vehicle?.type || "",
       weight: vehicle?.weight || "",

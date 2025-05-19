@@ -10,7 +10,7 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
-import { ListFilter, Grid3x3, RotateCcw, ThumbsUp, PowerOff, Power } from "lucide-react";
+import { ListFilter, Grid3x3, RotateCcw, ThumbsUp, PowerOff, Power, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { useBrokerOrderStore } from "@/store/broker-order-store";
 // import { getBrokerOrdersByPage } from "@/utils/mockdata/mock-broker-orders";
@@ -285,6 +285,13 @@ export default function BrokerOrderListPage() {
   
   const tabMessage = getTabMessage();
 
+   // 로딩 중 표시
+   const renderLoading = () => (
+    <div className="flex justify-center items-center py-8">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
+
   return (
 
     <>
@@ -344,11 +351,8 @@ export default function BrokerOrderListPage() {
 
         <CardContent>
           {/* isLoading 상태일 때 로딩 표시 */}
-          {isLoading ? (
-            <div className="py-8">
-              <div className="text-center">데이터를 불러오는 중입니다...</div>
-            </div>
-          ) : isError ? (
+          {isLoading ? renderLoading() 
+             : isError ? (
             <div className="py-8">
               <div className="text-center">데이터를 불러오는 중 오류가 발생했습니다. 다시 시도해 주세요.</div>
             </div>

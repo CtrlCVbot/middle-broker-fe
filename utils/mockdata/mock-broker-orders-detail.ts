@@ -42,6 +42,7 @@ export interface IBrokerOrderDetail {
     remark?: string;
   };
   vehicle: {
+    id?: string;
     connection?: string;
     type: string;
     weight?: string;

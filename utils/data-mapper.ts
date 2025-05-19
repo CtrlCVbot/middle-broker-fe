@@ -510,8 +510,9 @@ export function mapApiResponseToBrokerOrderDetail(
     
     // 차량 정보
     vehicle: {
-      type: order.requestedVehicleType || '',
-      weight: order.requestedVehicleWeight || '',
+      id: dispatch?.assignedDriverId || '',
+      type: dispatch?.assignedVehicleType || '',
+      weight: dispatch?.assignedVehicleWeight || '',
       connection: dispatch?.assignedVehicleConnection || '',
       licensePlate: dispatch?.assignedVehicleNumber || '',
       driver: dispatch ? {

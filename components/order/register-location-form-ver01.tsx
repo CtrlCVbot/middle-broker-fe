@@ -342,7 +342,9 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                 <Button
                   key={idx}
                   variant="outline"
-                  className="h-auto py-2 justify-start text-left"
+                  className={cn("h-auto py-2 justify-start text-left",
+                    type === 'departure' ? 'hover:bg-gray-200 cursor-pointer hover:text-green-800' : 'hover:bg-gray-200 cursor-pointer hover:text-blue-800'
+                  )}
                   onClick={() => handleRecentLocationClickVer1(location)}
                   disabled={disabled}
                 >
@@ -388,7 +390,9 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
             </div>
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center py-8 border border-dashed rounded-md bg-muted/30">
+          <div className={cn("flex flex-col items-center justify-center py-8 border-5 border-dashed rounded-md bg-muted/30",
+            type === 'departure' ? 'bg-gray-100' : 'bg-gray-100'
+          )}>
             <Map className="h-10 w-10 text-muted-foreground mb-2" />
             <p className="text-sm text-muted-foreground mb-4">{type === 'departure' ? '상차지' : '하차지'} 주소를 검색해주세요</p>
             <div className="flex gap-2">
@@ -405,6 +409,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                 type="button" 
                 onClick={() => setIsAddressDialogOpen(true)}
                 disabled={disabled}
+                className={type === 'departure' ? 'hover:bg-green-800 cursor-pointer' : 'hover:bg-blue-800 cursor-pointer'}
               >
                 <Building className="h-4 w-4 mr-2" />
                 주소록에서 찾기
