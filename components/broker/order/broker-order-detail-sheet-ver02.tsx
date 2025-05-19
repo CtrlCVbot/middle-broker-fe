@@ -481,6 +481,7 @@ export function BrokerOrderDetailSheet() {
                       ) : hasDriverInfo ? (
                         <>                                                    
                           <BrokerOrderDriverInfoCardVer01 
+                            dispatchId={orderData?.dispatchId || ""}
                             driver={orderData?.vehicle?.driver || { name: "정보 없음" }}                            
                             vehicle={orderData?.vehicle || { type: "정보 없음" }}
                             status={orderData?.status || "배차대기"}

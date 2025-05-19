@@ -42,6 +42,7 @@ interface DriverInfo {
 }
 
 interface BrokerOrderDriverInfoCardProps {
+  dispatchId: string;
   vehicle: VehicleInfo;
   status: BrokerOrderStatusType;
   amount: string;
@@ -58,6 +59,7 @@ const locationData = {
 };
 
 export function BrokerOrderDriverInfoCard({ 
+  dispatchId,
   vehicle, 
   status, 
   amount, 
@@ -120,7 +122,7 @@ export function BrokerOrderDriverInfoCard({
   
   return (
     <div className="space-y-4">
-      {isBeforeAssignment ? (
+      {/* {isBeforeAssignment ? (
         // 배차 전 상태 UI
         
           // <div className="p-4">
@@ -157,18 +159,20 @@ export function BrokerOrderDriverInfoCard({
       ) : (
         // 배차 후 상태 UI
         <>
-          {/* 차주 및 차량 정보 */}          
-          <div className="space-y-2 rounded-lg border border-gray-100 shadow-sm">
+          
+        </>
+      )} */}
+      {/* 차주 및 차량 정보 */}          
+      <div className="space-y-2 rounded-lg border border-gray-100 shadow-sm">
             {/* 차주 정보 */}
             <VehicleCard
+              dispatchId={dispatchId}
               vehicleInfo={dispatchVehicleInfo.vehicleInfo}
               driverInfo={dispatchVehicleInfo.driverInfo}
               onMessage={onSendMessage}
               onSaveDriverInfo={handleSaveDriverInfo}
             />
           </div>
-        </>
-      )}
     </div>
   );
 } 

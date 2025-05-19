@@ -15,6 +15,7 @@ import {
 import { BrokerOrderDriverInfoEditForm as VehicleEditForm } from "./broker-dispatch-info-vehicle-form";
 
 interface IVehicleCardProps {
+  dispatchId: string;
   vehicleInfo: {
     type: string;
     weight?: string;
@@ -33,6 +34,7 @@ interface IVehicleCardProps {
 }
 
 export function VehicleCard({ 
+  dispatchId,
   vehicleInfo, 
   driverInfo, 
   onCall, 
@@ -207,7 +209,8 @@ export function VehicleCard({
                 licensePlate: vehicleInfo.licensePlate || ""
               },
               callCenter: vehicleInfo.connection || "24시",
-              specialNotes: []
+              specialNotes: [],
+              dispatchId: dispatchId
             }}
             onSave={handleSaveDriverInfo}
             onCancel={handleDialogClose}
