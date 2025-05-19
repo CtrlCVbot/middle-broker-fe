@@ -66,8 +66,8 @@ export async function POST(req: NextRequest) {
       systemAccessLevel: user.system_access_level,
       domains: user.domains as any,
       status: user.status,
-      createdAt: user.created_at.toISOString(),
-      //updatedAt: user.updated_at.toISOString(),
+      createdAt: user.created_at,
+      updatedAt: user.updated_at,
     };
 
     // 토큰 ID 생성

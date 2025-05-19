@@ -67,13 +67,16 @@ export async function GET(req: NextRequest) {
       id: user.id,
       email: user.email,
       name: user.name,
-      phoneNumber: user.phone_number,
-      companyId: user.company_id,
+      phoneNumber: user.phone_number || '',
+      companyId: user.company_id || '',
       systemAccessLevel: user.system_access_level,
       domains: user.domains as any,
       status: user.status,
-      createdAt: user.created_at,
-      updatedAt: user.updated_at,
+      department: user.department || '',
+      position: user.position || '',
+      rank: user.rank || '',
+      createdAt: user.created_at || '',
+      updatedAt: user.updated_at || '',
     };
 
     // 새 액세스 토큰 발급

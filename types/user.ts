@@ -55,8 +55,9 @@ export interface IUser {
   department?: string;
   position?: string;
   rank?: string;
-  createdAt?: string;
-  
+  createdAt?: Date;
+  updatedAt?: Date;
+
   // 백엔드에서 스네이크케이스로 반환될 수 있는 필드 추가
   phone_number?: string;
   company_id?: string;

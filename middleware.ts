@@ -67,7 +67,18 @@ export async function middleware(request: NextRequest) {
           console.log('JWT 토큰 검증 성공:', payload.id);
         }
       } catch (error) {
-        console.error('JWT 토큰 검증 오류:', error)
+        // 토큰 검증 실패 시 리프레시 시도
+        const refreshResponse = await tryRefreshToken(request);
+        if (refreshResponse.success && refreshResponse.accessToken) {
+          response.headers.set('x-user-id', refreshResponse.userId || '');
+          response.cookies.set('access_token', refreshResponse.accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 60 * 15, // 15분
+          });
+        }
       }
     }
     
