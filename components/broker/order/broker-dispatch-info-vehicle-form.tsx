@@ -221,6 +221,8 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
     
     console.log("선택된 차주 (변환된):", driver);
     console.log("선택된 차주 (원본):", originalDriver);
+    console.log("선택된 차주 (변환된) 종류:", driver.vehicle.type);
+    console.log("선택된 차주 (변환된) 중량:", driver.vehicle.weight);
     
     // 선택된 차주 정보 저장 - 원본 데이터 우선 사용
     setSelectedDriver(originalDriver || driver);
@@ -230,6 +232,10 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
     form.setValue('vehicle.type', driver.vehicle.type);
     form.setValue('vehicle.weight', driver.vehicle.weight);
     form.setValue('vehicle.licensePlate', driver.vehicle.licensePlate);
+    
+    // 폼 업데이트 트리거하여 Select 컴포넌트의 UI 상태도 함께 업데이트
+    form.trigger('vehicle.type');
+    form.trigger('vehicle.weight');
     
     // 팝오버 닫기
     setIsOpen(false);
@@ -466,7 +472,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
                     <FormItem>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -496,7 +502,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
                     <FormItem>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
