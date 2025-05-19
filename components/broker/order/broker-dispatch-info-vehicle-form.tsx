@@ -143,6 +143,25 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
   const [searchTerm, setSearchTerm] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   
+  // 초기 데이터에서 차주 정보가 있으면 selectedDriver 설정
+  useEffect(() => {
+    if (initialData && initialData.driver && (initialData.driver.name || initialData.driver.contact)) {
+      // 기존 데이터로부터 차주 정보 생성
+      const existingDriver = {
+        id: initialData.dispatchId, // 임시 ID로 dispatchId 사용
+        name: initialData.driver.name,
+        contact: initialData.driver.contact,
+        vehicle: {
+          type: initialData.vehicle.type,
+          weight: initialData.vehicle.weight,
+          licensePlate: initialData.vehicle.licensePlate
+        }
+      };
+      console.log("기존 차주 정보로 초기화:", existingDriver);
+      setSelectedDriver(existingDriver);
+    }
+  }, [initialData]);
+  
   // 디버깅 추가: 원본 검색 결과 출력
   useEffect(() => {
     if (searchResults && searchResults.length > 0) {
@@ -278,8 +297,11 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
   
       console.log("selectedDriver : ", selectedDriver);
       
-      // 선택된 차주가 없으면 알림 표시
-      if (!selectedDriver) {
+      // 처리에 사용할 최종 차주 정보
+      let finalDriver = selectedDriver;
+      
+      // 선택된 차주가 없으면 폼 데이터로 생성
+      if (!finalDriver) {
         toast({
           title: "차주 정보 필요",
           description: "차주 검색을 통해 차주를 선택해주세요.",
@@ -289,14 +311,15 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
       }
       
       // 사용자 ID 필드 찾기
-      const driverId = selectedDriver.id || selectedDriver.userId || null;
+      const driverId = finalDriver.id || finalDriver.userId || initialData.dispatchId || null;
       
       console.log("사용할 차주 ID:", driverId);
       
       // 폼 데이터에서 업데이트할 필드 추출
       const fields = {    
-        assignedDriverId: driverId, 
-        assignedDriverSnapshot: selectedDriver ? JSON.stringify(selectedDriver) : null,   
+        // driverId가 있을 때만 assignedDriverId 필드 추가
+        ...(driverId ? { assignedDriverId: driverId } : {}),
+        assignedDriverSnapshot: finalDriver ? JSON.stringify(finalDriver) : null,   
         assignedDriverPhone: data.driver.contact,
         assignedVehicleNumber: data.vehicle.licensePlate,
         assignedVehicleType: data.vehicle.type,
