@@ -316,8 +316,9 @@ export function BrokerOrderDetailSheet() {
       onOpenChange={(open) => open ? undefined : closeSheet()}
     >
       <SheetContent 
-        side="top" 
-        className="sm:max-w-full md:max-w-full overflow-auto p-0 h-[90vh]"
+        side="right" 
+        //className="sm:max-w-full md:max-w-full overflow-auto p-0 h-[90vh]"
+        className="sm:max-w-full md:max-w-full overflow-auto p-0 "
         onInteractOutside={(e) => e.preventDefault()} // 외부 클릭으로 닫히는 것 방지
       >
         {/* 화면에 노출되지 않지만 접근성을 위한 타이틀 */}
@@ -333,7 +334,7 @@ export function BrokerOrderDetailSheet() {
           </div>
         ) : orderData ? (
           // 데이터 로드 완료
-          <div className="h-full flex flex-col">
+          <div className="h-full flex flex-col bg-muted/30">
             {/* 헤더 - 기본 정보 */}
             <SheetHeader className="py-4 border-b sticky top-0 bg-background bg-muted/100">
               
@@ -353,7 +354,7 @@ export function BrokerOrderDetailSheet() {
               </div>              
               
             </SheetHeader>
-            
+            <>
             {/* 모바일 전용 탭 메뉴 */}
             <div className="md:hidden border-b">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -376,7 +377,7 @@ export function BrokerOrderDetailSheet() {
             
             {/* 메인 컨텐츠 - 그리드 레이아웃 */}
             <div className="flex-grow overflow-auto">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                 {/* 화물 정보 카드 */} 
                 <div>
                   {editMode === "cargo" ? (
@@ -521,7 +522,9 @@ export function BrokerOrderDetailSheet() {
                 </div>
               </details>
             </div>
+            </>
           </div>
+          
         ) : null}
       </SheetContent>
       

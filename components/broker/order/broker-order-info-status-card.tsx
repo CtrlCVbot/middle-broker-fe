@@ -85,7 +85,7 @@ export function BrokerOrderStatusCard({ status, from, to }: IBrokerOrderStatusCa
       <div className="grid grid-cols-5 gap-2">
         <div className="col-span-2">
           <p className="text-sm text-gray-500 mb-1">상차</p>
-          <p className="text-sm font-medium">{from.name}</p>
+          <p className="text-md font-semibold">{from.name}</p>
           <p className="text-sm">{from.address}, {from.state} {from.zipCode}</p>
           
           {/* <p className="text-sm text-gray-500">{from.contactName}</p>
@@ -100,7 +100,7 @@ export function BrokerOrderStatusCard({ status, from, to }: IBrokerOrderStatusCa
         
         <div className="col-span-2">
           <p className="text-sm text-gray-500 mb-1">하차</p>
-          <p className="text-sm font-medium">{to.name}</p>
+          <p className="text-md font-semibold">{to.name}</p>
           <p className="text-sm">{to.address}, {to.state} {to.zipCode}</p>
 
           {/* <p className="text-sm text-gray-500">{to.contactName}</p>
