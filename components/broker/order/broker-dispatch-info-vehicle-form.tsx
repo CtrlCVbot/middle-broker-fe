@@ -148,7 +148,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
     if (initialData && initialData.driver && (initialData.driver.name || initialData.driver.contact)) {
       // 기존 데이터로부터 차주 정보 생성
       const existingDriver = {
-        id: initialData.dispatchId, // 임시 ID로 dispatchId 사용
+        id: '', 
         name: initialData.driver.name,
         contact: initialData.driver.contact,
         vehicle: {
@@ -311,7 +311,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
       }
       
       // 사용자 ID 필드 찾기
-      const driverId = finalDriver.id || finalDriver.userId || initialData.dispatchId || null;
+      const driverId = finalDriver.id || null;
       
       console.log("사용할 차주 ID:", driverId);
       

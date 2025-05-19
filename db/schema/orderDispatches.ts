@@ -18,7 +18,7 @@ export const vehicleConnectionEnum = pgEnum('vehicle_connection', [
   '24시',
   '원콜',
   '화물맨',
-  '직접'
+  '기타'
 ]);
 
 export const orderDispatches = pgTable('order_dispatches', {
