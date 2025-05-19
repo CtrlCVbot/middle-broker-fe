@@ -56,9 +56,9 @@ import { updateDispatchFields } from "@/services/broker-dispatch-service";
 
 // 콜센터 목록
 const CALL_CENTER_OPTIONS = [
-  "24시",
   "화물맨",
   "원콜",
+  "24시",  
   "기타"
 ];
 
