@@ -15,7 +15,8 @@ import {
   ChevronDown,
   ChevronUp,
   Navigation,
-  Circle
+  Circle,
+  AlertCircle
 } from "lucide-react";
 import { BrokerOrderStatusType } from "@/types/broker-order";
 import { formatCurrency } from "@/lib/utils";
@@ -83,7 +84,8 @@ export function BrokerOrderDriverInfoCard({
   console.log("dispatchVehicleInfo:", dispatchVehicleInfo);
   
   // 배차 전 상태인지 확인 (배차대기 상태이고 차주 정보가 없는 경우)
-  const isBeforeAssignment = status === '배차대기' || !vehicle.driver;
+  //const isBeforeAssignment = status === '배차대기' || !vehicle.driver;
+  const isBeforeAssignment = !vehicle.driver;
   
   // 배차 알림 전송 함수
   const handleSendAlert = () => {
@@ -114,29 +116,40 @@ export function BrokerOrderDriverInfoCard({
       });
     }
   };
+  console.log("isBeforeAssignment:", isBeforeAssignment);
   
   return (
     <div className="space-y-4">
       {isBeforeAssignment ? (
         // 배차 전 상태 UI
         
-          <div className="p-4">
-            <div className="flex items-center gap-2 text-amber-500 mb-3">
-              <AlertTriangle className="h-5 w-5" />
-              <h4 className="font-medium">아직 배차가 완료되지 않았습니다.</h4>
-            </div>
+          // <div className="p-4">
+          //   <div className="flex items-center gap-2 text-amber-500 mb-3">
+          //     <AlertTriangle className="h-5 w-5" />
+          //     <h4 className="font-medium">아직 배차가 완료되지 않았습니다.</h4>
+          //   </div>
             
-            <div className="space-y-4">
-              {/* <div className="grid grid-cols-3 gap-2 text-sm">
-                <div className="text-muted-foreground">예상 배차 금액</div>
-                <div className="col-span-2 font-medium">{formatCurrency(amountNumber)}원</div>
-              </div> */}
+          //   <div className="space-y-4">
               
+          //     <Button 
+          //       className="w-full" 
+          //       onClick={handleAssignment}
+          //     >
+          //       배차 진행하기
+          //     </Button>
+          //   </div>
+          // </div>
+
+          <div className="flex flex-col items-center justify-center py-8 border-4 border-dashed border-gray-500 rounded-md bg-gray-200">
+            <AlertCircle className="h-10 w-10 text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground mb-4">아직 배차되지 않았습니다.</p>
+            <div className="flex gap-2">                            
               <Button 
-                className="w-full" 
+                type="button" 
                 onClick={handleAssignment}
               >
-                배차 진행하기
+                <Truck className="h-4 w-4 mr-2" />
+                배차 정보 입력하기
               </Button>
             </div>
           </div>

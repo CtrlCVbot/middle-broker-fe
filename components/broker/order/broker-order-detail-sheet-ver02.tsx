@@ -107,6 +107,9 @@ export function BrokerOrderDetailSheet() {
   // 모바일 뷰를 위한 현재 선택된 탭
   const [activeTab, setActiveTab] = useState<string>("cargo");
   
+  // 배차 정보 저장 성공 여부 추적을 위한 상태 추가
+  const [hasAssignedDriver, setHasAssignedDriver] = useState(false);
+  
   // 가능한 배차 상태 목록
   const availableStatuses = [
     "배차대기", "배차진행중", "배차완료", "상차완료", "하차완료", "운송중", "운송마감"
@@ -126,6 +129,11 @@ export function BrokerOrderDetailSheet() {
   useEffect(() => {
     if (orderData) {
       setSelectedStatus(orderData.status);
+      
+      // orderData에 차주 정보가 있는지 확인하여 hasAssignedDriver 상태 업데이트
+      if (orderData.vehicle?.driver?.name) {
+        setHasAssignedDriver(true);
+      }
     }
   }, [orderData]);
 
@@ -150,8 +158,13 @@ export function BrokerOrderDetailSheet() {
   // 배차 상태 확인 (배차 전/후 상태 구분)
   const isAfterAssignment = orderData?.statusProgress !== '배차대기' && orderData?.vehicle?.driver;
   
-  // 배차완료 여부 확인
-  const isAssigned = orderData?.status === "배차완료" || orderData?.status === "운송중" || orderData?.status === "상차완료" || orderData?.status === "하차완료" || orderData?.status === "운송마감";
+  // 배차 여부 확인
+  console.log("orderData?.vehicle?.driver:", orderData?.vehicle?.driver);
+  const isAssigned = !(orderData?.vehicle?.driver?.name === "" || orderData?.vehicle?.driver?.name === undefined);
+  //console.log("isAssigned:", isAssigned);
+  setHasAssignedDriver(isAssigned);
+  //console.log("hasAssignedDriver:", hasAssignedDriver);
+ 
   
   // 편집 모드 설정 핸들러
   const handleSetEditMode = (mode: EditMode) => {
@@ -224,6 +237,9 @@ export function BrokerOrderDetailSheet() {
   // 배차 정보 수정 저장 핸들러
   const handleSaveDriverInfo = (formData: any) => {
     console.log("저장된 배차 데이터:", formData);
+    
+    // 배차 정보 저장 성공으로 상태 업데이트
+    setHasAssignedDriver(true);
     
     // 편집 모드 종료
     setEditMode(null);
@@ -469,7 +485,7 @@ export function BrokerOrderDetailSheet() {
                           onSave={handleSaveDriverInfo}
                           onCancel={handleCancelEdit}
                         />
-                      ) : isAssigned ? (
+                      ) : (isAssigned || hasAssignedDriver) ? (
                         <>                                                    
                           <BrokerOrderDriverInfoCardVer01 
                             driver={orderData?.vehicle?.driver || { name: "정보 없음" }}                            

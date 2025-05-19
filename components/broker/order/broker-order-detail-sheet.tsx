@@ -628,6 +628,7 @@ export function BrokerOrderDetailSheet() {
                       {editMode === "driver" ? (
                         <BrokerOrderDriverInfoEditForm
                           initialData={{
+                            status: orderData?.status || "배차대기",
                             driver: orderData?.vehicle?.driver || { 
                               name: "", 
                               contact: "" 
@@ -638,7 +639,8 @@ export function BrokerOrderDetailSheet() {
                               licensePlate: orderData?.vehicle?.licensePlate || ""
                             },
                             callCenter: "24시",
-                            specialNotes: []
+                            specialNotes: [],
+                            dispatchId: orderData?.dispatchId || ""
                           }}
                           onSave={handleSaveDriverInfo}
                           onCancel={handleCancelEdit}
