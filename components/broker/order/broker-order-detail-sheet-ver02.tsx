@@ -107,8 +107,8 @@ export function BrokerOrderDetailSheet() {
   // 모바일 뷰를 위한 현재 선택된 탭
   const [activeTab, setActiveTab] = useState<string>("cargo");
   
-  // 배차 정보 저장 성공 여부 추적을 위한 상태 추가
-  const [hasAssignedDriver, setHasAssignedDriver] = useState(false);
+  // 배차 정보 저장 성공 여부 추적을 위한 상태 추가 (통합된 상태)
+  const [hasDriverInfo, setHasDriverInfo] = useState(false);
   
   // 가능한 배차 상태 목록
   const availableStatuses = [
@@ -125,15 +125,19 @@ export function BrokerOrderDetailSheet() {
     }
   }, [selectedOrderId, isSheetOpen, fetchOrderDetail]);
   
-  // orderData가 변경될 때마다 selectedStatus 업데이트
+  // orderData가 변경될 때마다 selectedStatus 및 hasDriverInfo 업데이트
   useEffect(() => {
     if (orderData) {
       setSelectedStatus(orderData.status);
       
-      // orderData에 차주 정보가 있는지 확인하여 hasAssignedDriver 상태 업데이트
-      if (orderData.vehicle?.driver?.name) {
-        setHasAssignedDriver(true);
-      }
+      // 차주 정보가 있는지 확인하여 hasDriverInfo 상태 업데이트
+      const driverExists = Boolean(
+        orderData.vehicle?.driver?.name && 
+        orderData.vehicle.driver.name !== ""
+      );
+      
+      setHasDriverInfo(driverExists);
+      console.log("차주 정보 존재 여부:", driverExists, orderData.vehicle?.driver);
     }
   }, [orderData]);
 
@@ -154,17 +158,6 @@ export function BrokerOrderDetailSheet() {
   };
 
   
-  
-  // 배차 상태 확인 (배차 전/후 상태 구분)
-  const isAfterAssignment = orderData?.statusProgress !== '배차대기' && orderData?.vehicle?.driver;
-  
-  // 배차 여부 확인
-  console.log("orderData?.vehicle?.driver:", orderData?.vehicle?.driver);
-  const isAssigned = !(orderData?.vehicle?.driver?.name === "" || orderData?.vehicle?.driver?.name === undefined);
-  //console.log("isAssigned:", isAssigned);
-  setHasAssignedDriver(isAssigned);
-  //console.log("hasAssignedDriver:", hasAssignedDriver);
- 
   
   // 편집 모드 설정 핸들러
   const handleSetEditMode = (mode: EditMode) => {
@@ -239,7 +232,7 @@ export function BrokerOrderDetailSheet() {
     console.log("저장된 배차 데이터:", formData);
     
     // 배차 정보 저장 성공으로 상태 업데이트
-    setHasAssignedDriver(true);
+    setHasDriverInfo(true);
     
     // 편집 모드 종료
     setEditMode(null);
@@ -485,7 +478,7 @@ export function BrokerOrderDetailSheet() {
                           onSave={handleSaveDriverInfo}
                           onCancel={handleCancelEdit}
                         />
-                      ) : (isAssigned || hasAssignedDriver) ? (
+                      ) : hasDriverInfo ? (
                         <>                                                    
                           <BrokerOrderDriverInfoCardVer01 
                             driver={orderData?.vehicle?.driver || { name: "정보 없음" }}                            
