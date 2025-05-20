@@ -1,0 +1,72 @@
+import {
+  pgTable,
+  uuid,
+  varchar,
+  timestamp,
+  pgEnum,
+  jsonb,
+  text,
+  numeric
+} from "drizzle-orm/pg-core";
+import { orders } from "./orders";
+import { companies } from "./companies";
+
+// 지불 상태 Enum 정의
+export const paymentStatusEnum = pgEnum('payment_status', [
+  'pending',    // 대기중
+  'paid',       // 지급됨
+  'canceled',   // 취소됨
+  'void'        // 무효
+]);
+
+// 매입 전표 테이블 정의
+export const orderPurchases = pgTable('order_purchases', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  
+  // 관련 주문 및 운송사/기사 정보
+  orderId: uuid('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
+  companyId: uuid('company_id').references(() => companies.id), // 운송사 ID (있는 경우)
+  driverId: uuid('driver_id'), // 기사 ID (있는 경우)
+  
+  // 지불 정보
+  paymentNumber: varchar('payment_number', { length: 100 }),
+  status: paymentStatusEnum('status').default('pending').notNull(),
+  issueDate: timestamp('issue_date', { mode: 'string' }),
+  paymentDate: timestamp('payment_date', { mode: 'string' }),
+  
+  // 금액 정보
+  subtotalAmount: numeric('subtotal_amount', { precision: 14, scale: 2 }).notNull(),
+  taxAmount: numeric('tax_amount', { precision: 14, scale: 2 }),
+  totalAmount: numeric('total_amount', { precision: 14, scale: 2 }).notNull(),
+  
+  // 스냅샷 및 메모
+  financialSnapshot: jsonb('financial_snapshot'), // 금융 정보 스냅샷 (JSON)
+  memo: text('memo'),
+  
+  // 감사 로그
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  createdBy: uuid('created_by'),
+  updatedBy: uuid('updated_by'),
+});
+
+// 매입 전표 항목 테이블 정의
+export const purchaseChargeItems = pgTable('purchase_charge_items', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  
+  // 관계 정보
+  orderPurchaseId: uuid('order_purchase_id').notNull().references(() => orderPurchases.id, { onDelete: 'cascade' }),
+  
+  // 항목 정보
+  description: text('description').notNull(),
+  amount: numeric('amount', { precision: 14, scale: 2 }).notNull(),
+  taxRate: numeric('tax_rate', { precision: 5, scale: 2 }),
+  taxAmount: numeric('tax_amount', { precision: 14, scale: 2 }),
+  
+  // 원본 운임 라인 참조 (옵션)
+  originalChargeLineId: uuid('original_charge_line_id'),
+  
+  // 감사 로그
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}); 

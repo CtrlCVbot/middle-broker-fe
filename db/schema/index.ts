@@ -9,3 +9,14 @@ export * from './addressChangeLogs';
 export * from './orderDispatches';
 export * from './drivers';
 
+// 운임 관련 스키마 추가
+export * from './chargeGroups';
+export * from './chargeLines';
+export * from './orderSales';
+export * from './orderPurchases';
+export * from './salesBundles';
+export * from './purchaseBundles';
+export * from './creditNotes';
+export * from './chargeTypes';
+export * from './relations';
+
