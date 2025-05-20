@@ -7,6 +7,7 @@ import {
   numeric
 } from "drizzle-orm/pg-core";
 import { chargeGroups } from "./chargeGroups";
+import { users } from "./users";
 
 // 운임 구분 Enum 정의 (매출/매입)
 export const chargeSideEnum = pgEnum('charge_side', [
@@ -33,6 +34,6 @@ export const chargeLines = pgTable('charge_lines', {
   // 감사 로그
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-  createdBy: uuid('created_by'),
-  updatedBy: uuid('updated_by'),
+  createdBy: uuid('created_by').notNull().references(() => users.id),
+  updatedBy: uuid('updated_by').notNull().references(() => users.id),
 }); 
