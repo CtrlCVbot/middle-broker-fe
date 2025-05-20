@@ -6,12 +6,8 @@ import { orders } from '@/db/schema/orders';
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
 import { users } from '@/db/schema/users';
+import { validate as isValidUUID, version as getUUIDVersion } from 'uuid';
 
-// UUID 검증을 위한 유틸리티 함수
-function isValidUUID(uuid: string) {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(uuid);
-}
 
 // 필드 업데이트 스키마
 const UpdateDispatchFieldsSchema = z.object({

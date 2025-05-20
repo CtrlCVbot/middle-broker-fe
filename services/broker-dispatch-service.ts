@@ -215,10 +215,10 @@ export async function updateDispatchFields(
   reason?: string
 ): Promise<any> {
   try {
-    // dispatchId 유효성 검사
-    if (!dispatchId || typeof dispatchId !== 'string') {
-      throw new Error("유효하지 않은 배차 ID입니다.");
-    }
+    // // dispatchId 유효성 검사
+    // if (!dispatchId || typeof dispatchId !== 'string') {
+    //   throw new Error("유효하지 않은 배차 ID입니다.");
+    // }
     
     // fields 유효성 검사
     if (!fields || Object.keys(fields).length === 0) {

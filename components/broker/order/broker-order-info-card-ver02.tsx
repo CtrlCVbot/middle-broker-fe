@@ -91,9 +91,10 @@ interface BrokerOrderInfoCardProps {
   shipper: ShipperInfo;
   status: string;
   orderId: string;
+  dispatchId?: string;
 }
 
-export function BrokerOrderInfoCard({ departure, destination, cargo, shipper, status, orderId }: BrokerOrderInfoCardProps) {
+export function BrokerOrderInfoCard({ departure, destination, cargo, shipper, status, orderId, dispatchId }: BrokerOrderInfoCardProps) {
   const [isShipperInfoOpen, setIsShipperInfoOpen] = useState(true);
   const [isWarningsVisible, setIsWarningsVisible] = useState(false);
   const [isLocationInfoOpen, setIsLocationInfoOpen] = useState(true);
@@ -262,7 +263,7 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper, st
         <div className="mb-2 rounded-t-lg">
           <BrokerOrderStatusCard 
             status={status}
-            //dispatchId={dispatchId}
+            dispatchId={dispatchId}
             from={fromAddressData}
             to={toAddressData}
           />

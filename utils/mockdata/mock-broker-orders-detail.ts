@@ -4,6 +4,7 @@ import { BrokerOrderStatusType, IBrokerOrderLog, BROKER_ORDER_STATUS, getBrokerP
 // 중개 화물 상세 정보 인터페이스
 export interface IBrokerOrderDetail {
   orderNumber: string;
+  dispatchId?: string;
   status: BrokerOrderStatusType;
   amount: string;
   fee?: string;
@@ -57,13 +58,14 @@ export interface IBrokerOrderDetail {
     id?: string;
     status?: string;
   };
-  dispatchId?: string;
+  
 }
 
 // 목업 중개 화물 상세 데이터
 export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
   "BRO-001001": {
     orderNumber: "BRO-001001",
+    dispatchId: "DIS-001001",
     status: "배차대기",
     amount: "450,000",
     fee: "45,000",
@@ -120,6 +122,7 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
   },
   "BRO-001002": {
     orderNumber: "BRO-001002",
+    dispatchId: "DIS-001002",
     status: "배차완료",
     amount: "550,000",
     fee: "55,000",
@@ -189,6 +192,7 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
   },
   "BRO-001003": {
     orderNumber: "BRO-001003",
+    dispatchId: "DIS-001003",
     status: "상차완료",
     amount: "650,000",
     fee: "65,000",
@@ -266,6 +270,7 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
   },
   "BRO-001004": {
     orderNumber: "BRO-001004",
+    dispatchId: "DIS-001004",
     status: "운송중",
     amount: "750,000",
     fee: "75,000",

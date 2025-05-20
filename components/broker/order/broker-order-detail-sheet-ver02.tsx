@@ -419,6 +419,7 @@ export function BrokerOrderDetailSheet() {
                   ) : (
                     <BrokerOrderInfoCardVer02
                       orderId={orderData.orderNumber}
+                      dispatchId={orderData.dispatchId}
                       status={orderData.status}
                       departure={{
                         address: orderData.departure.address,

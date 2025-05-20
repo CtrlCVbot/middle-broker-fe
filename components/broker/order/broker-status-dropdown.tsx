@@ -22,6 +22,7 @@ import {
   CheckCheck,
   ChevronDown
 } from 'lucide-react';
+import { validate as isValidUUID, version as getUUIDVersion } from 'uuid';
 
 interface BrokerStatusDropdownProps {
   currentStatus: string;
@@ -64,19 +65,14 @@ const getStatusIcon = (status: string) => {
   }
 };
 
-// UUID 검증을 위한 유틸리티 함수
-function isValidUUID(uuid: string | undefined): boolean {
-  if (!uuid) return false;
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(uuid);
-}
-
 export function BrokerStatusDropdown({ 
   currentStatus, 
   dispatchId,
   onStatusChange 
 }: BrokerStatusDropdownProps) {
   const { toast } = useToast();
+
+  console.log("StatusDropdown dispatchId : ", dispatchId);
   
   const getStatusText = (status: string) => {
     return status;

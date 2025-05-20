@@ -5,6 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { BrokerStatusDropdown } from "./broker-status-dropdown";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import { validate as isValidUUID, version as getUUIDVersion } from 'uuid';
 
 interface IBrokerOrderStatusCardProps {
   status: string;
@@ -31,11 +32,11 @@ interface IBrokerOrderStatusCardProps {
 }
 
 // UUID 검증을 위한 유틸리티 함수
-function isValidUUID(uuid: string | undefined): boolean {
-  if (!uuid) return false;
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(uuid);
-}
+// function isValidUUID(uuid: string | undefined): boolean {
+//   if (!uuid) return false;
+//   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+//   return uuidRegex.test(uuid);
+// }
 
 export function BrokerOrderStatusCard({ 
   status, 
@@ -48,10 +49,13 @@ export function BrokerOrderStatusCard({
   const { toast } = useToast();
   const [isDispatchIdValid, setIsDispatchIdValid] = useState(false);
   
-  console.log("dispatchId", dispatchId);
+  
   // dispatchId 검증
   useEffect(() => {
-    const valid = isValidUUID(dispatchId);
+    console.log("StatusCard dispatchId : ", dispatchId);
+    //const valid = isValidUUID(dispatchId);
+    const valid = isValidUUID(dispatchId as string);
+    console.log("StatusCard valid : ", valid);
     setIsDispatchIdValid(valid);
     
     if (!valid && dispatchId !== undefined) {
