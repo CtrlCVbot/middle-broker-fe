@@ -78,7 +78,7 @@ const BrokerChargeInfoLineForm: React.FC<IBrokerChargeInfoLineFormProps> = ({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {editingFee ? "운임 수정" : "운임 추가"}
+            {editingFee ? `${newFee.type} 운임 수정` : `${newFee.type} 운임 추가`}
           </DialogTitle>
           <DialogDescription>
             {selectedFeeType ? `${selectedFeeType} 운임 정보를 ${editingFee ? '수정' : '입력'}해주세요.` : '운임 정보를 입력해주세요.'}

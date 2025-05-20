@@ -106,6 +106,11 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     memo: "",
     target: { charge: true, dispatch: true }
   });
+
+  const SelectedFeeType = (type: string) => {
+    setSelectedFeeType(type);
+  };
+  
   
   // 가능한 배차 상태 목록
   const availableStatuses = [
