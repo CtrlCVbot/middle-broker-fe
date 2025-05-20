@@ -64,6 +64,13 @@ const getStatusIcon = (status: string) => {
   }
 };
 
+// UUID 검증을 위한 유틸리티 함수
+function isValidUUID(uuid: string | undefined): boolean {
+  if (!uuid) return false;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
+
 export function BrokerStatusDropdown({ 
   currentStatus, 
   dispatchId,
@@ -78,6 +85,17 @@ export function BrokerStatusDropdown({
   const handleStatusChange = async (newStatus: string) => {
     try {
       if (newStatus === currentStatus) return;
+      
+      // dispatchId 유효성 검사
+      if (!dispatchId || !isValidUUID(dispatchId)) {
+        toast({
+          variant: "destructive",
+          title: "상태 변경 실패",
+          description: "유효하지 않은 배차 ID입니다.",
+        });
+        console.error("유효하지 않은 배차 ID:", dispatchId);
+        return;
+      }
       
       await updateDispatchFields(
         dispatchId, 

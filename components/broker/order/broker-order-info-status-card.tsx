@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, MessageSquare } from "lucide-react";
+import { ArrowRight, MessageSquare, AlertCircle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { BrokerStatusDropdown } from "./broker-status-dropdown";
+import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
 
 interface IBrokerOrderStatusCardProps {
   status: string;
-  dispatchId: string;
+  dispatchId?: string; // 선택적으로 변경
   from: {
     address: string;
     name: string;
@@ -28,6 +30,13 @@ interface IBrokerOrderStatusCardProps {
   onStatusChange?: (newStatus: string) => void;
 }
 
+// UUID 검증을 위한 유틸리티 함수
+function isValidUUID(uuid: string | undefined): boolean {
+  if (!uuid) return false;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
+
 export function BrokerOrderStatusCard({ 
   status, 
   dispatchId, 
@@ -36,6 +45,19 @@ export function BrokerOrderStatusCard({
   onStatusChange 
 }: IBrokerOrderStatusCardProps) {
   const [currentStatus, setCurrentStatus] = useState(status);
+  const { toast } = useToast();
+  const [isDispatchIdValid, setIsDispatchIdValid] = useState(false);
+  
+  console.log("dispatchId", dispatchId);
+  // dispatchId 검증
+  useEffect(() => {
+    const valid = isValidUUID(dispatchId);
+    setIsDispatchIdValid(valid);
+    
+    if (!valid && dispatchId !== undefined) {
+      console.warn("유효하지 않은 배차 ID:", dispatchId);
+    }
+  }, [dispatchId]);
   
   // 상태 변경 핸들러
   const handleStatusChange = (newStatus: string) => {
@@ -49,12 +71,34 @@ export function BrokerOrderStatusCard({
     <div className="bg-white px-4 py-4 rounded-t-lg ">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-base font-medium text-gray-700">배송 상태</h3>
-        <BrokerStatusDropdown 
-          currentStatus={currentStatus}
-          dispatchId={dispatchId}
-          onStatusChange={handleStatusChange}
-        />
+        {isDispatchIdValid ? (
+          <BrokerStatusDropdown 
+            currentStatus={currentStatus}
+            dispatchId={dispatchId as string}
+            onStatusChange={handleStatusChange}
+          />
+        ) : (
+          <div className="flex items-center">
+            <AlertCircle className="h-4 w-4 text-amber-500 mr-2" />
+            <Button 
+              variant="outline"
+              size="sm"
+              disabled
+              className="px-3 py-1 text-sm text-gray-500"
+            >
+              {currentStatus}
+            </Button>
+          </div>
+        )}
       </div>
+      {!isDispatchIdValid && (
+        <div className="mb-4 p-2 bg-amber-50 border border-amber-200 rounded-md text-amber-700 text-xs flex items-center">
+          <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+          <span>
+            유효한 배차 ID가 없어 상태를 변경할 수 없습니다. 배차 정보를 확인해주세요.
+          </span>
+        </div>
+      )}
       <Separator className="my-4" />
       <div className="grid grid-cols-5 gap-2">
         <div className="col-span-2">

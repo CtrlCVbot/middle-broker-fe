@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BrokerStatusDropdown } from './broker-status-dropdown';
 import { ORDER_FLOW_STATUSES } from '@/types/order-ver01';
+import { v4 as uuidv4 } from 'uuid';
 
 // 이 컴포넌트는 배차상태 드롭다운 사용 예시를 보여주는 데모 컴포넌트입니다.
 export function BrokerStatusDropdownExample() {
@@ -10,8 +11,8 @@ export function BrokerStatusDropdownExample() {
     { status: ORDER_FLOW_STATUSES[1], timestamp: new Date().toISOString() }
   ]);
   
-  // 예시용 임의의 배차 ID
-  const mockDispatchId = '123e4567-e89b-12d3-a456-426614174000';
+  // 예시용 유효한 UUID 형식의 배차 ID 생성
+  const [mockDispatchId] = useState<string>(uuidv4());
   
   // 상태 변경 핸들러
   const handleStatusChange = (newStatus: string) => {
@@ -49,6 +50,11 @@ export function BrokerStatusDropdownExample() {
               dispatchId={mockDispatchId}
               onStatusChange={handleStatusChange}
             />
+          </div>
+          
+          <div className="mt-4">
+            <h4 className="text-xs font-medium text-muted-foreground mb-1">사용된 배차 ID:</h4>
+            <code className="bg-gray-100 p-1 rounded text-xs block w-full overflow-auto">{mockDispatchId}</code>
           </div>
           
           <div className="mt-6">

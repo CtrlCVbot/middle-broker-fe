@@ -215,6 +215,18 @@ export async function updateDispatchFields(
   reason?: string
 ): Promise<any> {
   try {
+    // dispatchId 유효성 검사
+    if (!dispatchId || typeof dispatchId !== 'string') {
+      throw new Error("유효하지 않은 배차 ID입니다.");
+    }
+    
+    // fields 유효성 검사
+    if (!fields || Object.keys(fields).length === 0) {
+      throw new Error("업데이트할 필드가 지정되지 않았습니다.");
+    }
+    
+    console.log(`배차 필드 업데이트 요청: dispatchId=${dispatchId}, fields=`, fields);
+    
     const response = await fetch(`/api/broker/dispatches/${dispatchId}/fields`, {
       method: "PATCH",
       headers: {
@@ -222,18 +234,42 @@ export async function updateDispatchFields(
       },
       body: JSON.stringify({
         fields,
-        reason
+        reason: reason || "상태 변경"
       }),
     });
 
+    // 응답 확인
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || "배차 필드 업데이트에 실패했습니다.");
+      // 서버 응답이 JSON이 아닌 경우를 대비한 에러 처리
+      const errorText = await response.text();
+      let errorData = {};
+      
+      try {
+        // JSON 형식이면 파싱
+        errorData = JSON.parse(errorText);
+      } catch (e) {
+        // JSON 형식이 아니면 원본 텍스트를 사용
+        console.error("서버 응답이 JSON 형식이 아닙니다:", errorText);
+      }
+      
+      const errorMessage = 
+        (errorData as any).error || 
+        `배차 필드 업데이트에 실패했습니다 (HTTP ${response.status})`;
+      
+      throw new Error(errorMessage);
     }
 
-    return await response.json();
+    const result = await response.json();
+    console.log("배차 필드 업데이트 성공:", result);
+    return result;
   } catch (error) {
     console.error("배차 필드 업데이트 중 오류:", error);
+    
+    // 네트워크 관련 오류인 경우 더 명확한 메시지 제공
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error("네트워크 연결에 실패했습니다. 인터넷 연결을 확인해주세요.");
+    }
+    
     throw error;
   }
 } 

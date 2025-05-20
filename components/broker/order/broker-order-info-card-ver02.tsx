@@ -262,6 +262,7 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper, st
         <div className="mb-2 rounded-t-lg">
           <BrokerOrderStatusCard 
             status={status}
+            //dispatchId={dispatchId}
             from={fromAddressData}
             to={toAddressData}
           />
