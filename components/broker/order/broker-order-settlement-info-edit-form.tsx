@@ -46,6 +46,7 @@ import {
 } from "lucide-react";
 import { formatCurrency, cn } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
+//import BrokerChargeInfoLineForm from "./broker-charge-info-line-form";
 
 // 추가금 타입 정의
 const ADDITIONAL_FEE_TYPES = [
@@ -619,6 +620,7 @@ export function BrokerOrderSettlementInfoEditForm({
                   </div>
                 </div>
               </div>
+
             </div>
           </div>
           
@@ -744,6 +746,22 @@ export function BrokerOrderSettlementInfoEditForm({
           </Dialog>
         </form>
       </Form>
+      
+      {/* 새로 분리된 추가금 다이얼로그 컴포넌트 */}
+      {/* <BrokerChargeInfoLineForm 
+        dialogOpen={dialogOpen}
+        setDialogOpen={setDialogOpen}
+        newFee={newFee}
+        setNewFee={setNewFee}
+        editingFee={editingFee}
+        selectedFeeType={selectedFeeType}
+        isCompleted={isCompleted}
+        handleAmountChange={handleAmountChange}
+        handleToggleTarget={handleToggleTarget}
+        handleAddFee={handleAddFee}
+        handleUpdateFee={handleUpdateFee}
+        handleCancelEdit={handleCancelEdit}
+      /> */}
     </div>
   );
 } 
