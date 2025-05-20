@@ -367,7 +367,7 @@ export async function getBrokerDispatchList(
     let responseData;
     try {
       responseData = await response.json();
-      console.log('API 응답 JSON 데이터 구조:', Object.keys(responseData));
+      //console.log('API 응답 JSON 데이터 구조:', Object.keys(responseData));
     } catch (parseError) {
       console.error('JSON 파싱 오류:', parseError);
       throw new Error('API 응답을 JSON으로 파싱할 수 없습니다.');

@@ -347,7 +347,7 @@ export const addDriverNote = async (driverId: string, content: string): Promise<
     const response = await fetch('/api/drivers/notes', {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ driverId, content }),
+      body: JSON.stringify({ driverId, content }),      
     });
     
     console.log('API 응답 상태:', response.status, response.statusText);

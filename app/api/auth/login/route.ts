@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 1, // 15분 (초 단위)
+      maxAge: 60 * 15, // 15분 (초 단위)
     });
     
     // 리프레시 토큰 쿠키 설정 (HTTP 요청에서만 사용 가능)

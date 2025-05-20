@@ -23,9 +23,15 @@ const authRoutes = ['/login']
 
 // API 요청 제외 패턴
 const apiRoutes = ['/api']
+const refreshRoute = '/api/auth/refresh';
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
+
+  // ① Refresh API 는 그대로 통과
+  if (path.startsWith(refreshRoute)) {
+    return NextResponse.next();
+  }
   
   // API 경로는 별도 처리
   if (apiRoutes.some(route => path.startsWith(route))) {
@@ -70,7 +76,13 @@ export async function middleware(request: NextRequest) {
         // 토큰 검증 실패 시 리프레시 시도
         const refreshResponse = await tryRefreshToken(request);
         if (refreshResponse.success && refreshResponse.accessToken) {
-          response.headers.set('x-user-id', refreshResponse.userId || '');
+          if (refreshResponse.userId) {
+            response.headers.set('x-user-id', refreshResponse.userId);
+            console.log("리프레시 토큰 검증 성공 : ", refreshResponse.userId);
+          }
+          else {
+            console.log("리프레시 토큰 검증 실패 : ", refreshResponse.userId);
+          }
           response.cookies.set('access_token', refreshResponse.accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -78,6 +90,7 @@ export async function middleware(request: NextRequest) {
             path: '/',
             maxAge: 60 * 15, // 15분
           });
+          console.log('검증 실패 후 쿠키 설정 완료:', response.cookies.get('access_token'));
         }
       }
     }
@@ -124,7 +137,7 @@ export async function middleware(request: NextRequest) {
           path: '/',
           maxAge: 60 * 15, // 15분
         })
-        
+        console.log('리프레시된 액세스 토큰을 쿠키에 설정 완료:', response.cookies.get('access_token'));
         return response
       }
     }

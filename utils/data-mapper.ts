@@ -216,10 +216,10 @@ export function mapApiResponseToBrokerDispatchList(
   };
 } {
   // 디버깅: 원본 API 응답 출력
-  console.log('mapApiResponseToBrokerDispatchList - API 응답 구조 확인:',
-    Object.keys(apiResponse),
-    apiResponse.data ? `데이터 항목 수: ${apiResponse.data.length}` : '데이터 없음'
-  );
+  // console.log('mapApiResponseToBrokerDispatchList - API 응답 구조 확인:',
+  //   Object.keys(apiResponse),
+  //   apiResponse.data ? `데이터 항목 수: ${apiResponse.data.length}` : '데이터 없음'
+  // );
   
   if (!apiResponse || !apiResponse.data) {
     console.error('API 응답이 null이거나 data 프로퍼티가 없습니다.');
