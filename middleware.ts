@@ -170,6 +170,9 @@ async function tryRefreshToken(request: NextRequest): Promise<{
   userId?: string;
 }> {
   try {
+    // 로그: 요청 헤더 검사
+    console.log('🔍 Refresh 요청 헤더:', request.headers.get('cookie'));
+
     // 현재 도메인 기반으로 리프레시 API URL 생성
     const protocol = request.headers.get('x-forwarded-proto') || 'http'
     const host = request.headers.get('host') || 'localhost:3000'
@@ -183,23 +186,28 @@ async function tryRefreshToken(request: NextRequest): Promise<{
       },
     })
 
-    // 응답 확인
-    if (response.ok) {
-      const data = await response.json()
-      if (data.success && data.token && data.user?.id) {
-        return {
-          success: true,
-          accessToken: data.token,
-          userId: data.user.id,
-        }
-      }
+    console.log('📝 Refresh 응답 상태:', response.status, response.statusText);
+
+    // 응답 JSON 파싱
+    const data = await response.json();
+    console.log('✅ Refresh 응답 데이터:', data);
+
+    if (response.ok && data.success && data.token && data.user?.id) {
+      console.log('✔️ 토큰 갱신 성공:', data.token);
+      return {
+        success: true,
+        accessToken: data.token,
+        userId: data.user.id,
+      };
+    } else {
+      console.warn('⚠️ 토큰 갱신 실패: 응답 확인 실패');
     }
-    
-    // 실패 처리
-    return { success: false }
+
+    //실패 처리
+    return { success: false };
   } catch (error) {
-    console.error('Token refresh error in middleware:', error)
-    return { success: false }
+    console.error('🚨 Refresh 토큰 오류:', error instanceof Error ? error.message : '알 수 없는 오류');
+    return { success: false };
   }
 }
 
