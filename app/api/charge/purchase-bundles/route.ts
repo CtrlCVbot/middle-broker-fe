@@ -8,7 +8,7 @@ import { bundleAdjTypeEnum } from '@/db/schema/salesBundles';
 import { orderPurchases } from '@/db/schema/orderPurchases';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { authOptions } from '@/app/api/auth/config';
 
 // 매입 번들 목록 조회
 export async function GET(request: NextRequest) {
@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
       // 매입 번들 생성
       const newBundle = await tx.insert(purchaseBundles).values({
         ...bundleData
-      }).returning();
+      }as any).returning();
       
       const bundleId = newBundle[0].id;
       
@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
         return tx.insert(purchaseBundleItems).values({
           ...item,
           bundleId
-        });
+        }as any);
       });
       
       await Promise.all(itemPromises);
@@ -208,7 +208,7 @@ export async function POST(request: NextRequest) {
           return tx.insert(purchaseBundleAdjustments).values({
             ...adj,
             bundleId
-          });
+          }as any);
         });
         
         await Promise.all(adjPromises);
@@ -226,7 +226,7 @@ export async function POST(request: NextRequest) {
           adjustments: true,
           company: data.companyId ? true : false
         }
-      });
+      }as any);
     });
 
     return NextResponse.json(

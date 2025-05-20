@@ -5,7 +5,7 @@ import { orderPurchases, paymentStatusEnum } from '@/db/schema/orderPurchases';
 import { purchaseChargeItems } from '@/db/schema/orderPurchases';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { authOptions } from '@/app/api/auth/config';
 
 // 매입 전표 상세 조회
 export async function GET(
@@ -137,7 +137,7 @@ export async function PATCH(
           ...purchaseData,
           updatedBy: userId,
           updatedAt: new Date()
-        })
+        }as any)
         .where(eq(orderPurchases.id, purchaseId));
       
       // 항목 수정
@@ -145,7 +145,7 @@ export async function PATCH(
         for (const item of updateItems) {
           const { id, ...itemData } = item;
           await tx.update(purchaseChargeItems)
-            .set(itemData)
+            .set(itemData as any)
             .where(eq(purchaseChargeItems.id, id));
         }
       }
@@ -164,7 +164,7 @@ export async function PATCH(
           await tx.insert(purchaseChargeItems).values({
             ...item,
             orderPurchaseId: purchaseId
-          });
+          }as any);
         }
       }
       

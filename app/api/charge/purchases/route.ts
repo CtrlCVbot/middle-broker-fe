@@ -5,7 +5,7 @@ import { orderPurchases, paymentStatusEnum } from '@/db/schema/orderPurchases';
 import { purchaseChargeItems } from '@/db/schema/orderPurchases';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { authOptions } from '@/app/api/auth/config';
 
 // 매입 전표 목록 조회
 export async function GET(request: NextRequest) {
@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
         ...purchaseData,
         createdBy: userId,
         updatedBy: userId
-      }).returning();
+      }as any).returning();
       
       const purchaseId = newPurchase[0].id;
       
@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
         return tx.insert(purchaseChargeItems).values({
           ...item,
           orderPurchaseId: purchaseId
-        });
+        }as any);
       });
       
       await Promise.all(itemPromises);

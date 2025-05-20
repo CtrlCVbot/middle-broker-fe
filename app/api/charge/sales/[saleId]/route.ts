@@ -135,7 +135,7 @@ export async function PATCH(
           ...saleData,
           updatedBy: userId,
           updatedAt: new Date()
-        })
+        }as any)
         .where(eq(orderSales.id, saleId));
       
       // 항목 수정
@@ -143,7 +143,7 @@ export async function PATCH(
         for (const item of updateItems) {
           const { id, ...itemData } = item;
           await tx.update(salesChargeItems)
-            .set(itemData)
+            .set(itemData as any)
             .where(eq(salesChargeItems.id, id));
         }
       }
@@ -162,7 +162,7 @@ export async function PATCH(
           await tx.insert(salesChargeItems).values({
             ...item,
             orderSaleId: saleId
-          });
+          }as any);
         }
       }
       

@@ -103,9 +103,9 @@ export async function PATCH(
     
     // 세금 자동 계산 (금액이나 세율이 변경된 경우)
     if ((data.amount || data.taxRate) && !data.taxAmount) {
-      const amount = data.amount || existingLine.amount;
-      const taxRate = data.taxRate || existingLine.taxRate;
-      data.taxAmount = Number((amount * (Number(taxRate) / 100)).toFixed(2));
+      const amount = data.amount ?? existingLine.amount;
+      const taxRate = data.taxRate ?? existingLine.taxRate;
+      data.taxAmount = Number((Number(amount) * (Number(taxRate) / 100)).toFixed(2));
     }
     
     // 운임 라인 수정
@@ -114,7 +114,7 @@ export async function PATCH(
         ...data,
         updatedBy: userId,
         updatedAt: new Date()
-      })
+      }as any)
       .where(eq(chargeLines.id, lineId))
       .returning();
 

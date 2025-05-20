@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
       ...data,
       createdBy: userId,
       updatedBy: userId,
-    }).returning();
+    }as any).returning();
 
     return NextResponse.json(
       { message: '운임 라인이 생성되었습니다.', data: newChargeLine[0] },
