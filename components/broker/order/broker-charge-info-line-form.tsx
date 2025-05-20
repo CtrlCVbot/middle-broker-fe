@@ -21,12 +21,16 @@ import {
 } from "@/components/ui/select";
 
 
-type AdditionalFeeType = "대기" | "경유" | "수작업" | "왕복" | "톨비" | "수수료" | "현장착불";
+type AdditionalFeeType = "기본" | "대기" | "수작업" | "왕복" | "톨비" | "수수료" | "현장착불";
 
 export const ADDITIONAL_FEE_TYPES = [
+  "기본",
   "대기료",
-  "상/하차비",
-  "기타"
+  "수작업",
+  "왕복",
+  "톨비",
+  "수수료",
+  "현장착불"
 ] as const;
 
 export interface IAdditionalFee {
@@ -74,10 +78,10 @@ const BrokerChargeInfoLineForm: React.FC<IBrokerChargeInfoLineFormProps> = ({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {editingFee ? "추가금 수정" : "추가금 추가"}
+            {editingFee ? "운임 수정" : "운임 추가"}
           </DialogTitle>
           <DialogDescription>
-            {selectedFeeType ? `${selectedFeeType} 추가금 정보를 ${editingFee ? '수정' : '입력'}해주세요.` : '추가금 정보를 입력해주세요.'}
+            {selectedFeeType ? `${selectedFeeType} 운임 정보를 ${editingFee ? '수정' : '입력'}해주세요.` : '운임 정보를 입력해주세요.'}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">

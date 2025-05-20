@@ -34,7 +34,7 @@ import { BrokerOrderDriverInfoCard as BrokerOrderDriverInfoCardVer01 } from "./b
 
 
 // 운임/정산 정보 카드
-import { FinanceSummaryCard } from "./broker-dispatch-info-cost-card";
+import { FinanceSummaryCard } from "./broker-dispatch-info-cost-card-ver01";
 
 import { toast } from "@/components/ui/use-toast";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -47,13 +47,17 @@ import {
   DialogTitle 
 } from "@/components/ui/dialog";
 import { BrokerOrderDriverInfoEditForm as VehicleEditForm } from "./broker-dispatch-info-vehicle-form";
+
+import BrokerChargeInfoLineForm, { IAdditionalFee } from "./broker-charge-info-line-form";
+
+
 // 새로고침 상태 관리를 위한 스토어 import
 import { useBrokerOrderStore } from "@/store/broker-order-store";
 
 // 전체적인 상태 관리를 위한 타입 정의
 type EditMode = "cargo" | "driver" | "settlement" | null;
 
-export function BrokerOrderDetailSheet() {
+export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalFeeAdded: (fee: IAdditionalFee) => void }) {
   const { 
     isSheetOpen, 
     selectedOrderId, 
@@ -61,7 +65,8 @@ export function BrokerOrderDetailSheet() {
     orderDetail, 
     isLoading, 
     error,
-    fetchOrderDetail 
+    fetchOrderDetail,
+     
   } = useBrokerOrderDetailStore();
   
   // 브로커 주문 스토어 추가 - 새로고침을 위한 상태 관리
@@ -87,6 +92,20 @@ export function BrokerOrderDetailSheet() {
   
   // 배차 정보 저장 성공 여부 추적을 위한 상태 추가 (통합된 상태)
   const [hasDriverInfo, setHasDriverInfo] = useState(false);
+
+  // 운임 정보 저장 성공 여부 추적을 위한 상태 추가
+  const [hasChargeInfo, setHasChargeInfo] = useState(false);
+
+  // 추가금 다이얼로그 상태
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingFee, setEditingFee] = useState<IAdditionalFee | null>(null);
+  const [selectedFeeType, setSelectedFeeType] = useState<string | null>(null);
+  const [newFee, setNewFee] = useState<IAdditionalFee>({
+    type: "대기",
+    amount: "",
+    memo: "",
+    target: { charge: true, dispatch: true }
+  });
   
   // 가능한 배차 상태 목록
   const availableStatuses = [
@@ -311,6 +330,77 @@ export function BrokerOrderDetailSheet() {
     setStatusPopoverOpen(false);
   };
 
+  // 추가금 다이얼로그 열기
+  const handleOpenDialog = () => {
+    setDialogOpen(true);
+  };
+
+  // 금액 입력 핸들러
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>, isDialog?: boolean) => {
+    const value = e.target.value.replace(/[^\d-]/g, '');
+    setNewFee({ ...newFee, amount: value });
+  };
+
+  // 타겟 토글 핸들러 (청구/배차)
+  const handleToggleTarget = (target: 'charge' | 'dispatch') => {
+    setNewFee({
+      ...newFee,
+      target: {
+        ...newFee.target,
+        [target]: !newFee.target[target]
+      }
+    });
+  };
+
+  // 추가금 항목 추가
+  const handleAddFee = () => {
+    if (!newFee.amount || isNaN(Number(newFee.amount))) {
+      toast({
+        title: "금액을 입력해주세요",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const fee: IAdditionalFee = {
+      id: Date.now().toString(),
+      ...newFee
+    };
+    
+    // 추가된 추가금 처리 (부모 컴포넌트로 전달)
+    if (onAdditionalFeeAdded) {
+      onAdditionalFeeAdded(fee);
+    }
+    
+    // 상태 초기화
+    resetNewFee();
+    setDialogOpen(false);
+  };
+
+  // 추가금 항목 수정
+  const handleUpdateFee = () => {
+    // 실제 구현 시 필요하면 추가
+    handleCancelEdit();
+  };
+
+  // 수정 취소
+  const handleLineCancelEdit = () => {
+    setEditingFee(null);
+    resetNewFee();
+    setDialogOpen(false);
+  };
+
+  // 새 추가금 입력 상태 리셋
+  const resetNewFee = () => {
+    setNewFee({ 
+      type: "대기", 
+      amount: "", 
+      memo: "", 
+      target: { charge: true, dispatch: true } 
+    });
+    setSelectedFeeType(null);
+  };
+
   return (
     <Sheet 
       open={isSheetOpen} 
@@ -473,12 +563,7 @@ export function BrokerOrderDetailSheet() {
                             amount={orderData?.amount || "0"}
                             onSendMessage={() => handleSendMessage("기사님")}
                             onSaveDriverInfo={handleSaveDriverInfo}
-                          /> 
-
-                          {/* 금융 요약 카드 추가 */}
-                          <div className="mb-4 mt-4">
-                            <FinanceSummaryCard />
-                          </div>                         
+                          />                      
                         </>
                       ) : (
                         <>                        
@@ -489,17 +574,41 @@ export function BrokerOrderDetailSheet() {
                             <Button 
                               type="button" 
                               onClick={handleOpenDriverEditDialog}
+                              className= {cn("bg-primary text-white", "hover:bg-gray-700", "hover:cursor-pointer")}
                             >
                               <Truck className="h-4 w-4 mr-2" />
                               배차 정보 입력하기
                             </Button>
                           </div>
                         </div>
+                      </>
+                      )}
+                    </div>
 
-                        {/* 금융 요약 카드 추가 */}
-                        <div className="mb-4 mt-4">
-                          <FinanceSummaryCard />
-                        </div>     
+                    <div className="mb-4 mt-4">
+                      {hasChargeInfo ? (
+                        <>
+                          {/* 금융 요약 카드 추가 */}
+                          <div className="mb-4 mt-4">
+                            <FinanceSummaryCard />
+                          </div>                         
+                        </>
+                      ) : (
+                        <>                        
+                        <div className="flex flex-col items-center justify-center py-8 border-4 border-dashed border-gray-500 rounded-md bg-muted/30">
+                          <AlertCircle className="h-10 w-10 text-muted-foreground mb-2" />
+                          <p className="text-sm text-muted-foreground mb-4">아직 견적 금액이 정해지지 않았습니다.</p>
+                          <div className="flex gap-2">                            
+                            <Button 
+                              type="button" 
+                              onClick={handleOpenDialog}
+                              className= {cn("bg-primary text-white", "hover:bg-gray-700", "hover:cursor-pointer")}
+                            >
+                              <CreditCard className="h-4 w-4 mr-2" />
+                              견적 정보 입력하기
+                            </Button>
+                          </div>
+                        </div>
                       </>
                       )}
                     </div>
@@ -559,6 +668,22 @@ export function BrokerOrderDetailSheet() {
           />
         </DialogContent>
       </Dialog>
+
+      {/* 추가금 입력 다이얼로그 */}
+      <BrokerChargeInfoLineForm 
+        dialogOpen={dialogOpen}
+        setDialogOpen={setDialogOpen}
+        newFee={newFee}
+        setNewFee={setNewFee}
+        editingFee={editingFee}
+        selectedFeeType={selectedFeeType}
+        isCompleted={false}
+        handleAmountChange={handleAmountChange}
+        handleToggleTarget={handleToggleTarget}
+        handleAddFee={handleAddFee}
+        handleUpdateFee={handleUpdateFee}
+        handleCancelEdit={handleLineCancelEdit}
+      />
     </Sheet>
   );
 } 
