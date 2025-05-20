@@ -42,7 +42,6 @@ import { getCurrentUser } from '@/utils/auth';
 export default function BrokerOrderListPage() {
   // 자동 새로고침 상태
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
-  const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
   const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
 
   // Zustand 스토어에서 상태 및 액션 가져오기
@@ -56,7 +55,9 @@ export default function BrokerOrderListPage() {
     activeTab,
     selectedOrders,
     deselectAllOrders,
-    filterOptions
+    filterOptions,
+    lastRefreshed,
+    setLastRefreshed
   } = useBrokerOrderStore();
   
   //const { openSheet } = useBrokerOrderDetailStore();

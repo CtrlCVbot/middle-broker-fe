@@ -79,6 +79,9 @@ interface IBrokerOrderState {
   // 다중 선택 상태 추가
   selectedOrders: string[]; // 선택된 주문 ID 배열
   
+  // 마지막 새로고침 시간
+  lastRefreshed: Date;
+  
   // 액션
   setViewMode: (mode: 'table' | 'card') => void;
   setFilter: (filter: Partial<IBrokerOrderFilter>) => void;
@@ -96,6 +99,9 @@ interface IBrokerOrderState {
   toggleOrderSelection: (orderId: string) => void;
   selectAllOrders: (orderIds: string[]) => void;
   deselectAllOrders: () => void;
+  
+  // 새로고침 액션 추가
+  setLastRefreshed: (date: Date) => void;
   
   // 필터 옵션
   filterOptions: {
@@ -133,6 +139,7 @@ export const useBrokerOrderStore = create<IBrokerOrderState>()(
       pageSize: 10,
       activeTab: 'all',
       selectedOrders: [], // 선택된 주문 배열 초기화
+      lastRefreshed: new Date(),
       
       // 필터 옵션 목록
       filterOptions: {
@@ -206,6 +213,9 @@ export const useBrokerOrderStore = create<IBrokerOrderState>()(
       deselectAllOrders: () => set({ 
         selectedOrders: [] 
       }),
+      
+      // 새로고침 액션 구현
+      setLastRefreshed: (date: Date) => set({ lastRefreshed: date }),
     }),
     {
       name: 'broker-order-storage', // 로컬 스토리지 키 이름

@@ -92,9 +92,19 @@ interface BrokerOrderInfoCardProps {
   status: string;
   orderId: string;
   dispatchId?: string;
+  onStatusChange?: (newStatus: string) => void;
 }
 
-export function BrokerOrderInfoCard({ departure, destination, cargo, shipper, status, orderId, dispatchId }: BrokerOrderInfoCardProps) {
+export function BrokerOrderInfoCard({ 
+  departure, 
+  destination, 
+  cargo, 
+  shipper, 
+  status, 
+  orderId, 
+  dispatchId,
+  onStatusChange 
+}: BrokerOrderInfoCardProps) {
   const [isShipperInfoOpen, setIsShipperInfoOpen] = useState(true);
   const [isWarningsVisible, setIsWarningsVisible] = useState(false);
   const [isLocationInfoOpen, setIsLocationInfoOpen] = useState(true);
@@ -103,6 +113,14 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper, st
   // 날짜와 시간을 합쳐서 dateTime 형식으로 변환
   const departureDateTime = `${departure.date} ${departure.time}${departure.loadingMethod ? ` / ${departure.loadingMethod}` : ''}`;
   const destinationDateTime = `${destination.date} ${destination.time}${destination.loadingMethod ? ` / ${destination.loadingMethod}` : ''}`;
+
+  // 상태 변경 핸들러
+  const handleStatusChange = (newStatus: string) => {
+    console.log(`BrokerOrderInfoCard: 상태 변경 ${status} -> ${newStatus}`);
+    if (onStatusChange) {
+      onStatusChange(newStatus);
+    }
+  };
 
   // 상하차 담당자에게 문자 보내기 함수
   const handleSendMessage = (name: string, contact: string, type: '상차' | '하차') => {
@@ -266,6 +284,7 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper, st
             dispatchId={dispatchId}
             from={fromAddressData}
             to={toAddressData}
+            onStatusChange={handleStatusChange}
           />
         </div>
 

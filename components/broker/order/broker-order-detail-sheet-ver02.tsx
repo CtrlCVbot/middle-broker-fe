@@ -15,59 +15,29 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { 
-  AlertTriangle, 
   Truck, 
   CreditCard, 
   Package, 
   History, 
-  X,
-  Pencil,
   AlertCircle,
-  MailPlus,
-  MailX,
-  MailCheck,
-  Eye,
-  DollarSign,
-  Check,
-  Warehouse,
   Copy
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 
 // 화물 상세 정보 카드
-import { BrokerOrderInfoCard } from "./broker-order-info-card";
+
 import { BrokerOrderInfoEditForm } from "./broker-order-info-edit-form";
-import { BrokerOrderInfoCard as BrokerOrderInfoCardVer01 } from "./broker-order-info-card-ver01";
 import { BrokerOrderInfoCard as BrokerOrderInfoCardVer02 } from "./broker-order-info-card-ver02";
-import { CompanyCard } from "./broker-order-info-company-card";
-import { BrokerOrderInfoEditForm as BrokerOrderInfoEditFormVer01 } from "./broker-order-info-edit-form-ver01";
 
 // 배차 정보 카드
-import { BrokerOrderDriverInfoCard } from "./broker-order-driver-info-card";
 import { BrokerOrderDriverInfoCard as BrokerOrderDriverInfoCardVer01 } from "./broker-dispatch-info-card";
-import { BrokerOrderDriverInfoEditForm } from "./broker-order-driver-info-edit-form";
 
 
 // 운임/정산 정보 카드
-import { BrokerOrderSettlementInfoCard } from "./broker-order-settlement-info-card";
-import { BrokerOrderSettlementInfoEditForm } from "./broker-order-settlement-info-edit-form";
 import { FinanceSummaryCard } from "./broker-dispatch-info-cost-card";
 
 import { toast } from "@/components/ui/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { VehicleCard } from "./broker-dispatch-info-vehicle-card";
 
 // Dialog import 추가
 import { 
@@ -77,6 +47,8 @@ import {
   DialogTitle 
 } from "@/components/ui/dialog";
 import { BrokerOrderDriverInfoEditForm as VehicleEditForm } from "./broker-dispatch-info-vehicle-form";
+// 새로고침 상태 관리를 위한 스토어 import
+import { useBrokerOrderStore } from "@/store/broker-order-store";
 
 // 전체적인 상태 관리를 위한 타입 정의
 type EditMode = "cargo" | "driver" | "settlement" | null;
@@ -91,6 +63,12 @@ export function BrokerOrderDetailSheet() {
     error,
     fetchOrderDetail 
   } = useBrokerOrderDetailStore();
+  
+  // 브로커 주문 스토어 추가 - 새로고침을 위한 상태 관리
+  const { setLastRefreshed } = useBrokerOrderStore();
+  
+  // 상태 변경 여부를 추적하는 상태 추가
+  const [hasStatusChanged, setHasStatusChanged] = useState(false);
   
   // 편집 모드 상태 관리 통합
   const [editMode, setEditMode] = useState<EditMode>(null);
@@ -124,6 +102,17 @@ export function BrokerOrderDetailSheet() {
       fetchOrderDetail(selectedOrderId);
     }
   }, [selectedOrderId, isSheetOpen, fetchOrderDetail]);
+  
+  // 시트가 닫힐 때 상태 변경 여부에 따라 목록 새로고침
+  useEffect(() => {
+    if (!isSheetOpen && hasStatusChanged) {
+      // 목록 새로고침 트리거
+      console.log("상태가 변경되었으므로 목록 새로고침");
+      setLastRefreshed(new Date());
+      // 상태 변경 플래그 초기화
+      setHasStatusChanged(false);
+    }
+  }, [isSheetOpen, hasStatusChanged, setLastRefreshed]);
   
   // orderData가 변경될 때마다 selectedStatus 및 hasDriverInfo 업데이트
   useEffect(() => {
@@ -238,6 +227,9 @@ export function BrokerOrderDetailSheet() {
     setEditMode(null);
     setIsDriverEditDialogOpen(false);
     
+    // 상태 변경 플래그 설정
+    setHasStatusChanged(true);
+    
     // 실제 구현에서는 fetchOrderDetail로 최신 데이터 조회
     if (selectedOrderId) {
       fetchOrderDetail(selectedOrderId);
@@ -284,6 +276,9 @@ export function BrokerOrderDetailSheet() {
         variant: "default"
       });
       
+      // 상태 변경 플래그 설정
+      setHasStatusChanged(true);
+      
       setStatusPopoverOpen(false);
       
       // 실제 구현에서는 fetchOrderDetail로 최신 데이터 조회
@@ -293,6 +288,13 @@ export function BrokerOrderDetailSheet() {
         }
       }, 300);
     }
+  };
+  
+  // 배차 상태 변경 처리 핸들러 추가
+  const handleStatusUpdate = (newStatus: string) => {
+    console.log(`상태 업데이트: ${newStatus}`);
+    // 상태 변경 플래그 설정
+    setHasStatusChanged(true);
   };
   
   // 배차 상태 변경 시작
@@ -447,6 +449,7 @@ export function BrokerOrderDetailSheet() {
                         manager: orderData.shipper.manager.name,
                         email: orderData.shipper.manager.email
                       }}
+                      onStatusChange={handleStatusUpdate}
                     />
                   )}
                 </div>
