@@ -4,7 +4,7 @@ import { db } from '@/db';
 import { companyWarnings } from '@/db/schema/companyWarnings';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { authOptions } from '@/app/api/auth/config';
 
 // 정렬 순서 변경 스키마
 const sortOrderSchema = z.object({
