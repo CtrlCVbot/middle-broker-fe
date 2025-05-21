@@ -73,13 +73,14 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
   // 브로커 주문 스토어 추가 - 새로고침을 위한 상태 관리  
   const { setLastRefreshed } = useBrokerOrderStore();    
 
-  // 운임 관련 스토어 추가  
-  const {     
-    fetchChargesByOrderId,     
-    addCharge,     
-    isLoading: isChargeLoading,    
-    chargeGroups  
-  } = useBrokerChargeStore();
+    // 운임 관련 스토어 추가
+    const {
+      fetchChargesByOrderId,
+      addCharge,
+      isLoading: isChargeLoading,
+      chargeGroups,
+      financeSummary
+    } = useBrokerChargeStore();
   
   // 상태 변경 여부를 추적하는 상태 추가
   const [hasStatusChanged, setHasStatusChanged] = useState(false);
@@ -661,8 +662,14 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                         <>
                           {/* 금융 요약 카드 추가 */}
                           <div className="mb-4 mt-4">
-                            <FinanceSummaryCard />
-                          </div>                         
+                            <FinanceSummaryCard 
+                              title={financeSummary?.title}
+                              date={financeSummary?.date}
+                              income={financeSummary?.income}
+                              expense={financeSummary?.expense}
+                              balance={financeSummary?.balance}
+                            />
+                          </div>
                         </>
                       ) : (
                         <>                        
