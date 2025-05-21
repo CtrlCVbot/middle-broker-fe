@@ -50,23 +50,3 @@ export const orderPurchases = pgTable('order_purchases', {
   updatedBy: uuid('updated_by'),
 });
 
-// 매입 전표 항목 테이블 정의
-export const purchaseChargeItems = pgTable('purchase_charge_items', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  
-  // 관계 정보
-  orderPurchaseId: uuid('order_purchase_id').notNull().references(() => orderPurchases.id, { onDelete: 'cascade' }),
-  
-  // 항목 정보
-  description: text('description').notNull(),
-  amount: numeric('amount', { precision: 14, scale: 2 }).notNull(),
-  taxRate: numeric('tax_rate', { precision: 5, scale: 2 }),
-  taxAmount: numeric('tax_amount', { precision: 14, scale: 2 }),
-  
-  // 원본 운임 라인 참조 (옵션)
-  originalChargeLineId: uuid('original_charge_line_id'),
-  
-  // 감사 로그
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-}); 

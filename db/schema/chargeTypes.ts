@@ -3,9 +3,9 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { chargeGroups } from './chargeGroups';
 import { chargeLines } from './chargeLines';
 import { orderSales } from './orderSales';
-import { salesChargeItems } from './orderSales';
+
 import { orderPurchases } from './orderPurchases';
-import { purchaseChargeItems } from './orderPurchases';
+
 import { salesBundles } from './salesBundles';
 import { salesBundleItems } from './salesBundles';
 import { salesBundleAdjustments } from './salesBundles';
@@ -41,25 +41,9 @@ export const NewOrderSaleSchema = createInsertSchema(orderSales).omit({
   updatedAt: true,
 });
 
-// 매출 인보이스 항목 스키마
-export const SalesChargeItemSchema = createSelectSchema(salesChargeItems);
-export const NewSalesChargeItemSchema = createInsertSchema(salesChargeItems).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
 // 매입 전표 스키마
 export const OrderPurchaseSchema = createSelectSchema(orderPurchases);
 export const NewOrderPurchaseSchema = createInsertSchema(orderPurchases).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-// 매입 전표 항목 스키마
-export const PurchaseChargeItemSchema = createSelectSchema(purchaseChargeItems);
-export const NewPurchaseChargeItemSchema = createInsertSchema(purchaseChargeItems).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
@@ -151,14 +135,8 @@ export interface INewChargeLine extends z.infer<typeof NewChargeLineSchema> {}
 export interface IOrderSale extends z.infer<typeof OrderSaleSchema> {}
 export interface INewOrderSale extends z.infer<typeof NewOrderSaleSchema> {}
 
-export interface ISalesChargeItem extends z.infer<typeof SalesChargeItemSchema> {}
-export interface INewSalesChargeItem extends z.infer<typeof NewSalesChargeItemSchema> {}
-
 export interface IOrderPurchase extends z.infer<typeof OrderPurchaseSchema> {}
 export interface INewOrderPurchase extends z.infer<typeof NewOrderPurchaseSchema> {}
-
-export interface IPurchaseChargeItem extends z.infer<typeof PurchaseChargeItemSchema> {}
-export interface INewPurchaseChargeItem extends z.infer<typeof NewPurchaseChargeItemSchema> {}
 
 export interface ISalesBundle extends z.infer<typeof SalesBundleSchema> {}
 export interface INewSalesBundle extends z.infer<typeof NewSalesBundleSchema> {}
