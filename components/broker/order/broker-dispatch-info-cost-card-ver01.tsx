@@ -28,21 +28,15 @@ export function FinanceSummaryCard({
   title = "운임 정산",
   date = "5월 15일 기준",
   estimate = [
-    { label: "기본", amount: 5000000 },    
-    { label: "수작업비", amount: 100000 },
+    { label: "기본", amount: 0 },
   ],
   income = [
-    { label: "견적", amount: 5000000 },
-    { label: "수작업비", amount: 100000 },
-    { label: "대기비", amount: 22000 },
-    { label: "경유비", amount: 11000 },
+    { label: "기본", amount: 0 },
   ],
   expense = [
-    { label: "기본", amount: 4000000 },
-    { label: "대기비", amount: 200000 },
-    { label: "경유비", amount: 100000 },
+    { label: "기본", amount: 0 },
   ],
-  balance = 3455994,
+  balance = 0,
   className,
   onAdditionalFeeAdded,
 }: IFinanceSummaryCardProps) {
@@ -95,7 +89,8 @@ export function FinanceSummaryCard({
 
   // 추가금 항목 추가
   const handleAddFee = () => {
-    if (!newFee.amount || isNaN(Number(newFee.amount))) {
+    //if (!newFee.amount || isNaN(Number(newFee.amount))) {
+    if (!newFee.amounts){
       toast({
         title: "금액을 입력해주세요123",
         variant: "default"
@@ -117,6 +112,9 @@ export function FinanceSummaryCard({
     resetNewFee();
     setDialogOpen(false);
   };
+
+  // 추가금 항목 추가  
+  
 
   // 추가금 항목 수정
   const handleUpdateFee = () => {

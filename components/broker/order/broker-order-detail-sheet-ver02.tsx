@@ -355,17 +355,18 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     setStatusPopoverOpen(false);
   };
 
-    // 추가금 다이얼로그 열기  
+  // 추가금 다이얼로그 열기  
   const handleOpenDialog = () => {    
     // 기본 운임으로 설정    
-  setNewFee({      
-    type: "기본",      
-    amount: "",      
-    memo: "",      
-    target: { charge: true, dispatch: true }    
-  });    
-  setSelectedFeeType("기본");    
-  setDialogOpen(true);  };
+    setNewFee({      
+      type: "기본",      
+      amount: "",      
+      memo: "",      
+      target: { charge: true, dispatch: true }    
+    });    
+    setSelectedFeeType("기본");    
+    setDialogOpen(true);  
+  };
 
   // 금액 입력 핸들러
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>, isDialog?: boolean) => {

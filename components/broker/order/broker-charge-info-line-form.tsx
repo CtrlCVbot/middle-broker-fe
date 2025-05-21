@@ -27,12 +27,6 @@ import { cn } from "@/lib/utils";
 import { MoreHorizontal } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-
-
-
-
-
-
 type AdditionalFeeType = "기본" | "대기" | "수작업" | "왕복" | "톨비" | "수수료" | "현장착불" | "기타";
 
 export const ADDITIONAL_FEE_TYPES = [
