@@ -38,39 +38,48 @@ import { FinanceSummaryCard } from "./broker-dispatch-info-cost-card-ver01";
 
 import { toast } from "@/components/ui/use-toast";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
 // Dialog import 추가
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle 
-} from "@/components/ui/dialog";
+import {   
+  Dialog,   
+  DialogContent,   
+  DialogHeader,   
+  DialogTitle } from "@/components/ui/dialog";
 import { BrokerOrderDriverInfoEditForm as VehicleEditForm } from "./broker-dispatch-info-vehicle-form";
-
 import BrokerChargeInfoLineForm, { IAdditionalFee } from "./broker-charge-info-line-form";
+
+// 운임 관련 스토어 및 타입 import 추가
+import { useBrokerChargeStore } from "@/store/broker-charge-store";
+import { IAdditionalFeeInput } from "@/types/broker-charge";
 
 
 // 새로고침 상태 관리를 위한 스토어 import
 import { useBrokerOrderStore } from "@/store/broker-order-store";
 
+
 // 전체적인 상태 관리를 위한 타입 정의
 type EditMode = "cargo" | "driver" | "settlement" | null;
 
-export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalFeeAdded: (fee: IAdditionalFee) => void }) {
-  const { 
-    isSheetOpen, 
-    selectedOrderId, 
-    closeSheet, 
-    orderDetail, 
-    isLoading, 
-    error,
-    fetchOrderDetail,
-     
-  } = useBrokerOrderDetailStore();
+export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalFeeAdded?: (fee: IAdditionalFee) => void }) {
+  const {     
+    isSheetOpen,     
+    selectedOrderId,     
+    closeSheet,     
+    orderDetail,     
+    isLoading,     
+    error,    
+    fetchOrderDetail,       
+  } = useBrokerOrderDetailStore();    
   
-  // 브로커 주문 스토어 추가 - 새로고침을 위한 상태 관리
-  const { setLastRefreshed } = useBrokerOrderStore();
+  // 브로커 주문 스토어 추가 - 새로고침을 위한 상태 관리  
+  const { setLastRefreshed } = useBrokerOrderStore();    
+
+  // 운임 관련 스토어 추가  
+  const {     
+    fetchChargesByOrderId,     
+    addCharge,     
+    isLoading: isChargeLoading,    
+    chargeGroups  
+  } = useBrokerChargeStore();
   
   // 상태 변경 여부를 추적하는 상태 추가
   const [hasStatusChanged, setHasStatusChanged] = useState(false);
@@ -120,12 +129,18 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
   // 주문 데이터 저장
   const orderData = orderDetail;
   
-  // 선택된 ID가 변경될 때마다 데이터 가져오기
-  useEffect(() => {
-    if (selectedOrderId && isSheetOpen) {
-      fetchOrderDetail(selectedOrderId);
-    }
-  }, [selectedOrderId, isSheetOpen, fetchOrderDetail]);
+    // 선택된 ID가 변경될 때마다 데이터 가져오기  
+    useEffect(() => {    
+      if (selectedOrderId && isSheetOpen) {      
+        fetchOrderDetail(selectedOrderId);            
+        // 운임 정보도 함께 조회      
+        fetchChargesByOrderId(selectedOrderId).catch(err => {        
+          console.error('운임 정보 조회 중 오류 발생:', err);        
+          // 오류가 발생해도 UI 흐름에 영향을 주지 않도록 함      
+        });    
+      }  
+    }, [selectedOrderId, isSheetOpen, fetchOrderDetail, fetchChargesByOrderId]);
+
   
   // 시트가 닫힐 때 상태 변경 여부에 따라 목록 새로고침
   useEffect(() => {
@@ -138,21 +153,25 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     }
   }, [isSheetOpen, hasStatusChanged, setLastRefreshed]);
   
-  // orderData가 변경될 때마다 selectedStatus 및 hasDriverInfo 업데이트
-  useEffect(() => {
-    if (orderData) {
-      setSelectedStatus(orderData.status);
-      
-      // 차주 정보가 있는지 확인하여 hasDriverInfo 상태 업데이트
-      const driverExists = Boolean(
-        orderData.vehicle?.driver?.name && 
-        orderData.vehicle.driver.name !== ""
-      );
-      
-      setHasDriverInfo(driverExists);
-      console.log("차주 정보 존재 여부:", driverExists, orderData.vehicle?.driver);
-    }
-  }, [orderData]);
+  // orderData가 변경될 때마다 selectedStatus 및 hasDriverInfo 업데이트  
+  useEffect(() => {    
+    if (orderData) {      
+      setSelectedStatus(orderData.status);            
+      // 차주 정보가 있는지 확인하여 hasDriverInfo 상태 업데이트      
+      const driverExists = Boolean(        
+        orderData.vehicle?.driver?.name &&         
+        orderData.vehicle.driver.name !== ""      
+      );            
+      setHasDriverInfo(driverExists);      
+      console.log("차주 정보 존재 여부:", driverExists, orderData.vehicle?.driver);    
+    }  }, [orderData]);    
+    // 운임 데이터가 변경될 때마다 hasChargeInfo 업데이트  
+    useEffect(() => {    
+      // 운임 데이터가 있는지 확인하여 hasChargeInfo 상태 업데이트    
+      const hasCharge = chargeGroups.length > 0;    
+      setHasChargeInfo(hasCharge);    
+      console.log("운임 정보 존재 여부:", hasCharge, chargeGroups);  
+    }, [chargeGroups]);
 
 
   // 업체 정보 데이터
@@ -335,10 +354,17 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     setStatusPopoverOpen(false);
   };
 
-  // 추가금 다이얼로그 열기
-  const handleOpenDialog = () => {
-    setDialogOpen(true);
-  };
+    // 추가금 다이얼로그 열기  
+  const handleOpenDialog = () => {    
+    // 기본 운임으로 설정    
+  setNewFee({      
+    type: "기본",      
+    amount: "",      
+    memo: "",      
+    target: { charge: true, dispatch: true }    
+  });    
+  setSelectedFeeType("기본");    
+  setDialogOpen(true);  };
 
   // 금액 입력 핸들러
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>, isDialog?: boolean) => {
@@ -357,29 +383,67 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     });
   };
 
-  // 추가금 항목 추가
-  const handleAddFee = () => {
-    if (!newFee.amount || isNaN(Number(newFee.amount))) {
-      toast({
-        title: "금액을 입력해주세요",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    const fee: IAdditionalFee = {
-      id: Date.now().toString(),
-      ...newFee
-    };
-    
-    // 추가된 추가금 처리 (부모 컴포넌트로 전달)
-    if (onAdditionalFeeAdded) {
-      onAdditionalFeeAdded(fee);
-    }
-    
-    // 상태 초기화
-    resetNewFee();
-    setDialogOpen(false);
+    // 추가금 항목 추가  
+  const handleAddFee = async () => {    
+    if (!selectedOrderId) {      
+      toast({        
+        title: "주문 정보를 찾을 수 없습니다",        
+        variant: "destructive"      
+      });      
+      return;    
+    }        
+    if (!newFee.amount || isNaN(Number(newFee.amount))) {      
+      toast({        
+        title: "금액을 입력해주세요",        
+        variant: "destructive"      
+      });      
+      return;    
+    }        
+    const fee: IAdditionalFee = {      
+      id: Date.now().toString(),      
+      ...newFee    
+    };        
+    // 백엔드에 운임 데이터 저장    
+    try {      
+      // 추가 비용을 IAdditionalFeeInput으로 변환      
+      const feeInput: IAdditionalFeeInput = {        
+        type: fee.type,        
+        amount: fee.amount,        
+        memo: fee.memo,        
+        target: { ...fee.target },        
+        amounts: fee.amounts      
+      };            
+      // addCharge 함수 호출하여 데이터 저장      
+      const success = await addCharge(feeInput, selectedOrderId, orderData?.dispatchId);            
+      if (success) {        
+        toast({          
+          title: "운임 정보 추가 완료",          
+          description: `${fee.type} 운임이 성공적으로 추가되었습니다.`,          
+          variant: "default"        
+        });                
+        // hasChargeInfo 상태 업데이트 (useEffect에서 처리됨)                
+        // 추가된 추가금 처리 (부모 컴포넌트로 전달, 필요한 경우)        
+        if (onAdditionalFeeAdded) {          
+          onAdditionalFeeAdded(fee);        
+        }     
+       } else {        
+        toast({          
+          title: "운임 정보 추가 실패",          
+          description: "운임 정보 추가 중 오류가 발생했습니다.",          
+          variant: "destructive"        
+        });      
+      }    
+    } catch (error) {      
+      console.error('운임 추가 중 오류 발생:', error);      
+      toast({        
+        title: "운임 정보 추가 실패",        
+        description: error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.",        
+        variant: "destructive"      
+      });    
+    }        
+    // 상태 초기화    
+    resetNewFee();    
+    setDialogOpen(false);  
   };
 
   // 추가금 항목 수정
