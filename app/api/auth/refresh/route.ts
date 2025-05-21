@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 15, // 15분
+      maxAge: 60 * 60 * 24 * 30, // 30일
     });
 
     // 성공 응답 반환
