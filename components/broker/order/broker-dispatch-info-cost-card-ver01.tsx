@@ -7,6 +7,12 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import BrokerChargeInfoLineForm, { IAdditionalFee } from "./broker-charge-info-line-form";
 import { toast } from "@/components/ui/use-toast";
+import { useChargeForm } from '@/hooks/useChargeForm';
+
+// 운임 관련 스토어 및 타입 import 추가
+import { useBrokerChargeStore } from "@/store/broker-charge-store"
+import { useBrokerOrderStore } from "@/store/broker-order-store";
+import { useBrokerOrderDetailStore } from "@/store/broker-order-detail-store";
 
 interface IFinanceItem {
   label: string;
@@ -42,16 +48,51 @@ export function FinanceSummaryCard({
 }: IFinanceSummaryCardProps) {
   // 상세 항목 표시 여부 상태
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  const {     
+    isSheetOpen,     
+    selectedOrderId,     
+    closeSheet,     
+    orderDetail,     
+    isLoading,     
+    error,    
+    fetchOrderDetail,       
+  } = useBrokerOrderDetailStore();    
   
-  // 추가금 다이얼로그 상태
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingFee, setEditingFee] = useState<IAdditionalFee | null>(null);
-  const [selectedFeeType, setSelectedFeeType] = useState<string | null>(null);
-  const [newFee, setNewFee] = useState<IAdditionalFee>({
-    type: "대기",
-    amount: "",
-    memo: "",
-    target: { charge: true, dispatch: true }
+  // 브로커 주문 스토어 추가 - 새로고침을 위한 상태 관리  
+  const { setLastRefreshed } = useBrokerOrderStore();  
+
+  // 운임 관련 스토어 추가
+  const {
+    fetchChargesByOrderId,
+    addCharge,
+    isLoading: isChargeLoading,
+    chargeGroups,
+    financeSummary
+  } = useBrokerChargeStore();
+  
+  
+  // useChargeForm 커스텀 훅 사용
+  const {
+    dialogOpen,
+    setDialogOpen,
+    editingFee,
+    selectedFeeType,
+    newFee,
+    setNewFee,
+    handleOpenDialog,
+    handleAmountChange,
+    handleToggleTarget,
+    handleAddFee,
+    handleUpdateFee,
+    handleCancelLineEdit
+  } = useChargeForm({
+    saveToBackend: true,
+    addCharge,
+    orderId: selectedOrderId || undefined,
+    dispatchId: orderDetail?.dispatchId,
+    onAdditionalFeeAdded,
+    initialFeeType: "대기"
   });
 
   // 토글 함수
@@ -64,81 +105,6 @@ export function FinanceSummaryCard({
   const totalIncome = income?.reduce((sum, item) => sum + item.amount, 0) || 0;
   const totalExpense = expense?.reduce((sum, item) => sum + item.amount, 0) || 0;
   const totalBalance = totalIncome - totalExpense;
-
-  // 추가금 다이얼로그 열기
-  const handleOpenDialog = () => {
-    setDialogOpen(true);
-  };
-
-  // 금액 입력 핸들러
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>, isDialog?: boolean) => {
-    const value = e.target.value.replace(/[^\d-]/g, '');
-    setNewFee({ ...newFee, amount: value });
-  };
-
-  // 타겟 토글 핸들러 (청구/배차)
-  const handleToggleTarget = (target: 'charge' | 'dispatch') => {
-    setNewFee({
-      ...newFee,
-      target: {
-        ...newFee.target,
-        [target]: !newFee.target[target]
-      }
-    });
-  };
-
-  // 추가금 항목 추가
-  const handleAddFee = () => {
-    //if (!newFee.amount || isNaN(Number(newFee.amount))) {
-    if (!newFee.amounts){
-      toast({
-        title: "금액을 입력해주세요123",
-        variant: "default"
-      });
-      return;
-    }
-    
-    const fee: IAdditionalFee = {
-      id: Date.now().toString(),
-      ...newFee
-    };
-    
-    // 추가된 추가금 처리 (부모 컴포넌트로 전달)
-    if (onAdditionalFeeAdded) {
-      onAdditionalFeeAdded(fee);
-    }
-    
-    // 상태 초기화
-    resetNewFee();
-    setDialogOpen(false);
-  };
-
-  // 추가금 항목 추가  
-  
-
-  // 추가금 항목 수정
-  const handleUpdateFee = () => {
-    // 실제 구현 시 필요하면 추가
-    handleCancelEdit();
-  };
-
-  // 수정 취소
-  const handleCancelEdit = () => {
-    setEditingFee(null);
-    resetNewFee();
-    setDialogOpen(false);
-  };
-
-  // 새 추가금 입력 상태 리셋
-  const resetNewFee = () => {
-    setNewFee({ 
-      type: "대기", 
-      amount: "", 
-      memo: "", 
-      target: { charge: true, dispatch: true } 
-    });
-    setSelectedFeeType(null);
-  };
 
   return (
     <div className={cn("flex flex-col gap-1 bg-gray-800 text-white p-2 rounded-lg", className)}>
@@ -229,7 +195,7 @@ export function FinanceSummaryCard({
         handleToggleTarget={handleToggleTarget}
         handleAddFee={handleAddFee}
         handleUpdateFee={handleUpdateFee}
-        handleCancelEdit={handleCancelEdit}
+        handleCancelEdit={handleCancelLineEdit}
       />
     </div>
   );
