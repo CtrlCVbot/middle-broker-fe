@@ -4,9 +4,9 @@ import { orderDispatches } from "./orderDispatches";
 import { chargeGroups } from "./chargeGroups";
 import { chargeLines } from "./chargeLines";
 import { orderSales } from "./orderSales";
-import { salesChargeItems } from "./orderSales";
+
 import { orderPurchases } from "./orderPurchases";
-import { purchaseChargeItems } from "./orderPurchases";
+
 import { salesBundles } from "./salesBundles";
 import { salesBundleItems } from "./salesBundles";
 import { salesBundleAdjustments } from "./salesBundles";
@@ -73,18 +73,12 @@ export const orderSalesRelations = relations(orderSales, ({ one, many }) => ({
     fields: [orderSales.companyId],
     references: [companies.id],
   }),
-  chargeItems: many(salesChargeItems),
+  
   bundleItems: many(salesBundleItems),
   creditNotes: many(creditNotes),
 }));
 
-// 매출 인보이스 항목(Sales Charge Item) 관계 정의
-export const salesChargeItemsRelations = relations(salesChargeItems, ({ one }) => ({
-  orderSale: one(orderSales, {
-    fields: [salesChargeItems.orderSaleId],
-    references: [orderSales.id],
-  }),
-}));
+
 
 // 매입 전표(Order Purchase) 관계 정의
 export const orderPurchasesRelations = relations(orderPurchases, ({ one, many }) => ({
@@ -96,18 +90,12 @@ export const orderPurchasesRelations = relations(orderPurchases, ({ one, many })
     fields: [orderPurchases.companyId],
     references: [companies.id],
   }),
-  chargeItems: many(purchaseChargeItems),
+  
   bundleItems: many(purchaseBundleItems),
   debitNotes: many(debitNotes),
 }));
 
-// 매입 전표 항목(Purchase Charge Item) 관계 정의
-export const purchaseChargeItemsRelations = relations(purchaseChargeItems, ({ one }) => ({
-  orderPurchase: one(orderPurchases, {
-    fields: [purchaseChargeItems.orderPurchaseId],
-    references: [orderPurchases.id],
-  }),
-}));
+
 
 // 매출 번들(Sales Bundle) 관계 정의
 export const salesBundlesRelations = relations(salesBundles, ({ one, many }) => ({

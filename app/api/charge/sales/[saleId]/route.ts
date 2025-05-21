@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { orderSales, invoiceStatusEnum } from '@/db/schema/orderSales';
-import { salesChargeItems } from '@/db/schema/orderSales';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/config';
@@ -19,7 +18,6 @@ export async function GET(
     const sale = await db.query.orderSales.findFirst({
       where: eq(orderSales.id, saleId),
       with: {
-        chargeItems: true,
         order: true,
         company: true
       }
@@ -93,10 +91,7 @@ export async function PATCH(
     
     // 매출 인보이스 존재 여부 확인
     const existingSale = await db.query.orderSales.findFirst({
-      where: eq(orderSales.id, saleId),
-      with: {
-        chargeItems: true
-      }
+      where: eq(orderSales.id, saleId)
     });
 
     if (!existingSale) {
@@ -138,40 +133,11 @@ export async function PATCH(
         }as any)
         .where(eq(orderSales.id, saleId));
       
-      // 항목 수정
-      if (updateItems && updateItems.length > 0) {
-        for (const item of updateItems) {
-          const { id, ...itemData } = item;
-          await tx.update(salesChargeItems)
-            .set(itemData as any)
-            .where(eq(salesChargeItems.id, id));
-        }
-      }
       
-      // 항목 삭제
-      if (removeItemIds && removeItemIds.length > 0) {
-        for (const itemId of removeItemIds) {
-          await tx.delete(salesChargeItems)
-            .where(eq(salesChargeItems.id, itemId));
-        }
-      }
-      
-      // 항목 추가
-      if (addItems && addItems.length > 0) {
-        for (const item of addItems) {
-          await tx.insert(salesChargeItems).values({
-            ...item,
-            orderSaleId: saleId
-          }as any);
-        }
-      }
       
       // 수정된 인보이스 조회
       return await tx.query.orderSales.findFirst({
-        where: eq(orderSales.id, saleId),
-        with: {
-          chargeItems: true
-        }
+        where: eq(orderSales.id, saleId)
       });
     });
 
@@ -226,10 +192,7 @@ export async function DELETE(
     
     // 트랜잭션으로 인보이스 및 항목 삭제
     await db.transaction(async (tx) => {
-      // 인보이스 항목 삭제
-      await tx.delete(salesChargeItems)
-        .where(eq(salesChargeItems.orderSaleId, saleId));
-      
+            
       // 인보이스 삭제
       await tx.delete(orderSales)
         .where(eq(orderSales.id, saleId));

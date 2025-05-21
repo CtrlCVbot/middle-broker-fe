@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { eq, and, desc, asc, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { orderPurchases, paymentStatusEnum } from '@/db/schema/orderPurchases';
-import { purchaseChargeItems } from '@/db/schema/orderPurchases';
+
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/config';
@@ -164,22 +164,12 @@ export async function POST(request: NextRequest) {
       
       const purchaseId = newPurchase[0].id;
       
-      // 전표 항목 생성
-      const itemPromises = items.map(item => {
-        return tx.insert(purchaseChargeItems).values({
-          ...item,
-          orderPurchaseId: purchaseId
-        }as any);
-      });
       
-      await Promise.all(itemPromises);
       
       // 생성된 전표 항목과 함께 조회
       return await tx.query.orderPurchases.findFirst({
-        where: eq(orderPurchases.id, purchaseId),
-        with: {
-          chargeItems: true
-        }
+        where: eq(orderPurchases.id, purchaseId)
+        
       });
     });
 

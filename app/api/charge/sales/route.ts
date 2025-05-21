@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { eq, and, desc, asc, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { orderSales, invoiceStatusEnum } from '@/db/schema/orderSales';
-import { salesChargeItems } from '@/db/schema/orderSales';
+
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/config';
@@ -151,26 +151,14 @@ export async function POST(request: NextRequest) {
         ...saleData,
         createdBy: userId,
         updatedBy: userId
-      }).returning();
+      }as any).returning();
       
-      const saleId = newSale[0].id;
+      const saleId = newSale[0].id;      
       
-      // 인보이스 항목 생성
-      const itemPromises = items.map(item => {
-        return tx.insert(salesChargeItems).values({
-          ...item,
-          orderSaleId: saleId
-        });
-      });
-      
-      await Promise.all(itemPromises);
       
       // 생성된 인보이스 항목과 함께 조회
       return await tx.query.orderSales.findFirst({
-        where: eq(orderSales.id, saleId),
-        with: {
-          chargeItems: true
-        }
+        where: eq(orderSales.id, saleId)
       });
     });
 

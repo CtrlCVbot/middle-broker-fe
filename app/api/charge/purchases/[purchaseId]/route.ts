@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { orderPurchases, paymentStatusEnum } from '@/db/schema/orderPurchases';
-import { purchaseChargeItems } from '@/db/schema/orderPurchases';
+
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/config';
@@ -19,7 +19,7 @@ export async function GET(
     const purchase = await db.query.orderPurchases.findFirst({
       where: eq(orderPurchases.id, purchaseId),
       with: {
-        chargeItems: true,
+        
         order: true,
         company: true
       }
@@ -95,10 +95,7 @@ export async function PATCH(
     
     // 매입 전표 존재 여부 확인
     const existingPurchase = await db.query.orderPurchases.findFirst({
-      where: eq(orderPurchases.id, purchaseId),
-      with: {
-        chargeItems: true
-      }
+      where: eq(orderPurchases.id, purchaseId)
     });
 
     if (!existingPurchase) {
@@ -140,40 +137,11 @@ export async function PATCH(
         }as any)
         .where(eq(orderPurchases.id, purchaseId));
       
-      // 항목 수정
-      if (updateItems && updateItems.length > 0) {
-        for (const item of updateItems) {
-          const { id, ...itemData } = item;
-          await tx.update(purchaseChargeItems)
-            .set(itemData as any)
-            .where(eq(purchaseChargeItems.id, id));
-        }
-      }
       
-      // 항목 삭제
-      if (removeItemIds && removeItemIds.length > 0) {
-        for (const itemId of removeItemIds) {
-          await tx.delete(purchaseChargeItems)
-            .where(eq(purchaseChargeItems.id, itemId));
-        }
-      }
-      
-      // 항목 추가
-      if (addItems && addItems.length > 0) {
-        for (const item of addItems) {
-          await tx.insert(purchaseChargeItems).values({
-            ...item,
-            orderPurchaseId: purchaseId
-          }as any);
-        }
-      }
       
       // 수정된 전표 조회
       return await tx.query.orderPurchases.findFirst({
-        where: eq(orderPurchases.id, purchaseId),
-        with: {
-          chargeItems: true
-        }
+        where: eq(orderPurchases.id, purchaseId)
       });
     });
 
@@ -228,10 +196,7 @@ export async function DELETE(
     
     // 트랜잭션으로 전표 및 항목 삭제
     await db.transaction(async (tx) => {
-      // 전표 항목 삭제
-      await tx.delete(purchaseChargeItems)
-        .where(eq(purchaseChargeItems.orderPurchaseId, purchaseId));
-      
+            
       // 전표 삭제
       await tx.delete(orderPurchases)
         .where(eq(orderPurchases.id, purchaseId));
