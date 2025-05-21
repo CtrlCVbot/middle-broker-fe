@@ -91,15 +91,22 @@ const CreateChargeLineSchema = z.object({
 // 운임 라인 생성
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    // const session = await getServerSession(authOptions);
+    // if (!session?.user) {
+    //   return NextResponse.json(
+    //     { error: '인증되지 않은 요청입니다.' },
+    //     { status: 401 }
+    //   );
+    // }
+
+    //const userId = session.user.id;
+    const userId = request.headers.get('x-user-id') || '';
+    if (!userId) {
       return NextResponse.json(
         { error: '인증되지 않은 요청입니다.' },
         { status: 401 }
       );
     }
-
-    const userId = session.user.id;
     const body = await request.json();
     
     // 요청 데이터 검증

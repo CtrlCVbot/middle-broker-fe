@@ -391,10 +391,12 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
         variant: "destructive"      
       });      
       return;    
-    }        
-    if (!newFee.amount || isNaN(Number(newFee.amount))) {      
+    }    
+    console.log("newFee", newFee);    
+    console.log("newFee.amount", !newFee.amounts);    
+    if (!newFee.amounts){ //|| isNaN(Number(newFee.amount))) {      
       toast({        
-        title: "금액을 입력해주세요",        
+        title: "금액을 입력해주세요!",        
         variant: "destructive"      
       });      
       return;    

@@ -242,7 +242,7 @@ export async function GET(request: NextRequest) {
         companySnapshot: item.companySnapshot || undefined,
         createdAt: item.createdAt?.toISOString() || '',
         updatedAt: item.updatedAt?.toISOString() || '',
-      };
+      } as any;
       
       // 배차 정보 (없을 수도 있음)
       const dispatchInfo = item.dispatchId ? {

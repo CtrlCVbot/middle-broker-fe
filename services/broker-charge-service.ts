@@ -71,6 +71,7 @@ export async function getChargeLinesByGroupId(groupId: string): Promise<IChargeL
  */
 export async function createChargeGroup(data: CreateChargeGroupInput): Promise<IChargeGroup> {
   try {
+    console.log("운임 그룹 생성 요청 data", data);
     const response = await fetch('/api/charge', {
       method: 'POST',
       headers: {
@@ -128,9 +129,12 @@ export async function createChargeFromAdditionalFee(
 ): Promise<IChargeGroupWithLines> {
   try {
     // 1. 운임 그룹 생성
+    console.log("운임 그룹 생성 fee", fee);
     const groupInput = mapAdditionalFeeToChargeGroup(fee, orderId, dispatchId);
+    console.log("groupInput", groupInput);
     const createdGroup = await createChargeGroup(groupInput);
-    
+    console.log("createdGroup", createdGroup);
+
     const chargeLines: IChargeLine[] = [];
     
     // 2. 청구(sales) 라인 생성 (필요한 경우)

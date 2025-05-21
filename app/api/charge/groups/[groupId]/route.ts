@@ -55,15 +55,22 @@ export async function PATCH(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    // if (!session?.user) {
+    //   return NextResponse.json(
+    //     { error: '인증되지 않은 요청입니다.' },
+    //     { status: 401 }
+    //   );
+    // }
+
+    const { groupId } = params;
+    //const userId = session.user.id;
+    const userId = request.headers.get('x-user-id') || '';
+    if (!userId) {
       return NextResponse.json(
         { error: '인증되지 않은 요청입니다.' },
         { status: 401 }
       );
     }
-
-    const { groupId } = params;
-    const userId = session.user.id;
     const body = await request.json();
     
     // 운임 그룹 존재 여부 확인
@@ -126,14 +133,20 @@ export async function DELETE(
   { params }: { params: { groupId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    // const session = await getServerSession(authOptions);
+    // if (!session?.user) {
+    //   return NextResponse.json(
+    //     { error: '인증되지 않은 요청입니다.' },
+    //     { status: 401 }
+    //   );
+    // }
+    const userId = request.headers.get('x-user-id') || '';
+    if (!userId) {
       return NextResponse.json(
         { error: '인증되지 않은 요청입니다.' },
         { status: 401 }
       );
     }
-
     const { groupId } = params;
     
     // 운임 그룹 존재 여부 확인

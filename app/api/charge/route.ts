@@ -98,18 +98,26 @@ const CreateChargeGroupSchema = z.object({
 
 // 운임 그룹 생성
 export async function POST(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+  try {    
+    console.log("운임 그룹 생성 요청 POST 시작");
+    // const session = await getServerSession(authOptions);
+    // if (!session?.user) {
+    //   return NextResponse.json(
+    //     { error: '인증되지 않은 요청입니다.' },
+    //     { status: 401 }
+    //   );
+    // }
+    //const userId = session.user.id;
+    const userId = request.headers.get('x-user-id') || '';
+    if (!userId) {
       return NextResponse.json(
         { error: '인증되지 않은 요청입니다.' },
         { status: 401 }
       );
     }
-
-    const userId = session.user.id;
+    console.log("userId", userId);
     const body = await request.json();
-    
+    console.log("운임 그룹 생성 요청 POST 데이터", body);
     // 요청 데이터 검증
     const validationResult = CreateChargeGroupSchema.safeParse(body);
     if (!validationResult.success) {
@@ -120,14 +128,15 @@ export async function POST(request: NextRequest) {
     }
 
     const data = validationResult.data;
-    
+    console.log("운임 그룹 생성 요청 POST 데이터 검증 통과");
+
     // 운임 그룹 생성
     const newChargeGroup = await db.insert(chargeGroups).values({
       ...data,
       createdBy: userId,
       updatedBy: userId,
     }).returning();
-
+    console.log("운임 그룹 생성 요청 POST 데이터 검증 통과");
     return NextResponse.json(
       { message: '운임 그룹이 생성되었습니다.', data: newChargeGroup[0] },
       { status: 201 }

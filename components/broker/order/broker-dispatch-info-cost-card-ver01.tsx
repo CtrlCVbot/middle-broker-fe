@@ -97,8 +97,8 @@ export function FinanceSummaryCard({
   const handleAddFee = () => {
     if (!newFee.amount || isNaN(Number(newFee.amount))) {
       toast({
-        title: "금액을 입력해주세요",
-        variant: "destructive"
+        title: "금액을 입력해주세요123",
+        variant: "default"
       });
       return;
     }
