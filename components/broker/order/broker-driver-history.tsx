@@ -46,9 +46,9 @@ export function DriverHistory({
   const driverWarnings = warnings.length > 0 ? warnings : defaultWarnings;
 
   return (
-    <div className="bg-white rounded-b-lg">
+    <div className="rounded-b-lg p-2">
       <Tabs defaultValue="history" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-2">
+        <TabsList className="grid grid-cols-2 bg-gray-800">
           <TabsTrigger value="history" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             이력

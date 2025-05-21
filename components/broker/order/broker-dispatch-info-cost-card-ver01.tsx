@@ -132,7 +132,7 @@ export function FinanceSummaryCard({
       {/* 청구 */}
       <div className="flex justify-between items-center hover:cursor-pointer hover:bg-gray-700 pt-1 pb-1 px-4 rounded-md" 
           onClick={handleOpenDialog}>
-        <p className="text-md">청구({income.length-1})</p>
+        <p className="text-md">청구{income.length-1 > 0 ? "(" + (income.length-1) + ")" : ""}</p>
         <div className="flex items-center">
           <span className="text-xl font-bold mr-1">{new Intl.NumberFormat('ko-KR').format(totalIncome)}원</span>
           <ChevronRight className="h-5 w-5 text-gray-400" />
@@ -154,7 +154,7 @@ export function FinanceSummaryCard({
       {/* 배차 */}
       <div className="flex justify-between items-center hover:cursor-pointer hover:bg-gray-700 pt-1 pb-1 px-4 rounded-md" 
           onClick={handleOpenDialog}>
-        <p className="text-md">배차({expense.length-1})</p>
+        <p className="text-md">배차{expense.length-1 > 0 ? "(" + (expense.length-1) + ")" : ""}</p>
         <div className="flex items-center">
           <span className="text-xl font-bold mr-1">{new Intl.NumberFormat('ko-KR').format(totalExpense)}원</span>
           <ChevronRight className="h-5 w-5 text-gray-400" />

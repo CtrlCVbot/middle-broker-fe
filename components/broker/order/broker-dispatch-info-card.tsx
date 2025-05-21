@@ -21,6 +21,7 @@ import {
 import { BrokerOrderStatusType } from "@/types/broker-order";
 import { formatCurrency } from "@/lib/utils";
 import { VehicleCard } from "./broker-dispatch-info-vehicle-card";
+import { VehicleCard as VehicleCardVer01 } from "./broker-dispatch-info-vehicle-card-ver01";
 import { toast } from "@/components/ui/use-toast";
 
 interface VehicleInfo {
@@ -167,9 +168,12 @@ export function BrokerOrderDriverInfoCard({
       {/* 차주 및 차량 정보 */}          
       <div className="space-y-2 rounded-lg border border-gray-100 shadow-sm">
             {/* 차주 정보 */}
-            <VehicleCard
+            <VehicleCardVer01
               dispatchId={dispatchId}
-              vehicleInfo={dispatchVehicleInfo.vehicleInfo}
+              vehicleInfo={{
+                id: dispatchVehicleInfo.id, // id 필드 추가
+                ...dispatchVehicleInfo.vehicleInfo
+              }}
               driverInfo={dispatchVehicleInfo.driverInfo}
               onMessage={onSendMessage}
               onSaveDriverInfo={handleSaveDriverInfo}
