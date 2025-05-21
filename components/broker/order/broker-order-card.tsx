@@ -247,13 +247,13 @@ export function BrokerOrderCard({
                       <div className="flex items-center justify-between">
                         <div className="font-medium">상차지</div>
                         <div className="text-xs text-muted-foreground">
-                          {order.pickupLocation || order.pickupAddress.split(' ').slice(0, 2).join(' ')}
+                          {order.pickupAddress || order.pickupAddress.split(' ').slice(0, 2).join(' ')}
                         </div>
                       </div>
                       <div className="flex items-center justify-between mt-1">
                         <div className="font-medium">하차지</div>
                         <div className="text-xs text-muted-foreground">
-                          {order.deliveryLocation || order.deliveryAddress.split(' ').slice(0, 2).join(' ')}
+                          {order.deliveryAddress || order.deliveryAddress.split(' ').slice(0, 2).join(' ')}
                         </div>
                       </div>
                     </div>
@@ -266,7 +266,7 @@ export function BrokerOrderCard({
                       <div className="flex items-center justify-between">
                         <div className="font-medium">차량</div>
                         <div className="text-xs text-muted-foreground">
-                          {order.assignedVehicleType || order.vehicleType} {order.assignedVehicleWeight || order.vehicleWeight}
+                          {order.vehicleType || order.assignedVehicleType} | {order.vehicleWeight}
                         </div>
                       </div>
                       <div className="flex items-center justify-between mt-1">

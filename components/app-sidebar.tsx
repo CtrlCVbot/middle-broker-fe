@@ -181,6 +181,21 @@ export const data = {
       ],
     },
     {
+      title: "매출 정산-ver01",
+      url: "/broker/sale",
+      icon: DollarSign,
+      items: [
+        {
+          title: "정산 목록",
+          url: "/broker/sale",
+        },
+        {
+          title: "정산 대기 화물",
+          url: "/broker/sale/waiting",
+        }
+      ],
+    },
+    {
       title: "매입 정산",
       url: "/broker/expenditure",
       icon: DollarSign,

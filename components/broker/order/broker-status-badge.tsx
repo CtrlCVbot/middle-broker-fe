@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { BrokerOrderStatusType, BROKER_ORDER_STATUS, getBrokerProgressPercentage } from "@/types/broker-order";
+import { SquareCheckBig } from "lucide-react";
 
 // 중개 화물 상태에 따른 색상 클래스 반환 함수
 export const getBrokerStatusColor = (status: BrokerOrderStatusType): string => {
@@ -57,6 +58,7 @@ export function BrokerStatusBadge({
           className
         )}
       >
+        
         {status}
       </Badge>
       
