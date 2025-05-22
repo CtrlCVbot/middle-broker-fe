@@ -22,8 +22,8 @@ export const updateBrokerOrder = (
         const existingOrder = { ...mockBrokerOrderDetails[orderId] };
 
         // 수정 가능한 필드인지 확인
-        if (existingOrder.status === "운송마감") {
-          throw new Error("운송마감 상태의 중개 화물은 수정할 수 없습니다.");
+        if (existingOrder.status === "운송완료") {
+          throw new Error("운송완료 상태의 중개 화물은 수정할 수 없습니다.");
         }
 
         // 상태에 따라 수정 가능한 필드 제한

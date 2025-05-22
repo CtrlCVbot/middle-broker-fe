@@ -43,7 +43,7 @@ export const BROKER_ORDER_STATUS = [
   '상차완료', 
   '운송중', 
   '하차완료', 
-  '운송마감'
+  '운송완료'
 ] as const;
 
 // 콜센터 목록

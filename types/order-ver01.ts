@@ -65,7 +65,7 @@ export type OrderStatusType =
   | '상차완료' 
   | '운송중' 
   | '하차완료' 
-  | '운송마감';
+  | '운송완료';
 
 // 화물 상태 배열 - 상태 순서대로 정의
 export const ORDER_STATUS: OrderStatusType[] = [
@@ -76,7 +76,7 @@ export const ORDER_STATUS: OrderStatusType[] = [
   '상차완료', 
   '운송중', 
   '하차완료', 
-  '운송마감'
+  '운송완료'
 ];
 
 // 운송 옵션

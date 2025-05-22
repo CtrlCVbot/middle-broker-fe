@@ -98,8 +98,8 @@ export function BrokerOrderSettlementInfoEditForm({
   onSave, 
   onCancel 
 }: BrokerOrderSettlementInfoEditFormProps) {
-  // 운송마감 상태인지 확인
-  const isCompleted = status === "운송마감";
+  // 운송완료 상태인지 확인
+  const isCompleted = status === "운송완료";
   
   // 추가금 항목 관리 상태
   const [additionalFees, setAdditionalFees] = useState<IAdditionalFee[]>(
@@ -624,11 +624,11 @@ export function BrokerOrderSettlementInfoEditForm({
             </div>
           </div>
           
-          {/* 운송마감 시 경고 */}
+          {/* 운송완료 시 경고 */}
           {isCompleted && (
             <div className="flex gap-2 items-center p-3 bg-yellow-50 border border-yellow-200 rounded-md text-sm text-yellow-700">
               <AlertTriangle className="h-4 w-4" />
-              <span>운송마감 상태에서는 운임 정보를 수정할 수 없습니다.</span>
+              <span>운송완료 상태에서는 운임 정보를 수정할 수 없습니다.</span>
             </div>
           )}
           

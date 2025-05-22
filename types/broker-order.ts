@@ -11,7 +11,6 @@ export type BrokerOrderStatusType =
   | "운송중"
   | "상차완료"
   | "하차완료"
-  | "운송마감"
   | "운송완료"
   | "취소";
 
@@ -22,8 +21,7 @@ export const BROKER_ORDER_STATUS: BrokerOrderStatusType[] = [
   "배차완료",
   "운송중",
   "상차완료",
-  "하차완료",
-  "운송마감",
+  "하차완료",  
   "운송완료",
   "취소"
 ];

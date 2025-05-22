@@ -134,7 +134,7 @@ export const getStatusStats = (): IStatusStat[] => [
   { status: '상차완료', count: 23, percentage: 15 },
   { status: '운송중', count: 10, percentage: 7 },
   { status: '하차완료', count: 5, percentage: 3 },
-  { status: '운송마감', count: 4, percentage: 3 }
+  { status: '운송완료', count: 4, percentage: 3 }
 ];
 
 // 최근 운송 상태 변경 로그 가져오기
@@ -180,7 +180,7 @@ export const getStatusLogs = (): IStatusLog[] => [
     orderNumber: '202103150127',
     timestamp: '2023-03-11T07:15:45',
     previousStatus: '하차완료',
-    currentStatus: '운송마감',
+    currentStatus: '운송완료',
     description: '운송비 정산 완료',
     operator: '박관리'
   },
@@ -372,7 +372,7 @@ export const getRecentOrders = (): IRecentOrder[] => [
   {
     id: '202103150128',
     orderNumber: '202103150128',
-    status: '운송마감',
+    status: '운송완료',
     departure: {
       address: '광주광역시 북구'
     },
@@ -448,7 +448,7 @@ export const getRecentOrders = (): IRecentOrder[] => [
 
 // 실시간 로그 생성 함수
 export const generateNewLog = (): IStatusLog => {
-  const statuses: OrderStatusType[] = ['배차대기', '배차완료', '상차완료', '운송중', '하차완료', '운송마감'];
+  const statuses: OrderStatusType[] = ['배차대기', '배차완료', '상차완료', '운송중', '하차완료', '운송완료'];
   const operators = ['김성환', '이재민', '박관리', '정등록'];
   const descriptions = [
     '화물 등록 완료',

@@ -28,7 +28,7 @@ export const ORDER_STATUS = [
   "상차완료",
   "운송중",
   "하차완료",
-  "운송마감"
+  "운송완료"
 ];
 
 // 차량 종류 목록
@@ -160,7 +160,7 @@ export const mockOrders: IOrder[] = [
   },
   {
     id: "202103150128",
-    status: "운송마감",
+    status: "운송완료",
     departureDateTime: "2025-03-14 14:00",
     departureCity: "경북",
     departureLocation: "경북 포항시 남구 오천읍",
@@ -265,7 +265,7 @@ export const mockOrders: IOrder[] = [
   },
   {
     id: "202103150133",
-    status: "운송마감",
+    status: "운송완료",
     departureDateTime: "2025-03-14 08:30",
     departureCity: "서울",
     departureLocation: "서울특별시 서초구 서초동",

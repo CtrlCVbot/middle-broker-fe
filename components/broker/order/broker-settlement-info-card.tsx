@@ -82,7 +82,7 @@ export function BrokerOrderSettlementInfoCard({ fee, settlement, status }: Broke
   const additionalFees = fee?.additionalFees || [];
   
   const difference = calculateDifference();
-  const isCompleted = status === "운송마감";
+  const isCompleted = status === "운송완료";
   
   // 금액 표시 헬퍼 함수
   const displayAmount = (amount?: number | string) => {

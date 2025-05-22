@@ -449,11 +449,11 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
   },
   "BRO-001006": {
     orderNumber: "BRO-001006",
-    status: "운송마감",
+    status: "운송완료",
     amount: "950,000",
     fee: "95,000",
     registeredAt: "2023-03-20 15:10",
-    statusProgress: "운송마감",
+    statusProgress: "운송완료",
     shipper: {
       name: "부산화주",
       manager: {
@@ -536,7 +536,7 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
         remark: "하차 완료"
       },
       {
-        status: "운송마감",
+        status: "운송완료",
         time: "18:30",
         date: "2023-03-25",
         handler: "김택배",

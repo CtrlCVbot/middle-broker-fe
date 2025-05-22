@@ -51,9 +51,9 @@ export const getStatusBadge = (status: string) => {
       return <Badge className="text-md bg-blue-500">운송중</Badge>;
     case "하차완료":
       return <Badge className="text-md bg-blue-800">하차완료</Badge>;
-    case "운송마감":
     case "운송완료":
-      return <Badge className="text-md bg-purple-500">운송마감</Badge>;
+    case "운송완료":
+      return <Badge className="text-md bg-purple-500">운송완료</Badge>;
     default:
       return <Badge variant="outline">{status}</Badge>;
   }
@@ -74,7 +74,7 @@ export const getStatusColor = (status: string) => {
       return "blue";
     case "하차완료":
       return "blue";
-    case "운송마감":
+    case "운송완료":
     case "운송완료":
       return "purple";
     default:

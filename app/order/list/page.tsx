@@ -55,7 +55,7 @@ const mapFilterToApiParams = (filter: IOrderFilter) => {
       '상차완료': '상차완료',
       '운송중': '운송중',
       '하차완료': '하차완료',
-      '운송마감': '운송완료'
+      '운송완료': '운송완료'
     };
     flowStatus = statusMap[filter.status] as OrderFlowStatus;
   }

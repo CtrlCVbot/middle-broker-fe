@@ -137,7 +137,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
   
   // 가능한 배차 상태 목록
   const availableStatuses = [
-    "배차대기", "배차진행중", "배차완료", "상차완료", "하차완료", "운송중", "운송마감"
+    "배차대기", "배차진행중", "배차완료", "상차완료", "하차완료", "운송중", "운송완료"
   ];
 
   // 주문 데이터 저장

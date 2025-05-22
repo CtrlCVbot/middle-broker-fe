@@ -82,7 +82,7 @@ export function BrokerOrderDetailSheet() {
   
   // 가능한 배차 상태 목록
   const availableStatuses = [
-    "배차대기", "배차진행중", "배차완료", "상차완료", "하차완료", "운송중", "운송마감"
+    "배차대기", "배차진행중", "배차완료", "상차완료", "하차완료", "운송중", "운송완료"
   ];
   
   // TanStack Query를 사용하여 화물 상세 정보 조회
@@ -140,7 +140,7 @@ export function BrokerOrderDetailSheet() {
   const isAfterAssignment = orderData?.statusProgress !== '배차대기' && orderData?.vehicle?.driver;
   
   // 배차완료 여부 확인
-  const isAssigned = orderData?.status === "배차완료" || orderData?.status === "운송중" || orderData?.status === "상차완료" || orderData?.status === "하차완료" || orderData?.status === "운송마감";
+  const isAssigned = orderData?.status === "배차완료" || orderData?.status === "운송중" || orderData?.status === "상차완료" || orderData?.status === "하차완료" || orderData?.status === "운송완료";
   
   // 편집 모드 설정 핸들러
   const handleSetEditMode = (mode: EditMode) => {
@@ -338,7 +338,7 @@ export function BrokerOrderDetailSheet() {
                         className="flex items-center gap-2 border-dashed"
                       >
                         <Badge 
-                          variant={orderData.status === "운송마감" ? "default" : "secondary"}
+                          variant={orderData.status === "운송완료" ? "default" : "secondary"}
                           className="font-semibold"
                         >
                           {orderData.status}

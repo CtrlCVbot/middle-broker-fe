@@ -18,7 +18,7 @@ export const getBrokerStatusColor = (status: BrokerOrderStatusType): string => {
       return "bg-amber-100 text-amber-800 hover:bg-amber-200";
     case "하차완료":
       return "bg-green-100 text-green-800 hover:bg-green-200";
-    case "운송마감":
+    case "운송완료":
       return "bg-purple-100 text-purple-800 hover:bg-purple-200";
     default:
       return "bg-gray-100 text-gray-800 hover:bg-gray-200";
