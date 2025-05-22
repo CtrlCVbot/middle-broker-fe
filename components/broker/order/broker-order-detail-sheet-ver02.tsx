@@ -57,6 +57,7 @@ import { useBrokerOrderStore } from "@/store/broker-order-store";
 
 // 추가금 관련 중복 로직 제거하고 useChargeForm 훅 import 추가
 import { useChargeForm } from '@/hooks/useChargeForm';
+import { Separator } from "@/components/ui/separator";
 
 // 전체적인 상태 관리를 위한 타입 정의
 type EditMode = "cargo" | "driver" | "settlement" | null;
@@ -590,6 +591,18 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                         </div>
                       </>
                       )}
+                    </div>
+
+                    <Separator className="bg-gray-700 my-5" />
+
+                    <div className="flex justify-between items-center pb-2 px-4">
+                      <p className="text-xl"></p>
+                      <Button variant="default" size="sm" 
+                        className={cn("bg-purple-700 hover:bg-purple-500", "cursor-pointer")}
+                        //onClick={handleCreateSales}
+                      >
+                        운송 마감하기
+                      </Button>
                     </div>
                   </CardContent>
                 </div>

@@ -5,7 +5,7 @@ import { orderDispatches } from '@/db/schema/orderDispatches';
 import { chargeLines } from '@/db/schema/chargeLines';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/config';
-import { ISalesData } from '@/types/broker-dispatch';
+import { ISalesData } from '@/types/broker-sale';
 import { chargeGroups } from '@/db/schema/chargeGroups';
 
 /**
