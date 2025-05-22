@@ -6,12 +6,8 @@ import { users } from '@/db/schema/users';
 import { z } from 'zod';
 import { logOrderChange } from '@/utils/order-change-logger';
 import { IUserSnapshot } from '@/types/order-ver01';
+import { validate as isValidUUID, version as getUUIDVersion } from 'uuid';
 
-// UUID 검증을 위한 유틸리티 함수
-function isValidUUID(uuid: string): boolean {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(uuid);
-}
 
 // 화물 수정 요청 스키마
 const UpdateOrderSchema = z.object({
@@ -70,7 +66,10 @@ export async function GET(
   { params }: { params: { orderId: string } }
 ) {
   try {
-    const { orderId } = params;
+    console.log("GET 호출됨");
+    console.log("params:", params);
+    const { orderId } = await params;
+    console.log("orderId:", orderId);
 
     // UUID 형식 검증
     if (!isValidUUID(orderId)) {

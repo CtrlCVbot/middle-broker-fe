@@ -62,6 +62,8 @@ import { Separator } from "@/components/ui/separator";
 // 전체적인 상태 관리를 위한 타입 정의
 type EditMode = "cargo" | "driver" | "settlement" | null;
 
+import { useBrokerSettlementStore } from "@/store/broker-settlement-store";
+
 export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalFeeAdded?: (fee: IAdditionalFee) => void }) {
   const {     
     isSheetOpen,     
@@ -133,8 +135,14 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
   // 운임 정보 저장 성공 여부 추적을 위한 상태 추가
   const [hasChargeInfo, setHasChargeInfo] = useState(false);
 
-  
-  
+  // 매출 정산 관련 스토어 추가
+  const {
+    isLoading: isSettlementLoading,
+    error: settlementError,
+    isSaleClosed,
+    createSale,
+    checkOrderClosed
+  } = useBrokerSettlementStore();
   
   // 가능한 배차 상태 목록
   const availableStatuses = [
@@ -375,6 +383,58 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     setEditMode(null);
   };
 
+  // 운송 마감하기 버튼 핸들러 추가
+  const handleCreateSales = async () => {
+    if (!orderData || !selectedOrderId || !orderData.dispatchId) {
+      toast({
+        title: "오류",
+        description: "주문 정보가 없습니다.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // 매출 정산 생성 전 확인 다이얼로그 (실제 구현에서는 Dialog 컴포넌트 사용 가능)
+    if (!window.confirm("매출 정산을 생성하시겠습니까? 이 작업은 되돌릴 수 없으며, 이후 주문 정보와 운임 정보를 수정할 수 없습니다.")) {
+      return;
+    }
+    
+    try {
+      const result = await createSale(selectedOrderId, orderData.dispatchId);
+      
+      if (result) {
+        toast({
+          title: "매출 정산 생성 완료",
+          description: "매출 정산이 성공적으로 생성되었습니다.",
+          variant: "default"
+        });
+        
+        // 상태 변경 플래그 설정 (목록 새로고침을 위해)
+        setHasStatusChanged(true);
+        
+        // 주문 정보 다시 조회
+        fetchOrderDetail(selectedOrderId);
+      }
+    } catch (error) {
+      console.error("매출 정산 생성 오류:", error);
+      
+      toast({
+        title: "매출 정산 생성 실패",
+        description: error instanceof Error ? error.message : "매출 정산 생성 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  // 주문이 이미 마감되었는지 확인
+  useEffect(() => {
+    if (selectedOrderId && isSheetOpen) {
+      checkOrderClosed(selectedOrderId).catch(err => {
+        console.error('매출 정산 상태 확인 중 오류 발생:', err);
+      });
+    }
+  }, [selectedOrderId, isSheetOpen, checkOrderClosed]);
+
   return (
     <Sheet 
       open={isSheetOpen} 
@@ -593,16 +653,26 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                       )}
                     </div>
 
-                    <Separator className="bg-gray-700 my-5" />
+                    
 
                     <div className="flex justify-between items-center pb-2 px-4">
                       <p className="text-xl"></p>
-                      <Button variant="default" size="sm" 
-                        className={cn("bg-purple-700 hover:bg-purple-500", "cursor-pointer")}
-                        //onClick={handleCreateSales}
-                      >
-                        운송 마감하기
-                      </Button>
+                      {orderData?.status === "운송완료" && !isSaleClosed && (
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          className={cn("bg-purple-700 hover:bg-purple-500", "cursor-pointer")}
+                          onClick={handleCreateSales}
+                          disabled={isSettlementLoading}
+                        >
+                          {isSettlementLoading ? "처리 중..." : "운송 마감하기"}
+                        </Button>
+                      )}
+                      {isSaleClosed && (
+                        <Badge variant="outline" className="bg-gray-200">
+                          매출 정산 마감됨
+                        </Badge>
+                      )}
                     </div>
                   </CardContent>
                 </div>

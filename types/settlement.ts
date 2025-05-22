@@ -95,4 +95,53 @@ export const isStatusAtLeast = (currentStatus: SettlementStatus, targetStatus: S
   if (currentIndex === -1 || targetIndex === -1) return false;
   
   return currentIndex >= targetIndex;
-}; 
+};
+
+// 매출 정산 항목 인터페이스
+export interface IOrderSaleItem {
+  id?: string;
+  saleId?: string;
+  description: string;
+  amount: number;
+  taxRate?: number;
+  taxAmount?: number;
+  originalChargeLineId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// 매출 정산 인터페이스
+export interface IOrderSale {
+  id?: string;
+  orderId: string;
+  companyId: string;
+  invoiceNumber?: string;
+  status: 'draft' | 'issued' | 'paid' | 'canceled' | 'void';
+  issueDate?: string;
+  dueDate?: string;
+  subtotalAmount: number;
+  taxAmount?: number;
+  totalAmount: number;
+  financialSnapshot?: any;
+  memo?: string;
+  items?: IOrderSaleItem[];
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+}
+
+// 매출 정산 생성 결과 인터페이스
+export interface ICreateSaleResult {
+  success: boolean;
+  data?: IOrderSale;
+  error?: string;
+}
+
+// 매출 정산 상태 인터페이스
+export interface IBrokerSettlementState {
+  isLoading: boolean;
+  error: string | null;
+  currentSale: IOrderSale | null;
+  isSaleClosed: boolean;
+} 
