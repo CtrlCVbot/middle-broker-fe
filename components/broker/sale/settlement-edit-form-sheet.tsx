@@ -38,7 +38,8 @@ import {
   Search,
   User,
   Phone,
-  Mail
+  Mail,
+  Building
 } from "lucide-react";
 import { 
   Popover,
@@ -692,29 +693,61 @@ export function SettlementEditFormSheet() {
                             </div>
                           )}
                         </div>
+
+                        {/* 회사 정보 표시 영역 끝 */}
+                        {/* 회사명 / 담당자 */}
+                        <div className={cn("grid gap-4", "grid-cols-1 md:grid-cols-2")}>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <Building className="h-5 w-5 mb-2" />
+                              <div className="text-sm font-medium mb-2">회사명</div>
+                            </div>
+                            <FormField
+                              control={form.control}
+                              name="shipperName"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input 
+                                      placeholder="회사명을 입력해주세요." 
+                                      className="h-9" 
+                                      {...field} 
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <User className="h-5 w-5 mb-2" />
+                              <div className="text-sm font-medium mb-2">사업자번호</div>
+                            </div>
+                            <FormField
+                              control={form.control}
+                              name="businessNumber"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input 
+                                      placeholder="000-00-00000" 
+                                      className="h-9" 
+                                      {...field} 
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
+
+                        {/* 회사명 / 담당자 */}
                       </div>
                     </div>
-                    
-                    {/* 사업자번호 입력 필드 */}
-                    <div className="mb-4">
-                      <div className="text-sm font-medium mb-2">사업자등록번호 :</div>
-                      <FormField
-                        control={form.control}
-                        name="businessNumber"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input 
-                                placeholder="000-00-00000" 
-                                className="h-9" 
-                                {...field} 
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+
                   </>
                 )}
               </div>
