@@ -149,7 +149,7 @@ export function WaitingTable({
                   </TableCell>
                   <TableCell>
                     {/* <BrokerStatusBadge status={order.status} size="sm" />                     */}
-                    {order.status === "운송완료" || order.status === "운송완료" ? <SquareCheckBig className="h-4 w-4 mr-1 text-purple-700" /> : <Ban className="h-4 w-4 mr-1 text-red-700" />}
+                    {order.status === "운송완료" ? <SquareCheckBig className="h-4 w-4 mr-1 text-purple-700" /> : <Ban className="h-4 w-4 mr-1 text-red-700" />}
                   </TableCell>
                   <TableCell className="font-medium">
                     {getSchedule(order.departureDateTime, order.departureDateTime, order.arrivalDateTime, order.departureDateTime)}

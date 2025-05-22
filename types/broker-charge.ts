@@ -107,4 +107,77 @@ export interface IFinanceSummary {
   income?: IFinanceItem[];
   expense?: IFinanceItem[];
   balance?: number;
+}
+
+// 매출 인보이스 상태 타입
+export type OrderSaleStatus = 'draft' | 'issued' | 'paid' | 'canceled';
+
+// 매출 인보이스 타입
+export interface IOrderSale {
+  id: string;
+  orderId: string;
+  companyId: string;
+  invoiceNumber?: string;
+  status: OrderSaleStatus;
+  issueDate?: string;
+  dueDate?: string;
+  subtotalAmount: number;
+  taxAmount?: number;
+  totalAmount: number;
+  financialSnapshot?: any;
+  memo?: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+}
+
+// 매출 인보이스 요약 정보 (회사별)
+export interface IOrderSaleSummary {
+  companyId: string;
+  companyName: string;
+  count: number;
+  chargeAmount: number; // 청구액 (운송비)
+  dispatchAmount: number; // 배차비
+  profitAmount: number; // 수익 (청구액 - 배차비)
+}
+
+// 정산 대기 항목 타입
+export interface ISettlementWaitingItem {
+  id: string;
+  orderId: string;
+  companyId: string;
+  companyName: string;
+  chargeAmount: number; // 청구액 (운송비)
+  dispatchAmount: number; // 배차비
+  profitAmount: number; // 수익 (청구액 - 배차비)
+  createdAt: string;
+}
+
+// 정산 대기 목록 페이지 응답 타입
+export interface ISettlementWaitingResponse {
+  data: ISettlementWaitingItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+// 회사별 정산 요약 타입
+export interface ICompanySummary {
+  companyId: string;
+  companyName: string;
+  items: number;
+  chargeAmount: number;
+  dispatchAmount: number;
+  profitAmount: number;
+}
+
+// 전체 정산 요약 타입
+export interface ISettlementSummary {
+  totalItems: number;
+  totalChargeAmount: number;
+  totalDispatchAmount: number;
+  totalProfitAmount: number;
+  companies: ICompanySummary[];
 } 
