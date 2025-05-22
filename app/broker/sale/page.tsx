@@ -13,7 +13,7 @@ import { useIncomeStore } from "@/store/income-store";
 import { useIncomeWaitingStore } from "@/store/income-waiting-store";
 
 import { IncomeDetailSheet } from "@/components/broker/income/income-detail-sheet";
-import { IncomeFormSheet } from "@/components/broker/income/income-form-sheet";
+
 
 import { IncomeStatusType } from "@/types/income";
 
@@ -32,6 +32,7 @@ import { ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ToggleGroup } from "@/components/ui/toggle-group";
 import { BundleMatchingFilter } from "@/components/broker/sale/settlement-bundle-matching-filter";
 import { BundleMatchingList } from "@/components/broker/sale/settlement-bundel-matching-list";
+import { SettlementEditFormSheet } from "@/components/broker/sale/settlement-edit-form-sheet";
 export default function IncomePage() {
   // 정산 데이터 스토어 접근
   const {
@@ -350,7 +351,7 @@ export default function IncomePage() {
         <IncomeDetailSheet />
         
         {/* 정산 폼 시트 */}
-        <IncomeFormSheet />
+        <SettlementEditFormSheet />
       </main>
     </>
   );

@@ -284,39 +284,9 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
             )}
             <h3 className="text-lg font-bold">{type === 'departure' ? '상차 정보' : '하차 정보'}</h3>
           </div>
-          {/* <Button 
-            type="button" 
-            variant="outline" 
-            size="sm"
-            onClick={() => setIsSearchDialogOpen(true)}
-            disabled={disabled}
-          >
-            <SearchIcon className="h-4 w-4 mr-2" />
-            주소 검색
-          </Button> */}
+          
           <div className="flex gap-2">
-            {/* 주소 검색 버튼 주석 처리 - 나중에 사용할지도. 삭제하지 말자!*/}
-            {/* <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsSearchDialogOpen(true)}
-              disabled={disabled}
-            >
-              <SearchIcon className="h-4 w-4 mr-2" />
-              주소 검색
-            </Button> */}
-            {/* 주소록 버튼 - 나중에 사용할지도. 삭제하지 말자! */}
-            {/* <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsAddressDialogOpen(true)}
-              disabled={disabled}
-            >
-              <Building className="h-4 w-4 mr-2" />
-              주소록
-            </Button> */}
+            
             <Button
               type="button"
               variant="outline"
@@ -396,15 +366,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
             <Map className="h-10 w-10 text-muted-foreground mb-2" />
             <p className="text-sm text-muted-foreground mb-4">{type === 'departure' ? '상차지' : '하차지'} 주소를 검색해주세요</p>
             <div className="flex gap-2">
-              {/* 주소 검색 버튼 주석 처리 - 나중에 사용할지도. 삭제하지 말자!*/}
-              {/* <Button 
-                type="button" 
-                onClick={() => setIsSearchDialogOpen(true)}
-                disabled={disabled}
-              >
-                <SearchIcon className="h-4 w-4 mr-2" />
-                주소 검색하기
-              </Button> */}
+              
               <Button 
                 type="button" 
                 onClick={() => setIsAddressDialogOpen(true)}
