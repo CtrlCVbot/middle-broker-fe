@@ -571,7 +571,7 @@ export function SettlementEditFormSheet() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
               {/* 회사 정보 섹션 */}
-              <div className="space-y-6">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2 text-primary">
                     <Building2 className="h-5 w-5 text-primary" />
@@ -597,32 +597,34 @@ export function SettlementEditFormSheet() {
 
                 {/* 선택된 업체 배지 표시 */}
                 {orders && orders.length > 0 && (
-                  <div className="border rounded-lg p-4 bg-muted/30 mb-4">
+                  <>
+                  {/* <div className="border rounded-lg p-4 bg-muted/30 mb-4">
                     <div className="flex items-center gap-2 mb-4 text-primary">
                       <Building2 className="h-5 w-5" />
                       <h3 className="font-medium">선택된 화주 회사</h3>
                     </div>
-                    
-                    <div className="flex flex-wrap gap-1.5">
-                      {Object.keys(shipperGroups).map((shipper) => (
-                        <Badge 
-                          key={shipper} 
-                          variant="outline"
-                          className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
-                          onClick={() => {
-                            form.setValue("shipperName", shipper);
-                            form.setValue("businessNumber", "000-00-00000"); // 실제로는 해당 업체의 사업자번호
-                          }}
-                        >
-                          {shipper} ({shipperGroups[shipper].orders.length}건)
-                        </Badge>
-                      ))}
-                    </div>
+                  </div> */}
+
+                  <div className="flex flex-wrap gap-1.5">
+                    {Object.keys(shipperGroups).map((shipper) => (
+                      <Badge 
+                        key={shipper} 
+                        variant="outline"
+                        className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
+                        onClick={() => {
+                          form.setValue("shipperName", shipper);
+                          form.setValue("businessNumber", "000-00-00000"); // 실제로는 해당 업체의 사업자번호
+                        }}
+                      >
+                        {shipper} ({shipperGroups[shipper].orders.length}건)
+                      </Badge>
+                    ))}
                   </div>
+                  </>
                 )}
 
                 {!form.watch("shipperName") ? (
-                  <div className="flex flex-col items-center justify-center py-8 border border-dashed rounded-md bg-muted/30">
+                  <div className="flex flex-col items-center justify-center py-4 border border-dashed rounded-md bg-muted/30">
                     <Map className="h-10 w-10 text-muted-foreground mb-2" />
                     <p className="text-sm text-muted-foreground mb-4">회사 정보를 검색해주세요</p>
                     <div className="flex gap-2">
@@ -679,81 +681,31 @@ export function SettlementEditFormSheet() {
                     </div>
                   </div>
                 ) : (
-                  <>
+                  
+                  
+                  <div className="mb-4">
                     {/* 회사 정보 표시 영역 */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between border p-4 rounded bg-background bg-muted/30">
-                        <div className="flex flex-col text-sm">
-                          <div className="font-medium text-base text-primary">
-                            {form.watch("shipperName") || '회사를 검색해주세요'}
-                          </div>
-                          {form.watch("businessNumber") && (
-                            <div className="text-muted-foreground text-sm mt-1">
-                              {form.watch("businessNumber")}
-                            </div>
-                          )}
+                    <div className="flex items-center justify-between border p-4 rounded bg-background bg-muted/30">
+                      <div className="flex flex-col text-sm">
+                        <div className="font-medium text-base text-primary">
+                          {form.watch("shipperName") || '회사를 검색해주세요'}
                         </div>
-
-                        {/* 회사 정보 표시 영역 끝 */}
-                        {/* 회사명 / 담당자 */}
-                        <div className={cn("grid gap-4", "grid-cols-1 md:grid-cols-2")}>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <Building className="h-5 w-5 mb-2" />
-                              <div className="text-sm font-medium mb-2">회사명</div>
-                            </div>
-                            <FormField
-                              control={form.control}
-                              name="shipperName"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input 
-                                      placeholder="회사명을 입력해주세요." 
-                                      className="h-9" 
-                                      {...field} 
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
+                        {form.watch("businessNumber") && (
+                          <div className="text-muted-foreground text-sm mt-1">
+                            {form.watch("businessNumber")}
                           </div>
-                          
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <User className="h-5 w-5 mb-2" />
-                              <div className="text-sm font-medium mb-2">사업자번호</div>
-                            </div>
-                            <FormField
-                              control={form.control}
-                              name="businessNumber"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input 
-                                      placeholder="000-00-00000" 
-                                      className="h-9" 
-                                      {...field} 
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </div>
-
-                        {/* 회사명 / 담당자 */}
+                        )}
                       </div>
-                    </div>
 
-                  </>
+                      
+                      
+                    </div>
+                  </div>
                 )}
               </div>
 
               {/* 담당자 정보 섹션 */}
-              <div className="space-y-6">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2 text-primary">
                     <User className="h-5 w-5 text-primary" />
@@ -779,28 +731,28 @@ export function SettlementEditFormSheet() {
                 </div>
                 
                 {/* 선택된 업체의 담당자 배지 표시 (회사별로 담당자가 있다고 가정) */}
-                <div className="border rounded-lg p-4 bg-muted/30 mb-4">
+                {/* <div className="border rounded-lg p-4 bg-muted/30 mb-4">
                   <div className="flex items-center gap-2 mb-4 text-primary">
                     <User className="h-5 w-5" />
                     <h3 className="font-medium">선택 가능한 담당자</h3>
                   </div>
-                  
-                  <div className="flex flex-wrap gap-1.5">
-                    {managers.map((manager) => (
-                      <Badge 
-                        key={manager} 
-                        variant="outline"
-                        className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
-                        onClick={() => {
-                          form.setValue("manager", manager);
-                          form.setValue("managerContact", "010-1234-5678"); // 실제로는 해당 담당자의 연락처
-                          form.setValue("managerEmail", `${manager.toLowerCase()}@example.com`); // 실제로는 해당 담당자의 이메일
-                        }}
-                      >
-                        {manager}
-                      </Badge>
-                    ))}
-                  </div>
+                </div> */}
+
+                <div className="flex flex-wrap gap-1.5">
+                  {managers.map((manager) => (
+                    <Badge 
+                      key={manager} 
+                      variant="outline"
+                      className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
+                      onClick={() => {
+                        form.setValue("manager", manager);
+                        form.setValue("managerContact", "010-1234-5678"); // 실제로는 해당 담당자의 연락처
+                        form.setValue("managerEmail", `${manager.toLowerCase()}@example.com`); // 실제로는 해당 담당자의 이메일
+                      }}
+                    >
+                      {manager}
+                    </Badge>
+                  ))}
                 </div>
                 
                 {!form.watch("manager") ? (
@@ -866,65 +818,85 @@ export function SettlementEditFormSheet() {
                     {/* 담당자 정보 표시 영역 */}
                     <div className="mb-4">
                       <div className="flex items-center justify-between border p-4 rounded bg-background bg-muted/30">
-                        <div className="flex flex-col text-sm">
-                          <div className="font-medium text-base text-primary">
-                            {form.watch("manager") || '담당자를 선택해주세요'}
-                          </div>
-                          {form.watch("managerContact") && (
-                            <div className="text-muted-foreground text-sm mt-1">
-                              {form.watch("managerContact")}
+                        
+                        {/* 담당자 영역 */}                      
+                        <div className={cn("grid gap-4", "grid-cols-1 md:grid-cols-2")}>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              
+                              <div className="text-sm font-medium mb-2">이름</div>
                             </div>
-                          )}
+                            <FormField
+                              control={form.control}
+                              name="manager"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input 
+                                      placeholder="회사명을 입력해주세요." 
+                                      className="h-9" 
+                                      {...field} 
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          <div>
+                            <div className="flex items-center gap-2">
+                              
+                              <div className="text-sm font-medium mb-2">연락처 :</div>
+                            </div>
+                            <FormField
+                              control={form.control}
+                              name="managerContact"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <div className="relative">
+                                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                      <Input 
+                                        placeholder="010-0000-0000" 
+                                        className="h-9 pl-10" 
+                                        {...field} 
+                                      />
+                                    </div>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <div className="mb-2">
+                            <div className="text-sm font-medium mb-2">이메일 (선택사항) :</div>
+                            <FormField
+                              control={form.control}
+                              name="managerEmail"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <div className="relative">
+                                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                      <Input 
+                                        placeholder="example@email.com" 
+                                        className="h-9 pl-10" 
+                                        {...field} 
+                                      />
+                                    </div>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
                         </div>
+                        
                       </div>
-                    </div>
-                    
-                    {/* 연락처 입력 필드 */}
-                    <div className="mb-4">
-                      <div className="text-sm font-medium mb-2">연락처 :</div>
-                      <FormField
-                        control={form.control}
-                        name="managerContact"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <div className="relative">
-                                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input 
-                                  placeholder="010-0000-0000" 
-                                  className="h-9 pl-10" 
-                                  {...field} 
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    {/* 이메일 입력 필드 */}
-                    <div className="mb-4">
-                      <div className="text-sm font-medium mb-2">이메일 (선택사항) :</div>
-                      <FormField
-                        control={form.control}
-                        name="managerEmail"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input 
-                                  placeholder="example@email.com" 
-                                  className="h-9 pl-10" 
-                                  {...field} 
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      
                     </div>
                   </>
                 )}
@@ -955,11 +927,8 @@ export function SettlementEditFormSheet() {
                 </div>
 
                 {/* 정산 구분 선택 영역 */}
-                <div className="border rounded-lg p-4 bg-muted/30 mb-4">
-                  <div className="flex items-center gap-2 mb-4 text-primary">
-                    <CalendarIcon className="h-5 w-5" />
-                    <h3 className="font-medium">정산 구분</h3>
-                  </div>
+                <div className="border rounded-lg p-4 bg-muted/30 mb-2">
+                  
                   
                   <FormField
                     control={form.control}
