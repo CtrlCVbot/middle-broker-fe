@@ -1,63 +1,71 @@
 import { IOrderSale } from "@/types/settlement";
+import { ISalesData } from "@/types/broker-sale";
+
+// 디스패치 매출 정산 요약 정보 조회 함수
+async function fetchSalesSummary(dispatchId: string): Promise<ISalesData> {
+  try {
+    const response = await fetch(`/api/broker/dispatches/${dispatchId}/sales-summary`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || '디스패치 매출 정산 요약 정보 조회에 실패했습니다.');
+    }
+    
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error('디스패치 매출 정산 요약 정보 조회 중 오류 발생:', error);
+    throw error;
+  }
+}
+
+// 디스패치 마감 처리 함수
+async function closeDispatch(dispatchId: string): Promise<void> {
+  try {
+    const response = await fetch(`/api/broker/dispatches/${dispatchId}/close`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || '디스패치 마감 처리에 실패했습니다.');
+    }
+    
+    console.log('디스패치 마감 처리 완료:', dispatchId);
+  } catch (error) {
+    console.error('디스패치 마감 처리 중 오류 발생:', error);
+    throw error;
+  }
+}
 
 // 주문 매출 정산 데이터 생성 함수
 export async function createSale(orderId: string, dispatchId: string): Promise<IOrderSale> {
   try {
-    // 현재 주문 및 배차 정보를 가져옴
     console.log("createSale 호출됨");
     console.log("orderId:", orderId);
-    const orderResponse = await fetch(`/api/orders/${orderId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    console.log("dispatchId:", dispatchId);
     
-    if (!orderResponse.ok) {
-      throw new Error('주문 정보 조회에 실패했습니다.');
-    }
+    // 1. 디스패치 매출 정산 요약 정보 조회
+    console.log("디스패치 매출 정산 요약 정보 조회 시작");
+    const salesSummary = await fetchSalesSummary(dispatchId);
+    console.log("디스패치 매출 정산 요약 정보:", salesSummary);
     
-    const orderData = await orderResponse.json();
-    
-    // 운임 정보 조회
-    const chargeResponse = await fetch(`/api/charge?orderId=${orderId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    
-    if (!chargeResponse.ok) {
-      throw new Error('운임 정보 조회에 실패했습니다.');
-    }
-    
-    const chargeData = await chargeResponse.json();
-    
-    console.log("매출 정산 데이터 생성을 위한 orderData:", orderData);
-    console.log("매출 정산 데이터 생성을 위한 chargeData:", chargeData);
-    // 매출 정산 데이터 생성을 위한 요청 바디 구성
-    const saleData = {
-      orderId,
-      companyId: orderData.companyId, // 화주 회사 IDs
-      status: 'draft', // 초기 상태는 draft
-      subtotalAmount: calculateSubtotal(chargeData.data), // 운임 데이터에서 소계 계산
-      totalAmount: calculateTotal(chargeData.data), // 운임 데이터에서 총액 계산
-      financialSnapshot: {
-        order: orderData.data,
-        charges: chargeData.data,
-        timestamp: new Date().toISOString()
-      },
-      items: generateSaleItems(chargeData.data) // 운임 항목을 매출 항목으로 변환
-    };
-    console.log("매출 정산 데이터 생성을 위한 saleData:", saleData);
-    
-    // 매출 정산 데이터 생성 API 호출
+    // 2. 매출 정산 데이터 생성 API 호출
+    console.log("매출 정산 데이터 생성 API 호출 시작");
     const response = await fetch('/api/charge/sales', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(saleData),
+      body: JSON.stringify(salesSummary),
     });
     
     if (!response.ok) {
@@ -66,6 +74,12 @@ export async function createSale(orderId: string, dispatchId: string): Promise<I
     }
     
     const result = await response.json();
+    console.log("매출 정산 데이터 생성 완료:", result.data);
+    
+    // 3. 디스패치 마감 처리
+    console.log("디스패치 마감 처리 시작");
+    await closeDispatch(dispatchId);
+    
     return result.data;
   } catch (error) {
     console.error('매출 정산 데이터 생성 중 오류 발생:', error);

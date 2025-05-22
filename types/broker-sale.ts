@@ -26,9 +26,9 @@ export interface ISalesData {
   subtotalAmount: number;
   taxAmount?: number;
   totalAmount: number;
-  financialSnapshot?: any;
+  financialSnapshot?: ISalesChargeItem[]; // 화물 운송 비용 항목 정보
   memo?: string;
-  items: ISalesChargeItem[];
+  //items: ISalesChargeItem[];
 }
 
 // 매출 정산 응답 타입

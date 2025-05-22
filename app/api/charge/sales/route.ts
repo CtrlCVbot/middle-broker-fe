@@ -115,7 +115,7 @@ const CreateOrderSaleSchema = z.object({
   totalAmount: z.number().nonnegative(),
   financialSnapshot: z.any().optional(),
   memo: z.string().optional(),
-  items: z.array(SalesChargeItemSchema).min(1, '최소 1개 이상의 항목이 필요합니다.')
+  //items: z.array(SalesChargeItemSchema).min(1, '최소 1개 이상의 항목이 필요합니다.')
 });
 
 // 매출 인보이스 생성
@@ -131,8 +131,10 @@ export async function POST(request: NextRequest) {
 
     // const userId = session.user.id;
     const userId = request.headers.get('x-user-id') || '';
+    console.log("userId:", userId);
     const body = await request.json();
-    
+    console.log("body:", body);
+
     // 요청 데이터 검증
     const validationResult = CreateOrderSaleSchema.safeParse(body);
     if (!validationResult.success) {
@@ -142,8 +144,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log("validationResult:", validationResult);
     const data = validationResult.data;
-    const { items, ...saleData } = data;
+    const { ...saleData } = data;
+    console.log("saleData:", saleData);
     
     // 트랜잭션으로 인보이스 및 항목 생성
     const result = await db.transaction(async (tx) => {

@@ -66,6 +66,7 @@ export interface IOrderWithDispatchDispatchDetail {
   updatedBySnapshot?: IUserSnapshot;
   createdAt: string;
   updatedAt: string;
+  isClosed?: boolean;
 }
 
 // 주문+배차 결합 아이템 인터페이스

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { orderDispatches } from '@/db/schema/orderDispatches';
 import { chargeLines } from '@/db/schema/chargeLines';
@@ -25,12 +25,14 @@ export async function GET(
     //     { status: 401 }
     //   );
     // }
-
-    const dispatchId = params.id;
+    console.log("params:", params);
+    
+    const {id} = await params;
+    console.log("dispatchId:", id);
 
     // 디스패치 정보 조회
     const dispatch = await db.query.orderDispatches.findFirst({
-      where: eq(orderDispatches.id, dispatchId),
+      where: eq(orderDispatches.id, id),
       with: {
         order: true,
       }
@@ -55,16 +57,32 @@ export async function GET(
     const companyId = dispatch.brokerCompanyId;
 
     // 운임 그룹 조회
+    // const chargeGroup = await db.query.chargeGroups.findFirst({
+    //   where: eq(chargeGroups.orderId, orderId),
+    //   with: {
+    //     chargeLines: true
+    //   }
+    // });
+
+    // const chargeLines = chargeGroup?.chargeLines;
+
+    // 1. chargeGroup 먼저 조회
     const chargeGroup = await db.query.chargeGroups.findFirst({
       where: eq(chargeGroups.orderId, orderId),
-      with: {
-        chargeLines: true
-      }
     });
 
-    const chargeLines = chargeGroup?.chargeLines;
+    // 2. 해당 chargeGroup의 id 기준으로 chargeLines 필터 조회
+    const chargeLinesResult = chargeGroup
+      ? await db.query.chargeLines.findMany({
+          where: and(
+            eq(chargeLines.groupId, chargeGroup.id),
+            eq(chargeLines.side, 'sales')
+          ),
+        })
+      : [];
 
-    if (!chargeLines || chargeLines.length === 0) {
+
+    if (!chargeLinesResult || chargeLinesResult.length === 0) {
       return NextResponse.json(
         { error: '해당 주문에 대한 과금 항목이 없습니다.' },
         { status: 404 }
@@ -75,7 +93,7 @@ export async function GET(
     let subtotalAmount = 0;
     let taxAmount = 0;
 
-    const items = chargeLines.map(line => {
+    const items = chargeLinesResult.map(line => {
       // 각 항목의 세금 계산 (기본 10%)
       const lineAmount = Number(line.amount) || 0;
       const lineTaxRate = Number(line.taxRate) || 10;
@@ -110,7 +128,7 @@ export async function GET(
       subtotalAmount,
       taxAmount,
       totalAmount,
-      items,
+      financialSnapshot: items,
       memo: `주문 ID: ${orderId}에 대한 매출 정산`,
     }as any;
 

@@ -4,33 +4,33 @@ import {
   IOrderSale, 
   ISalesStatusResponse 
 } from '@/types/broker-sale';
-import { IOrderDispatch } from '@/types/broker-dispatch';
+//import { IOrderDispatch } from '@/types/order-ver01';
 
 /**
  * 운송 완료된 디스패치 목록을 조회하는 함수
  * @returns 운송 완료된 디스패치 목록
  */
-export async function getCompletedDispatches(): Promise<IOrderDispatch[]> {
-  try {
-    // 운송 완료 상태의 디스패치만 필터링
-    const response = await fetch('/api/broker/dispatches?status=운송완료', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+// export async function getCompletedDispatches(): Promise<IOrderDispatch[]> {
+//   try {
+//     // 운송 완료 상태의 디스패치만 필터링
+//     const response = await fetch('/api/broker/dispatches?status=운송완료', {
+//       method: 'GET',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//     });
 
-    if (!response.ok) {
-      throw new Error('운송 완료된 디스패치 목록 조회에 실패했습니다.');
-    }
+//     if (!response.ok) {
+//       throw new Error('운송 완료된 디스패치 목록 조회에 실패했습니다.');
+//     }
 
-    const data = await response.json();
-    return data.data || [];
-  } catch (error) {
-    console.error('운송 완료된 디스패치 목록 조회 중 오류 발생:', error);
-    throw error;
-  }
-}
+//     const data = await response.json();
+//     return data.data || [];
+//   } catch (error) {
+//     console.error('운송 완료된 디스패치 목록 조회 중 오류 발생:', error);
+//     throw error;
+//   }
+// }
 
 /**
  * 특정 디스패치의 매출 정산 상태를 확인하는 함수

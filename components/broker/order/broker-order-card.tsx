@@ -89,6 +89,7 @@ interface IDispatchItem {
   estimatedAmount?: number;
   memo?: string;
   brokerMemo?: string;
+  isClosed?: boolean;
   // 추가 필드가 있을 수 있음
 }
 

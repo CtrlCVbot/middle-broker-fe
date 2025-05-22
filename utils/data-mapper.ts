@@ -288,6 +288,8 @@ export function mapApiResponseToBrokerDispatchList(
         // 메모 정보
         memo: order.memo,
         brokerMemo: dispatch?.brokerMemo,
+
+        isClosed: dispatch?.isClosed || false,
       };
       
       // 반환 전 매핑된 데이터 필드 검증

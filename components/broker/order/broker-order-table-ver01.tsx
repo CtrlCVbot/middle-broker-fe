@@ -93,6 +93,7 @@ interface IDispatchItem {
   estimatedAmount?: number;
   memo?: string;
   brokerMemo?: string;
+  isClosed?: boolean;
   // 추가 필드가 있을 수 있음
 }
 
@@ -252,7 +253,17 @@ export function BrokerOrderTable({
                       #{order.orderId.slice(0, 8)}
                     </TableCell>
                     <TableCell className="text-center">
-                      {getStatusBadge(order.flowStatus as BrokerOrderStatusType)}
+                      {order.isClosed ? (
+                        <Badge variant="default" className="text-xs px-3 py-1 border-dashed text-muted-foreground">
+                          <Link2Off className="h-4 w-4 mr-1" />
+                          마감
+                        </Badge>
+                      ) : (
+                        getStatusBadge(order.flowStatus as BrokerOrderStatusType) 
+                      )}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                    {order.isClosed}
                     </TableCell>
                     <TableCell className="font-medium">
                       {getSchedule(order.pickupDateTime, order.deliveryDateTime)}
