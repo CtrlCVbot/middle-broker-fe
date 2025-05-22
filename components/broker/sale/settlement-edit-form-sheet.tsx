@@ -41,7 +41,8 @@ import {
   Mail,
   Building,
   Landmark,
-  Hash
+  Hash,
+  Ellipsis
 } from "lucide-react";
 import { 
   Popover,
@@ -562,7 +563,7 @@ export function SettlementEditFormSheet() {
     >
       <SheetContent className="sm:max-w-3xl overflow-y-auto p-0" side="right">
         <SheetHeader className="p-6 pb-2">
-          <SheetTitle className="text-xl font-semibold">정산 생성</SheetTitle>
+          <SheetTitle className="text-xl font-semibold">매출 정산 생성</SheetTitle>
           <SheetDescription>
             선택한 화물을 정산 항목으로 등록합니다.
           </SheetDescription>
@@ -622,8 +623,8 @@ export function SettlementEditFormSheet() {
 
                   {!form.watch("shipperName") ? (
                     <div className="flex flex-col items-center justify-center py-4 border border-dashed rounded-md bg-muted/30">
-                      <Map className="h-10 w-10 text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground mb-4">회사 정보를 검색해주세요</p>
+                      <Building2 className="h-10 w-10 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground mb-4">청구 회사 정보를 검색해주세요</p>
                       <div className="flex gap-2">
                         <FormField
                           control={form.control}
@@ -1134,7 +1135,7 @@ export function SettlementEditFormSheet() {
                 <div className="space-y-6">
                   <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-2 text-primary">
-                      <CalendarIcon className="h-5 w-5 text-primary" />
+                      <Ellipsis className="h-5 w-5 text-primary" />
                       <h3 className="text-lg font-bold">기타 정보</h3>
                     </div>
                     
@@ -1156,7 +1157,7 @@ export function SettlementEditFormSheet() {
 
                   {/* 기간 설정 영역 */}
                   <div className="gap-4">                  
-                    <div className="border rounded-lg bg-muted/30 py-4 px-4">
+                    <div className="border rounded-lg bg-muted/30 py-3 px-4">
                       
                       <div className="flex flex-col pb-6">
                         {/* 메모와 결제 방법 - 같은 행에 배치 */}
