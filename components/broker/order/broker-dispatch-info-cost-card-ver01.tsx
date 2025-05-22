@@ -182,6 +182,21 @@ export function FinanceSummaryCard({
           {new Intl.NumberFormat('ko-KR').format(totalBalance)}원</p>
       </div>
 
+      {/* 운송 마감 버튼 */}
+      <div>
+        <Separator className="bg-gray-700 my-5" />
+
+        <div className="flex justify-between items-center pb-2 px-4">
+          <p className="text-xl"></p>
+          <Button variant="default" size="sm" 
+            className={cn("bg-purple-700 hover:bg-purple-500", totalBalance > 0 ? "cursor-pointer" : "cursor-not-allowed")}
+            //onClick={handleCreateSales}
+          >
+            운송 마감하기!
+          </Button>
+        </div>
+      </div>
+
       {/* 추가금 입력 다이얼로그 */}
       <BrokerChargeInfoLineForm 
         dialogOpen={dialogOpen}

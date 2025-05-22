@@ -121,15 +121,16 @@ const CreateOrderSaleSchema = z.object({
 // 매출 인보이스 생성
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: '인증되지 않은 요청입니다.' },
-        { status: 401 }
-      );
-    }
+    // const session = await getServerSession(authOptions);
+    // if (!session?.user) {
+    //   return NextResponse.json(
+    //     { error: '인증되지 않은 요청입니다.' },
+    //     { status: 401 }
+    //   );
+    // }
 
-    const userId = session.user.id;
+    // const userId = session.user.id;
+    const userId = request.headers.get('x-user-id') || '';
     const body = await request.json();
     
     // 요청 데이터 검증

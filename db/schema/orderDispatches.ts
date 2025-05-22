@@ -1,5 +1,5 @@
 // /db/schema/broker_dispatches.ts (새 파일 또는 기존 파일 수정)
-import { pgTable, uuid, varchar, numeric, timestamp, json, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, numeric, timestamp, json, pgEnum, boolean } from 'drizzle-orm/pg-core';
 import { orderFlowStatusEnum, orders } from '@/db/schema/orders'; // orders 테이블 import
 import { companies } from '@/db/schema/companies'; // companies 테이블 import (운송사, 주선사)
 import { users } from '@/db/schema/users'; // users 테이블 import (기사, 주선사 담당자)
@@ -56,6 +56,8 @@ export const orderDispatches = pgTable('order_dispatches', {
   // 주선사 내부 메모
   brokerMemo: varchar('broker_memo', { length: 500 }), // 주선사 특이사항 및 내부 메모
 
+  isClosed: boolean('is_closed').default(false).notNull(),// 운송 마감 여부
+
   // 생성/수정 정보 (이 배차 정보를 생성/수정한 주선사 직원)
   createdBy: uuid('created_by').notNull().references(() => users.id),
   createdBySnapshot: json('created_by_snapshot').$type<IUserSnapshot>(), // 생성자 스냅샷
@@ -63,4 +65,5 @@ export const orderDispatches = pgTable('order_dispatches', {
   updatedBySnapshot: json('updated_by_snapshot').$type<IUserSnapshot>(), // 수정자 스냅샷
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
+  
 });
