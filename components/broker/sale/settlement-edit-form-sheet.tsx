@@ -39,7 +39,9 @@ import {
   User,
   Phone,
   Mail,
-  Building
+  Building,
+  Landmark,
+  Hash
 } from "lucide-react";
 import { 
   Popover,
@@ -570,621 +572,719 @@ export function SettlementEditFormSheet() {
           {/* 정산 폼 */}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
-              {/* 회사 정보 섹션 */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2 text-primary">
-                    <Building2 className="h-5 w-5 text-primary" />
-                    <h3 className="text-lg font-bold">회사 정보</h3>
+              {/* 회사 정보와 담당자 정보 섹션을 그리드로 감싸기 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* 회사 정보 섹션 */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2 text-primary">
+                      <Building2 className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-bold">회사 정보</h3>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => form.reset({
+                          ...form.getValues(),
+                          shipperName: "",
+                          businessNumber: ""
+                        })}
+                        disabled={loading}
+                      >
+                        초기화
+                      </Button>
+                    </div>
                   </div>
-                  
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => form.reset({
-                        ...form.getValues(),
-                        shipperName: "",
-                        businessNumber: ""
-                      })}
-                      disabled={loading}
-                    >
-                      초기화
-                    </Button>
-                  </div>
+
+                  {/* 선택된 업체 배지 표시 */}
+                  {orders && orders.length > 0 && (
+                    <>                    
+                    <div className="flex flex-wrap gap-1.5">
+                      {Object.keys(shipperGroups).map((shipper) => (
+                        <Badge 
+                          key={shipper} 
+                          variant="outline"
+                          className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
+                          onClick={() => {
+                            form.setValue("shipperName", shipper);
+                            form.setValue("businessNumber", "000-00-00000"); // 실제로는 해당 업체의 사업자번호
+                          }}
+                        >
+                          {shipper} ({shipperGroups[shipper].orders.length}건)
+                        </Badge>
+                      ))}
+                    </div>
+                    </>
+                  )}
+
+                  {!form.watch("shipperName") ? (
+                    <div className="flex flex-col items-center justify-center py-4 border border-dashed rounded-md bg-muted/30">
+                      <Map className="h-10 w-10 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground mb-4">회사 정보를 검색해주세요</p>
+                      <div className="flex gap-2">
+                        <FormField
+                          control={form.control}
+                          name="shipperName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button type="button">
+                                    <Search className="h-4 w-4 mr-2" />
+                                    회사 조회
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-full p-0" align="start">
+                                  <div className="border-b p-2">
+                                    <div className="flex items-center gap-2">
+                                      <Input
+                                        placeholder="회사명 검색"
+                                        className="h-8"
+                                        type="search"
+                                      />
+                                      <Button size="sm" className="h-8 px-2">검색</Button>
+                                    </div>
+                                  </div>
+                                  <ScrollArea className="h-60">
+                                    <div className="p-2">
+                                      {companies.map((company) => (
+                                        <div
+                                          key={company}
+                                          className="flex items-center justify-between px-2 py-1.5 hover:bg-secondary/50 rounded-md cursor-pointer"
+                                          onClick={() => {
+                                            field.onChange(company);
+                                            form.setValue("businessNumber", "000-00-00000"); // 실제로는 해당 기업의 사업자번호
+                                          }}
+                                        >
+                                          <div className="flex flex-col">
+                                            <span className="font-medium">{company}</span>
+                                            <span className="text-xs text-muted-foreground">000-00-00000</span>
+                                          </div>
+                                          {company === field.value && (
+                                            <CheckCircle className="h-4 w-4 text-primary" />
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </ScrollArea>
+                                </PopoverContent>
+                              </Popover>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mb-4">
+                      
+                      {/* 회사 정보 + 계좌 정보 (세로 정렬) */}
+                      <div className="flex flex-col p-4 border rounded bg-muted/30">
+
+                        {/* 회사 정보 영역 */}
+                        <div>
+                          <div className="flex justify-between items-center text-sm pt-2 pb-3">
+                            
+                            {/* 회사명 */}
+                            <div className="font-medium text-base text-primary truncate">
+                              {form.watch("shipperName") || '회사를 검색해주세요'}
+                            </div>
+
+                            {/* 사업자번호 */}
+                            {form.watch("businessNumber") && (
+                              <div className="text-muted-foreground text-sm whitespace-nowrap pl-4">
+                                {form.watch("businessNumber")}
+                              </div>
+                            )}
+                            
+                          </div>
+                        </div>
+
+
+                        {/* 계좌 정보 영역 */}
+                        <div>
+                          <div className="grid grid-cols-1 gap-2 w-full pb-1">
+
+                            {/* 은행 + 계좌명 (한 줄 두 컬럼) */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                              {/* 은행 */}
+                              <FormField
+                                control={form.control}
+                                name="manager"  //"bankName"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <div className="relative">
+                                        <Landmark className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input 
+                                          placeholder="은행명" 
+                                          className="h-9 pl-10" 
+                                          {...field} 
+                                        />
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              {/* 계좌명 */}
+                              <FormField
+                                control={form.control}
+                                name="manager"//"accountHolder"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <div className="relative">
+                                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input 
+                                          placeholder="예금주명" 
+                                          className="h-9 pl-10" 
+                                          {...field} 
+                                        />
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                            </div>
+
+                            {/* 계좌번호 (한 줄) */}
+                            <FormField
+                              control={form.control}
+                              name="manager" //"accountNumber"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <div className="relative">
+                                      <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                      <Input 
+                                        placeholder="계좌번호" 
+                                        className="h-9 pl-10" 
+                                        {...field} 
+                                      />
+                                    </div>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {/* 선택된 업체 배지 표시 */}
-                {orders && orders.length > 0 && (
-                  <>
-                  {/* <div className="border rounded-lg p-4 bg-muted/30 mb-4">
-                    <div className="flex items-center gap-2 mb-4 text-primary">
-                      <Building2 className="h-5 w-5" />
-                      <h3 className="font-medium">선택된 화주 회사</h3>
+                {/* 담당자 정보 섹션 */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2 text-primary">
+                      <User className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-bold">담당자 정보</h3>
                     </div>
-                  </div> */}
+                    
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => form.reset({
+                          ...form.getValues(),
+                          manager: "",
+                          managerContact: "",
+                          managerEmail: ""
+                        })}
+                        disabled={loading}
+                      >
+                        초기화
+                      </Button>
+                    </div>
+                  </div>
 
                   <div className="flex flex-wrap gap-1.5">
-                    {Object.keys(shipperGroups).map((shipper) => (
+                    {managers.map((manager) => (
                       <Badge 
-                        key={shipper} 
+                        key={manager} 
                         variant="outline"
                         className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
                         onClick={() => {
-                          form.setValue("shipperName", shipper);
-                          form.setValue("businessNumber", "000-00-00000"); // 실제로는 해당 업체의 사업자번호
+                          form.setValue("manager", manager);
+                          form.setValue("managerContact", "010-1234-5678"); // 실제로는 해당 담당자의 연락처
+                          form.setValue("managerEmail", `${manager.toLowerCase()}@example.com`); // 실제로는 해당 담당자의 이메일
                         }}
                       >
-                        {shipper} ({shipperGroups[shipper].orders.length}건)
+                        {manager}
                       </Badge>
                     ))}
                   </div>
-                  </>
-                )}
-
-                {!form.watch("shipperName") ? (
-                  <div className="flex flex-col items-center justify-center py-4 border border-dashed rounded-md bg-muted/30">
-                    <Map className="h-10 w-10 text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground mb-4">회사 정보를 검색해주세요</p>
-                    <div className="flex gap-2">
-                      <FormField
-                        control={form.control}
-                        name="shipperName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button type="button">
-                                  <Search className="h-4 w-4 mr-2" />
-                                  회사 조회
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-full p-0" align="start">
-                                <div className="border-b p-2">
-                                  <div className="flex items-center gap-2">
-                                    <Input
-                                      placeholder="회사명 검색"
-                                      className="h-8"
-                                      type="search"
-                                    />
-                                    <Button size="sm" className="h-8 px-2">검색</Button>
+                  
+                  {!form.watch("manager") ? (
+                    <div className="flex flex-col items-center justify-center py-4 border border-dashed rounded-md bg-muted/30">
+                      <User className="h-10 w-10 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground mb-4">담당자 정보를 입력해주세요</p>
+                      <div className="flex gap-2">
+                        <FormField
+                          control={form.control}
+                          name="manager"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button type="button">
+                                    <Search className="h-4 w-4 mr-2" />
+                                    담당자 조회
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-full p-0" align="start">
+                                  <div className="border-b p-2">
+                                    <div className="flex items-center gap-2">
+                                      <Input
+                                        placeholder="담당자명 검색"
+                                        className="h-8"
+                                        type="search"
+                                      />
+                                      <Button size="sm" className="h-8 px-2">검색</Button>
+                                    </div>
                                   </div>
-                                </div>
-                                <ScrollArea className="h-60">
-                                  <div className="p-2">
-                                    {companies.map((company) => (
-                                      <div
-                                        key={company}
-                                        className="flex items-center justify-between px-2 py-1.5 hover:bg-secondary/50 rounded-md cursor-pointer"
-                                        onClick={() => {
-                                          field.onChange(company);
-                                          form.setValue("businessNumber", "000-00-00000"); // 실제로는 해당 기업의 사업자번호
-                                        }}
-                                      >
-                                        <div className="flex flex-col">
-                                          <span className="font-medium">{company}</span>
-                                          <span className="text-xs text-muted-foreground">000-00-00000</span>
+                                  <ScrollArea className="h-60">
+                                    <div className="p-2">
+                                      {managers.map((manager) => (
+                                        <div
+                                          key={manager}
+                                          className="flex items-center justify-between px-2 py-1.5 hover:bg-secondary/50 rounded-md cursor-pointer"
+                                          onClick={() => {
+                                            field.onChange(manager);
+                                            form.setValue("managerContact", "010-1234-5678"); // 실제로는 해당 담당자의 연락처
+                                            form.setValue("managerEmail", `${manager.toLowerCase()}@example.com`); // 실제로는 해당 담당자의 이메일
+                                          }}
+                                        >
+                                          <div className="flex flex-col">
+                                            <span className="font-medium">{manager}</span>
+                                            <span className="text-xs text-muted-foreground">010-1234-5678</span>
+                                          </div>
+                                          {manager === field.value && (
+                                            <CheckCircle className="h-4 w-4 text-primary" />
+                                          )}
                                         </div>
-                                        {company === field.value && (
-                                          <CheckCircle className="h-4 w-4 text-primary" />
-                                        )}
-                                      </div>
-                                    ))}
-                                  </div>
-                                </ScrollArea>
-                              </PopoverContent>
-                            </Popover>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  
-                  
-                  <div className="mb-4">
-                    {/* 회사 정보 표시 영역 */}
-                    <div className="flex items-center justify-between border p-4 rounded bg-background bg-muted/30">
-                      <div className="flex flex-col text-sm">
-                        <div className="font-medium text-base text-primary">
-                          {form.watch("shipperName") || '회사를 검색해주세요'}
-                        </div>
-                        {form.watch("businessNumber") && (
-                          <div className="text-muted-foreground text-sm mt-1">
-                            {form.watch("businessNumber")}
-                          </div>
-                        )}
+                                      ))}
+                                    </div>
+                                  </ScrollArea>
+                                </PopoverContent>
+                              </Popover>
+                            </FormItem>
+                          )}
+                        />
                       </div>
-
-                      
-                      
                     </div>
-                  </div>
-                )}
-              </div>
-
-              {/* 담당자 정보 섹션 */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2 text-primary">
-                    <User className="h-5 w-5 text-primary" />
-                    <h3 className="text-lg font-bold">담당자 정보</h3>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => form.reset({
-                        ...form.getValues(),
-                        manager: "",
-                        managerContact: "",
-                        managerEmail: ""
-                      })}
-                      disabled={loading}
-                    >
-                      초기화
-                    </Button>
-                  </div>
-                </div>
-                
-                {/* 선택된 업체의 담당자 배지 표시 (회사별로 담당자가 있다고 가정) */}
-                {/* <div className="border rounded-lg p-4 bg-muted/30 mb-4">
-                  <div className="flex items-center gap-2 mb-4 text-primary">
-                    <User className="h-5 w-5" />
-                    <h3 className="font-medium">선택 가능한 담당자</h3>
-                  </div>
-                </div> */}
-
-                <div className="flex flex-wrap gap-1.5">
-                  {managers.map((manager) => (
-                    <Badge 
-                      key={manager} 
-                      variant="outline"
-                      className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
-                      onClick={() => {
-                        form.setValue("manager", manager);
-                        form.setValue("managerContact", "010-1234-5678"); // 실제로는 해당 담당자의 연락처
-                        form.setValue("managerEmail", `${manager.toLowerCase()}@example.com`); // 실제로는 해당 담당자의 이메일
-                      }}
-                    >
-                      {manager}
-                    </Badge>
-                  ))}
-                </div>
-                
-                {!form.watch("manager") ? (
-                  <div className="flex flex-col items-center justify-center py-8 border border-dashed rounded-md bg-muted/30">
-                    <User className="h-10 w-10 text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground mb-4">담당자 정보를 입력해주세요</p>
-                    <div className="flex gap-2">
-                      <FormField
-                        control={form.control}
-                        name="manager"
-                        render={({ field }) => (
-                          <FormItem>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button type="button">
-                                  <Search className="h-4 w-4 mr-2" />
-                                  담당자 조회
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-full p-0" align="start">
-                                <div className="border-b p-2">
-                                  <div className="flex items-center gap-2">
-                                    <Input
-                                      placeholder="담당자명 검색"
-                                      className="h-8"
-                                      type="search"
-                                    />
-                                    <Button size="sm" className="h-8 px-2">검색</Button>
-                                  </div>
-                                </div>
-                                <ScrollArea className="h-60">
-                                  <div className="p-2">
-                                    {managers.map((manager) => (
-                                      <div
-                                        key={manager}
-                                        className="flex items-center justify-between px-2 py-1.5 hover:bg-secondary/50 rounded-md cursor-pointer"
-                                        onClick={() => {
-                                          field.onChange(manager);
-                                          form.setValue("managerContact", "010-1234-5678"); // 실제로는 해당 담당자의 연락처
-                                          form.setValue("managerEmail", `${manager.toLowerCase()}@example.com`); // 실제로는 해당 담당자의 이메일
-                                        }}
-                                      >
-                                        <div className="flex flex-col">
-                                          <span className="font-medium">{manager}</span>
-                                          <span className="text-xs text-muted-foreground">010-1234-5678</span>
-                                        </div>
-                                        {manager === field.value && (
-                                          <CheckCircle className="h-4 w-4 text-primary" />
-                                        )}
-                                      </div>
-                                    ))}
-                                  </div>
-                                </ScrollArea>
-                              </PopoverContent>
-                            </Popover>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    {/* 담당자 정보 표시 영역 */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between border p-4 rounded bg-background bg-muted/30">
-                        
-                        {/* 담당자 영역 */}                      
-                        <div className={cn("grid gap-4", "grid-cols-1 md:grid-cols-2")}>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              
-                              <div className="text-sm font-medium mb-2">이름</div>
-                            </div>
-                            <FormField
-                              control={form.control}
-                              name="manager"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input 
-                                      placeholder="회사명을 입력해주세요." 
-                                      className="h-9" 
-                                      {...field} 
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
+                  ) : (
+                    <>
+                      {/* 담당자 정보 표시 영역 */}
+                      <div className="mb-4">
+                        <div className="flex items-center justify-between border p-4 rounded bg-background bg-muted/30">
                           
-                          <div>
-                            <div className="flex items-center gap-2">
+                          {/* 담당자 영역 */}                      
+                          <div className={cn("grid gap-2", "grid-cols-1", "w-full")}>
+                            <div>
                               
-                              <div className="text-sm font-medium mb-2">연락처 :</div>
+                              <FormField
+                                control={form.control}
+                                name="manager"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>                                      
+                                      <div className="relative">
+                                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input 
+                                          placeholder="담당자 이름을 입력해주세요." 
+                                          className="h-9 pl-10" 
+                                          {...field} 
+                                        />
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
                             </div>
-                            <FormField
-                              control={form.control}
-                              name="managerContact"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <div className="relative">
-                                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                      <Input 
-                                        placeholder="010-0000-0000" 
-                                        className="h-9 pl-10" 
-                                        {...field} 
-                                      />
-                                    </div>
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
+                            
+                            <div>
+                              
+                              <FormField
+                                control={form.control}
+                                name="managerContact"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <div className="relative">
+                                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input 
+                                          placeholder="010-0000-0000" 
+                                          className="h-9 pl-10" 
+                                          {...field} 
+                                        />
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
 
-                          <div className="mb-2">
-                            <div className="text-sm font-medium mb-2">이메일 (선택사항) :</div>
-                            <FormField
-                              control={form.control}
-                              name="managerEmail"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <div className="relative">
-                                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                      <Input 
-                                        placeholder="example@email.com" 
-                                        className="h-9 pl-10" 
-                                        {...field} 
-                                      />
-                                    </div>
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
+                            <div className="mb-1">
+                              
+                              <FormField
+                                control={form.control}
+                                name="managerEmail"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <div className="relative">
+                                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input 
+                                          placeholder="example@email.com" 
+                                          className="h-9 pl-10" 
+                                          {...field} 
+                                        />
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            
                           </div>
                           
                         </div>
                         
                       </div>
-                      
-                    </div>
-                  </>
-                )}
+                    </>
+                  )}
+                </div>
+                
+
               </div>
 
-              {/* 정산 기간 설정 섹션 */}
-              <div className="space-y-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2 text-primary">
-                    <CalendarIcon className="h-5 w-5 text-primary" />
-                    <h3 className="text-lg font-bold">정산 기간 설정</h3>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        // 상차 기준으로 기간 자동 설정
-                        handlePeriodTypeChange("departure");
-                      }}
-                      disabled={loading}
-                    >
-                      자동 설정
-                    </Button>
-                  </div>
-                </div>
-
-                {/* 정산 구분 선택 영역 */}
-                <div className="border rounded-lg p-4 bg-muted/30 mb-2">
-                  
-                  
-                  <FormField
-                    control={form.control}
-                    name="periodType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="flex space-x-4">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="departure"
-                              value="departure"
-                              checked={field.value === "departure"}
-                              onChange={() => {
-                                field.onChange("departure");
-                                handlePeriodTypeChange("departure");
-                              }}
-                              className="h-4 w-4 text-primary"
-                            />
-                            <label htmlFor="departure" className="text-sm">상차 기준</label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="arrival"
-                              value="arrival"
-                              checked={field.value === "arrival"}
-                              onChange={() => {
-                                field.onChange("arrival");
-                                handlePeriodTypeChange("arrival");
-                              }}
-                              className="h-4 w-4 text-primary"
-                            />
-                            <label htmlFor="arrival" className="text-sm">하차 기준</label>
-                          </div>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* 기간 설정 영역 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="border rounded-lg p-4 bg-muted/30">
-                    <div className="flex items-center gap-2 mb-4 text-primary">
-                      <CalendarIcon className="h-5 w-5" />
-                      <h3 className="font-medium">시작일/종료일</h3>
+              {/* 정산 기간 설정 + 기타 섹션 */}              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2 text-primary">
+                      <CalendarIcon className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-bold">정산 기간 설정</h3>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-2">
-                      <FormField
-                        control={form.control}
-                        name="startDate"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="text-sm font-medium mb-2">시작일</div>
-                            <FormControl>
-                              <Input 
-                                type="date" 
-                                className="h-9"
-                                {...field}
-                                onChange={(e) => {
-                                  field.onChange(e);
-                                  setFormField('startDate', e.target.value);
-                                }}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="endDate"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="text-sm font-medium mb-2">종료일</div>
-                            <FormControl>
-                              <Input 
-                                type="date" 
-                                className="h-9"
-                                {...field}
-                                onChange={(e) => {
-                                  field.onChange(e);
-                                  setFormField('endDate', e.target.value);
-                                }}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          // 상차 기준으로 기간 자동 설정
+                          handlePeriodTypeChange("departure");
+                        }}
+                        disabled={loading}
+                      >
+                        자동 설정
+                      </Button>
                     </div>
                   </div>
 
-                  <div className="border rounded-lg p-4 bg-muted/30">
-                    <div className="flex items-center gap-2 mb-4 text-primary">
-                      <CalendarIcon className="h-5 w-5" />
-                      <h3 className="font-medium">정산 만기일</h3>
-                    </div>
-                    
-                    <FormField
-                      control={form.control}
-                      name="dueDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="text-sm font-medium mb-2">만기일</div>
-                          <Popover>
-                            <PopoverTrigger asChild>
+                  {/* 기간 설정 영역 */}
+                  <div className="gap-4">                  
+                    <div className="border rounded-lg bg-muted/30 py-4 px-4">
+                      
+                      <div className="flex flex-col pb-6">
+                        <FormField
+                          control={form.control}
+                          name="periodType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="flex space-x-4">
+                                <div className="flex items-center space-x-2">
+                                  <input
+                                    type="radio"
+                                    id="departure"
+                                    value="departure"
+                                    checked={field.value === "departure"}
+                                    onChange={() => {
+                                      field.onChange("departure");
+                                      handlePeriodTypeChange("departure");
+                                    }}
+                                    className="h-4 w-4 text-primary"
+                                  />
+                                  <label htmlFor="departure" className="text-sm">상차 기준</label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <input
+                                    type="radio"
+                                    id="arrival"
+                                    value="arrival"
+                                    checked={field.value === "arrival"}
+                                    onChange={() => {
+                                      field.onChange("arrival");
+                                      handlePeriodTypeChange("arrival");
+                                    }}
+                                    className="h-4 w-4 text-primary"
+                                  />
+                                  <label htmlFor="arrival" className="text-sm">하차 기준</label>
+                                </div>
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <FormField
+                          control={form.control}
+                          name="startDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="text-sm font-medium">시작일</div>
                               <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className="w-full h-9 pl-3 text-left font-normal"
-                                >
-                                  {field.value ? (
-                                    format(field.value, "PPP", { locale: ko })
-                                  ) : (
-                                    <span>날짜 선택</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
+                                <Input 
+                                  type="date" 
+                                  className="h-9"
+                                  {...field}
+                                  onChange={(e) => {
+                                    field.onChange(e);
+                                    setFormField('startDate', e.target.value);
+                                  }}
+                                />
                               </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <CalendarComponent
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) => date < new Date()}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="endDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="text-sm font-medium">종료일</div>
+                              <FormControl>
+                                <Input 
+                                  type="date" 
+                                  className="h-9"
+                                  {...field}
+                                  onChange={(e) => {
+                                    field.onChange(e);
+                                    setFormField('endDate', e.target.value);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="mt-4">
+                        <FormField
+                          control={form.control}
+                          name="dueDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="text-sm font-medium">만기일</div>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      className="w-full h-9 pl-3 text-left font-normal"
+                                    >
+                                      {field.value ? (
+                                        format(field.value, "PPP", { locale: ko })
+                                      ) : (
+                                        <span>날짜 선택</span>
+                                      )}
+                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <CalendarComponent
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    disabled={(date) => date < new Date()}
+                                    initialFocus
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 기타 섹션 */}
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-2 text-primary">
+                      <CalendarIcon className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-bold">기타 정보</h3>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      {/* <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          // 상차 기준으로 기간 자동 설정
+                          handlePeriodTypeChange("departure");
+                        }}
+                        disabled={loading}
+                      >
+                        자동 설정
+                      </Button> */}
+                    </div>
+                  </div>
+
+                  {/* 기간 설정 영역 */}
+                  <div className="gap-4">                  
+                    <div className="border rounded-lg bg-muted/30 py-4 px-4">
+                      
+                      <div className="flex flex-col pb-6">
+                        {/* 메모와 결제 방법 - 같은 행에 배치 */}
+                        <div className="gap-2 pb-4 w-full">
+                          <FormField
+                            control={form.control}
+                            name="memo"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs font-medium">메모 (선택사항)</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="메모를 입력하세요" className="h-9" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        {/* 메모와 결제 방법 - 같은 행에 배치 */}
+                        <div className="gap-2 w-full">
+                          
+                          <FormField
+                            control={form.control}
+                            name="paymentMethod"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs font-medium">결제 방법</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger className="h-9">
+                                      <SelectValue placeholder="결제 방법 선택" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="BANK_TRANSFER">계좌이체</SelectItem>
+                                    <SelectItem value="CREDIT_CARD">신용카드</SelectItem>
+                                    <SelectItem value="CASH">현금</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* 세금 설정 */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <FormField
+                            control={form.control}
+                            name="taxFree"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={(checked) => {
+                                      field.onChange(checked);
+                                      if (checked) {
+                                        form.setValue("hasTax", false);
+                                      }
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormLabel className="text-xs font-medium">
+                                  면세 대상
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="hasTax"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={(checked) => {
+                                      field.onChange(checked);
+                                      if (checked) {
+                                        form.setValue("taxFree", false);
+                                      }
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormLabel className="text-xs font-medium">
+                                  부가세 포함
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          {/* 세금계산서 발행 여부 체크박스 추가 */}
+                          <FormField
+                            control={form.control}
+                            name="issueInvoice"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <FormLabel className="text-xs font-medium">
+                                  세금계산서 발행
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+
+                          
+                        </div>                
+                      </div>
+                      
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* 세금 설정 */}
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <FormField
-                    control={form.control}
-                    name="taxFree"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-2 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={(checked) => {
-                              field.onChange(checked);
-                              if (checked) {
-                                form.setValue("hasTax", false);
-                              }
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className="text-xs font-medium">
-                          면세 대상
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                  />
+              
 
-                  <FormField
-                    control={form.control}
-                    name="hasTax"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-2 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={(checked) => {
-                              field.onChange(checked);
-                              if (checked) {
-                                form.setValue("taxFree", false);
-                              }
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className="text-xs font-medium">
-                          부가세 포함
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  {/* 세금계산서 발행 여부 체크박스 추가 */}
-                  <FormField
-                    control={form.control}
-                    name="issueInvoice"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-2 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormLabel className="text-xs font-medium">
-                          세금계산서 발행
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                  />
-
-                  
-                </div>                
-              </div>
-
-              {/* 메모와 결제 방법 - 같은 행에 배치 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <FormField
-                  control={form.control}
-                  name="memo"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs font-medium">메모 (선택사항)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="메모를 입력하세요" className="h-9" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="paymentMethod"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs font-medium">결제 방법</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="h-9">
-                            <SelectValue placeholder="결제 방법 선택" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="BANK_TRANSFER">계좌이체</SelectItem>
-                          <SelectItem value="CREDIT_CARD">신용카드</SelectItem>
-                          <SelectItem value="CASH">현금</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              
 
               {/* 선택된 화물 목록 - 컴팩트하게 표시 */}
               <Collapsible className="border rounded-md mt-2">
