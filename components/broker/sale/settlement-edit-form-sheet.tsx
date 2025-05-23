@@ -75,6 +75,9 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { useCompanies, useCompanyStore } from '@/store/company-store';
+import { useBrokerCompanyManagerStore } from '@/store/broker-company-manager-store';
+import { IBrokerCompanyManager } from '@/types/broker-company';
 
 // TypeScript로 인터페이스 정의
 interface IAdditionalFee {
@@ -304,6 +307,20 @@ export function SettlementEditFormSheet() {
   const [isEditingAdditionalFee, setIsEditingAdditionalFee] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isOrderListOpen, setIsOrderListOpen] = useState(false);
+  const [companySearchTerm, setCompanySearchTerm] = useState('');
+  const [managerSearchTerm, setManagerSearchTerm] = useState('');
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const { setFilter } = useCompanyStore();
+  const companiesQuery = useCompanies();
+  
+  // 담당자 관리 store 사용
+  const {
+    managers: brokerManagers,
+    isLoading: isLoadingManagers,
+    setFilter: setManagerFilter,
+    loadManagers,
+    currentCompanyId
+  } = useBrokerCompanyManagerStore();
 
   // 정산 생성 이벤트 리스너 추가
   useEffect(() => {
@@ -574,6 +591,29 @@ export function SettlementEditFormSheet() {
     }
   };
 
+  // 검색어 변경 함수
+  const handleCompanySearch = () => {
+    setFilter({ keyword: companySearchTerm });
+  };
+
+  // 회사 선택 시 담당자 목록 로드
+  useEffect(() => {
+    if (selectedCompanyId) {
+      console.log('🔍 선택된 회사 ID로 담당자 목록 로드:', selectedCompanyId);
+      loadManagers(selectedCompanyId);
+    }
+  }, [selectedCompanyId, loadManagers]);
+
+  // 담당자 검색 함수
+  const handleManagerSearch = () => {
+    if (selectedCompanyId) {
+      setManagerFilter({ 
+        searchTerm: managerSearchTerm,
+        showInactive: false 
+      });
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -651,7 +691,7 @@ export function SettlementEditFormSheet() {
                     </>
                   )}
 
-                  {!form.watch("shipperName") ? (
+                  {form.watch("shipperName") === "기본 화주" || form.watch("shipperName") === "" ? (
                     <div className="flex flex-col items-center justify-center py-4 border border-dashed rounded-md bg-muted/30">
                       <Building2 className="h-10 w-10 text-muted-foreground mb-2" />
                       <p className="text-sm text-muted-foreground mb-4">청구 회사 정보를 검색해주세요</p>
@@ -675,30 +715,44 @@ export function SettlementEditFormSheet() {
                                         placeholder="회사명 검색"
                                         className="h-8"
                                         type="search"
+                                        value={companySearchTerm}
+                                        onChange={e => setCompanySearchTerm(e.target.value)}
+                                        onKeyDown={e => {
+                                          if (e.key === 'Enter') {
+                                            handleCompanySearch();
+                                          }
+                                        }}
                                       />
-                                      <Button size="sm" className="h-8 px-2">검색</Button>
+                                      <Button size="sm" className="h-8 px-2" onClick={handleCompanySearch}>검색</Button>
                                     </div>
                                   </div>
                                   <ScrollArea className="h-60">
                                     <div className="p-2">
-                                      {companies.map((company) => (
+                                      {companiesQuery.data?.data.map((company) => (
                                         <div
-                                          key={company}
+                                          key={company.id}
                                           className="flex items-center justify-between px-2 py-1.5 hover:bg-secondary/50 rounded-md cursor-pointer"
                                           onClick={() => {
-                                            field.onChange(company);
-                                            form.setValue("businessNumber", "000-00-00000"); // 실제로는 해당 기업의 사업자번호
+                                            field.onChange(company.name);
+                                            form.setValue("businessNumber", company.businessNumber || "-");
+                                            setSelectedCompanyId(company.id);
                                           }}
                                         >
                                           <div className="flex flex-col">
-                                            <span className="font-medium">{company}</span>
-                                            <span className="text-xs text-muted-foreground">000-00-00000</span>
+                                            <span className="font-medium">{company.name}</span>
+                                            <span className="text-xs text-muted-foreground">{company.businessNumber}</span>
                                           </div>
-                                          {company === field.value && (
+                                          {company.name === field.value && (
                                             <CheckCircle className="h-4 w-4 text-primary" />
                                           )}
                                         </div>
                                       ))}
+                                      {companiesQuery.isLoading && (
+                                        <div className="text-xs text-muted-foreground p-2">검색 중...</div>
+                                      )}
+                                      {!companiesQuery.isLoading && companiesQuery.data?.data.length === 0 && (
+                                        <div className="text-xs text-muted-foreground p-2">검색 결과가 없습니다.</div>
+                                      )}
                                     </div>
                                   </ScrollArea>
                                 </PopoverContent>
@@ -731,6 +785,29 @@ export function SettlementEditFormSheet() {
                             )}
                             
                           </div>
+
+                          {/* 선택된 회사의 담당자 뱃지 표시 */}
+                          {selectedCompanyId && brokerManagers.length > 0 && (
+                            <div className="pb-3">
+                              <div className="text-xs text-muted-foreground mb-2">담당자 목록</div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {selectedCompanyId && brokerManagers.filter(manager => manager.status === '활성').map((manager) => (
+                                  <Badge 
+                                    key={manager.id} 
+                                    variant="outline"
+                                    className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
+                                    onClick={() => {
+                                      form.setValue("manager", manager.name);
+                                      form.setValue("managerContact", manager.phoneNumber || "");
+                                      form.setValue("managerEmail", manager.email || "");
+                                    }}
+                                  >
+                                    {manager.name}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
 
 
@@ -841,26 +918,31 @@ export function SettlementEditFormSheet() {
                   </div>
 
                   <div className="flex flex-wrap gap-1.5">
-                    {managers.map((manager) => (
+                    {selectedCompanyId && brokerManagers.filter(manager => manager.status === '활성').map((manager) => (
                       <Badge 
-                        key={manager} 
+                        key={manager.id} 
                         variant="outline"
                         className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
                         onClick={() => {
-                          form.setValue("manager", manager);
-                          form.setValue("managerContact", "010-1234-5678"); // 실제로는 해당 담당자의 연락처
-                          form.setValue("managerEmail", `${manager.toLowerCase()}@example.com`); // 실제로는 해당 담당자의 이메일
+                          form.setValue("manager", manager.name);
+                          form.setValue("managerContact", manager.phoneNumber || "");
+                          form.setValue("managerEmail", manager.email || "");
                         }}
                       >
-                        {manager}
+                        {manager.name}
                       </Badge>
                     ))}
+                    {!selectedCompanyId && (
+                      <div className="text-xs text-muted-foreground">먼저 회사를 선택해주세요</div>
+                    )}
                   </div>
                   
-                  {!form.watch("manager") ? (
+                  {!form.watch("manager") || form.watch("manager") === "김중개" ? (
                     <div className="flex flex-col items-center justify-center py-4 border border-dashed rounded-md bg-muted/30">
                       <User className="h-10 w-10 text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground mb-4">담당자 정보를 입력해주세요</p>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {!selectedCompanyId ? '먼저 회사를 선택해주세요' : '담당자 정보를 입력해주세요'}
+                      </p>
                       <div className="flex gap-2">
                         <FormField
                           control={form.control}
@@ -869,7 +951,7 @@ export function SettlementEditFormSheet() {
                             <FormItem>
                               <Popover>
                                 <PopoverTrigger asChild>
-                                  <Button type="button">
+                                  <Button type="button" disabled={!selectedCompanyId}>
                                     <Search className="h-4 w-4 mr-2" />
                                     담당자 조회
                                   </Button>
@@ -881,31 +963,45 @@ export function SettlementEditFormSheet() {
                                         placeholder="담당자명 검색"
                                         className="h-8"
                                         type="search"
+                                        value={managerSearchTerm}
+                                        onChange={e => setManagerSearchTerm(e.target.value)}
+                                        onKeyDown={e => {
+                                          if (e.key === 'Enter') {
+                                            handleManagerSearch();
+                                          }
+                                        }}
                                       />
-                                      <Button size="sm" className="h-8 px-2">검색</Button>
+                                      <Button size="sm" className="h-8 px-2" onClick={handleManagerSearch}>검색</Button>
                                     </div>
                                   </div>
                                   <ScrollArea className="h-60">
                                     <div className="p-2">
-                                      {managers.map((manager) => (
-                                        <div
-                                          key={manager}
-                                          className="flex items-center justify-between px-2 py-1.5 hover:bg-secondary/50 rounded-md cursor-pointer"
-                                          onClick={() => {
-                                            field.onChange(manager);
-                                            form.setValue("managerContact", "010-1234-5678"); // 실제로는 해당 담당자의 연락처
-                                            form.setValue("managerEmail", `${manager.toLowerCase()}@example.com`); // 실제로는 해당 담당자의 이메일
-                                          }}
-                                        >
-                                          <div className="flex flex-col">
-                                            <span className="font-medium">{manager}</span>
-                                            <span className="text-xs text-muted-foreground">010-1234-5678</span>
+                                      {isLoadingManagers ? (
+                                        <div className="text-xs text-muted-foreground p-2">검색 중...</div>
+                                      ) : brokerManagers.filter(manager => manager.status === '활성').length > 0 ? (
+                                        brokerManagers.filter(manager => manager.status === '활성').map((manager) => (
+                                          <div
+                                            key={manager.id}
+                                            className="flex items-center justify-between px-2 py-1.5 hover:bg-secondary/50 rounded-md cursor-pointer"
+                                            onClick={() => {
+                                              field.onChange(manager.name);
+                                              form.setValue("managerContact", manager.phoneNumber || "");
+                                              form.setValue("managerEmail", manager.email || "");
+                                            }}
+                                          >
+                                            <div className="flex flex-col">
+                                              <span className="font-medium">{manager.name}</span>
+                                              <span className="text-xs text-muted-foreground">{manager.phoneNumber}</span>
+                                              <span className="text-xs text-muted-foreground">{manager.roles.join(', ')}</span>
+                                            </div>
+                                            {manager.name === field.value && (
+                                              <CheckCircle className="h-4 w-4 text-primary" />
+                                            )}
                                           </div>
-                                          {manager === field.value && (
-                                            <CheckCircle className="h-4 w-4 text-primary" />
-                                          )}
-                                        </div>
-                                      ))}
+                                        ))
+                                      ) : (
+                                        <div className="text-xs text-muted-foreground p-2">담당자가 없습니다.</div>
+                                      )}
                                     </div>
                                   </ScrollArea>
                                 </PopoverContent>
