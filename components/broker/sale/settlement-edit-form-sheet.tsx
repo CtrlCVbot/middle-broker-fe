@@ -78,6 +78,7 @@ import {
 import { useCompanies, useCompanyStore } from '@/store/company-store';
 import { useBrokerCompanyManagerStore } from '@/store/broker-company-manager-store';
 import { IBrokerCompanyManager } from '@/types/broker-company';
+import { getSchedule } from "@/components/order/order-table-ver01";
 
 // TypeScript로 인터페이스 정의
 interface IAdditionalFee {
@@ -521,7 +522,7 @@ export function SettlementEditFormSheet() {
     const totalDispatch = orders.reduce((sum, order) => sum + (Number(order.fee) || 0), 0);
     const totalNet = totalFreight - totalDispatch;
     const tax = Math.round(totalNet * 0.1);
-    const totalAmount = totalNet + tax;
+    const totalAmount = totalFreight + tax;
     
     return { totalFreight, totalDispatch, totalNet, tax, totalAmount };
   }, [orders]);
@@ -646,6 +647,7 @@ export function SettlementEditFormSheet() {
 
               {/* 회사 정보와 담당자 정보 섹션을 그리드로 감싸기 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-2">
+
                 {/* 회사 정보 섹션 */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between mb-2">
@@ -700,8 +702,8 @@ export function SettlementEditFormSheet() {
                   )}
 
                   {form.watch("shipperName") === "기본 화주" || form.watch("shipperName") === "" ? (
-                    <div className="flex flex-col items-center justify-center py-4 border-5 border-dashed rounded-md bg-muted/30">
-                      <Building2 className="h-10 w-10 text-muted-foreground mb-2" />
+                    <div className="flex flex-col items-center justify-center py-4 border-5 border-dashed rounded-md bg-muted/30 mb-2">
+                      <Building2 className="h-8 w-8 text-muted-foreground mb-2" />
                       <p className="text-sm text-muted-foreground mb-4">청구 회사 정보를 검색해주세요</p>
                       <div className="flex gap-2">
                         <FormField
@@ -771,14 +773,13 @@ export function SettlementEditFormSheet() {
                       </div>
                     </div>
                   ) : (
-                    <div className="mb-4">
-                      
+                    <div className="mb-4">                      
                       {/* 회사 정보 + 계좌 정보 (세로 정렬) */}
-                      <div className="flex flex-col p-4 border rounded bg-muted/30">
+                      <div className="flex flex-col p-4 border rounded-md bg-muted/30">
 
                         {/* 회사 정보 영역 */}
                         <div>
-                          <div className="flex justify-between items-center text-sm pt-2 pb-3">
+                          <div className="flex justify-between items-center text-sm pt-1 pb-4">
                             
                             {/* 회사명 */}
                             <div className="font-medium text-base text-primary truncate">
@@ -947,8 +948,8 @@ export function SettlementEditFormSheet() {
                   </div>
                   
                   {!form.watch("manager") || form.watch("manager") === "김중개" ? (
-                    <div className="flex flex-col items-center justify-center py-4 border-5 border-dashed rounded-md bg-muted/30">
-                      <User className="h-10 w-10 text-muted-foreground mb-2" />
+                    <div className="flex flex-col items-center justify-center py-4 border-5 border-dashed rounded-md bg-muted/30 mb-2">
+                      <User className="h-8 w-8 text-muted-foreground mb-2" />
                       <p className="text-sm text-muted-foreground mb-4">
                         {!selectedCompanyId ? '먼저 회사를 선택해주세요' : '담당자 정보를 입력해주세요'}
                       </p>
@@ -1024,7 +1025,7 @@ export function SettlementEditFormSheet() {
                     <>
                       {/* 담당자 정보 표시 영역 */}
                       <div className="mb-4">
-                        <div className="flex items-center justify-between border p-4 rounded bg-background bg-muted/30">
+                        <div className="flex items-center justify-between border p-4 rounded-md bg-background bg-muted/30">
                           
                           {/* 담당자 영역 */}                      
                           <div className={cn("grid gap-2", "grid-cols-1", "w-full")}>
@@ -1104,13 +1105,13 @@ export function SettlementEditFormSheet() {
                       </div>
                     </>
                   )}
-                </div>
-                
+                </div>                
 
               </div>
 
               {/* 정산 기간 설정 + 기타 섹션 */}              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
                 {/* 정산 기간 설정 섹션 */}
                 <div className="space-y-6">
                   <div className="flex items-center justify-between mb-2">
@@ -1137,7 +1138,7 @@ export function SettlementEditFormSheet() {
 
                   {/* 기간 설정 영역 */}
                   <div className="gap-4">                  
-                    <div className="border rounded-lg bg-muted/30 py-4 px-4">
+                    <div className="border rounded-md bg-muted/30 py-4 px-4">
                       
                       <div className="flex flex-col pb-6">
                         <FormField
@@ -1297,9 +1298,9 @@ export function SettlementEditFormSheet() {
 
                   {/* 기간 설정 영역 */}
                   <div className="gap-4">                  
-                    <div className="border rounded-lg bg-muted/30 py-3 px-4">
+                    <div className="border rounded-md bg-muted/30 py-4 px-4">
                       
-                      <div className="flex flex-col pb-6">
+                      <div className="flex flex-col pb-4">
                         {/* 메모와 결제 방법 - 같은 행에 배치 */}
                         <div className="gap-2 pb-4 w-full">
                           <FormField
@@ -1421,6 +1422,7 @@ export function SettlementEditFormSheet() {
                     </div>
                   </div>
                 </div>
+                
               </div>
 
               {/* 선택된 화물 목록 - 컴팩트하게 표시 */}
@@ -1444,34 +1446,30 @@ export function SettlementEditFormSheet() {
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-[40px] text-xs">번호</TableHead>
-                          <TableHead className="text-xs">화물 번호</TableHead>
+                          <TableHead className="text-xs">일정</TableHead>
                           <TableHead className="text-xs">출발지</TableHead>
                           <TableHead className="text-xs">도착지</TableHead>
                           <TableHead className="text-right text-xs">운송료</TableHead>
                           <TableHead className="text-right text-xs">배차료</TableHead>
-                          <TableHead className="text-right text-xs">순수익</TableHead>
+                          
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {orders && orders.length > 0 ? (
                           orders.map((order, index) => (
                             <TableRow key={order.id}>
-                              <TableCell className="text-xs">{index + 1}</TableCell>
-                              <TableCell className="text-xs">{order.id.slice(0, 8)}</TableCell>
-                              <TableCell className="text-xs">{order.departureLocation[0]}</TableCell>
-                              <TableCell className="text-xs">{order.arrivalLocation[0]}</TableCell>
-                              <TableCell className="text-right text-xs">{
-                              //formatCurrency(order.amount || 0)
-                              0
-                              }</TableCell>
-                              <TableCell className="text-right text-xs">{
-                              //formatCurrency(order.fee || 0)
-                              0
-                              }</TableCell>
-                              <TableCell className="text-right text-xs">{
-                              //formatCurrency((order.amount || 0) - (order.fee || 0))
-                              0
-                              }</TableCell>
+                              <TableCell className="text-xs">{index + 1}</TableCell>                              
+                              <TableCell className="text-xs">
+                                {getSchedule(order.departureDateTime, order.arrivalDateTime, order.departureDateTime, order.arrivalDateTime)}
+                              </TableCell>
+                              <TableCell className="text-xs">{order.departureCity}</TableCell>
+                              <TableCell className="text-xs">{order.arrivalCity}</TableCell>
+                              <TableCell className="text-right text-xs">
+                                {formatCurrency(order.amount || 0)}
+                              </TableCell>
+                              <TableCell className="text-right text-xs">
+                                {formatCurrency(order.fee || 0)}
+                              </TableCell>                              
                             </TableRow>
                           ))
                         ) : (
@@ -1491,7 +1489,7 @@ export function SettlementEditFormSheet() {
         </div>
         
         {/* 하단 고정 영역 - 금액 요약 및 버튼 */}
-        <div className="absolute bottom-0 left-0 right-0 border-t bg-background p-3">
+        <div className="absolute bottom-0 left-0 right-0 border-t bg-background px-6 pt-4 pb-8">
           {/* 금액 요약 */}
           <div className="mb-3 grid grid-cols-3 gap-2 text-sm">
             <div>
@@ -1499,12 +1497,12 @@ export function SettlementEditFormSheet() {
               <div className="font-medium">{formatCurrency(calculatedTotals.totalFreight)}</div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground">총 배차료</div>
-              <div className="font-medium">{formatCurrency(calculatedTotals.totalDispatch)}</div>
+              <div className="text-xs text-muted-foreground">총 세금</div>
+              <div className="font-medium">{formatCurrency(calculatedTotals.tax)}</div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground">예상 수익</div>
-              <div className="font-medium text-green-600">{formatCurrency(calculatedTotals.totalNet)}</div>
+              <div className="text-xs text-muted-foreground">청구 금액</div>
+              <div className="font-medium text-green-600">{formatCurrency(calculatedTotals.totalAmount)}</div>
             </div>
           </div>
           
