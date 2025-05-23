@@ -172,11 +172,38 @@ const useIncomeFormStore = (): MockIncomeFormStore => {
   }, []);
 
   const openForm = React.useCallback((orders: IBrokerOrder[]) => {
-    console.log("openForm 호출됨", orders.length);
+    // 화주별로 그룹핑
+    const shipperCounts: Record<string, { count: number, businessNumber: string }> = {};
+    orders.forEach(order => {
+      const shipper = order.shipperName || '미지정';
+      const businessNumber = order.shipperBusinessNumber || '000-00-00000';
+      if (!shipperCounts[shipper]) {
+        shipperCounts[shipper] = { count: 1, businessNumber };
+      } else {
+        shipperCounts[shipper].count++;
+      }
+    });
+    // 가장 많은 화주 찾기
+    let maxCount = 0;
+    let mainShipper = '';
+    let mainBusinessNumber = '';
+    for (const shipper in shipperCounts) {
+      if (shipperCounts[shipper].count > maxCount) {
+        maxCount = shipperCounts[shipper].count;
+        mainShipper = shipper;
+        mainBusinessNumber = shipperCounts[shipper].businessNumber;
+      }
+    }
     setState(prev => ({
       ...prev,
       isOpen: true,
-      selectedOrders: orders
+      selectedOrders: orders,
+      formData: {
+        ...prev.formData,
+        shipperName: mainShipper,
+        businessNumber: mainBusinessNumber,
+        billingCompany: mainShipper
+      }
     }));
   }, []);
 
