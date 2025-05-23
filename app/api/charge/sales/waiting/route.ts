@@ -68,6 +68,7 @@ export async function GET(request: NextRequest) {
         orderId: orders.id,
         companyId: orders.companyId,
         companyName: companies.name,
+        companyBusinessNumber: companies.businessNumber,
         chargeAmount: orderSales.totalAmount,
         createdAt: orders.createdAt,
         pickupName: orders.pickupName,
@@ -82,7 +83,8 @@ export async function GET(request: NextRequest) {
         requestedVehicleType: orders.requestedVehicleType,
         assignedDriverSnapshot: orderDispatches.assignedDriverSnapshot,        
         isClosed: orderDispatches.isClosed,
-        flowStatus: orderDispatches.brokerFlowStatus
+        flowStatus: orderDispatches.brokerFlowStatus,
+        
       })
       .from(orders)
       .leftJoin(companies, eq(orders.companyId, companies.id))

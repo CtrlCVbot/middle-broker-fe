@@ -60,6 +60,8 @@ export interface IBrokerOrder {
   chargeAmount?: number;
   amount: number;
   fee: number;
+  shipperId?: string;
+  shipperBusinessNumber?: string;
   shipperName: string;
   shipperContact?: string;
   shipperEmail?: string;

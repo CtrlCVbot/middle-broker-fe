@@ -6,7 +6,9 @@ import {
   IOrderSale,
   ISettlementWaitingItem,
   ISettlementSummary,
-  ISettlementWaitingResponse
+  ISettlementWaitingResponse,
+  ISettlementFormState,
+  ISettlementFormData
 } from '@/types/broker-charge';
 import { 
   getChargeGroupsByOrderId,
@@ -16,7 +18,7 @@ import {
   calculateSettlementSummary,
   createOrderSale
 } from '@/services/broker-charge-service';
-import { mapChargeDataToFinanceSummary, mapSalesToWaitingItems, calculateSalesSummary } from '@/utils/charge-mapper';
+import { mapChargeDataToFinanceSummary,  calculateSalesSummary, mapWaitingItemsToBrokerOrders } from '@/utils/charge-mapper';
 import { IBrokerOrder } from '@/types/broker-order';
 
 interface IBrokerChargeState {  
@@ -36,6 +38,9 @@ interface IBrokerChargeState {
   waitingItemsIsLoading: boolean;
   waitingItemsError: string | null;
   settlementSummary: ISettlementSummary | null;
+  
+  // 정산 폼 시트 관련 상태
+  settlementForm: ISettlementFormState;
   
   // 필터 관련 상태
   waitingItemsFilter: {
@@ -58,7 +63,31 @@ interface IBrokerChargeState {
   calculateSettlementSummary: () => void;
   createOrderSaleFromWaitingItems: () => Promise<boolean>;
   resetWaitingItemsState: () => void;
+  
+  // 정산 폼 시트 관련 액션
+  openSettlementForm: () => void;
+  closeSettlementForm: () => void;
+  updateSettlementFormData: (data: Partial<ISettlementFormData>) => void;
 }
+
+// 정산 폼 초기 데이터
+const initialSettlementFormData: ISettlementFormData = {
+  shipperName: '',
+  businessNumber: '',
+  billingCompany: '',
+  manager: '',
+  managerContact: '',
+  managerEmail: '',
+  periodType: 'departure',
+  startDate: '',
+  endDate: '',
+  dueDate: '',
+  memo: '',
+  taxFree: false,
+  hasTax: true,
+  issueInvoice: true,
+  paymentMethod: 'BANK_TRANSFER'
+};
 
 export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   // 초기 상태 - 기존 운임 관련
@@ -77,6 +106,14 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   waitingItemsIsLoading: false,
   waitingItemsError: null,
   settlementSummary: null,
+  
+  // 정산 폼 시트 초기 상태
+  settlementForm: {
+    isOpen: false,
+    selectedItems: [],
+    formData: initialSettlementFormData,
+    isLoading: false
+  },
   
   // 필터 초기 상태
   waitingItemsFilter: {
@@ -260,30 +297,25 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
     
     selectedItems.forEach(item => {
       const { companyId, companyName, chargeAmount, dispatchAmount, profitAmount } = item;
-            
+      
       if (companySummaries.has(companyId)) {
         const summary = companySummaries.get(companyId)!;
         summary.items += 1;
-        console.log("typeof chargeAmount:", typeof chargeAmount, chargeAmount);
-
-        console.log("typeof chargeAmount:", typeof Number(chargeAmount), chargeAmount);
-        summary.chargeAmount += Number(chargeAmount);
-        console.log("typeof summary.chargeAmount:", typeof summary.chargeAmount, summary.chargeAmount);
-        summary.dispatchAmount += Number(dispatchAmount);
-        summary.profitAmount += Number(profitAmount);
+        summary.chargeAmount += chargeAmount;
+        summary.dispatchAmount += dispatchAmount;
+        summary.profitAmount += profitAmount;
       } else {
         companySummaries.set(companyId, {
           companyId,
           companyName,
           items: 1,
-          chargeAmount: Number(chargeAmount),       // 👈 여기도 꼭 숫자 변환
-          dispatchAmount: Number(dispatchAmount),
-          profitAmount: Number(profitAmount)
+          chargeAmount,
+          dispatchAmount,
+          profitAmount
         });
       }
     });
     
-    console.log("companySummaries", companySummaries);
     // 전체 요약 계산
     const companies = Array.from(companySummaries.values());
     const summary: ISettlementSummary = {
@@ -293,7 +325,6 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       totalProfitAmount: companies.reduce((sum, company) => sum + company.profitAmount, 0),
       companies
     };
-    console.log("summary", summary);
     
     set({ settlementSummary: summary });
   },
@@ -364,6 +395,66 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
         companyId: undefined,
         startDate: undefined,
         endDate: undefined,
+      }
+    });
+  },
+  
+  // 정산 폼 시트 열기
+  openSettlementForm: () => {
+    const { waitingItems, selectedWaitingItemIds } = get();
+    
+    // 선택된 항목이 없으면 종료
+    if (selectedWaitingItemIds.length === 0) {
+      console.error('선택된 항목이 없습니다.');
+      return;
+    }
+    
+    // 선택된 항목만 필터링
+    const selectedItems = waitingItems.filter(item => 
+      selectedWaitingItemIds.includes(item.id)
+    );
+    
+    // IBrokerOrder 형태로 변환
+    const brokerOrders = mapWaitingItemsToBrokerOrders(selectedItems);
+    
+    // 정산 폼 상태 업데이트
+    set({
+      settlementForm: {
+        ...get().settlementForm,
+        isOpen: true,
+        selectedItems
+      }
+    });
+    
+    // 기존 SettlementEditFormSheet와 연동하기 위해 커스텀 이벤트 발생
+    if (typeof window !== 'undefined') {
+      const event = new CustomEvent('openIncomeForm', { 
+        detail: { orders: brokerOrders } 
+      });
+      window.dispatchEvent(event);
+    }
+  },
+  
+  // 정산 폼 시트 닫기
+  closeSettlementForm: () => {
+    set({
+      settlementForm: {
+        ...get().settlementForm,
+        isOpen: false,
+        selectedItems: []
+      }
+    });
+  },
+  
+  // 정산 폼 데이터 업데이트
+  updateSettlementFormData: (data: Partial<ISettlementFormData>) => {
+    set({
+      settlementForm: {
+        ...get().settlementForm,
+        formData: {
+          ...get().settlementForm.formData,
+          ...data
+        }
       }
     });
   }

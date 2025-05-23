@@ -11,7 +11,7 @@ import {
   ISettlementWaitingResponse,
   ISettlementSummary
 } from '@/types/broker-charge';
-import { mapAdditionalFeeToChargeGroup, mapAdditionalFeeToChargeLine, mapSalesToWaitingItems } from '@/utils/charge-mapper';
+import { mapAdditionalFeeToChargeGroup, mapAdditionalFeeToChargeLine } from '@/utils/charge-mapper';
 import { IBrokerOrder } from '@/types/broker-order';
 
 /**

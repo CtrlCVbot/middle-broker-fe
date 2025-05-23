@@ -81,7 +81,8 @@ export default function IncomePage() {
     updateWaitingItemsPage,
     updateWaitingItemsFilter,
     calculateSettlementSummary,
-    createOrderSaleFromWaitingItems
+    createOrderSaleFromWaitingItems,
+    openSettlementForm
   } = useBrokerChargeStore();
 
   // 초기 데이터 로드
@@ -178,7 +179,7 @@ export default function IncomePage() {
 
   // 정산 대기 화물로 정산 생성 처리 (새로운 구현)
   const handleCreateOrderSale = () => {
-    createOrderSaleFromWaitingItems();
+    openSettlementForm();
   };
 
   return (

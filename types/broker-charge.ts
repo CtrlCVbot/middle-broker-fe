@@ -148,6 +148,7 @@ export interface ISettlementWaitingItem {
   orderId: string;
   companyId: string;
   companyName: string;
+  companyBusinessNumber: string;
   pickupName: string;
   deliveryName: string;
   pickupDate: string;
@@ -193,4 +194,34 @@ export interface ISettlementSummary {
   totalDispatchAmount: number;
   totalProfitAmount: number;
   companies: ICompanySummary[];
+}
+
+// 정산 기간 타입
+export type SettlementPeriodType = 'departure' | 'arrival';
+
+// 정산 폼 데이터 타입
+export interface ISettlementFormData {
+  shipperName: string;
+  businessNumber: string;
+  billingCompany: string;
+  manager?: string;
+  managerContact?: string;
+  managerEmail?: string;
+  periodType: SettlementPeriodType;
+  startDate: string;
+  endDate: string;
+  dueDate?: string;
+  memo?: string;
+  taxFree: boolean;
+  hasTax: boolean;
+  issueInvoice: boolean;
+  paymentMethod: string;
+}
+
+// 정산 폼 시트 상태 타입
+export interface ISettlementFormState {
+  isOpen: boolean;
+  selectedItems: ISettlementWaitingItem[];
+  formData: ISettlementFormData;
+  isLoading: boolean;
 } 

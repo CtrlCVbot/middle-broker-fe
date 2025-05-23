@@ -453,16 +453,19 @@ export function SettlementEditFormSheet() {
     if (!orders || orders.length === 0) return {};
     
     const groups: Record<string, { orders: IBrokerOrder[], total: number }> = {};
+
+    console.log("화주별 그룹화 orders", orders);
     
     orders.forEach(order => {
-      const shipper = order.company || '미지정';
+      const shipper = order.shipperName || '미지정';
+        
       if (!groups[shipper]) {
         groups[shipper] = { orders: [], total: 0 };
       }
       groups[shipper].orders.push(order);
       groups[shipper].total += order.amount || 0;
     });
-    
+    console.log("화주별 그룹화 groups", groups);
     return groups;
   }, [orders]);
 
@@ -610,10 +613,10 @@ export function SettlementEditFormSheet() {
                           variant="outline"
                           className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
                           onClick={() => {
-                            form.setValue("shipperName", shipper);
-                            form.setValue("businessNumber", "000-00-00000"); // 실제로는 해당 업체의 사업자번호
+                            form.setValue("shipperName", shipperGroups[shipper].orders[0].shipperName);
+                            form.setValue("businessNumber", shipperGroups[shipper].orders[0].shipperBusinessNumber || "000-00-00000"); // 실제로는 해당 업체의 사업자번호
                           }}
-                        >
+                        >                          
                           {shipper} ({shipperGroups[shipper].orders.length}건)
                         </Badge>
                       ))}
@@ -1322,11 +1325,20 @@ export function SettlementEditFormSheet() {
                             <TableRow key={order.id}>
                               <TableCell className="text-xs">{index + 1}</TableCell>
                               <TableCell className="text-xs">{order.id.slice(0, 8)}</TableCell>
-                              <TableCell className="text-xs">{order.departureLocation.split(' ')[0]}</TableCell>
-                              <TableCell className="text-xs">{order.arrivalLocation.split(' ')[0]}</TableCell>
-                              <TableCell className="text-right text-xs">{formatCurrency(order.amount || 0)}</TableCell>
-                              <TableCell className="text-right text-xs">{formatCurrency(order.fee || 0)}</TableCell>
-                              <TableCell className="text-right text-xs">{formatCurrency((order.amount || 0) - (order.fee || 0))}</TableCell>
+                              <TableCell className="text-xs">{order.departureLocation[0]}</TableCell>
+                              <TableCell className="text-xs">{order.arrivalLocation[0]}</TableCell>
+                              <TableCell className="text-right text-xs">{
+                              //formatCurrency(order.amount || 0)
+                              0
+                              }</TableCell>
+                              <TableCell className="text-right text-xs">{
+                              //formatCurrency(order.fee || 0)
+                              0
+                              }</TableCell>
+                              <TableCell className="text-right text-xs">{
+                              //formatCurrency((order.amount || 0) - (order.fee || 0))
+                              0
+                              }</TableCell>
                             </TableRow>
                           ))
                         ) : (

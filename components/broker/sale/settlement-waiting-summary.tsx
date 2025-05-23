@@ -93,7 +93,7 @@ const WaitingSummary: React.FC<WaitingSummaryProps> = ({
           </div>
           <Button onClick={onCreateIncome} size="sm" className="gap-1 h-8">
             <PlusCircle className="h-3 w-3" />
-            <span className="hidden sm:inline-block">선택된 화물 </span> 정산하기
+            <span className="hidden sm:inline-block">선택된 화물 그룹 정산하기</span>
           </Button>
         </div>
 

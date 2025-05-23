@@ -8,7 +8,8 @@ import {
   IOrderSaleSummary,
   ISettlementWaitingItem,
   ICompanySummary,
-  ISettlementSummary
+  ISettlementSummary,
+  IChargeGroupWithLines
 } from '@/types/broker-charge';
 import { IBrokerOrder } from '@/types/broker-order';
 
@@ -248,34 +249,40 @@ export function calculateSalesSummary(
 }
 
 /**
- * 매출 인보이스를 정산 대기 항목으로 변환
- * @param sales 매출 인보이스 데이터
- * @param companies 회사 정보 (id와 이름 매핑을 위한)
+ * 정산 대기 항목을 IBrokerOrder 형태로 변환
+ * @param waitingItems 정산 대기 항목 배열
  */
-export function mapSalesToWaitingItems(
-  sales: IOrderSale[],
-  companies: { id: string; name: string }[]
-): ISettlementWaitingItem[] {
-  // 회사 ID를 키로 하는 회사 이름 맵 생성
-  const companyMap = new Map<string, string>();
-  companies.forEach(company => {
-    companyMap.set(company.id, company.name);
-  });
-
-  return sales.map(sale => {
-    const companyName = companyMap.get(sale.companyId) || "알 수 없음";
-    // 배차비는 일단 총액의 90%로 가정 (실제로는 다른 방식으로 계산해야 함)
-    const dispatchAmount = Math.round(sale.totalAmount * 0.9);
+export function mapWaitingItemsToBrokerOrders(
+  waitingItems: ISettlementWaitingItem[]
+): IBrokerOrder[] {
+  return waitingItems.map(item => ({    
+    id: item.id,
+    status: item.flowStatus,
     
-    return {
-      id: sale.id,
-      orderId: sale.orderId,
-      companyId: sale.companyId,
-      companyName,
-      chargeAmount: sale.totalAmount,
-      dispatchAmount,
-      profitAmount: sale.totalAmount - dispatchAmount,
-      createdAt: sale.createdAt
-    };
-  });
-} 
+    departureDateTime: item.pickupDate + " " + item.pickupTime,
+    departureCity: item.pickupName,
+    departureLocation: item.pickupAddressSnapshot,
+    arrivalDateTime: item.deliveryDate + " " + item.deliveryTime,
+    arrivalCity: item.deliveryName,
+    arrivalLocation: item.deliveryAddressSnapshot,
+
+    shipperId: item.companyId,
+    shipperName: item.companyName,
+    shipperBusinessNumber: item.companyBusinessNumber,
+    
+    // chargeAmount: item.chargeAmount,
+    // //amount: item.totalAmount,
+    // //fee: item.totalAmount - item.chargeAmount,
+    // shipperName: item.companyName,
+    // //shipperContact: item.managerContact,
+    // //shipperEmail: item.managerEmail,
+    // //manager: item.manager,
+    // driver: {
+    //   name: item.assignedDriverSnapshot?.name || "정보 없음",
+    //   contact: item.assignedDriverSnapshot?.contact || "정보 없음",
+    // };
+    // createdAt: item.createdAt
+    
+   
+  } as IBrokerOrder));
+}
