@@ -645,7 +645,7 @@ export function SettlementEditFormSheet() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
 
               {/* 회사 정보와 담당자 정보 섹션을 그리드로 감싸기 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-2">
                 {/* 회사 정보 섹션 */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between mb-2">
@@ -1423,12 +1423,8 @@ export function SettlementEditFormSheet() {
                 </div>
               </div>
 
-              
-
-              
-
               {/* 선택된 화물 목록 - 컴팩트하게 표시 */}
-              <Collapsible className="border rounded-md mt-2">
+              <Collapsible className="border rounded-md mt-4">
                 <div className="flex items-center justify-between p-2 bg-muted/50">
                   <h3 className="text-sm font-semibold">선택된 화물 ({orders?.length || 0}개)</h3>
                   <CollapsibleTrigger asChild>
