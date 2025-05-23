@@ -11,16 +11,14 @@ import {
 } from "lucide-react";
 import { useIncomeStore } from "@/store/income-store";
 import { useIncomeWaitingStore } from "@/store/income-waiting-store";
+import { useBrokerChargeStore } from "@/store/broker-charge-store";
 
 import { IncomeDetailSheet } from "@/components/broker/income/income-detail-sheet";
 
-
 import { IncomeStatusType } from "@/types/income";
-
 
 import { WaitingTable } from "@/components/broker/sale/settlement-waiting-table";
 import { WaitingSearch } from "@/components/broker/sale/settlement-waiting-search";
-
 
 import WaitingSummary from "@/components/broker/sale/settlement-waiting-summary";
 
@@ -48,7 +46,7 @@ export default function IncomePage() {
     resetFilter
   } = useIncomeStore();
   
-  // 정산 대기 화물 스토어 접근
+  // 정산 대기 화물 스토어 접근 (기존)
   const {
     filter: waitingFilter,
     filterOptions,
@@ -65,6 +63,26 @@ export default function IncomePage() {
     createIncome,
     getSelectedOrders,
   } = useIncomeWaitingStore();
+
+  // broker-charge-store 사용 (새로운 구현)
+  const {
+    waitingItems,
+    selectedWaitingItemIds,
+    waitingItemsTotal,
+    waitingItemsPage,
+    waitingItemsPageSize,
+    waitingItemsTotalPages,
+    waitingItemsIsLoading,
+    waitingItemsFilter,
+    settlementSummary,
+    fetchWaitingItems,
+    selectWaitingItem,
+    selectAllWaitingItems,
+    updateWaitingItemsPage,
+    updateWaitingItemsFilter,
+    calculateSettlementSummary,
+    createOrderSaleFromWaitingItems
+  } = useBrokerChargeStore();
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -89,20 +107,31 @@ export default function IncomePage() {
       filter.manager,
       fetchIncomes]);
       
-  // 정산 대기 화물 데이터 로드
+  // 정산 대기 화물 데이터 로드 (기존)
   useEffect(() => {
     console.log('useEffect 실행됨 - 정산 대기 화물 데이터 로드');
     fetchWaitingOrders();
   }, [fetchWaitingOrders]);
+
+  // 정산 대기 화물 데이터 로드 (새로운 구현)
+  useEffect(() => {
+    console.log('useEffect 실행됨 - 새로운 정산 대기 화물 데이터 로드');
+    fetchWaitingItems();
+  }, [fetchWaitingItems]);
 
   // 페이지 변경 처리
   const handlePageChange = (page: number) => {
     setPage(page);
   };
   
-  // 정산 대기 화물 페이지 변경 처리
+  // 정산 대기 화물 페이지 변경 처리 (기존)
   const handleWaitingPageChange = (page: number) => {
     setWaitingPage(page);
+  };
+
+  // 정산 대기 화물 페이지 변경 처리 (새로운 구현)
+  const handleBrokerWaitingPageChange = (page: number) => {
+    updateWaitingItemsPage(page);
   };
 
   // 정산 상태 변경 처리
@@ -134,8 +163,23 @@ export default function IncomePage() {
     }
   };
   
-  // 현재 페이지의 정산 대기 화물 목록
+  // 현재 페이지의 정산 대기 화물 목록 (기존)
   const currentWaitingOrders = getOrdersByPage(waitingCurrentPage);
+
+  // 정산 대기 화물에서 선택 처리 (새로운 구현)
+  const handleWaitingItemSelect = (id: string, selected: boolean) => {
+    selectWaitingItem(id, selected);
+  };
+
+  // 정산 대기 화물 전체 선택 처리 (새로운 구현)
+  const handleSelectAllWaitingItems = (selected: boolean) => {
+    selectAllWaitingItems(selected);
+  };
+
+  // 정산 대기 화물로 정산 생성 처리 (새로운 구현)
+  const handleCreateOrderSale = () => {
+    createOrderSaleFromWaitingItems();
+  };
 
   return (
     <>
@@ -209,7 +253,7 @@ export default function IncomePage() {
                   </TabsList>
                             
                   
-                  {/* 정산 대기 탭 */}
+                  {/* 정산 대기 탭 - 새로운 구현 사용 */}
                   <TabsContent value="WAITING" className="">
                     <div className="flex flex-col space-y-4 relative">
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -224,35 +268,76 @@ export default function IncomePage() {
                       
                       {/* 검색 필터 */}
                       <WaitingSearch
-                        filter={waitingFilter}
-                        setFilter={setWaitingFilter}
-                        filterOptions={filterOptions}
+                        filter={{
+                          searchTerm: waitingItemsFilter.searchTerm,
+                          startDate: waitingItemsFilter.startDate,
+                          endDate: waitingItemsFilter.endDate,
+                          company: waitingItemsFilter.companyId
+                        }}
+                        setFilter={(newFilter) => {
+                          updateWaitingItemsFilter({
+                            searchTerm: newFilter.searchTerm,
+                            startDate: newFilter.startDate,
+                            endDate: newFilter.endDate,
+                            companyId: newFilter.company
+                          });
+                        }}
+                        filterOptions={{
+                          cities: [],
+                          vehicleTypes: [],
+                          weightTypes: [],
+                          statuses: [],
+                          companies: [],
+                          managers: []
+                        }}
                       />
                       
                       {/* 로딩 상태 또는 화물 테이블 */}
                       <div className="min-h-[300px]">
-                        {waitingIsLoading ? (
+                        {waitingItemsIsLoading ? (
                           <div className="flex h-[300px] items-center justify-center">
                             <Loader2 className="h-8 w-8 animate-spin text-primary/70" />
                           </div>
                         ) : (
                           <WaitingTable
-                            orders={currentWaitingOrders}
-                            currentPage={waitingCurrentPage}
-                            totalPages={waitingTotalPages}
-                            onPageChange={handleWaitingPageChange}
-                            selectedOrders={selectedOrderIds}
-                            onOrderSelect={selectOrder}
-                            onSelectAll={selectAllOrders}
+                            orders={waitingItems.map(item => ({
+                              id: item.id,
+                              orderId: item.orderId,
+                              company: item.companyName,
+                              status: "운송완료",
+                              amount: item.dispatchAmount,
+                              chargeAmount: item.chargeAmount,
+                              departureLocation: "-",
+                              arrivalLocation: "-",
+                              departureDateTime: item.createdAt,
+                              arrivalDateTime: item.createdAt,
+                              vehicle: { type: "-", weight: "-" },
+                              driver: { name: "-" },
+                              paymentMethod: "계좌이체",
+                              manager: "-"
+                            }))}
+                            currentPage={waitingItemsPage}
+                            totalPages={waitingItemsTotalPages}
+                            onPageChange={handleBrokerWaitingPageChange}
+                            selectedOrders={selectedWaitingItemIds}
+                            onOrderSelect={handleWaitingItemSelect}
+                            onSelectAll={handleSelectAllWaitingItems}
                           />
                         )}
                       </div>
                       
                       {/* 선택된 화물 요약 정보 */}
-                      {selectedOrderIds.length > 0 && (
+                      {selectedWaitingItemIds.length > 0 && settlementSummary && (
                         <WaitingSummary
-                          selectedOrders={getSelectedOrders()}
-                          onCreateIncome={createIncome}
+                          selectedOrders={waitingItems
+                            .filter(item => selectedWaitingItemIds.includes(item.id))
+                            .map(item => ({
+                              id: item.id,
+                              company: item.companyName,
+                              amount: item.chargeAmount,
+                              fee: item.dispatchAmount
+                            }))}
+                          onCreateIncome={handleCreateOrderSale}
                         />
                       )}
                     </div>
