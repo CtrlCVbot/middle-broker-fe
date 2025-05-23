@@ -269,14 +269,12 @@ export default function IncomePage() {
                       {/* 검색 필터 */}
                       <WaitingSearch
                         filter={{
-                          searchTerm: waitingItemsFilter.searchTerm,
                           startDate: waitingItemsFilter.startDate,
                           endDate: waitingItemsFilter.endDate,
                           company: waitingItemsFilter.companyId
                         }}
                         setFilter={(newFilter) => {
                           updateWaitingItemsFilter({
-                            searchTerm: newFilter.searchTerm,
                             startDate: newFilter.startDate,
                             endDate: newFilter.endDate,
                             companyId: newFilter.company
@@ -304,18 +302,26 @@ export default function IncomePage() {
                               id: item.id,
                               orderId: item.orderId,
                               company: item.companyName,
-                              status: "운송완료",
+                              status: item.isClosed,
+                              statusProgress: item.flowStatus,
                               amount: item.dispatchAmount,
                               chargeAmount: item.chargeAmount,
-                              departureLocation: "-",
-                              arrivalLocation: "-",
-                              departureDateTime: item.createdAt,
-                              arrivalDateTime: item.createdAt,
-                              vehicle: { type: "-", weight: "-" },
-                              driver: { name: "-" },
+                              fee: item.dispatchAmount,
+                              departureLocation: item.pickupName,
+                              arrivalLocation: item.deliveryName,
+                              pickupAddressSnapshot: item.pickupAddressSnapshot,
+                              deliveryAddressSnapshot: item.deliveryAddressSnapshot,
+                              departureCity: "-",
+                              arrivalCity: "-",
+                              departureDateTime: item.pickupDate,
+                              arrivalDateTime: item.deliveryDate,
+                              pickupTime: item.pickupTime,
+                              deliveryTime: item.deliveryTime,
+                              vehicle: { type: item.requestedVehicleType, weight: item.requestedVehicleWeight },
+                              driver: { name: item.assignedDriverSnapshot?.name, contact: item.assignedDriverSnapshot?.contact },
                               paymentMethod: "계좌이체",
                               manager: "-"
-                            }))}
+                            }) as any)}
                             currentPage={waitingItemsPage}
                             totalPages={waitingItemsTotalPages}
                             onPageChange={handleBrokerWaitingPageChange}
@@ -335,8 +341,21 @@ export default function IncomePage() {
                               id: item.id,
                               company: item.companyName,
                               amount: item.chargeAmount,
-                              fee: item.dispatchAmount
-                            }))}
+                              fee: item.dispatchAmount,
+                              status: "운송완료",
+                              statusProgress: "운송완료",
+                              departureDateTime: item.createdAt,
+                              arrivalDateTime: item.createdAt,
+                              departureLocation: "-",
+                              arrivalLocation: "-",
+                              departureCity: "-", 
+                              arrivalCity: "-",
+                              vehicle: { type: "-", weight: "-" },
+                              driver: { name: "-" },
+                              paymentMethod: "계좌이체",
+                              manager: "-",
+                              chargeAmount: item.chargeAmount
+                            }) as any )}
                           onCreateIncome={handleCreateOrderSale}
                         />
                       )}

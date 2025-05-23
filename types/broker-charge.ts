@@ -148,10 +148,23 @@ export interface ISettlementWaitingItem {
   orderId: string;
   companyId: string;
   companyName: string;
+  pickupName: string;
+  deliveryName: string;
+  pickupDate: string;
+  pickupTime: string;
+  deliveryDate: string;
+  deliveryTime: string;
+  pickupAddressSnapshot: string;
+  deliveryAddressSnapshot: string;
+  requestedVehicleWeight: number;
+  requestedVehicleType: string;
+  assignedDriverSnapshot: any;
   chargeAmount: number; // 청구액 (운송비)
   dispatchAmount: number; // 배차비
   profitAmount: number; // 수익 (청구액 - 배차비)
   createdAt: string;
+  isClosed: boolean;
+  flowStatus: string;
 }
 
 // 정산 대기 목록 페이지 응답 타입

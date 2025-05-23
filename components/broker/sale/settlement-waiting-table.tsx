@@ -100,7 +100,7 @@ export function WaitingTable({
               </TableHead>
               <TableHead>업체명</TableHead>
               <TableHead className="w-[80px] text-center">ID</TableHead>
-              <TableHead className="w-[80px] text-center">상태</TableHead>             
+              <TableHead className="text-center">상태</TableHead>             
               <TableHead className="w-[80px] ">일정</TableHead>
               <TableHead className="w-[120px] ">시간</TableHead>              
               <TableHead>상차지</TableHead>
@@ -145,17 +145,18 @@ export function WaitingTable({
                     {order.company}
                   </TableCell>
                   <TableCell className="font-medium text-primary">
-                    {order.id}
+                    {order.id.slice(0, 8)}
                   </TableCell>
                   <TableCell>
                     {/* <BrokerStatusBadge status={order.status} size="sm" />                     */}
-                    {order.status === "운송완료" ? <SquareCheckBig className="h-4 w-4 mr-1 text-purple-700" /> : <Ban className="h-4 w-4 mr-1 text-red-700" />}
+                    {order.status ? <SquareCheckBig className="h-4 w-4 mr-1 text-purple-700" /> : <Ban className="h-4 w-4 mr-1 text-red-700" />}
                   </TableCell>
                   <TableCell className="font-medium">
                     {getSchedule(order.departureDateTime, order.departureDateTime, order.arrivalDateTime, order.departureDateTime)}
+                    
                   </TableCell>
                   <TableCell className="font-medium text-muted-foreground">
-                    {getTime(order.departureDateTime, order.departureDateTime, order.arrivalDateTime, order.arrivalDateTime)}
+                    {getTime(order.departureDateTime, order.departureDateTime, order.arrivalDateTime, order.departureDateTime)}
                   </TableCell>
 
                   <TableCell className="max-w-[100px] truncate" title={order.departureLocation}>

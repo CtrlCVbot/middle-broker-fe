@@ -233,6 +233,8 @@ export async function getSettlementWaitingItems(params: {
     if (params.companyId) queryParams.append('companyId', params.companyId);
     if (params.startDate) queryParams.append('startDate', params.startDate);
     if (params.endDate) queryParams.append('endDate', params.endDate);
+
+    console.log("정산 대기 화물 조회 파라미터", queryParams.toString());
     
     // 임시 구현: 완료된 주문을 조회한 후 정산 대기 항목으로 변환
     // 실제 API가 구현되면 아래 코드는 수정해야 함

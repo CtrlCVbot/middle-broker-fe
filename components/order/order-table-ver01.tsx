@@ -113,6 +113,7 @@ export const getSchedule = (pickupDate: string, pickupTime: string, deliveryDate
 }
 
 export const getTime = (pickupDate: string, pickupTime: string, deliveryDate: string, deliveryTime: string) => {
+  console.log("pickupDate, pickupTime, deliveryDate, deliveryTime", pickupDate, pickupTime, deliveryDate, deliveryTime);
   const pickupTimeObj = format(parseISO('1970-01-01T' + pickupTime), 'HH:mm', {locale: ko});
   let deliveryTimeObj = format(parseISO('1970-01-01T' + deliveryTime), 'HH:mm', {locale: ko});
   const deliveryDateObj = format(deliveryDate, "dd", { locale: ko });
@@ -127,6 +128,8 @@ export const getTime = (pickupDate: string, pickupTime: string, deliveryDate: st
     return pickupTimeObj + ' - ' + deliveryTimeObj;
   }
 }
+
+
 
 function formatTimeOnly(dateStr: string | Date): string {
   const date = typeof dateStr === 'string' ? parseISO(dateStr) : dateStr;

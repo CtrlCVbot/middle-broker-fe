@@ -9,8 +9,10 @@ import { companies } from '@/db/schema/companies';
 // 정산 대기 목록 조회 API
 export async function GET(request: NextRequest) {
   try {
+    console.log("정산 대기 목록 조회 API 호출");
     const searchParams = request.nextUrl.searchParams;
     
+    console.log("페이지네이션 파라미터");
     // 페이지네이션 파라미터
     const page = Number(searchParams.get('page')) || 1;
     const pageSize = Number(searchParams.get('pageSize')) || 10;
@@ -50,7 +52,8 @@ export async function GET(request: NextRequest) {
       .select({ orderId: orderSales.orderId })
       .from(orderSales);
 
-    
+    console.log("정산이 이미 생성된 주문 ID 조회 완료", orderIdsWithSales);
+
     // 정산이 아직 생성되지 않은 주문만 필터링
     // conditions.push(
     //   not(inArray(orders.id, orderIdsWithSales.map((item: any) => item.orderId)))
@@ -66,11 +69,25 @@ export async function GET(request: NextRequest) {
         companyId: orders.companyId,
         companyName: companies.name,
         chargeAmount: orderSales.totalAmount,
-        createdAt: orders.createdAt
+        createdAt: orders.createdAt,
+        pickupName: orders.pickupName,
+        deliveryName: orders.deliveryName,
+        pickupDate: orders.pickupDate,
+        pickupAddressSnapshot: orders.pickupAddressSnapshot,
+        pickupTime: orders.pickupTime,
+        deliveryDate: orders.deliveryDate,
+        deliveryAddressSnapshot: orders.deliveryAddressSnapshot,
+        deliveryTime: orders.deliveryTime,
+        requestedVehicleWeight: orders.requestedVehicleWeight,
+        requestedVehicleType: orders.requestedVehicleType,
+        assignedDriverSnapshot: orderDispatches.assignedDriverSnapshot,        
+        isClosed: orderDispatches.isClosed,
+        flowStatus: orderDispatches.brokerFlowStatus
       })
       .from(orders)
       .leftJoin(companies, eq(orders.companyId, companies.id))
-      .leftJoin(orderSales, eq(orders.id, orderSales.orderId))
+      .innerJoin(orderDispatches, eq(orders.id, orderDispatches.orderId))
+      .innerJoin(orderSales, eq(orders.id, orderSales.orderId))
       .where(query)
       .orderBy(desc(orders.createdAt))
       .limit(pageSize)
@@ -79,9 +96,12 @@ export async function GET(request: NextRequest) {
       db.select({ count: sql<number>`count(*)` })
       .from(orders)
       .where(query)
+      .innerJoin(orderDispatches, eq(orderDispatches.orderId, orders.id)) // ✅ 필수
+      .innerJoin(orderSales, eq(orders.id, orderSales.orderId)) // ✅ 필요한 경우만
       .execute()
       .then(res => Number(res[0].count))
     ]);
+    console.log("주문 데이터 조회 완료", waitingOrders);
     
     // 각 주문에 대한 예상 배차비 계산 (실제로는 dispatch 테이블에서 가져와야 함)
     // 테스트를 위해 임시로 총액의 90%로 설정
