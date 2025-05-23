@@ -166,6 +166,7 @@ export interface ISettlementWaitingItem {
   createdAt: string;
   isClosed: boolean;
   flowStatus: string;
+  amount: number;
 }
 
 // 정산 대기 목록 페이지 응답 타입

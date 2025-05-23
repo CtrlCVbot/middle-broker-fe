@@ -261,10 +261,7 @@ export function BrokerOrderTable({
                       ) : (
                         getStatusBadge(order.flowStatus as BrokerOrderStatusType) 
                       )}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                    {order.isClosed}
-                    </TableCell>
+                    </TableCell>                    
                     <TableCell className="font-medium">
                       {getSchedule(order.pickupDateTime, order.deliveryDateTime)}
                     </TableCell>
@@ -332,7 +329,7 @@ export function BrokerOrderTable({
                             <span className="text-xs text-muted-foreground line-through">
                               {formatCurrency(order.estimatedAmount)}원
                             </span>
-                          )}
+                          )}                          
                         </div>
                       ) : (
                         <span className="text-muted-foreground">정보 없음</span>

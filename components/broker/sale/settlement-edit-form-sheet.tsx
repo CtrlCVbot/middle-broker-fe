@@ -517,8 +517,8 @@ export function SettlementEditFormSheet() {
   const calculatedTotals = useMemo(() => {
     if (!orders || orders.length === 0) return { totalFreight: 0, totalDispatch: 0, totalNet: 0, tax: 0, totalAmount: 0 };
     
-    const totalFreight = orders.reduce((sum, order) => sum + (order.amount || 0), 0);
-    const totalDispatch = orders.reduce((sum, order) => sum + (order.fee || 0), 0);
+    const totalFreight = orders.reduce((sum, order) => sum + (Number(order.amount) || 0), 0);
+    const totalDispatch = orders.reduce((sum, order) => sum + (Number(order.fee) || 0), 0);
     const totalNet = totalFreight - totalDispatch;
     const tax = Math.round(totalNet * 0.1);
     const totalAmount = totalNet + tax;
@@ -643,11 +643,12 @@ export function SettlementEditFormSheet() {
           {/* 정산 폼 */}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+
               {/* 회사 정보와 담당자 정보 섹션을 그리드로 감싸기 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                 {/* 회사 정보 섹션 */}
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2 text-primary">
                       <Building2 className="h-5 w-5 text-primary" />
                       <h3 className="text-lg font-bold">회사 정보</h3>
@@ -699,7 +700,7 @@ export function SettlementEditFormSheet() {
                   )}
 
                   {form.watch("shipperName") === "기본 화주" || form.watch("shipperName") === "" ? (
-                    <div className="flex flex-col items-center justify-center py-4 border border-dashed rounded-md bg-muted/30">
+                    <div className="flex flex-col items-center justify-center py-4 border-5 border-dashed rounded-md bg-muted/30">
                       <Building2 className="h-10 w-10 text-muted-foreground mb-2" />
                       <p className="text-sm text-muted-foreground mb-4">청구 회사 정보를 검색해주세요</p>
                       <div className="flex gap-2">
@@ -901,7 +902,7 @@ export function SettlementEditFormSheet() {
 
                 {/* 담당자 정보 섹션 */}
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2 text-primary">
                       <User className="h-5 w-5 text-primary" />
                       <h3 className="text-lg font-bold">담당자 정보</h3>
@@ -946,7 +947,7 @@ export function SettlementEditFormSheet() {
                   </div>
                   
                   {!form.watch("manager") || form.watch("manager") === "김중개" ? (
-                    <div className="flex flex-col items-center justify-center py-4 border border-dashed rounded-md bg-muted/30">
+                    <div className="flex flex-col items-center justify-center py-4 border-5 border-dashed rounded-md bg-muted/30">
                       <User className="h-10 w-10 text-muted-foreground mb-2" />
                       <p className="text-sm text-muted-foreground mb-4">
                         {!selectedCompanyId ? '먼저 회사를 선택해주세요' : '담당자 정보를 입력해주세요'}
@@ -1109,9 +1110,10 @@ export function SettlementEditFormSheet() {
               </div>
 
               {/* 정산 기간 설정 + 기타 섹션 */}              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* 정산 기간 설정 섹션 */}
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2 text-primary">
                       <CalendarIcon className="h-5 w-5 text-primary" />
                       <h3 className="text-lg font-bold">정산 기간 설정</h3>
@@ -1267,25 +1269,29 @@ export function SettlementEditFormSheet() {
 
                 {/* 기타 섹션 */}
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2 text-primary">
                       <Ellipsis className="h-5 w-5 text-primary" />
                       <h3 className="text-lg font-bold">기타 정보</h3>
                     </div>
                     
                     <div className="flex gap-2">
-                      {/* <Button
+                      <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => {
-                          // 상차 기준으로 기간 자동 설정
-                          handlePeriodTypeChange("departure");
-                        }}
+                        onClick={() => form.reset({
+                          ...form.getValues(),
+                          memo: "",
+                          paymentMethod: "계좌이체",
+                          taxFree: false,
+                          hasTax: true,
+                          issueInvoice: false,
+                        })}
                         disabled={loading}
                       >
-                        자동 설정
-                      </Button> */}
+                        초기화
+                      </Button>
                     </div>
                   </div>
 

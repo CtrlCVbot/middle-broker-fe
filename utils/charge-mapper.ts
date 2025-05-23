@@ -269,6 +269,8 @@ export function mapWaitingItemsToBrokerOrders(
     shipperId: item.companyId,
     shipperName: item.companyName,
     shipperBusinessNumber: item.companyBusinessNumber,
+
+    amount: item.amount,
     
     // chargeAmount: item.chargeAmount,
     // //amount: item.totalAmount,
