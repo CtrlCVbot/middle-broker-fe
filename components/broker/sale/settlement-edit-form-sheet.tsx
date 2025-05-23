@@ -658,11 +658,17 @@ export function SettlementEditFormSheet() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => form.reset({
+                        onClick={() => {
+                          form.reset({
                           ...form.getValues(),
                           shipperName: "",
-                          businessNumber: ""
-                        })}
+                          businessNumber: "",
+                          manager: "",
+                          managerContact: "",
+                          managerEmail: "",
+                          });
+                          setSelectedCompanyId(null);
+                        }}
                         disabled={loading}
                       >
                         초기화
@@ -680,6 +686,7 @@ export function SettlementEditFormSheet() {
                           variant="outline"
                           className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
                           onClick={() => {
+                            setSelectedCompanyId(shipperGroups[shipper].orders[0].shipperId || null);
                             form.setValue("shipperName", shipperGroups[shipper].orders[0].shipperName);
                             form.setValue("businessNumber", shipperGroups[shipper].orders[0].shipperBusinessNumber || "000-00-00000"); // 실제로는 해당 업체의 사업자번호
                           }}
@@ -788,25 +795,26 @@ export function SettlementEditFormSheet() {
 
                           {/* 선택된 회사의 담당자 뱃지 표시 */}
                           {selectedCompanyId && brokerManagers.length > 0 && (
-                            <div className="pb-3">
-                              <div className="text-xs text-muted-foreground mb-2">담당자 목록</div>
-                              <div className="flex flex-wrap gap-1.5">
-                                {selectedCompanyId && brokerManagers.filter(manager => manager.status === '활성').map((manager) => (
-                                  <Badge 
-                                    key={manager.id} 
-                                    variant="outline"
-                                    className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
-                                    onClick={() => {
-                                      form.setValue("manager", manager.name);
-                                      form.setValue("managerContact", manager.phoneNumber || "");
-                                      form.setValue("managerEmail", manager.email || "");
-                                    }}
-                                  >
-                                    {manager.name}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
+                            // <div className="pb-3">
+                            //   <div className="text-xs text-muted-foreground mb-2">담당자 목록</div>
+                            //   <div className="flex flex-wrap gap-1.5">
+                            //     {selectedCompanyId && brokerManagers.filter(manager => manager.status === '활성').map((manager) => (
+                            //       <Badge 
+                            //         key={manager.id} 
+                            //         variant="outline"
+                            //         className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
+                            //         onClick={() => {
+                            //           form.setValue("manager", manager.name);
+                            //           form.setValue("managerContact", manager.phoneNumber || "");
+                            //           form.setValue("managerEmail", manager.email || "");
+                            //         }}
+                            //       >
+                            //         {manager.name}
+                            //       </Badge>
+                            //     ))}
+                            //   </div>
+                            // </div>
+                            <></>
                           )}
                         </div>
 
@@ -933,7 +941,7 @@ export function SettlementEditFormSheet() {
                       </Badge>
                     ))}
                     {!selectedCompanyId && (
-                      <div className="text-xs text-muted-foreground">먼저 회사를 선택해주세요</div>
+                      <div className="text-xs text-muted-foreground py-1">먼저 회사를 선택해주세요</div>
                     )}
                   </div>
                   
