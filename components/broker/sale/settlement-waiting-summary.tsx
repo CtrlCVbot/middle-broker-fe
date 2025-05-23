@@ -51,13 +51,14 @@ const WaitingSummary: React.FC<WaitingSummaryProps> = ({
         };
       }
 
-      const freight = order.amount || 0;
-      const dispatch = order.fee || 0;
+      const freight = Number(order.amount) || 0;
+      const dispatch = Number(order.fee) || 0;
       const profit = freight - dispatch;
 
       groups[companyId].orders.push(order);
       groups[companyId].count += 1;
       groups[companyId].totalFreight += freight;
+      console.log("groups[companyId].totalFreight", groups[companyId].totalFreight);
       groups[companyId].totalDispatch += dispatch;
       groups[companyId].totalProfit += profit;
     });
@@ -85,7 +86,7 @@ const WaitingSummary: React.FC<WaitingSummaryProps> = ({
         {/* 헤더 영역 */}
         <div className="flex items-center justify-between mb-2.5">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-medium hidden sm:inline-block">화물 그룹화 정산 요약</h3>
+            <h3 className="text-sm font-medium hidden sm:inline-block">선택 정산 요약</h3>
             <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
               총 {totals.totalOrders}건
             </span>

@@ -77,7 +77,8 @@ export async function GET(request: NextRequest) {
     const totalChargeAmount = companies.reduce((sum, company) => sum + company.chargeAmount, 0);
     const totalDispatchAmount = companies.reduce((sum, company) => sum + company.dispatchAmount, 0);
     const totalProfitAmount = companies.reduce((sum, company) => sum + company.profitAmount, 0);
-    
+
+    console.log("전체 합계 계산", totalItems, totalChargeAmount, totalDispatchAmount, totalProfitAmount);
     const summary: ISettlementSummary = {
       totalItems,
       totalChargeAmount,

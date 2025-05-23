@@ -260,25 +260,30 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
     
     selectedItems.forEach(item => {
       const { companyId, companyName, chargeAmount, dispatchAmount, profitAmount } = item;
-      
+            
       if (companySummaries.has(companyId)) {
         const summary = companySummaries.get(companyId)!;
         summary.items += 1;
-        summary.chargeAmount += chargeAmount;
-        summary.dispatchAmount += dispatchAmount;
-        summary.profitAmount += profitAmount;
+        console.log("typeof chargeAmount:", typeof chargeAmount, chargeAmount);
+
+        console.log("typeof chargeAmount:", typeof Number(chargeAmount), chargeAmount);
+        summary.chargeAmount += Number(chargeAmount);
+        console.log("typeof summary.chargeAmount:", typeof summary.chargeAmount, summary.chargeAmount);
+        summary.dispatchAmount += Number(dispatchAmount);
+        summary.profitAmount += Number(profitAmount);
       } else {
         companySummaries.set(companyId, {
           companyId,
           companyName,
           items: 1,
-          chargeAmount,
-          dispatchAmount,
-          profitAmount
+          chargeAmount: Number(chargeAmount),       // 👈 여기도 꼭 숫자 변환
+          dispatchAmount: Number(dispatchAmount),
+          profitAmount: Number(profitAmount)
         });
       }
     });
     
+    console.log("companySummaries", companySummaries);
     // 전체 요약 계산
     const companies = Array.from(companySummaries.values());
     const summary: ISettlementSummary = {
@@ -288,6 +293,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       totalProfitAmount: companies.reduce((sum, company) => sum + company.profitAmount, 0),
       companies
     };
+    console.log("summary", summary);
     
     set({ settlementSummary: summary });
   },
