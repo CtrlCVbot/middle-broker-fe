@@ -702,7 +702,7 @@ export function SettlementEditFormSheet() {
                   )}
 
                   {form.watch("shipperName") === "기본 화주" || form.watch("shipperName") === "" ? (
-                    <div className="flex flex-col items-center justify-center py-4 border-5 border-dashed rounded-md bg-muted/30 mb-2">
+                    <div className="flex flex-col items-center justify-center py-4 border-5 border-dashed border-gray-300 rounded-md bg-gray-100 mb-2">
                       <Building2 className="h-8 w-8 text-muted-foreground mb-2" />
                       <p className="text-sm text-muted-foreground mb-4">청구 회사 정보를 검색해주세요</p>
                       <div className="flex gap-2">
