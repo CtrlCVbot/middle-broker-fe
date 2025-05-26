@@ -6,11 +6,14 @@ import {
   timestamp,
   pgEnum,
   text,
-  numeric
+  numeric,
+  jsonb
 } from "drizzle-orm/pg-core";
 import { companies } from "./companies";
 import { orderSales } from "./orderSales";
-
+import { ICompanySnapshot, IUserSnapshot } from "@/types/order-ver01";
+import { users } from "./users";
+import { bankCodeEnum } from "./companies";
 // 번들 상태 Enum 정의
 export const salesBundleStatusEnum = pgEnum('sales_bundle_status', [
   'draft',     // 작성 중
@@ -25,21 +28,63 @@ export const bundleAdjTypeEnum = pgEnum('bundle_adj_type', [
   'surcharge'   // 추가금
 ]);
 
+// 결제방법 Enum 정의
+export const paymentMethodEnum = pgEnum('payment_method', [
+  'cash',       // 현금
+  'bank_transfer', // 은행 이체
+  'card',       // 카드
+  'etc'        // 기타
+]);
+
+// 기간 유형 Enum 정의
+export const bundlePeriodTypeEnum = pgEnum('bundle_period_type', [
+  'departure', // 출발기간
+  'arrival',   // 도착기간
+  'etc'        // 기타
+]);
+
 // 매출 번들 테이블 (헤더)
 export const salesBundles = pgTable('sales_bundles', {
   id: uuid('id').defaultRandom().primaryKey(),
   
-  // 고객 정보
+  // 고객 정보 - 청구 회사
   companyId: uuid('company_id').notNull().references(() => companies.id),
+  companySnapshot: jsonb('company_snapshot').$type<ICompanySnapshot>(),
+  managerId: uuid('manager_id').references(() => users.id),
+  managerSnapshot: jsonb('manager_snapshot').$type<IUserSnapshot>(),
+
+  //결제방법
+  paymentMethod: paymentMethodEnum('payment_method').notNull().default('bank_transfer'),
+
+  // 계좌 정보
+  bankCode: bankCodeEnum('bank_code'), //은행코드  
+  bankAccount: varchar('bank_account', { length: 30 }), //계좌번호
+  bankAccountHolder: varchar('bank_account_holder', { length: 50 }), //예금주
   
+  //기타
+  settlementMemo: varchar('settlement_memo', { length: 200 }), //정산 메모
+
+
   // 기간 정보
-  periodFrom: date('period_from'),
-  periodTo: date('period_to'),
+  periodType: bundlePeriodTypeEnum('period_type').notNull().default('departure'), //기간 유형
+  periodFrom: date('period_from'),  //운송기간 시작일
+  periodTo: date('period_to'), //운송기간 종료일
+  invoiceIssuedAt: date('invoice_issued_at'),          // 세금계산서 발행일  
+
+  depositRequestedAt: date('deposit_requested_at'),    // 입금 요청일 (이메일/청구 기준)
+  depositReceivedAt: date('deposit_received_at'),      // 입금 완료일 (실제 입금일)
+
+  settlementConfirmedAt: date('settlement_confirmed_at'), // 정산 승인일 (회계팀 승인 등)
+  settlementBatchId: varchar('settlement_batch_id', { length: 50 }), // 정산 회차 ID입니다. 예: "2025-05-[companyId]-SALES-BATCH-01"처럼 관리 가능하며, 배치 단위 정산 처리 시 사용
+  settledAt: date('settled_at'),                       // 최종 정산 완료일 (회계 처리일)
+
   
   // 인보이스 정보
-  invoiceNo: varchar('invoice_no', { length: 50 }),
-  totalAmount: numeric('total_amount', { precision: 14, scale: 2 }),
-  status: salesBundleStatusEnum('status').default('draft').notNull(),
+  invoiceNo: varchar('invoice_no', { length: 50 }), //세금계산서 번호
+  totalAmount: numeric('total_amount', { precision: 14, scale: 2 }), //총 금액
+  totalTaxAmount: numeric('total_tax_amount', { precision: 14, scale: 2 }), //총 세액
+  totalAmountWithTax: numeric('total_amount_with_tax', { precision: 14, scale: 2 }), //총 금액(세액포함)=청구금액
+  status: salesBundleStatusEnum('status').default('draft').notNull(), //상태
   
   // 감사 로그
   createdAt: timestamp('created_at').defaultNow().notNull(),
