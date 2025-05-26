@@ -129,8 +129,7 @@ export function WaitingTable({
                   key={order.id} 
                   className={`cursor-pointer hover:bg-secondary/20 ${selectedOrders.includes(order.id) ? 'bg-secondary/30' : ''}`}
                   onClick={() => handleRowSelect(order.id)}
-                >
-                  
+                >                  
                   <TableCell className="text-center">
                     <Checkbox 
                       checked={selectedOrders.includes(order.id)}

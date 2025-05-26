@@ -73,6 +73,7 @@ interface IBrokerChargeState {
 // 정산 폼 초기 데이터
 const initialSettlementFormData: ISettlementFormData = {
   shipperName: '',
+  shipperCeo: '',
   businessNumber: '',
   billingCompany: '',
   manager: '',

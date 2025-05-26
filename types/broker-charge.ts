@@ -149,6 +149,7 @@ export interface ISettlementWaitingItem {
   companyId: string;
   companyName: string;
   companyBusinessNumber: string;
+  companyCeo: string;
   pickupName: string;
   deliveryName: string;
   pickupDate: string;
@@ -203,6 +204,7 @@ export type SettlementPeriodType = 'departure' | 'arrival';
 // 정산 폼 데이터 타입
 export interface ISettlementFormData {
   shipperName: string;
+  shipperCeo: string;
   businessNumber: string;
   billingCompany: string;
   manager?: string;

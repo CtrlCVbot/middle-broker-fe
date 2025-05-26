@@ -28,15 +28,16 @@ import {
   Clock,
   Copy,
   Send,
-  Truck
+  Truck,
+  ShieldCheck
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useIncomeDetailStore } from "@/store/income-store";
 import { IncomeStatusType, AdditionalFeeType } from "@/types/income";
-import { IncomeAdditionalCost } from "./income-additional-cost";
-import { IncomeStatusBadge } from "./income-status-badge";
+import { IncomeAdditionalCost } from "./settlement-additional-cost";
+import { IncomeStatusBadge } from "./settlement-status-badge";
 
-export function IncomeDetailSheet() {
+export function SettlementBundleDetailSheet() {
   const {
     isSheetOpen,
     closeSheet,
@@ -129,7 +130,7 @@ export function IncomeDetailSheet() {
     }
 
     return (
-      <div className="space-y-4 p-6">
+      <div className="space-y-4 px-6 pt-2">
         {/* 정산 기본 정보 카드 */}
         <Card>
           <CardHeader className="pb-3">
@@ -150,7 +151,7 @@ export function IncomeDetailSheet() {
           </CardHeader>
           <CardContent className="space-y-4">
             {/* 정산 기본 정보 */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 px-3 py-2 gap-4 bg-muted/50 rounded-md">
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground mb-1">정산번호</h4>
                 <p className="text-sm font-semibold">{incomeDetail.id}</p>
@@ -167,14 +168,7 @@ export function IncomeDetailSheet() {
                 <h4 className="text-sm font-medium text-muted-foreground mb-1">사업자번호</h4>
                 <p className="text-sm font-semibold">{incomeDetail.businessNumber}</p>
               </div>
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-1">정산 시작일</h4>
-                <p className="text-sm font-semibold">{incomeDetail.startDate}</p>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-1">정산 종료일</h4>
-                <p className="text-sm font-semibold">{incomeDetail.endDate}</p>
-              </div>
+              
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground mb-1">담당자</h4>
                 <p className="text-sm font-semibold">{incomeDetail.manager}</p>
@@ -182,32 +176,75 @@ export function IncomeDetailSheet() {
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground mb-1">연락처</h4>
                 <p className="text-sm font-semibold">{incomeDetail.managerContact || "-"}</p>
+              </div>              
+            </div>
+
+            {/* 세금계산서 정보 */}
+            <div className="mt-6 space-y-2">
+              <h3 className="text-base font-semibold">세금계산서 정보</h3>
+              <div className="grid grid-cols-2 gap-4 px-3 py-2 gap-4 bg-muted/50 rounded-md">              
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">세금계산서 상태</h4>
+                  <p className="text-sm font-semibold">
+                    {incomeDetail.invoiceStatus || "미발행"}
+                    {incomeDetail.invoiceNumber && ` (${incomeDetail.invoiceNumber})`}
+                  </p>
+                </div>
+                <div>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-1">발행일</h4>
+                    <p className="text-sm font-semibold">{incomeDetail.endDate}</p>
+                  </div>
               </div>
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-1">세금계산서 상태</h4>
-                <p className="text-sm font-semibold">
-                  {incomeDetail.invoiceStatus || "미발행"}
-                  {incomeDetail.invoiceNumber && ` (${incomeDetail.invoiceNumber})`}
-                </p>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-1">면세 여부</h4>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="tax-free"
-                    checked={incomeDetail.isTaxFree}
-                    onCheckedChange={handleTaxFreeChange}
-                    disabled={incomeDetail.status === 'COMPLETED'}
-                  />
-                  <Label htmlFor="tax-free" className="text-sm font-medium">
-                    {incomeDetail.isTaxFree ? "면세" : "과세(10%)"}
-                  </Label>
+            </div>
+
+              
+            
+            <div className="mt-6 space-y-2">
+              <h3 className="text-base font-semibold">기간</h3>
+              <div className="grid grid-cols-2 px-3 py-2 gap-4 bg-muted/50 rounded-md">
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">시작일</h4>
+                  <p className="text-sm font-semibold">{incomeDetail.startDate}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">종료일</h4>
+                  <p className="text-sm font-semibold">{incomeDetail.endDate}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">정산 만기일</h4>
+                  <p className="text-sm font-semibold">{incomeDetail.startDate}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">송금 완료일</h4>
+                  <p className="text-sm font-semibold">{incomeDetail.endDate}</p>
                 </div>
               </div>
             </div>
 
+            <div className="mt-6 space-y-2">
+              <h3 className="text-base font-semibold">송금 정보</h3>
+              <div className="grid grid-cols-2 px-3 py-2 gap-4 bg-muted/50 rounded-md">
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">방법</h4>
+                  <p className="text-sm font-semibold">계좌이체</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">송금일</h4>
+                  <p className="text-sm font-semibold">{incomeDetail.endDate}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">계좌 정보</h4>
+                  <p className="text-sm font-semibold">(예) 농협/박재형</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">계좌 번호</h4>
+                  <p className="text-sm font-semibold">1234-5678-9012-3456</p>
+                </div>              
+              </div>
+            </div>
+
             {/* 금액 정보 */}
-            <div className="mt-6 space-y-4">
+            <div className="mt-6 space-y-2">
               <h3 className="text-base font-semibold">정산 금액 정보</h3>
               <div className="grid grid-cols-2 gap-4 px-3 py-2 bg-muted/50 rounded-md">
                 <div>
@@ -461,9 +498,9 @@ export function IncomeDetailSheet() {
   return (
     <Sheet open={isSheetOpen} onOpenChange={(open) => !open && closeSheet()}>
       <SheetContent className="w-full max-w-3xl sm:max-w-3xl overflow-y-auto">
-        <SheetHeader className="border-b pb-4">
+        <SheetHeader className="border-b pb-4 bg-muted/50">
           <SheetTitle className="text-xl flex items-center">
-            <DollarSign className="h-5 w-5 mr-2 text-primary" />
+            <ShieldCheck className="h-5 w-5 mr-2 text-primary" />
             매출 정산 상세 정보
           </SheetTitle>
         </SheetHeader>

@@ -13,7 +13,7 @@ import { useIncomeStore } from "@/store/income-store";
 import { useIncomeWaitingStore } from "@/store/income-waiting-store";
 import { useBrokerChargeStore } from "@/store/broker-charge-store";
 
-import { IncomeDetailSheet } from "@/components/broker/income/income-detail-sheet";
+import { SettlementBundleDetailSheet } from "@/components/broker/sale/settlement-bundle-detail-sheet";
 
 import { IncomeStatusType } from "@/types/income";
 
@@ -29,7 +29,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ToggleGroup } from "@/components/ui/toggle-group";
 import { BundleMatchingFilter } from "@/components/broker/sale/settlement-bundle-matching-filter";
-import { BundleMatchingList } from "@/components/broker/sale/settlement-bundel-matching-list";
+import { BundleMatchingList } from "@/components/broker/sale/settlement-bundle-matching-list";
 import { SettlementEditFormSheet } from "@/components/broker/sale/settlement-edit-form-sheet";
 export default function IncomePage() {
   // 정산 데이터 스토어 접근
@@ -303,6 +303,7 @@ export default function IncomePage() {
                               id: item.id,
                               orderId: item.orderId,
                               company: item.companyName,
+                              companyCeo: item.companyCeo,
                               status: item.isClosed,
                               statusProgress: item.flowStatus,
                               amount: item.dispatchAmount,
@@ -382,7 +383,7 @@ export default function IncomePage() {
                         <div>
                           
                           <p className="text-sm text-muted-foreground">
-                            정산 대사중인 목록을 선택하여 정산을 진행할 수 있습니다.
+                            매출 정산을 위해 그룹화된 화물 목록을 선택하여 정산을 진행할 수 있습니다.
                           </p>
                         </div>                
                       </div>
@@ -453,7 +454,7 @@ export default function IncomePage() {
         </Card>
         
         {/* 정산 상세 정보 시트 */}
-        <IncomeDetailSheet />
+        <SettlementBundleDetailSheet />
         
         {/* 정산 폼 시트 */}
         <SettlementEditFormSheet />

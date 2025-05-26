@@ -80,11 +80,11 @@ export function BundleMatchingList({
   const renderStatusBadge = (status: IncomeStatusType) => {
     switch (status) {
       case 'WAITING':
-        return <Badge variant="outline" className="bg-slate-100">정산대기</Badge>;
+        return <Badge variant="outline" className="bg-slate-100">대기</Badge>;
       case 'MATCHING':
-        return <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-100">정산대사</Badge>;
+        return <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-100">진행중</Badge>;
       case 'COMPLETED':
-        return <Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">정산완료</Badge>;
+        return <Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">완료</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -121,8 +121,8 @@ export function BundleMatchingList({
   };
 
   const getSchedule = (from: string, to: string,) => {
-    const fromDateObj = format(from, "MM.dd(E)", { locale: ko });
-    const toDateObj = format(to, "MM.dd(E)", { locale: ko });
+    const fromDateObj = format(from, "MM.dd", { locale: ko });
+    const toDateObj = format(to, "MM.dd", { locale: ko });
     if (from === to) {
       return fromDateObj;
     } else {
@@ -179,7 +179,10 @@ export function BundleMatchingList({
                     </div>
                   </TableCell>                  
                   <TableCell className="font-medium">
-                    {getSchedule(income.startDate, income.endDate)}
+                    <div className="flex flex-col items-center">
+                      <span className="text-md ">{getSchedule(income.startDate, income.endDate)}</span>
+                      <span className="text-xs text-muted-foreground">{format(income.startDate, "(E)", { locale: ko })} - {format(income.endDate, "(E)", { locale: ko })}</span>
+                    </div>
                   </TableCell>
                   <TableCell className="text-center">
                     {income.orderCount}건

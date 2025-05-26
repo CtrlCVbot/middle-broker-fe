@@ -79,6 +79,7 @@ import { useCompanies, useCompanyStore } from '@/store/company-store';
 import { useBrokerCompanyManagerStore } from '@/store/broker-company-manager-store';
 import { IBrokerCompanyManager } from '@/types/broker-company';
 import { getSchedule } from "@/components/order/order-table-ver01";
+import { Separator } from "@/components/ui/separator";
 
 // TypeScript로 인터페이스 정의
 interface IAdditionalFee {
@@ -91,24 +92,6 @@ interface IAdditionalFee {
   createdBy: string;
 }
 
-interface IIncomeCreateRequest {
-  orderIds: string[];
-  shipperName: string;
-  businessNumber: string;
-  billingCompany: string;
-  manager: string;
-  managerContact: string;
-  managerEmail?: string;
-  periodType: "departure" | "arrival";
-  startDate: string;
-  endDate: string;
-  dueDate: Date;
-  memo?: string;
-  taxFree: boolean;
-  hasTax: boolean;
-  invoiceNumber?: string;
-  paymentMethod: string;
-}
 
 // 목업 데이터를 위한 임시 솔루션 (실제 구현시 제거)
 interface IMockStoreState {
@@ -116,7 +99,8 @@ interface IMockStoreState {
   selectedOrders: IBrokerOrder[];
   formData: {
     shipperName: string;
-    businessNumber: string;
+    shipperCeo: string;
+    businessNumber: string;    
     billingCompany: string;
     manager: string;
     managerContact: string;
@@ -149,7 +133,9 @@ const useIncomeFormStore = (): MockIncomeFormStore => {
     selectedOrders: [] as IBrokerOrder[],
     formData: { 
       shipperName: "기본 화주", 
+      shipperCeo: "김중개",
       businessNumber: "123-45-67890",
+      
       billingCompany: "기본 화주",
       manager: "김중개",
       managerContact: "010-1234-5678",
@@ -177,12 +163,13 @@ const useIncomeFormStore = (): MockIncomeFormStore => {
 
   const openForm = React.useCallback((orders: IBrokerOrder[]) => {
     // 화주별로 그룹핑
-    const shipperCounts: Record<string, { count: number, businessNumber: string }> = {};
+    const shipperCounts: Record<string, { count: number, businessNumber: string, ceo: string }> = {};
     orders.forEach(order => {
       const shipper = order.shipperName || '미지정';
       const businessNumber = order.shipperBusinessNumber || '000-00-00000';
+      const ceo = order.shipperCeo || '미지정';
       if (!shipperCounts[shipper]) {
-        shipperCounts[shipper] = { count: 1, businessNumber };
+        shipperCounts[shipper] = { count: 1, businessNumber, ceo };
       } else {
         shipperCounts[shipper].count++;
       }
@@ -191,11 +178,13 @@ const useIncomeFormStore = (): MockIncomeFormStore => {
     let maxCount = 0;
     let mainShipper = '';
     let mainBusinessNumber = '';
+    let mainShipperCeo = '';
     for (const shipper in shipperCounts) {
       if (shipperCounts[shipper].count > maxCount) {
         maxCount = shipperCounts[shipper].count;
         mainShipper = shipper;
         mainBusinessNumber = shipperCounts[shipper].businessNumber;
+        mainShipperCeo = shipperCounts[shipper].ceo;
       }
     }
     setState(prev => ({
@@ -205,7 +194,8 @@ const useIncomeFormStore = (): MockIncomeFormStore => {
       formData: {
         ...prev.formData,
         shipperName: mainShipper,
-        businessNumber: mainBusinessNumber,
+        shipperCeo: mainShipperCeo,
+        businessNumber: mainBusinessNumber,        
         billingCompany: mainShipper
       }
     }));
@@ -378,36 +368,45 @@ export function SettlementEditFormSheet() {
   // 정산 구분에 따른 날짜 변경
   const handlePeriodTypeChange = (value: string) => {
     setFormField('periodType', value);
-    
+
     if (!orders || orders.length === 0) return;
-    
-    // 상차 기준일 경우
+
     if (value === 'departure') {
       let earliestDate = new Date(orders[0].departureDateTime);
       let latestDate = new Date(orders[0].departureDateTime);
-      
+
       orders.forEach(order => {
         const date = new Date(order.departureDateTime);
         if (date < earliestDate) earliestDate = date;
         if (date > latestDate) latestDate = date;
       });
-      
-      setFormField('startDate', format(earliestDate, 'yyyy-MM-dd'));
-      setFormField('endDate', format(latestDate, 'yyyy-MM-dd'));
-    } 
-    // 하차 기준일 경우
-    else {
+
+      const start = format(earliestDate, 'yyyy-MM-dd');
+      const end = format(latestDate, 'yyyy-MM-dd');
+      setFormField('startDate', start);
+      setFormField('endDate', end);
+
+      // ★ 폼 값도 동기화
+      form.setValue('startDate', start);
+      form.setValue('endDate', end);
+    } else {
       let earliestDate = new Date(orders[0].arrivalDateTime);
       let latestDate = new Date(orders[0].arrivalDateTime);
-      
+
       orders.forEach(order => {
         const date = new Date(order.arrivalDateTime);
         if (date < earliestDate) earliestDate = date;
         if (date > latestDate) latestDate = date;
       });
-      
-      setFormField('startDate', format(earliestDate, 'yyyy-MM-dd'));
-      setFormField('endDate', format(latestDate, 'yyyy-MM-dd'));
+
+      const start = format(earliestDate, 'yyyy-MM-dd');
+      const end = format(latestDate, 'yyyy-MM-dd');
+      setFormField('startDate', start);
+      setFormField('endDate', end);
+
+      // ★ 폼 값도 동기화
+      form.setValue('startDate', start);
+      form.setValue('endDate', end);
     }
   };
 
@@ -415,14 +414,15 @@ export function SettlementEditFormSheet() {
   useEffect(() => {
     if (!orders || orders.length === 0 || !isOpen) return;
     
-    const shipperCounts: Record<string, { count: number, businessNumber: string }> = {};
+    const shipperCounts: Record<string, { count: number, businessNumber: string, ceo: string }> = {};
     
     orders.forEach(order => {
       if (order.company) {
         if (!shipperCounts[order.company]) {
           shipperCounts[order.company] = { 
             count: 1,
-            businessNumber: '000-00-00000'
+            businessNumber: '000-00-00000',
+            ceo: '미지정'
           };
         } else {
           shipperCounts[order.company].count++;
@@ -433,17 +433,20 @@ export function SettlementEditFormSheet() {
     let maxCount = 0;
     let mainShipper = '';
     let mainBusinessNumber = '';
-    
+    let mainShipperCeo = '';
+
     for (const shipper in shipperCounts) {
       if (shipperCounts[shipper].count > maxCount) {
         maxCount = shipperCounts[shipper].count;
         mainShipper = shipper;
         mainBusinessNumber = shipperCounts[shipper].businessNumber;
+        mainShipperCeo = shipperCounts[shipper].ceo;
       }
     }
     
     setFormField('shipperName', mainShipper);
     setFormField('businessNumber', mainBusinessNumber);
+    setFormField('shipperCeo', mainShipperCeo);
     // 매출 회사 = 화주로 기본 설정
     setFormField('billingCompany', mainShipper);
   }, [orders, isOpen, setFormField]);
@@ -532,6 +535,7 @@ export function SettlementEditFormSheet() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       shipperName: formData.shipperName || "",
+      //shipperCeo: formData.shipperCeo || "",
       businessNumber: formData.businessNumber || "",
       manager: formData.manager || managers[0] || "",
       managerContact: formData.managerContact || "",
@@ -565,6 +569,7 @@ export function SettlementEditFormSheet() {
         orderIds,
         shipperName: values.shipperName,
         businessNumber: values.businessNumber,
+        shipperCeo: values.shipperName,
         manager: values.manager,
         managerContact: values.managerContact,
         managerEmail: values.managerEmail,
@@ -664,7 +669,7 @@ export function SettlementEditFormSheet() {
                         onClick={() => {
                           form.reset({
                           ...form.getValues(),
-                          shipperName: "",
+                          shipperName: "",                          
                           businessNumber: "",
                           manager: "",
                           managerContact: "",
@@ -775,23 +780,28 @@ export function SettlementEditFormSheet() {
                   ) : (
                     <div className="mb-4">                      
                       {/* 회사 정보 + 계좌 정보 (세로 정렬) */}
-                      <div className="flex flex-col p-4 border rounded-md bg-muted/30">
+                      <div className="flex flex-col px-4 pt-2 border rounded-md bg-muted/30">
 
                         {/* 회사 정보 영역 */}
                         <div>
-                          <div className="flex justify-between items-center text-sm pt-1 pb-4">
+                          <div className="flex justify-between items-center text-sm pb-2">
                             
-                            {/* 회사명 */}
+                            {/* 회사명 및 사업자번호*/}
                             <div className="font-medium text-base text-primary truncate">
-                              {form.watch("shipperName") || '회사를 검색해주세요'}
-                            </div>
-
-                            {/* 사업자번호 */}
-                            {form.watch("businessNumber") && (
-                              <div className="text-muted-foreground text-sm whitespace-nowrap pl-4">
+                              <div className="text-md whitespace-nowrap ">
+                                {form.watch("shipperName") || '회사를 검색해주세요'}
+                              </div>
+                              <div className="text-muted-foreground text-sm whitespace-nowrap">
                                 {form.watch("businessNumber")}
                               </div>
-                            )}
+                            </div>
+
+                            {/* 사업자명 */}
+                            {/* {form.watch("shipperCeo") && (
+                              <div className="text-muted-foreground text-sm whitespace-nowrap pl-4">
+                                {form.watch("shipperCeo")}
+                              </div>
+                            )} */}
                             
                           </div>
 
@@ -820,10 +830,12 @@ export function SettlementEditFormSheet() {
                           )}
                         </div>
 
+                        <Separator className="mb-4" />
 
                         {/* 계좌 정보 영역 */}
                         <div>
-                          <div className="grid grid-cols-1 gap-2 w-full pb-1">
+                          <div className="text-sm font-medium text-gray-500 pb-2">계좌 정보</div>
+                          <div className="grid grid-cols-1 gap-2 w-full pb-5">
 
                             {/* 은행 + 계좌명 (한 줄 두 컬럼) */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1182,7 +1194,7 @@ export function SettlementEditFormSheet() {
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <FormField
+                        {/* <FormField
                           control={form.control}
                           name="startDate"
                           render={({ field }) => (
@@ -1202,25 +1214,123 @@ export function SettlementEditFormSheet() {
                               <FormMessage />
                             </FormItem>
                           )}
-                        />
+                        /> */}
+                        {/* <FormField
+                          control={form.control}
+                          name="startDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="text-sm font-medium">시작일</div>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      className="w-full h-9 pl-3 text-left font-normal"
+                                    >
+                                      {field.value ? (
+                                        format(field.value, "PPP", { locale: ko })
+                                      ) : (
+                                        <span>날짜 선택</span>
+                                      )}
+                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <CalendarComponent
+                                    mode="single"
+                                    selected={new Date(field.value)}
+                                    onSelect={field.onChange}
+                                    disabled={(date) => date < new Date()}
+                                    initialFocus
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        /> */}
 
+                        <FormField
+                          control={form.control}
+                          name="startDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="text-sm font-medium">시작일</div>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      className="w-full h-9 pl-3 text-left font-normal"
+                                    >
+                                      {field.value ? (
+                                        format(field.value, "PPP", { locale: ko })
+                                      ) : (
+                                        <span>날짜 선택</span>
+                                      )}                                      
+                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <CalendarComponent
+                                    mode="single"
+                                    selected={new Date(field.value)}
+                                    onSelect={(e) => {
+                                      field.onChange(e);
+                                      setFormField('startDate', e ? format(e, 'yyyy-MM-dd') : '');
+                                    }}
+                                    
+                                    //disabled={(date) => date < new Date()}
+                                    locale={ko}
+                                    initialFocus
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
                         <FormField
                           control={form.control}
                           name="endDate"
                           render={({ field }) => (
                             <FormItem>
                               <div className="text-sm font-medium">종료일</div>
-                              <FormControl>
-                                <Input 
-                                  type="date" 
-                                  className="h-9"
-                                  {...field}
-                                  onChange={(e) => {
-                                    field.onChange(e);
-                                    setFormField('endDate', e.target.value);
-                                  }}
-                                />
-                              </FormControl>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      className="w-full h-9 pl-3 text-left font-normal"
+                                    >
+                                      {field.value ? (
+                                        format(field.value, "PPP", { locale: ko })
+                                      ) : (
+                                        <span>날짜 선택</span>
+                                      )}                                      
+                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <CalendarComponent
+                                    mode="single"
+                                    selected={new Date(field.value)}
+                                    onSelect={(e) => {
+                                      field.onChange(e);
+                                      setFormField('endDate', e ? format(e, 'yyyy-MM-dd') : '');
+                                    }}
+                                    
+                                    //disabled={(date) => date < new Date()}
+                                    locale={ko}
+                                    initialFocus
+                                  />
+                                </PopoverContent>
+                              </Popover>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -1254,8 +1364,9 @@ export function SettlementEditFormSheet() {
                                     mode="single"
                                     selected={field.value}
                                     onSelect={field.onChange}
-                                    disabled={(date) => date < new Date()}
+                                    //disabled={(date) => date < new Date()}
                                     initialFocus
+                                    locale={ko}
                                   />
                                 </PopoverContent>
                               </Popover>
@@ -1264,6 +1375,8 @@ export function SettlementEditFormSheet() {
                           )}
                         />
                       </div>
+
+                      
                     </div>
                   </div>
                 </div>

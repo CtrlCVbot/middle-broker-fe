@@ -63,6 +63,7 @@ export interface IBrokerOrder {
   shipperId?: string;
   shipperBusinessNumber?: string;
   shipperName: string;
+  shipperCeo: string;
   shipperContact?: string;
   shipperEmail?: string;
   manager?: string;

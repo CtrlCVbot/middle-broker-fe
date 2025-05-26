@@ -69,6 +69,7 @@ export async function GET(request: NextRequest) {
         companyId: orders.companyId,
         companyName: companies.name,
         companyBusinessNumber: companies.businessNumber,
+        companyCeo: companies.ceoName,
         chargeAmount: orderSales.totalAmount,
         createdAt: orders.createdAt,
         pickupName: orders.pickupName,
