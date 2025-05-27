@@ -281,7 +281,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function SettlementEditFormSheet() {
+export function SettlementRegisterFormSheet() {
   // 1. form 선언을 최상단에 위치
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
