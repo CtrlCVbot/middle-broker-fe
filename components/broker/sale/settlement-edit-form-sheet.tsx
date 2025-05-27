@@ -376,6 +376,8 @@ export function SettlementEditFormSheet() {
     if (isEditMode && editingSalesBundle && isOpen) {
       console.log('편집 모드: 기존 데이터 로드', editingSalesBundle);
       
+      setSelectedCompanyId(editingSalesBundle.companyId || '');
+      console.log('selectedCompanyId:', selectedCompanyId);
       // 기존 sales bundle 데이터를 폼에 설정
       form.setValue('shipperName', editingSalesBundle.companySnapshot?.name || '');
       form.setValue('businessNumber', editingSalesBundle.companySnapshot?.businessNumber || '');
@@ -670,6 +672,18 @@ export function SettlementEditFormSheet() {
 
   // 선택된 화물의 운임 및 금액 계산
   const calculatedTotals = useMemo(() => {
+    if (isEditMode && editingSalesBundle) {
+      // 편집 모드: 기존 sales bundle 데이터 사용
+      return {
+        totalFreight: editingSalesBundle.totalBaseAmount || 0,
+        totalDispatch: 0, // sales bundle에는 배차료 정보가 없음
+        totalNet: editingSalesBundle.totalBaseAmount || 0,
+        tax: editingSalesBundle.totalTaxAmount || 0,
+        totalAmount: editingSalesBundle.totalAmount || 0
+      };
+    }
+    
+    // 생성 모드: 선택된 화물 기반 계산
     if (!orders || orders.length === 0) return { totalFreight: 0, totalDispatch: 0, totalNet: 0, tax: 0, totalAmount: 0 };
     
     const totalFreight = orders.reduce((sum, order) => sum + (Number(order.amount) || 0), 0);
@@ -679,7 +693,7 @@ export function SettlementEditFormSheet() {
     const totalAmount = totalFreight + tax;
     
     return { totalFreight, totalDispatch, totalNet, tax, totalAmount };
-  }, [orders]);
+  }, [orders, isEditMode, editingSalesBundle]);
 
   // 검색어 변경 함수
   const handleCompanySearch = () => {
@@ -775,7 +789,7 @@ export function SettlementEditFormSheet() {
                   </div>
 
                   {/* 선택된 업체 배지 표시 */}
-                  {orders && orders.length > 0 && (
+                  {!isEditMode && orders && orders.length > 0 && (
                     <>                    
                     <div className="flex flex-wrap gap-1.5">
                       {Object.keys(shipperGroups).map((shipper) => (
@@ -1078,7 +1092,9 @@ export function SettlementEditFormSheet() {
                       </Badge>
                     ))}
                     {!selectedCompanyId && (
-                      <div className="text-xs text-muted-foreground py-1">먼저 회사를 선택해주세요</div>
+                      <div className="text-xs text-muted-foreground py-1">
+                        {isEditMode ? '회사 정보가 설정되지 않았습니다' : '먼저 회사를 선택해주세요'}
+                      </div>
                     )}
                   </div>
                   
@@ -1662,64 +1678,66 @@ export function SettlementEditFormSheet() {
               </div>
 
               {/* 선택된 화물 목록 - 컴팩트하게 표시 */}
-              <Collapsible className="border rounded-md mt-4">
-                <div className="flex items-center justify-between p-2 bg-muted/50">
-                  <h3 className="text-sm font-semibold">선택된 화물 ({orders?.length || 0}개)</h3>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => setIsOrderListOpen(!isOrderListOpen)}>
-                      {isOrderListOpen ? (
-                        <ChevronUp className="h-3 w-3" />
-                      ) : (
-                        <ChevronDown className="h-3 w-3" />
-                      )}
-                      <span className="sr-only">토글 화물 목록</span>
-                    </Button>
-                  </CollapsibleTrigger>
-                </div>
-                <CollapsibleContent>
-                  <ScrollArea className="h-36 rounded-b-md">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[40px] text-xs">번호</TableHead>
-                          <TableHead className="text-xs">일정</TableHead>
-                          <TableHead className="text-xs">출발지</TableHead>
-                          <TableHead className="text-xs">도착지</TableHead>
-                          <TableHead className="text-right text-xs">운송료</TableHead>
-                          <TableHead className="text-right text-xs">배차료</TableHead>
-                          
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {orders && orders.length > 0 ? (
-                          orders.map((order, index) => (
-                            <TableRow key={order.id}>
-                              <TableCell className="text-xs">{index + 1}</TableCell>                              
-                              <TableCell className="text-xs">
-                                {getSchedule(order.pickupDate, order.deliveryDate, order.pickupDate, order.deliveryDate)}
-                              </TableCell>
-                              <TableCell className="text-xs">{order.pickupName}</TableCell>
-                              <TableCell className="text-xs">{order.deliveryName}</TableCell>
-                              <TableCell className="text-right text-xs">
-                                {formatCurrency(order.amount || 0)}
-                              </TableCell>
-                              <TableCell className="text-right text-xs">
-                                {formatCurrency(order.dispatchAmount || 0)}
-                              </TableCell>                              
-                            </TableRow>
-                          ))
+              {!isEditMode && (
+                <Collapsible className="border rounded-md mt-4">
+                  <div className="flex items-center justify-between p-2 bg-muted/50">
+                    <h3 className="text-sm font-semibold">선택된 화물 ({orders?.length || 0}개)</h3>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" size="sm" onClick={() => setIsOrderListOpen(!isOrderListOpen)}>
+                        {isOrderListOpen ? (
+                          <ChevronUp className="h-3 w-3" />
                         ) : (
-                          <TableRow>
-                            <TableCell colSpan={7} className="h-16 text-center text-xs">
-                              선택된 화물이 없습니다.
-                            </TableCell>
-                          </TableRow>
+                          <ChevronDown className="h-3 w-3" />
                         )}
-                      </TableBody>
-                    </Table>
-                  </ScrollArea>
-                </CollapsibleContent>
-              </Collapsible>
+                        <span className="sr-only">토글 화물 목록</span>
+                      </Button>
+                    </CollapsibleTrigger>
+                  </div>
+                  <CollapsibleContent>
+                    <ScrollArea className="h-36 rounded-b-md">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-[40px] text-xs">번호</TableHead>
+                            <TableHead className="text-xs">일정</TableHead>
+                            <TableHead className="text-xs">출발지</TableHead>
+                            <TableHead className="text-xs">도착지</TableHead>
+                            <TableHead className="text-right text-xs">운송료</TableHead>
+                            <TableHead className="text-right text-xs">배차료</TableHead>
+                            
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {orders && orders.length > 0 ? (
+                            orders.map((order, index) => (
+                              <TableRow key={order.id}>
+                                <TableCell className="text-xs">{index + 1}</TableCell>                              
+                                <TableCell className="text-xs">
+                                  {getSchedule(order.pickupDate, order.deliveryDate, order.pickupDate, order.deliveryDate)}
+                                </TableCell>
+                                <TableCell className="text-xs">{order.pickupName}</TableCell>
+                                <TableCell className="text-xs">{order.deliveryName}</TableCell>
+                                <TableCell className="text-right text-xs">
+                                  {formatCurrency(order.amount || 0)}
+                                </TableCell>
+                                <TableCell className="text-right text-xs">
+                                  {formatCurrency(order.dispatchAmount || 0)}
+                                </TableCell>                              
+                              </TableRow>
+                            ))
+                          ) : (
+                            <TableRow>
+                              <TableCell colSpan={7} className="h-16 text-center text-xs">
+                                선택된 화물이 없습니다.
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </ScrollArea>
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
             </form>
           </Form>
         </div>
@@ -1754,24 +1772,69 @@ export function SettlementEditFormSheet() {
               <X className="mr-1 h-4 w-4" />
               취소
             </Button>
-            <Button 
-              type="submit" 
-              disabled={loading}
-              size="sm"
-              onClick={form.handleSubmit(handleSubmit)}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                  처리 중...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-1 h-4 w-4" />
-                  정산 생성
-                </>
-              )}
-            </Button>
+            
+            {isEditMode ? (
+              // 편집 모드: 수정 및 삭제 버튼
+              <>
+                <Button 
+                  type="button" 
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={loading}
+                  size="sm"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                      삭제 중...
+                    </>
+                  ) : (
+                    <>
+                      <X className="mr-1 h-4 w-4" />
+                      삭제
+                    </>
+                  )}
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={loading}
+                  size="sm"
+                  onClick={form.handleSubmit(handleSubmit)}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                      수정 중...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-1 h-4 w-4" />
+                      수정
+                    </>
+                  )}
+                </Button>
+              </>
+            ) : (
+              // 생성 모드: 생성 버튼
+              <Button 
+                type="submit" 
+                disabled={loading}
+                size="sm"
+                onClick={form.handleSubmit(handleSubmit)}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                    처리 중...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-1 h-4 w-4" />
+                    정산 생성
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       </SheetContent>

@@ -510,7 +510,10 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
         ...get().settlementForm,
         isOpen: false,
         selectedItems: []
-      }
+      },
+      // 편집 관련 상태 초기화
+      selectedSalesBundleId: null,
+      editingSalesBundle: null
     });
   },
   
@@ -656,7 +659,14 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
     try {
       set({ selectedSalesBundleId: bundleId });
       const bundle = await getSalesBundleById(bundleId);
-      set({ editingSalesBundle: bundle });
+      set({ 
+        editingSalesBundle: bundle,
+        settlementForm: {
+          ...get().settlementForm,
+          isOpen: true,
+          selectedItems: [] // 편집 모드에서는 선택된 항목이 없음
+        }
+      });
     } catch (error) {
       console.error('sales bundle 편집 중 오류 발생:', error);
     }
@@ -667,10 +677,17 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       set({ isLoading: true, error: null });
       await updateSalesBundle(id, fields, reason);
       set({ isLoading: false });
+      
+      // 성공 시 sales bundles 목록 새로고침
+      await get().fetchSalesBundles();
+      
       return true;
     } catch (error) {
       console.error('sales bundle 업데이트 중 오류 발생:', error);
-      set({ error: error instanceof Error ? error.message : 'sales bundle 업데이트에 실패했습니다.' });
+      set({ 
+        error: error instanceof Error ? error.message : 'sales bundle 업데이트에 실패했습니다.',
+        isLoading: false 
+      });
       return false;
     }
   },
@@ -680,10 +697,17 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       set({ isLoading: true, error: null });
       await deleteSalesBundle(id);
       set({ isLoading: false });
+      
+      // 성공 시 sales bundles 목록 새로고침
+      await get().fetchSalesBundles();
+      
       return true;
     } catch (error) {
       console.error('sales bundle 삭제 중 오류 발생:', error);
-      set({ error: error instanceof Error ? error.message : 'sales bundle 삭제에 실패했습니다.' });
+      set({ 
+        error: error instanceof Error ? error.message : 'sales bundle 삭제에 실패했습니다.',
+        isLoading: false 
+      });
       return false;
     }
   },
