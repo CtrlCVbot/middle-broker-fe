@@ -19,6 +19,7 @@ import {
 import { IIncome, IncomeStatusType } from "@/types/income";
 import { formatCurrency } from "@/lib/utils";
 import { useIncomeDetailStore } from "@/store/income-store";
+import { useBrokerChargeStore } from "@/store/broker-charge-store";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -47,9 +48,13 @@ export function BundleMatchingList({
   // 상세 정보 모달을 위한 스토어 액세스
   const { openSheet } = useIncomeDetailStore();
   
-  // 정산 상세 정보 열기
+  // 정산 편집을 위한 broker charge store 액세스
+  const { openSettlementFormForEdit } = useBrokerChargeStore();
+  
+  // 정산 상세 정보 열기 (기존 로직 - 참고용으로 유지)
   const handleIncomeClick = (incomeId: string) => {
-    openSheet(incomeId);
+    // 정산 편집 폼 열기로 변경
+    openSettlementFormForEdit(incomeId);
   };
   
   // 첫 페이지로 이동

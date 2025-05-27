@@ -311,10 +311,17 @@ export function SettlementEditFormSheet() {
     settlementForm,
     closeSettlementForm,
     createSalesBundleFromWaitingItems,
-    isLoading
+    isLoading,
+    selectedSalesBundleId,
+    editingSalesBundle,
+    updateSalesBundleData,
+    deleteSalesBundleData
   } = useBrokerChargeStore();
 
   const { isOpen, selectedItems: orders, formData } = settlementForm;
+  
+  // 편집 모드 여부 확인
+  const isEditMode = selectedSalesBundleId !== null;
 
   const { createIncome } = useIncomeStore();
   const [activeTab, setActiveTab] = useState("info");
@@ -364,9 +371,37 @@ export function SettlementEditFormSheet() {
     };
   }, []);
 
-  // 정산 기간 설정 - 가장 빠른 상차일과 가장 늦은 하차일로 자동 설정
+  // 편집 모드일 때 기존 데이터를 폼에 로드
   useEffect(() => {
-    if (!orders || orders.length === 0 || !isOpen) return;
+    if (isEditMode && editingSalesBundle && isOpen) {
+      console.log('편집 모드: 기존 데이터 로드', editingSalesBundle);
+      
+      // 기존 sales bundle 데이터를 폼에 설정
+      form.setValue('shipperName', editingSalesBundle.companySnapshot?.name || '');
+      form.setValue('businessNumber', editingSalesBundle.companySnapshot?.businessNumber || '');
+      form.setValue('manager', editingSalesBundle.managerSnapshot?.name || '');
+      form.setValue('managerContact', editingSalesBundle.managerSnapshot?.contact || '');
+      form.setValue('managerEmail', editingSalesBundle.managerSnapshot?.email || '');
+      form.setValue('periodType', editingSalesBundle.periodType || 'departure');
+      form.setValue('startDate', editingSalesBundle.periodFrom || '');
+      form.setValue('endDate', editingSalesBundle.periodTo || '');
+      form.setValue('memo', editingSalesBundle.settlementMemo || '');
+      form.setValue('taxFree', editingSalesBundle.totalTaxAmount === 0);
+      form.setValue('paymentMethod', editingSalesBundle.paymentMethod || 'BANK_TRANSFER');
+      form.setValue('bankName', editingSalesBundle.bankCode || '');
+      form.setValue('accountHolder', editingSalesBundle.bankAccountHolder || '');
+      form.setValue('accountNumber', editingSalesBundle.bankAccount || '');
+      
+      // 만료일 설정 (있는 경우)
+      if (editingSalesBundle.depositRequestedAt) {
+        form.setValue('dueDate', new Date(editingSalesBundle.depositRequestedAt));
+      }
+    }
+  }, [isEditMode, editingSalesBundle, isOpen, form]);
+
+  // 정산 기간 설정 - 가장 빠른 상차일과 가장 늦은 하차일로 자동 설정 (생성 모드에서만)
+  useEffect(() => {
+    if (isEditMode || !orders || orders.length === 0 || !isOpen) return;
     
     let earliestLoadingDate = new Date(orders[0].pickupDate);
     let latestUnloadingDate = new Date(orders[0].deliveryDate);
@@ -512,52 +547,103 @@ export function SettlementEditFormSheet() {
     return baseAmount + taxAmount;
   }, [ordersSummary.totalFreight, ordersSummary.totalDispatch, taxAmount]);
 
-  // 정산 대사로 전환
+  // 정산 대사로 전환 또는 수정
   const handleSubmit = async () => {
     try {
       // 실제 폼에서 입력된 값을 가져옴
       const formValues = form.getValues();
       
-      // FormValues를 ISettlementFormData 형태로 변환
-      const formData: ISettlementFormData = {
-        shipperId: selectedCompanyId || '',
-        managerId: selectedManagerId || '',
-        shipperName: formValues.shipperName,
-        shipperCeo: '', // FormValues에는 없지만 ISettlementFormData에는 있음
-        businessNumber: formValues.businessNumber,
-        billingCompany: formValues.shipperName, // shipperName을 billingCompany로 사용
-        manager: formValues.manager,
-        managerContact: formValues.managerContact,
-        managerEmail: formValues.managerEmail || '',
-        periodType: formValues.periodType,
-        startDate: formValues.startDate,
-        endDate: formValues.endDate,
-        dueDate: formValues.dueDate ? format(formValues.dueDate, 'yyyy-MM-dd') : '',
-        memo: formValues.memo || '',
-        taxFree: formValues.taxFree,
-        hasTax: formValues.hasTax,
-        issueInvoice: formValues.issueInvoice,
-        paymentMethod: formValues.paymentMethod,
-        bankName: formValues.bankName || '',
-        accountHolder: formValues.accountHolder || '',
-        accountNumber: formValues.accountNumber || '',
-        totalAmount: ordersSummary.totalFreight,
-        totalTaxAmount: taxAmount,
-        totalAmountWithTax: finalAmount + taxAmount
-      };
-      
-      console.log("handleSubmit formData:", formData);
-      
-      const ok = await createSalesBundleFromWaitingItems(formData);
-      console.log("ok:", ok);
-      if (ok) {
-        toast.success("정산이 성공적으로 생성되었습니다.");
-        closeSettlementForm();
+      if (isEditMode && selectedSalesBundleId) {
+        // 편집 모드: 기존 sales bundle 수정
+        const updateFields = {
+          companySnapshot: {
+            name: formValues.shipperName,
+            businessNumber: formValues.businessNumber
+          },
+          managerSnapshot: {
+            name: formValues.manager,
+            contact: formValues.managerContact,
+            email: formValues.managerEmail || ''
+          },
+          periodType: formValues.periodType,
+          periodFrom: formValues.startDate,
+          periodTo: formValues.endDate,
+          settlementMemo: formValues.memo || '',
+          paymentMethod: formValues.paymentMethod,
+          bankCode: formValues.bankName || '',
+          bankAccountHolder: formValues.accountHolder || '',
+          bankAccount: formValues.accountNumber || '',
+          depositRequestedAt: formValues.dueDate ? format(formValues.dueDate, 'yyyy-MM-dd') : null
+        };
+        
+        const success = await updateSalesBundleData(selectedSalesBundleId, updateFields);
+        if (success) {
+          toast.success("정산이 성공적으로 수정되었습니다.");
+          closeSettlementForm();
+        } else {
+          toast.error("정산 수정에 실패했습니다.");
+        }
       } else {
-        toast.error("정산 생성에 실패했습니다.");
+        // 생성 모드: 새로운 sales bundle 생성
+        const formData: ISettlementFormData = {
+          shipperId: selectedCompanyId || '',
+          managerId: selectedManagerId || '',
+          shipperName: formValues.shipperName,
+          shipperCeo: '', // FormValues에는 없지만 ISettlementFormData에는 있음
+          businessNumber: formValues.businessNumber,
+          billingCompany: formValues.shipperName, // shipperName을 billingCompany로 사용
+          manager: formValues.manager,
+          managerContact: formValues.managerContact,
+          managerEmail: formValues.managerEmail || '',
+          periodType: formValues.periodType,
+          startDate: formValues.startDate,
+          endDate: formValues.endDate,
+          dueDate: formValues.dueDate ? format(formValues.dueDate, 'yyyy-MM-dd') : '',
+          memo: formValues.memo || '',
+          taxFree: formValues.taxFree,
+          hasTax: formValues.hasTax,
+          issueInvoice: formValues.issueInvoice,
+          paymentMethod: formValues.paymentMethod,
+          bankName: formValues.bankName || '',
+          accountHolder: formValues.accountHolder || '',
+          accountNumber: formValues.accountNumber || '',
+          totalAmount: ordersSummary.totalFreight,
+          totalTaxAmount: taxAmount,
+          totalAmountWithTax: finalAmount + taxAmount
+        };
+        
+        console.log("handleSubmit formData:", formData);
+        
+        const ok = await createSalesBundleFromWaitingItems(formData);
+        console.log("ok:", ok);
+        if (ok) {
+          toast.success("정산이 성공적으로 생성되었습니다.");
+          closeSettlementForm();
+        } else {
+          toast.error("정산 생성에 실패했습니다.");
+        }
       }
     } catch (error) {
-      toast.error("정산 생성 중 오류가 발생했습니다.");
+      toast.error(isEditMode ? "정산 수정 중 오류가 발생했습니다." : "정산 생성 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 정산 삭제 (취소)
+  const handleDelete = async () => {
+    if (!selectedSalesBundleId) return;
+    
+    if (confirm('정말로 이 정산을 삭제하시겠습니까?')) {
+      try {
+        const success = await deleteSalesBundleData(selectedSalesBundleId);
+        if (success) {
+          toast.success("정산이 성공적으로 삭제되었습니다.");
+          closeSettlementForm();
+        } else {
+          toast.error("정산 삭제에 실패했습니다.");
+        }
+      } catch (error) {
+        toast.error("정산 삭제 중 오류가 발생했습니다.");
+      }
     }
   };
 
@@ -637,9 +723,14 @@ export function SettlementEditFormSheet() {
     >
       <SheetContent className="sm:max-w-3xl overflow-y-auto p-0" side="right">
         <SheetHeader className="p-6 pb-2">
-          <SheetTitle className="text-xl font-semibold">매출 정산 생성</SheetTitle>
+          <SheetTitle className="text-xl font-semibold">
+            {isEditMode ? '매출 정산 수정' : '매출 정산 생성'}
+          </SheetTitle>
           <SheetDescription>
-            선택한 화물을 정산 항목으로 등록합니다.
+            {isEditMode 
+              ? '선택한 정산 항목의 정보를 수정합니다.' 
+              : '선택한 화물을 정산 항목으로 등록합니다.'
+            }
           </SheetDescription>
         </SheetHeader>
 

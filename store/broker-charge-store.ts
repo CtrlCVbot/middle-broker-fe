@@ -19,7 +19,10 @@ import {
   createOrderSale,
   createSalesBundle,
   getSalesBundles,
-  getSalesBundleItems
+  getSalesBundleItems,
+  getSalesBundleById,
+  updateSalesBundle,
+  deleteSalesBundle
 } from '@/services/broker-charge-service';
 import { mapChargeDataToFinanceSummary,  calculateSalesSummary, mapWaitingItemsToBrokerOrders, mapSettlementFormToSalesBundleInput, mapSalesBundlesToIncomes } from '@/utils/charge-mapper';
 import { IBrokerOrder } from '@/types/broker-order';
@@ -30,8 +33,8 @@ interface IBrokerChargeState {
   // 기존 운임 관련 상태
   isLoading: boolean;
   error: string | null;  
-  chargeGroups: IChargeGroupWithLines[];  
-  financeSummary: IFinanceSummary | null;
+    chargeGroups: IChargeGroupWithLines[];  
+    financeSummary: IFinanceSummary | null;    
 
   // 매출 정산 관련 상태
   waitingItems: ISettlementWaitingItem[];
@@ -46,6 +49,10 @@ interface IBrokerChargeState {
   
   // 정산 폼 시트 관련 상태
   settlementForm: ISettlementFormState;
+  
+  // 편집 중인 sales bundle 관련 상태 추가
+  selectedSalesBundleId: string | null;
+  editingSalesBundle: any | null;
   
   // 필터 관련 상태
   waitingItemsFilter: {
@@ -66,8 +73,8 @@ interface IBrokerChargeState {
   salesBundlesFilter: ISalesBundleFilter;
 
   // 기존 운임 관련 액션
-  fetchChargesByOrderId: (orderId: string) => Promise<IChargeGroupWithLines[]>;  
-  addCharge: (fee: IAdditionalFeeInput, orderId: string, dispatchId?: string) => Promise<boolean>;  
+    fetchChargesByOrderId: (orderId: string) => Promise<IChargeGroupWithLines[]>;  
+    addCharge: (fee: IAdditionalFeeInput, orderId: string, dispatchId?: string) => Promise<boolean>;  
   resetChargeState: () => void;
 
   // 매출 정산 관련 액션
@@ -94,6 +101,11 @@ interface IBrokerChargeState {
   updateSalesBundlesFilter: (filter: Partial<ISalesBundleFilter>) => void;
   resetSalesBundlesFilter: () => void;
   resetSalesBundlesState: () => void;
+  
+  // sales bundle 편집 관련 액션 추가
+  openSettlementFormForEdit: (bundleId: string) => Promise<void>;
+  updateSalesBundleData: (id: string, fields: Record<string, any>, reason?: string) => Promise<boolean>;
+  deleteSalesBundleData: (id: string) => Promise<boolean>;
 }
 
 // 정산 폼 초기 데이터
@@ -147,6 +159,10 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
     isLoading: false
   },
   
+  // 편집 중인 sales bundle 관련 상태 추가
+  selectedSalesBundleId: null,
+  editingSalesBundle: null,
+  
   // 필터 초기 상태
   waitingItemsFilter: {
     companyId: undefined,
@@ -171,7 +187,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
     sortBy: 'createdAt',
     sortOrder: 'desc',
   },
-
+  
   // 주문 ID로 운임 정보 조회
   fetchChargesByOrderId: async (orderId: string) => {
     try {
@@ -633,5 +649,42 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
         endDate: undefined,
       }
     });
+  },
+
+  // sales bundle 편집 관련 액션 추가
+  openSettlementFormForEdit: async (bundleId: string) => {
+    try {
+      set({ selectedSalesBundleId: bundleId });
+      const bundle = await getSalesBundleById(bundleId);
+      set({ editingSalesBundle: bundle });
+    } catch (error) {
+      console.error('sales bundle 편집 중 오류 발생:', error);
+    }
+  },
+
+  updateSalesBundleData: async (id: string, fields: Record<string, any>, reason?: string) => {
+    try {
+      set({ isLoading: true, error: null });
+      await updateSalesBundle(id, fields, reason);
+      set({ isLoading: false });
+      return true;
+    } catch (error) {
+      console.error('sales bundle 업데이트 중 오류 발생:', error);
+      set({ error: error instanceof Error ? error.message : 'sales bundle 업데이트에 실패했습니다.' });
+      return false;
+    }
+  },
+
+  deleteSalesBundleData: async (id: string) => {
+    try {
+      set({ isLoading: true, error: null });
+      await deleteSalesBundle(id);
+      set({ isLoading: false });
+      return true;
+    } catch (error) {
+      console.error('sales bundle 삭제 중 오류 발생:', error);
+      set({ error: error instanceof Error ? error.message : 'sales bundle 삭제에 실패했습니다.' });
+      return false;
+    }
   },
 })); 

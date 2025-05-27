@@ -420,3 +420,81 @@ export async function getSalesBundleItems(salesBundleId: string): Promise<ISales
     throw error;
   }
 }
+
+/**
+ * 특정 매출 번들 상세 조회
+ */
+export async function getSalesBundleById(id: string): Promise<ISalesBundle> {
+  try {
+    const response = await fetch(`/api/charge/sales-bundles/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || '매출 번들 조회에 실패했습니다.');
+    }
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error('매출 번들 조회 중 오류 발생:', error);
+    throw error;
+  }
+}
+
+/**
+ * 매출 번들 필드 업데이트
+ */
+export async function updateSalesBundle(
+  id: string, 
+  fields: Record<string, any>, 
+  reason?: string
+): Promise<ISalesBundle> {
+  try {
+    const response = await fetch(`/api/charge/sales-bundles/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-id': 'current-user-id' // TODO: 실제 사용자 ID로 교체
+      },
+      body: JSON.stringify({ fields, reason })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || '매출 번들 수정에 실패했습니다.');
+    }
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error('매출 번들 수정 중 오류 발생:', error);
+    throw error;
+  }
+}
+
+/**
+ * 매출 번들 삭제
+ */
+export async function deleteSalesBundle(id: string): Promise<void> {
+  try {
+    const response = await fetch(`/api/charge/sales-bundles/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || '매출 번들 삭제에 실패했습니다.');
+    }
+  } catch (error) {
+    console.error('매출 번들 삭제 중 오류 발생:', error);
+    throw error;
+  }
+}
