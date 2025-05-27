@@ -93,7 +93,10 @@ const initialSettlementFormData: ISettlementFormData = {
   taxFree: false,
   hasTax: true,
   issueInvoice: true,
-  paymentMethod: 'BANK_TRANSFER'
+  paymentMethod: 'BANK_TRANSFER',
+  totalAmount: 0,
+  totalTaxAmount: 0,
+  totalAmountWithTax: 0,
 };
 
 export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({

@@ -540,7 +540,10 @@ export function SettlementEditFormSheet() {
         paymentMethod: formValues.paymentMethod,
         bankName: formValues.bankName || '',
         accountHolder: formValues.accountHolder || '',
-        accountNumber: formValues.accountNumber || ''
+        accountNumber: formValues.accountNumber || '',
+        totalAmount: ordersSummary.totalFreight,
+        totalTaxAmount: taxAmount,
+        totalAmountWithTax: finalAmount + taxAmount
       };
       
       console.log("handleSubmit formData:", formData);

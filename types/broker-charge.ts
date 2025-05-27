@@ -224,6 +224,9 @@ export interface ISettlementFormData {
   bankName?: string;
   accountHolder?: string;
   accountNumber?: string;
+  totalAmount: number;
+  totalTaxAmount: number;
+  totalAmountWithTax: number;
 }
 
 // 정산 폼 시트 상태 타입
@@ -302,8 +305,11 @@ export interface CreateSalesBundleInput {
   periodType: BundlePeriodType;
   periodFrom?: string;
   periodTo?: string;
+  settledAt?: string;
   invoiceNo?: string;
   totalAmount: number;
+  totalTaxAmount?: number;
+  totalAmountWithTax?: number;
   status?: SalesBundleStatus;
   items: { orderSalesId: string; baseAmount: number }[];
   adjustments?: { type: BundleAdjType; description?: string; amount: number }[];
