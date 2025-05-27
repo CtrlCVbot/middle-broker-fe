@@ -318,7 +318,13 @@ export function mapSettlementFormToSalesBundleInput(
   console.log('Period dates - from:', periodFrom, 'to:', periodTo);
   
   const result = {
-    companyId: selectedWaitingItems[0]?.companyId || '',
+    companyId: formData.shipperId,
+    managerId: formData.managerId,
+    bankName: formData.bankName || '',
+    bankAccount: formData.accountNumber || '',
+    bankAccountHolder: formData.accountHolder || '',
+    memo: formData.memo || '',
+    periodType: formData.periodType,
     periodFrom,
     periodTo,
     invoiceNo: undefined, // 추후 구현

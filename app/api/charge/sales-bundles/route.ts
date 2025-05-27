@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/config';
 import { companies } from '@/db/schema/companies';
+import { users } from '@/db/schema/users';
 
 // 매출 번들 목록 조회
 export async function GET(request: NextRequest) {
@@ -107,6 +108,7 @@ const SalesBundleAdjustmentSchema = z.object({
 // 매출 번들 생성 스키마
 const CreateSalesBundleSchema = z.object({
   companyId: z.string().uuid(),
+  managerId: z.string().uuid(),
   periodFrom: z.string().optional(),
   periodTo: z.string().optional(),
   invoiceNo: z.string().optional(),
@@ -151,17 +153,29 @@ export async function POST(request: NextRequest) {
       .from(orderSales)
       .where(sql`${orderSales.id} IN ${orderSalesIds}`);
 
-    const company = await db.query.companies.findFirst({
+    //청구 업체 조회
+    const selectedCompany = await db.query.companies.findFirst({
       where: eq(companies.id, data.companyId)
     });
 
-    if (!company) {
+    if (!selectedCompany) {
       return NextResponse.json(
         { error: '회사 정보를 찾을 수 없습니다.' },
         { status: 404 }
       );
     }
-    
+
+    //청구 업체 담당자 조회
+    const selectedManager = await db.query.users.findFirst({
+      where: eq(users.id, data.managerId)
+    });
+
+    if (!selectedManager) {
+      return NextResponse.json(
+        { error: '관리자 정보를 찾을 수 없습니다.' },
+        { status: 404 }
+      );
+    }
     // const allSameCompany = salesRecords.every(record => record.companyId === data.companyId);
     // if (!allSameCompany) {
     //   return NextResponse.json(
@@ -175,7 +189,16 @@ export async function POST(request: NextRequest) {
       // 매출 번들 생성
       const newBundle = await tx.insert(salesBundles).values({
         ...bundleData,
-        companySnapshot: company
+        companySnapshot: {
+          name: selectedCompany.name,
+          businessNumber: selectedCompany.businessNumber,
+          ceoName: selectedCompany.ceoName,
+        },
+        managerSnapshot: {
+          name: selectedManager.name,
+          email: selectedManager.email,
+          mobile: selectedManager.phone_number,
+        }
       }as any).returning();
       
       const bundleId = newBundle[0].id;

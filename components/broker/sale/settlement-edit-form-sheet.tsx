@@ -324,6 +324,7 @@ export function SettlementEditFormSheet() {
   const [companySearchTerm, setCompanySearchTerm] = useState('');
   const [managerSearchTerm, setManagerSearchTerm] = useState('');
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const [selectedManagerId, setSelectedManagerId] = useState<string | null>(null);
   const { setFilter } = useCompanyStore();
   const companiesQuery = useCompanies();
 
@@ -519,6 +520,8 @@ export function SettlementEditFormSheet() {
       
       // FormValues를 ISettlementFormData 형태로 변환
       const formData: ISettlementFormData = {
+        shipperId: selectedCompanyId || '',
+        managerId: selectedManagerId || '',
         shipperName: formValues.shipperName,
         shipperCeo: '', // FormValues에는 없지만 ISettlementFormData에는 있음
         businessNumber: formValues.businessNumber,
@@ -668,6 +671,7 @@ export function SettlementEditFormSheet() {
                           managerEmail: "",
                           });
                           setSelectedCompanyId(null);
+                          setSelectedManagerId(null);
                         }}
                         disabled={loading}
                       >
@@ -946,12 +950,16 @@ export function SettlementEditFormSheet() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => form.reset({
+                        
+                        onClick={() => {
+                          form.reset({
                           ...form.getValues(),
                           manager: "",
                           managerContact: "",
-                          managerEmail: ""
-                        })}
+                          managerEmail: "",
+                          });
+                          setSelectedManagerId(null);
+                        }}
                         disabled={loading}
                       >
                         초기화
@@ -966,6 +974,7 @@ export function SettlementEditFormSheet() {
                         variant="outline"
                         className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
                         onClick={() => {
+                          setSelectedManagerId(manager.id);
                           form.setValue("manager", manager.name);
                           form.setValue("managerContact", manager.phoneNumber || "");
                           form.setValue("managerEmail", manager.email || "");

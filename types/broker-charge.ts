@@ -203,10 +203,12 @@ export type SettlementPeriodType = 'departure' | 'arrival';
 
 // 정산 폼 데이터 타입
 export interface ISettlementFormData {
+  shipperId: string;
   shipperName: string;
   shipperCeo: string;
   businessNumber: string;
   billingCompany: string;
+  managerId: string;
   manager?: string;
   managerContact?: string;
   managerEmail?: string;
@@ -292,6 +294,12 @@ export interface ISalesBundleAdjustment {
 // sales bundle 생성 요청 타입
 export interface CreateSalesBundleInput {
   companyId: string;
+  managerId: string;
+  bankName?: string;
+  bankAccount?: string;
+  bankAccountHolder?: string;
+  memo?: string;
+  periodType: BundlePeriodType;
   periodFrom?: string;
   periodTo?: string;
   invoiceNo?: string;
