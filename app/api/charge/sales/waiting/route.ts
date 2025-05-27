@@ -64,14 +64,14 @@ export async function GET(request: NextRequest) {
     // 주문 데이터 조회
     const [waitingOrders, total] = await Promise.all([
       db.select({
-        id: orders.id,
-        orderId: orders.id,
-        companyId: orders.companyId,
+        id: orderSales.id,
+        orderId: orderSales.orderId,
+        companyId: orderSales.companyId,
         companyName: companies.name,
         companyBusinessNumber: companies.businessNumber,
         companyCeo: companies.ceoName,
         chargeAmount: orderSales.totalAmount,
-        createdAt: orders.createdAt,
+        createdAt: orderSales.createdAt,
         pickupName: orders.pickupName,
         deliveryName: orders.deliveryName,
         pickupDate: orders.pickupDate,

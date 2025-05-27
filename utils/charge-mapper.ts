@@ -9,7 +9,9 @@ import {
   ISettlementWaitingItem,
   ICompanySummary,
   ISettlementSummary,
-  IChargeGroupWithLines
+  IChargeGroupWithLines,
+  CreateSalesBundleInput,
+  ISettlementFormData
 } from '@/types/broker-charge';
 import { IBrokerOrder } from '@/types/broker-order';
 
@@ -287,4 +289,48 @@ export function mapWaitingItemsToBrokerOrders(
     
    
   } as IBrokerOrder));
+}
+
+/**
+ * SettlementEditFormSheet의 formData, waitingItems, additionalFees 등에서 sales bundle 생성 API DTO로 변환
+ */
+export function mapSettlementFormToSalesBundleInput(
+  formData: ISettlementFormData,
+  selectedWaitingItems: ISettlementWaitingItem[],
+  additionalAdjustments?: { type: 'discount' | 'surcharge'; description?: string; amount: number }[]
+): CreateSalesBundleInput {
+  console.log('mapSettlementFormToSalesBundleInput - formData:', formData);
+  console.log('mapSettlementFormToSalesBundleInput - selectedWaitingItems:', selectedWaitingItems);
+  
+  // totalAmount를 명시적으로 number로 계산
+  const totalAmount = selectedWaitingItems.reduce((sum, item) => {
+    const amount = Number(item.chargeAmount) || 0;
+    console.log(`Item ${item.id} chargeAmount: ${item.chargeAmount} -> ${amount}`);
+    return sum + amount;
+  }, 0);
+  
+  console.log('Calculated totalAmount:', totalAmount);
+  
+  // 날짜 값 검증 및 기본값 설정
+  const periodFrom = formData.startDate || new Date().toISOString().split('T')[0];
+  const periodTo = formData.endDate || new Date().toISOString().split('T')[0];
+  
+  console.log('Period dates - from:', periodFrom, 'to:', periodTo);
+  
+  const result = {
+    companyId: selectedWaitingItems[0]?.companyId || '',
+    periodFrom,
+    periodTo,
+    invoiceNo: undefined, // 추후 구현
+    totalAmount,
+    status: 'draft' as const,
+    items: selectedWaitingItems.map(item => ({
+      orderSalesId: item.id, // 실제로는 orderSalesId, 필요시 매핑 보정
+      baseAmount: Number(item.chargeAmount) || 0
+    })),
+    adjustments: additionalAdjustments || []
+  };
+  
+  console.log('Final CreateSalesBundleInput:', result);
+  return result;
 }

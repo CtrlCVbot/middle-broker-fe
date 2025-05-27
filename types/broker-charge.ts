@@ -219,6 +219,9 @@ export interface ISettlementFormData {
   hasTax: boolean;
   issueInvoice: boolean;
   paymentMethod: string;
+  bankName?: string;
+  accountHolder?: string;
+  accountNumber?: string;
 }
 
 // 정산 폼 시트 상태 타입
@@ -227,4 +230,73 @@ export interface ISettlementFormState {
   selectedItems: ISettlementWaitingItem[];
   formData: ISettlementFormData;
   isLoading: boolean;
+}
+
+// 매출 번들(정산 묶음) 관련 타입
+export type SalesBundleStatus = 'draft' | 'issued' | 'paid' | 'canceled';
+export type BundleAdjType = 'discount' | 'surcharge';
+export type BundlePeriodType = 'departure' | 'arrival' | 'etc';
+export type PaymentMethod = 'cash' | 'bank_transfer' | 'card' | 'etc';
+
+export interface ISalesBundle {
+  id: string;
+  companyId: string;
+  companySnapshot?: any;
+  managerId?: string;
+  managerSnapshot?: any;
+  paymentMethod: PaymentMethod;
+  bankCode?: string;
+  bankAccount?: string;
+  bankAccountHolder?: string;
+  settlementMemo?: string;
+  periodType: BundlePeriodType;
+  periodFrom?: string;
+  periodTo?: string;
+  invoiceIssuedAt?: string;
+  depositRequestedAt?: string;
+  depositReceivedAt?: string;
+  settlementConfirmedAt?: string;
+  settlementBatchId?: string;
+  settledAt?: string;
+  invoiceNo?: string;
+  totalAmount: number;
+  totalTaxAmount?: number;
+  totalAmountWithTax?: number;
+  status: SalesBundleStatus;
+  createdAt: string;
+  updatedAt: string;
+  items?: ISalesBundleItem[];
+  adjustments?: ISalesBundleAdjustment[];
+}
+
+export interface ISalesBundleItem {
+  id: string;
+  bundleId: string;
+  orderSalesId: string;
+  baseAmount: number;
+  createdAt: string;
+  updatedAt: string;
+  orderSale?: IOrderSale;
+}
+
+export interface ISalesBundleAdjustment {
+  id: string;
+  bundleId: string;
+  type: BundleAdjType;
+  description?: string;
+  amount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// sales bundle 생성 요청 타입
+export interface CreateSalesBundleInput {
+  companyId: string;
+  periodFrom?: string;
+  periodTo?: string;
+  invoiceNo?: string;
+  totalAmount: number;
+  status?: SalesBundleStatus;
+  items: { orderSalesId: string; baseAmount: number }[];
+  adjustments?: { type: BundleAdjType; description?: string; amount: number }[];
 } 

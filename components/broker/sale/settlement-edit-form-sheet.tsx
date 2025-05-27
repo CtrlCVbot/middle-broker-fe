@@ -80,6 +80,8 @@ import { useBrokerCompanyManagerStore } from '@/store/broker-company-manager-sto
 import { IBrokerCompanyManager } from '@/types/broker-company';
 import { getSchedule } from "@/components/order/order-table-ver01";
 import { Separator } from "@/components/ui/separator";
+import { useBrokerChargeStore } from '@/store/broker-charge-store';
+import { ISettlementFormData, ISettlementWaitingItem } from "@/types/broker-charge";
 
 // TypeScript로 인터페이스 정의
 interface IAdditionalFee {
@@ -272,27 +274,48 @@ const formSchema = z.object({
   hasTax: z.boolean().default(true),
   issueInvoice: z.boolean().default(true),
   paymentMethod: z.string().default("BANK_TRANSFER"),
+  bankName: z.string().optional(),
+  accountHolder: z.string().optional(),
+  accountNumber: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 export function SettlementEditFormSheet() {
+  // 1. form 선언을 최상단에 위치
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      shipperName: "",
+      businessNumber: "",
+      manager: "",
+      managerContact: "",
+      managerEmail: "",
+      periodType: "departure",
+      startDate: format(new Date(), 'yyyy-MM-dd'),
+      endDate: format(new Date(), 'yyyy-MM-dd'),
+      dueDate: new Date(new Date().setDate(new Date().getDate() + 30)),
+      memo: "",
+      taxFree: false,
+      hasTax: true,
+      issueInvoice: true,
+      paymentMethod: "BANK_TRANSFER",
+      bankName: "",
+      accountHolder: "",
+      accountNumber: "",
+    },
+  });
+
+  // 실제 store 연동
   const {
-    isOpen,
-    selectedOrders: orders,
-    formData,
-    additionalFees,
-    companies,
-    managers,
-    setFormField,
-    addAdditionalFee,
-    removeAdditionalFee,
-    closeForm,
-    submitForm,
-    isLoading,
-    resetForm,
-    openForm,
-  } = useIncomeFormStore();
+    settlementForm,
+    closeSettlementForm,
+    createSalesBundleFromWaitingItems,
+    isLoading
+  } = useBrokerChargeStore();
+
+  const { isOpen, selectedItems: orders, formData } = settlementForm;
+
   const { createIncome } = useIncomeStore();
   const [activeTab, setActiveTab] = useState("info");
   const [isEditingAdditionalFee, setIsEditingAdditionalFee] = useState(false);
@@ -303,6 +326,8 @@ export function SettlementEditFormSheet() {
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const { setFilter } = useCompanyStore();
   const companiesQuery = useCompanies();
+
+  console.log('선택된 orders:', orders);
   
   // 담당자 관리 store 사용
   const {
@@ -323,9 +348,9 @@ export function SettlementEditFormSheet() {
         console.log("정산 폼 열기 이벤트 수신", customEvent.detail.orders.length, "개의 화물");
         
         // 다음 렌더 사이클에서 상태 업데이트 (경쟁 상태 방지)
-        setTimeout(() => {
-          openForm(customEvent.detail.orders);
-        }, 0);
+        // setTimeout(() => {
+        //   openForm(customEvent.detail.orders);
+        // }, 0);
       }
     };
     
@@ -342,12 +367,12 @@ export function SettlementEditFormSheet() {
   useEffect(() => {
     if (!orders || orders.length === 0 || !isOpen) return;
     
-    let earliestLoadingDate = new Date(orders[0].departureDateTime);
-    let latestUnloadingDate = new Date(orders[0].arrivalDateTime);
+    let earliestLoadingDate = new Date(orders[0].pickupDate);
+    let latestUnloadingDate = new Date(orders[0].deliveryDate);
 
     orders.forEach(order => {
-      const loadingDate = new Date(order.departureDateTime);
-      const unloadingDate = new Date(order.arrivalDateTime);
+      const loadingDate = new Date(order.pickupDate);
+      const unloadingDate = new Date(order.deliveryDate);
 
       if (loadingDate < earliestLoadingDate) {
         earliestLoadingDate = loadingDate;
@@ -361,48 +386,49 @@ export function SettlementEditFormSheet() {
     const startDate = format(earliestLoadingDate, 'yyyy-MM-dd');
     const endDate = format(latestUnloadingDate, 'yyyy-MM-dd');
 
-    setFormField('startDate', startDate);
-    setFormField('endDate', endDate);
-  }, [orders, isOpen, setFormField]);
+    form.setValue('startDate', startDate);
+    form.setValue('endDate', endDate);
+  }, [orders, isOpen, form]);
 
   // 정산 구분에 따른 날짜 변경
   const handlePeriodTypeChange = (value: string) => {
-    setFormField('periodType', value);
-
+    if (value === "departure" || value === "arrival") {
+      form.setValue('periodType', value);
+    }
     if (!orders || orders.length === 0) return;
 
     if (value === 'departure') {
-      let earliestDate = new Date(orders[0].departureDateTime);
-      let latestDate = new Date(orders[0].departureDateTime);
+      let earliestDate = new Date(orders[0].pickupDate);
+      let latestDate = new Date(orders[orders.length - 1].pickupDate);
 
       orders.forEach(order => {
-        const date = new Date(order.departureDateTime);
+        const date = new Date(order.pickupDate);
         if (date < earliestDate) earliestDate = date;
         if (date > latestDate) latestDate = date;
       });
 
       const start = format(earliestDate, 'yyyy-MM-dd');
       const end = format(latestDate, 'yyyy-MM-dd');
-      setFormField('startDate', start);
-      setFormField('endDate', end);
+      form.setValue('startDate', start);
+      form.setValue('endDate', end);
 
       // ★ 폼 값도 동기화
       form.setValue('startDate', start);
       form.setValue('endDate', end);
     } else {
-      let earliestDate = new Date(orders[0].arrivalDateTime);
-      let latestDate = new Date(orders[0].arrivalDateTime);
+      let earliestDate = new Date(orders[0].pickupDate);
+      let latestDate = new Date(orders[0].pickupDate);
 
       orders.forEach(order => {
-        const date = new Date(order.arrivalDateTime);
+        const date = new Date(order.pickupDate);
         if (date < earliestDate) earliestDate = date;
         if (date > latestDate) latestDate = date;
       });
 
       const start = format(earliestDate, 'yyyy-MM-dd');
       const end = format(latestDate, 'yyyy-MM-dd');
-      setFormField('startDate', start);
-      setFormField('endDate', end);
+      form.setValue('startDate', start);
+      form.setValue('endDate', end);
 
       // ★ 폼 값도 동기화
       form.setValue('startDate', start);
@@ -417,15 +443,15 @@ export function SettlementEditFormSheet() {
     const shipperCounts: Record<string, { count: number, businessNumber: string, ceo: string }> = {};
     
     orders.forEach(order => {
-      if (order.company) {
-        if (!shipperCounts[order.company]) {
-          shipperCounts[order.company] = { 
+      if (order.companyName) {
+        if (!shipperCounts[order.companyName]) {
+          shipperCounts[order.companyName] = { 
             count: 1,
             businessNumber: '000-00-00000',
             ceo: '미지정'
           };
         } else {
-          shipperCounts[order.company].count++;
+          shipperCounts[order.companyName].count++;
         }
       }
     });
@@ -444,12 +470,12 @@ export function SettlementEditFormSheet() {
       }
     }
     
-    setFormField('shipperName', mainShipper);
-    setFormField('businessNumber', mainBusinessNumber);
-    setFormField('shipperCeo', mainShipperCeo);
+    form.setValue('shipperName', mainShipper);
+    form.setValue('businessNumber', mainBusinessNumber);
+    //form.setValue('shipperCeo', mainShipperCeo);
     // 매출 회사 = 화주로 기본 설정
-    setFormField('billingCompany', mainShipper);
-  }, [orders, isOpen, setFormField]);
+    //form.setValue('billingCompany', mainShipper);
+  }, [orders, isOpen, form]);
 
   // 정산 대상 화물 요약 계산
   const ordersSummary = useMemo(() => {
@@ -458,8 +484,8 @@ export function SettlementEditFormSheet() {
     return orders.reduce(
       (acc, order) => {
         acc.totalOrders++;
-        acc.totalFreight += order.amount || 0;
-        acc.totalDispatch += order.fee || 0;
+        acc.totalFreight += Number(order.amount) || 0;
+        //acc.totalDispatch += order.fee || 0;
         return acc;
       },
       { totalOrders: 0, totalFreight: 0, totalDispatch: 0 }
@@ -467,45 +493,78 @@ export function SettlementEditFormSheet() {
   }, [orders]);
 
   // 추가금 합계 계산
-  const additionalTotal = React.useMemo(() => {
-    return additionalFees.reduce((sum, fee) => sum + fee.amount, 0);
-  }, [additionalFees]);
+  // const additionalTotal = React.useMemo(() => {
+  //   return additionalFees.reduce((sum, fee) => sum + fee.amount, 0);
+  // }, [additionalFees]);
 
   // 세금 계산
   const taxAmount = React.useMemo(() => {
-    const baseAmount = ordersSummary.totalFreight - ordersSummary.totalDispatch + additionalTotal;
-    return formData.isTaxFree ? 0 : Math.round(baseAmount * 0.1);
-  }, [ordersSummary.totalFreight, ordersSummary.totalDispatch, additionalTotal, formData.isTaxFree]);
+    const baseAmount = ordersSummary.totalFreight - ordersSummary.totalDispatch;// + additionalTotal;
+    console.log("baseAmount:", baseAmount);
+    return formData.taxFree ? 0 : Math.round(baseAmount * 0.1);
+  }, [ordersSummary.totalFreight, ordersSummary.totalDispatch, formData.taxFree]);
 
   // 최종 금액 계산
   const finalAmount = React.useMemo(() => {
-    const baseAmount = ordersSummary.totalFreight - ordersSummary.totalDispatch + additionalTotal;
+    const baseAmount = ordersSummary.totalFreight - ordersSummary.totalDispatch; //+ additionalTotal;
+    console.log("baseAmount:", baseAmount);
     return baseAmount + taxAmount;
-  }, [ordersSummary.totalFreight, ordersSummary.totalDispatch, additionalTotal, taxAmount]);
+  }, [ordersSummary.totalFreight, ordersSummary.totalDispatch, taxAmount]);
 
   // 정산 대사로 전환
-  const handleSubmit = () => {
-    submitForm({
-      ...formData,
-      totalBaseAmount: ordersSummary.totalFreight - ordersSummary.totalDispatch,
-      totalAdditionalAmount: additionalTotal,
-      tax: taxAmount,
-      finalAmount: finalAmount,
-      orderCount: orders.length,
-      orderIds: orders.map(order => order.id),
-    });
+  const handleSubmit = async () => {
+    try {
+      // 실제 폼에서 입력된 값을 가져옴
+      const formValues = form.getValues();
+      
+      // FormValues를 ISettlementFormData 형태로 변환
+      const formData: ISettlementFormData = {
+        shipperName: formValues.shipperName,
+        shipperCeo: '', // FormValues에는 없지만 ISettlementFormData에는 있음
+        businessNumber: formValues.businessNumber,
+        billingCompany: formValues.shipperName, // shipperName을 billingCompany로 사용
+        manager: formValues.manager,
+        managerContact: formValues.managerContact,
+        managerEmail: formValues.managerEmail || '',
+        periodType: formValues.periodType,
+        startDate: formValues.startDate,
+        endDate: formValues.endDate,
+        dueDate: formValues.dueDate ? format(formValues.dueDate, 'yyyy-MM-dd') : '',
+        memo: formValues.memo || '',
+        taxFree: formValues.taxFree,
+        hasTax: formValues.hasTax,
+        issueInvoice: formValues.issueInvoice,
+        paymentMethod: formValues.paymentMethod,
+        bankName: formValues.bankName || '',
+        accountHolder: formValues.accountHolder || '',
+        accountNumber: formValues.accountNumber || ''
+      };
+      
+      console.log("handleSubmit formData:", formData);
+      
+      const ok = await createSalesBundleFromWaitingItems(formData);
+      console.log("ok:", ok);
+      if (ok) {
+        toast.success("정산이 성공적으로 생성되었습니다.");
+        closeSettlementForm();
+      } else {
+        toast.error("정산 생성에 실패했습니다.");
+      }
+    } catch (error) {
+      toast.error("정산 생성 중 오류가 발생했습니다.");
+    }
   };
 
   // 화주별 그룹화
   const shipperGroups = useMemo(() => {
     if (!orders || orders.length === 0) return {};
     
-    const groups: Record<string, { orders: IBrokerOrder[], total: number }> = {};
+    const groups: Record<string, { orders: ISettlementWaitingItem[], total: number }> = {};
 
     console.log("화주별 그룹화 orders", orders);
     
     orders.forEach(order => {
-      const shipper = order.shipperName || '미지정';
+      const shipper = order.companyName || '미지정';
         
       if (!groups[shipper]) {
         groups[shipper] = { orders: [], total: 0 };
@@ -522,80 +581,13 @@ export function SettlementEditFormSheet() {
     if (!orders || orders.length === 0) return { totalFreight: 0, totalDispatch: 0, totalNet: 0, tax: 0, totalAmount: 0 };
     
     const totalFreight = orders.reduce((sum, order) => sum + (Number(order.amount) || 0), 0);
-    const totalDispatch = orders.reduce((sum, order) => sum + (Number(order.fee) || 0), 0);
+    const totalDispatch = orders.reduce((sum, order) => sum + (Number(order.dispatchAmount) || 0), 0);
     const totalNet = totalFreight - totalDispatch;
     const tax = Math.round(totalNet * 0.1);
     const totalAmount = totalFreight + tax;
     
     return { totalFreight, totalDispatch, totalNet, tax, totalAmount };
   }, [orders]);
-
-  // 폼 초기화
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      shipperName: formData.shipperName || "",
-      //shipperCeo: formData.shipperCeo || "",
-      businessNumber: formData.businessNumber || "",
-      manager: formData.manager || managers[0] || "",
-      managerContact: formData.managerContact || "",
-      managerEmail: "",
-      periodType: formData.periodType || "departure",
-      startDate: formData.startDate || format(new Date(), 'yyyy-MM-dd'),
-      endDate: formData.endDate || format(new Date(), 'yyyy-MM-dd'),
-      dueDate: new Date(new Date().setDate(new Date().getDate() + 30)), // 기본값: 오늘로부터 30일 후
-      memo: formData.memo || "",
-      taxFree: formData.isTaxFree || false,
-      hasTax: true,
-      issueInvoice: true,
-      paymentMethod: "BANK_TRANSFER",
-    },
-  });
-
-  // 폼 제출 처리
-  const onSubmit = async (values: FormValues) => {
-    if (!orders || orders.length === 0) {
-      toast.error("선택된 화물이 없습니다.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // 주문 ID 목록 추출
-      const orderIds = orders.map(order => order.id);
-      
-      // 정산 생성 요청 데이터 생성
-      const incomeData = {
-        orderIds,
-        shipperName: values.shipperName,
-        businessNumber: values.businessNumber,
-        shipperCeo: values.shipperName,
-        manager: values.manager,
-        managerContact: values.managerContact,
-        managerEmail: values.managerEmail,
-        periodType: values.periodType,
-        startDate: values.startDate,
-        endDate: values.endDate,
-        dueDate: values.dueDate,
-        memo: values.memo,
-        taxFree: values.taxFree,
-        hasTax: values.hasTax,
-        issueInvoice: values.issueInvoice,
-        paymentMethod: values.paymentMethod,
-      };
-      
-      // 정산 생성 호출
-      await createIncome(incomeData);
-      
-      toast.success("정산이 성공적으로 생성되었습니다.");
-      closeForm();
-    } catch (error) {
-      console.error("정산 생성 중 오류 발생:", error);
-      toast.error("정산 생성 중 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // 검색어 변경 함수
   const handleCompanySearch = () => {
@@ -632,7 +624,7 @@ export function SettlementEditFormSheet() {
           
           // 다음 렌더 사이클에서 상태 업데이트 (경쟁 상태 방지)
           setTimeout(() => {
-            closeForm();
+            closeSettlementForm();
           }, 0);
         }
       }}
@@ -648,7 +640,7 @@ export function SettlementEditFormSheet() {
         <div className="space-y-4 px-6 pb-20 overflow-y-auto h-[calc(100vh-180px)]">
           {/* 정산 폼 */}
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
 
               {/* 회사 정보와 담당자 정보 섹션을 그리드로 감싸기 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-2">
@@ -694,9 +686,9 @@ export function SettlementEditFormSheet() {
                           variant="outline"
                           className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
                           onClick={() => {
-                            setSelectedCompanyId(shipperGroups[shipper].orders[0].shipperId || null);
-                            form.setValue("shipperName", shipperGroups[shipper].orders[0].shipperName);
-                            form.setValue("businessNumber", shipperGroups[shipper].orders[0].shipperBusinessNumber || "000-00-00000"); // 실제로는 해당 업체의 사업자번호
+                            setSelectedCompanyId(shipperGroups[shipper].orders[0].companyId || null);
+                            form.setValue("shipperName", shipperGroups[shipper].orders[0].companyName);
+                            form.setValue("businessNumber", shipperGroups[shipper].orders[0].companyBusinessNumber || "000-00-00000"); // 실제로는 해당 업체의 사업자번호
                           }}
                         >                          
                           {shipper} ({shipperGroups[shipper].orders.length}건)
@@ -843,19 +835,47 @@ export function SettlementEditFormSheet() {
                               {/* 은행 */}
                               <FormField
                                 control={form.control}
-                                name="manager"  //"bankName"
+                                name="bankName"  //"bankName"
                                 render={({ field }) => (
+                                  
+
                                   <FormItem>
-                                    <FormControl>
-                                      <div className="relative">
-                                        <Landmark className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input 
-                                          placeholder="은행명" 
-                                          className="h-9 pl-10" 
-                                          {...field} 
-                                        />
-                                      </div>
-                                    </FormControl>
+                                    
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                      <FormControl>
+                                        <SelectTrigger>                                          
+                                          <SelectValue placeholder="은행을 선택하세요" />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        {/* <SelectItem value="001">한국은행</SelectItem> */}
+                                        <SelectItem value="002">산업은행</SelectItem>
+                                        <SelectItem value="003">기업은행</SelectItem>
+                                        <SelectItem value="004">국민은행</SelectItem>
+                                        <SelectItem value="007">수협은행</SelectItem>
+                                        <SelectItem value="008">수출입은행</SelectItem>
+                                        <SelectItem value="011">농협은행</SelectItem>
+                                        <SelectItem value="020">우리은행</SelectItem>
+                                        <SelectItem value="023">SC제일은행</SelectItem>
+                                        <SelectItem value="027">씨티은행</SelectItem>
+                                        <SelectItem value="031">대구은행</SelectItem>
+                                        <SelectItem value="032">부산은행</SelectItem>
+                                        <SelectItem value="034">광주은행</SelectItem>
+                                        <SelectItem value="035">제주은행</SelectItem>
+                                        <SelectItem value="037">전북은행</SelectItem>
+                                        <SelectItem value="039">경남은행</SelectItem>
+                                        <SelectItem value="045">새마을금고중앙회</SelectItem>
+                                        <SelectItem value="048">신협중앙회</SelectItem>
+                                        <SelectItem value="050">상호저축은행</SelectItem>
+                                        <SelectItem value="071">우체국</SelectItem>
+                                        <SelectItem value="081">하나은행</SelectItem>
+                                        <SelectItem value="088">신한은행</SelectItem>
+                                        <SelectItem value="089">케이뱅크</SelectItem>
+                                        <SelectItem value="090">카카오뱅크</SelectItem>
+                                        <SelectItem value="092">토스뱅크</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                    
                                     <FormMessage />
                                   </FormItem>
                                 )}
@@ -864,7 +884,7 @@ export function SettlementEditFormSheet() {
                               {/* 계좌명 */}
                               <FormField
                                 control={form.control}
-                                name="manager"//"accountHolder"
+                                name="accountHolder"//"accountHolder"
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormControl>
@@ -887,7 +907,7 @@ export function SettlementEditFormSheet() {
                             {/* 계좌번호 (한 줄) */}
                             <FormField
                               control={form.control}
-                              name="manager" //"accountNumber"
+                              name="accountNumber" //"accountNumber"
                               render={({ field }) => (
                                 <FormItem>
                                   <FormControl>
@@ -1280,7 +1300,7 @@ export function SettlementEditFormSheet() {
                                     selected={new Date(field.value)}
                                     onSelect={(e) => {
                                       field.onChange(e);
-                                      setFormField('startDate', e ? format(e, 'yyyy-MM-dd') : '');
+                                      form.setValue('startDate', e ? format(e, 'yyyy-MM-dd') : '');
                                     }}
                                     
                                     //disabled={(date) => date < new Date()}
@@ -1322,7 +1342,7 @@ export function SettlementEditFormSheet() {
                                     selected={new Date(field.value)}
                                     onSelect={(e) => {
                                       field.onChange(e);
-                                      setFormField('endDate', e ? format(e, 'yyyy-MM-dd') : '');
+                                      form.setValue('endDate', e ? format(e, 'yyyy-MM-dd') : '');
                                     }}
                                     
                                     //disabled={(date) => date < new Date()}
@@ -1573,15 +1593,15 @@ export function SettlementEditFormSheet() {
                             <TableRow key={order.id}>
                               <TableCell className="text-xs">{index + 1}</TableCell>                              
                               <TableCell className="text-xs">
-                                {getSchedule(order.departureDateTime, order.arrivalDateTime, order.departureDateTime, order.arrivalDateTime)}
+                                {getSchedule(order.pickupDate, order.deliveryDate, order.pickupDate, order.deliveryDate)}
                               </TableCell>
-                              <TableCell className="text-xs">{order.departureCity}</TableCell>
-                              <TableCell className="text-xs">{order.arrivalCity}</TableCell>
+                              <TableCell className="text-xs">{order.pickupName}</TableCell>
+                              <TableCell className="text-xs">{order.deliveryName}</TableCell>
                               <TableCell className="text-right text-xs">
                                 {formatCurrency(order.amount || 0)}
                               </TableCell>
                               <TableCell className="text-right text-xs">
-                                {formatCurrency(order.fee || 0)}
+                                {formatCurrency(order.dispatchAmount || 0)}
                               </TableCell>                              
                             </TableRow>
                           ))
@@ -1624,7 +1644,7 @@ export function SettlementEditFormSheet() {
             <Button 
               type="button" 
               variant="outline" 
-              onClick={() => closeForm()}
+              onClick={() => closeSettlementForm()}
               disabled={loading}
               size="sm"
             >
@@ -1635,7 +1655,7 @@ export function SettlementEditFormSheet() {
               type="submit" 
               disabled={loading}
               size="sm"
-              onClick={form.handleSubmit(onSubmit)}
+              onClick={form.handleSubmit(handleSubmit)}
             >
               {loading ? (
                 <>

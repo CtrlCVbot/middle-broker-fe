@@ -9,7 +9,9 @@ import {
   IOrderSale,
   ISettlementWaitingItem,
   ISettlementWaitingResponse,
-  ISettlementSummary
+  ISettlementSummary,
+  CreateSalesBundleInput,
+  ISalesBundle
 } from '@/types/broker-charge';
 import { mapAdditionalFeeToChargeGroup, mapAdditionalFeeToChargeLine } from '@/utils/charge-mapper';
 import { IBrokerOrder } from '@/types/broker-order';
@@ -319,6 +321,30 @@ export async function createOrderSale(data: {
     return await response.json();
   } catch (error) {
     console.error('매출 인보이스 생성 중 오류 발생:', error);
+    throw error;
+  }
+}
+
+/**
+ * 매출 번들(정산 묶음) 생성
+ */
+export async function createSalesBundle(data: CreateSalesBundleInput): Promise<ISalesBundle> {
+  try {
+    const response = await fetch('/api/charge/sales-bundles', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || '매출 번들 생성에 실패했습니다.');
+    }
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error('매출 번들 생성 중 오류 발생:', error);
     throw error;
   }
 } 

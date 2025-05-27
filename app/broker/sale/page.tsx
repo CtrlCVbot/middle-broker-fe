@@ -85,6 +85,8 @@ export default function IncomePage() {
     openSettlementForm
   } = useBrokerChargeStore();
 
+  console.log('waitingItems:', waitingItems);
+
   // 초기 데이터 로드
   useEffect(() => {
     console.log('useEffect 실행됨 - 정산 데이터 로드');

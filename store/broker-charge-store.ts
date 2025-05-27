@@ -16,9 +16,10 @@ import {
   getOrderSales,
   getSettlementWaitingItems,
   calculateSettlementSummary,
-  createOrderSale
+  createOrderSale,
+  createSalesBundle
 } from '@/services/broker-charge-service';
-import { mapChargeDataToFinanceSummary,  calculateSalesSummary, mapWaitingItemsToBrokerOrders } from '@/utils/charge-mapper';
+import { mapChargeDataToFinanceSummary,  calculateSalesSummary, mapWaitingItemsToBrokerOrders, mapSettlementFormToSalesBundleInput } from '@/utils/charge-mapper';
 import { IBrokerOrder } from '@/types/broker-order';
 
 interface IBrokerChargeState {  
@@ -68,6 +69,9 @@ interface IBrokerChargeState {
   openSettlementForm: () => void;
   closeSettlementForm: () => void;
   updateSettlementFormData: (data: Partial<ISettlementFormData>) => void;
+
+  // 새로운 액션
+  createSalesBundleFromWaitingItems: (formData?: ISettlementFormData) => Promise<boolean>;
 }
 
 // 정산 폼 초기 데이터
@@ -211,6 +215,8 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
         waitingItemsTotalPages: response.totalPages,
         waitingItemsIsLoading: false 
       });
+
+      console.log('fetchWaitingItems:', response.data);
       
       return response.data;
     } catch (error) {
@@ -458,5 +464,42 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
         }
       }
     });
-  }
+  },
+
+  // 선택한 정산 대기 항목으로 매출 번들(정산 묶음) 생성
+  createSalesBundleFromWaitingItems: async (formData?: ISettlementFormData) => {
+    try {
+      const { waitingItems, selectedWaitingItemIds } = get();
+      console.log("createSalesBundleFromWaitingItems:", waitingItems, selectedWaitingItemIds, formData);
+      if (selectedWaitingItemIds.length === 0) return false;
+      
+      const selectedItems = waitingItems.filter(item => selectedWaitingItemIds.includes(item.id));
+      
+      // formData가 전달되지 않으면 store의 데이터 사용 (fallback)
+      const actualFormData = formData || get().settlementForm.formData;
+      
+      // 추가금 등은 추후 확장, 현재는 adjustments 없음
+      const bundleInput = mapSettlementFormToSalesBundleInput(actualFormData, selectedItems, []);
+      
+      set({ isLoading: true, error: null });
+      await createSalesBundle(bundleInput);
+      
+      // 성공 시 폼 닫기 및 상태 초기화
+      set({
+        settlementForm: { ...get().settlementForm, isOpen: false, selectedItems: [] },
+        selectedWaitingItemIds: [],
+        isLoading: false
+      });
+      
+      // 대기 목록 갱신
+      await get().fetchWaitingItems();
+      return true;
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : '매출 번들 생성에 실패했습니다.',
+        isLoading: false
+      });
+      return false;
+    }
+  },
 })); 

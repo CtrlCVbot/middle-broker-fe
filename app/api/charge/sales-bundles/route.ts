@@ -8,6 +8,7 @@ import { orderSales } from '@/db/schema/orderSales';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/config';
+import { companies } from '@/db/schema/companies';
 
 // 매출 번들 목록 조회
 export async function GET(request: NextRequest) {
@@ -118,16 +119,19 @@ const CreateSalesBundleSchema = z.object({
 // 매출 번들 생성
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+
+    console.log("매출 번들 생성 시작!");
+    const userId = request.headers.get('x-user-id') || '';
+    console.log("userId:", userId);
+    if (!userId) {
       return NextResponse.json(
-        { error: '인증되지 않은 요청입니다.' },
+        { error: '인증되지 않은 요청입니다. x-user-id 헤더가 필요합니다.' },
         { status: 401 }
       );
     }
 
     const body = await request.json();
-    
+    console.log("body:", body);
     // 요청 데이터 검증
     const validationResult = CreateSalesBundleSchema.safeParse(body);
     if (!validationResult.success) {
@@ -146,20 +150,32 @@ export async function POST(request: NextRequest) {
       .select()
       .from(orderSales)
       .where(sql`${orderSales.id} IN ${orderSalesIds}`);
-    
-    const allSameCompany = salesRecords.every(record => record.companyId === data.companyId);
-    if (!allSameCompany) {
+
+    const company = await db.query.companies.findFirst({
+      where: eq(companies.id, data.companyId)
+    });
+
+    if (!company) {
       return NextResponse.json(
-        { error: '모든 매출 인보이스는 동일한 회사에 속해야 합니다.' },
-        { status: 400 }
+        { error: '회사 정보를 찾을 수 없습니다.' },
+        { status: 404 }
       );
     }
+    
+    // const allSameCompany = salesRecords.every(record => record.companyId === data.companyId);
+    // if (!allSameCompany) {
+    //   return NextResponse.json(
+    //     { error: '모든 매출 인보이스는 동일한 회사에 속해야 합니다.' },
+    //     { status: 400 }
+    //   );
+    // }
     
     // 트랜잭션으로 번들 및 항목 생성
     const result = await db.transaction(async (tx) => {
       // 매출 번들 생성
       const newBundle = await tx.insert(salesBundles).values({
-        ...bundleData
+        ...bundleData,
+        companySnapshot: company
       }as any).returning();
       
       const bundleId = newBundle[0].id;
