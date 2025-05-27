@@ -313,4 +313,61 @@ export interface CreateSalesBundleInput {
   status?: SalesBundleStatus;
   items: { orderSalesId: string; baseAmount: number }[];
   adjustments?: { type: BundleAdjType; description?: string; amount: number }[];
+}
+
+// sales bundle 목록 조회 관련 타입
+export interface ISalesBundleListItem {
+  id: string;
+  companyId: string;
+  companySnapshot?: {
+    name: string;
+    businessNumber: string;
+    ceoName: string;
+  };
+  managerId?: string;
+  managerSnapshot?: {
+    name: string;
+    email: string;
+    mobile: string;
+  };
+  paymentMethod: PaymentMethod;
+  bankCode?: string;
+  bankAccount?: string;
+  bankAccountHolder?: string;
+  settlementMemo?: string;
+  periodType: BundlePeriodType;
+  periodFrom?: string;
+  periodTo?: string;
+  invoiceIssuedAt?: string;
+  depositRequestedAt?: string;
+  depositReceivedAt?: string;
+  settlementConfirmedAt?: string;
+  settlementBatchId?: string;
+  settledAt?: string;
+  invoiceNo?: string;
+  totalAmount: number;
+  totalTaxAmount?: number;
+  totalAmountWithTax?: number;
+  status: SalesBundleStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// sales bundle 목록 응답 타입
+export interface ISalesBundleListResponse {
+  data: ISalesBundleListItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+// sales bundle 필터 타입
+export interface ISalesBundleFilter {
+  companyId?: string;
+  status?: SalesBundleStatus;
+  startDate?: string;
+  endDate?: string;
+  sortBy?: 'createdAt' | 'periodFrom';
+  sortOrder?: 'asc' | 'desc';
 } 

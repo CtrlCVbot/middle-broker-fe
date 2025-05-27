@@ -11,7 +11,9 @@ import {
   ISettlementWaitingResponse,
   ISettlementSummary,
   CreateSalesBundleInput,
-  ISalesBundle
+  ISalesBundle,
+  ISalesBundleListResponse,
+  ISalesBundleFilter
 } from '@/types/broker-charge';
 import { mapAdditionalFeeToChargeGroup, mapAdditionalFeeToChargeLine } from '@/utils/charge-mapper';
 import { IBrokerOrder } from '@/types/broker-order';
@@ -345,6 +347,50 @@ export async function createSalesBundle(data: CreateSalesBundleInput): Promise<I
     return result.data;
   } catch (error) {
     console.error('매출 번들 생성 중 오류 발생:', error);
+    throw error;
+  }
+}
+
+/**
+ * 매출 번들(정산 묶음) 목록 조회
+ */
+export async function getSalesBundles(
+  page: number = 1,
+  pageSize: number = 10,
+  filter?: ISalesBundleFilter
+): Promise<ISalesBundleListResponse> {
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      pageSize: pageSize.toString()
+    });
+
+    // 필터 파라미터 추가
+    if (filter) {
+      if (filter.companyId) params.append('companyId', filter.companyId);
+      if (filter.status) params.append('status', filter.status);
+      if (filter.startDate) params.append('startDate', filter.startDate);
+      if (filter.endDate) params.append('endDate', filter.endDate);
+      if (filter.sortBy) params.append('sortBy', filter.sortBy);
+      if (filter.sortOrder) params.append('sortOrder', filter.sortOrder);
+    }
+
+    const response = await fetch(`/api/charge/sales-bundles?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || '매출 번들 목록 조회에 실패했습니다.');
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('매출 번들 목록 조회 중 오류 발생:', error);
     throw error;
   }
 } 

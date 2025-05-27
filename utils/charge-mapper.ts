@@ -11,9 +11,11 @@ import {
   ISettlementSummary,
   IChargeGroupWithLines,
   CreateSalesBundleInput,
-  ISettlementFormData
+  ISettlementFormData,
+  ISalesBundleListItem
 } from '@/types/broker-charge';
 import { IBrokerOrder } from '@/types/broker-order';
+import { IIncome, IncomeStatusType } from '@/types/income';
 
 /**
  * 프론트엔드 추가 비용 입력을 백엔드 운임 그룹 요청으로 변환
@@ -342,4 +344,81 @@ export function mapSettlementFormToSalesBundleInput(
   
   console.log('Final CreateSalesBundleInput:', result);
   return result;
+}
+
+/**
+ * Sales Bundle 상태를 Income 상태로 매핑
+ */
+function mapSalesBundleStatusToIncomeStatus(status: string): IncomeStatusType {
+  switch (status) {
+    case 'draft':
+      return 'MATCHING'; // 작성 중 = 정산대사
+    case 'issued':
+    case 'paid':
+      return 'COMPLETED'; // 발행/입금완료 = 정산완료
+    case 'canceled':
+      return 'WAITING'; // 취소 = 정산대기 (재작업 필요)
+    default:
+      return 'MATCHING';
+  }
+}
+
+/**
+ * Sales Bundle 목록을 Income 목록으로 변환
+ * @param salesBundles Sales Bundle 목록
+ */
+export function mapSalesBundlesToIncomes(salesBundles: ISalesBundleListItem[]): IIncome[] {
+  return salesBundles.map(bundle => {
+    const totalAmount = Number(bundle.totalAmount) || 0;
+    const totalTaxAmount = Number(bundle.totalTaxAmount) || 0;
+    const totalAmountWithTax = Number(bundle.totalAmountWithTax) || 0;
+
+    // 세금계산서 상태 매핑
+    let invoiceStatus: '미발행' | '발행대기' | '발행완료' | '발행오류' = '미발행';
+    if (bundle.invoiceIssuedAt) {
+      invoiceStatus = '발행완료';
+    } else if (bundle.status === 'issued') {
+      invoiceStatus = '발행대기';
+    }
+
+    return {
+      id: bundle.id,
+      status: mapSalesBundleStatusToIncomeStatus(bundle.status),
+      orderIds: [], // sales_bundle_items에서 가져와야 하므로 현재는 빈 배열
+      orderCount: 0, // 실제로는 sales_bundle_items 개수
+      
+      // 화주 정보
+      shipperId: bundle.companyId,
+      shipperName: bundle.companySnapshot?.name || '알 수 없음',
+      businessNumber: bundle.companySnapshot?.businessNumber || '000-00-00000',
+      
+      // 정산 기간
+      startDate: bundle.periodFrom || bundle.createdAt.split('T')[0],
+      endDate: bundle.periodTo || bundle.createdAt.split('T')[0],
+      
+      // 금액 정보
+      totalBaseAmount: totalAmount, // 기본 운임 (추가금 제외)
+      totalAdditionalAmount: 0, // 추가금 (bundle_adjustments에서 계산)
+      totalAmount: totalAmount,
+      tax: totalTaxAmount,
+      isTaxFree: totalTaxAmount === 0,
+      finalAmount: totalAmountWithTax,
+      
+      // 추가 정보
+      additionalFees: [], // 실제로는 bundle_adjustments에서 변환
+      logs: [], // 상태 변경 이력
+      
+      // 정산서 관련 정보
+      invoiceNumber: bundle.invoiceNo,
+      invoiceIssuedDate: bundle.invoiceIssuedAt,
+      invoiceStatus,
+      
+      // 관리 정보
+      manager: bundle.managerSnapshot?.name || '담당자 미지정',
+      managerContact: bundle.managerSnapshot?.mobile,
+      createdAt: bundle.createdAt,
+      updatedAt: bundle.updatedAt,
+      memo: bundle.settlementMemo
+    } as IIncome;
+  });
 }

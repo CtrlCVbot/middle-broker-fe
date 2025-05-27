@@ -82,7 +82,18 @@ export default function IncomePage() {
     updateWaitingItemsFilter,
     calculateSettlementSummary,
     createOrderSaleFromWaitingItems,
-    openSettlementForm
+    openSettlementForm,
+    // sales bundles 관련 추가
+    salesBundlesAsIncomes,
+    salesBundlesTotal,
+    salesBundlesPage,
+    salesBundlesTotalPages,
+    salesBundlesIsLoading,
+    salesBundlesFilter,
+    fetchSalesBundles,
+    updateSalesBundlesPage,
+    updateSalesBundlesFilter,
+    resetSalesBundlesFilter
   } = useBrokerChargeStore();
 
   console.log('waitingItems:', waitingItems);
@@ -122,6 +133,12 @@ export default function IncomePage() {
     fetchWaitingItems();
   }, [fetchWaitingItems]);
 
+  // sales bundles 데이터 로드 (정산 대사용)
+  useEffect(() => {
+    console.log('useEffect 실행됨 - sales bundles 데이터 로드');
+    fetchSalesBundles();
+  }, [fetchSalesBundles]);
+
   // 페이지 변경 처리
   const handlePageChange = (page: number) => {
     setPage(page);
@@ -135,6 +152,11 @@ export default function IncomePage() {
   // 정산 대기 화물 페이지 변경 처리 (새로운 구현)
   const handleBrokerWaitingPageChange = (page: number) => {
     updateWaitingItemsPage(page);
+  };
+
+  // sales bundles 페이지 변경 처리 (정산 대사용)
+  const handleSalesBundlesPageChange = (page: number) => {
+    updateSalesBundlesPage(page);
   };
 
   // 정산 상태 변경 처리
@@ -159,10 +181,29 @@ export default function IncomePage() {
     setFilter(newFilter);
   };
   
+  // sales bundles 필터 변경 처리
+  const handleSalesBundlesFilterChange = (newFilter: Partial<typeof filter>) => {
+    // IIncomeFilter를 ISalesBundleFilter로 변환
+    const salesBundleFilter = {
+      companyId: newFilter.shipperName, // 임시로 shipperName을 companyId로 사용
+      startDate: newFilter.startDate,
+      endDate: newFilter.endDate,
+      status: newFilter.status === 'MATCHING' ? 'draft' as const : 
+              newFilter.status === 'COMPLETED' ? 'issued' as const : undefined
+    };
+    updateSalesBundlesFilter(salesBundleFilter);
+  };
+  
   // 상태별 탭 처리
   const handleTabChange = (value: string) => {
     if (value === "WAITING" || value === "MATCHING" || value === "COMPLETED") {
       setFilter({ status: value as IncomeStatusType });
+      
+      // sales bundles 필터도 업데이트
+      if (value === "MATCHING" || value === "COMPLETED") {
+        const salesBundleStatus = value === "MATCHING" ? 'draft' : 'issued';
+        updateSalesBundlesFilter({ status: salesBundleStatus });
+      }
     }
   };
   
@@ -368,14 +409,14 @@ export default function IncomePage() {
                   
                   {/* 정산 대사 탭 */}
                   <TabsContent value="MATCHING">
-                    {isLoading ? (
+                    {salesBundlesIsLoading ? (
                       <div className="flex h-24 items-center justify-center">
                         <Loader2 className="h-8 w-8 animate-spin text-primary/70" />
                       </div>
-                    ) : incomes.length === 0 ? (
+                    ) : salesBundlesAsIncomes.filter(income => income.status === 'MATCHING').length === 0 ? (
                       <div className="flex h-24 items-center justify-center flex-col">
-                        <p className="text-muted-foreground mb-2">정산 데이터가 없습니다</p>
-                        <Button variant="outline" onClick={resetFilter}>
+                        <p className="text-muted-foreground mb-2">정산 대사 데이터가 없습니다</p>
+                        <Button variant="outline" onClick={resetSalesBundlesFilter}>
                           필터 초기화
                         </Button>
                       </div>
@@ -390,15 +431,15 @@ export default function IncomePage() {
                         </div>                
                       </div>
                       <BundleMatchingFilter 
-                        onFilterChange={handleFilterChange}
-                        onResetFilter={resetFilter}
+                        onFilterChange={handleSalesBundlesFilterChange}
+                        onResetFilter={resetSalesBundlesFilter}
                         tabStatus="MATCHING"
                       />
                       <BundleMatchingList
-                        incomes={incomes}
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={handlePageChange}
+                        incomes={salesBundlesAsIncomes.filter(income => income.status === 'MATCHING')}
+                        currentPage={salesBundlesPage}
+                        totalPages={salesBundlesTotalPages}
+                        onPageChange={handleSalesBundlesPageChange}
                         onStatusChange={handleStatusChange}
                         onIssueInvoice={handleIssueInvoice}
                         onExportExcel={handleExportExcel}
@@ -410,14 +451,14 @@ export default function IncomePage() {
                   
                   {/* 정산 완료 탭 */}
                   <TabsContent value="COMPLETED">
-                    {isLoading ? (
+                    {salesBundlesIsLoading ? (
                       <div className="flex h-24 items-center justify-center">
                         <Loader2 className="h-8 w-8 animate-spin text-primary/70" />
                       </div>
-                    ) : incomes.length === 0 ? (
+                    ) : salesBundlesAsIncomes.filter(income => income.status === 'COMPLETED').length === 0 ? (
                       <div className="flex h-24 items-center justify-center flex-col">
                         <p className="text-muted-foreground mb-2">정산 완료된 데이터가 없습니다</p>
-                        <Button variant="outline" onClick={resetFilter}>
+                        <Button variant="outline" onClick={resetSalesBundlesFilter}>
                           필터 초기화
                         </Button>
                       </div>
@@ -432,15 +473,15 @@ export default function IncomePage() {
                         </div>
                       </div>
                       <BundleMatchingFilter 
-                        onFilterChange={handleFilterChange}
-                        onResetFilter={resetFilter}
+                        onFilterChange={handleSalesBundlesFilterChange}
+                        onResetFilter={resetSalesBundlesFilter}
                         tabStatus="COMPLETED"
                       />
                       <BundleMatchingList
-                        incomes={incomes}
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={handlePageChange}
+                        incomes={salesBundlesAsIncomes.filter(income => income.status === 'COMPLETED')}
+                        currentPage={salesBundlesPage}
+                        totalPages={salesBundlesTotalPages}
+                        onPageChange={handleSalesBundlesPageChange}
                         onStatusChange={handleStatusChange}
                         onIssueInvoice={handleIssueInvoice}
                         onExportExcel={handleExportExcel}

@@ -17,10 +17,13 @@ import {
   getSettlementWaitingItems,
   calculateSettlementSummary,
   createOrderSale,
-  createSalesBundle
+  createSalesBundle,
+  getSalesBundles
 } from '@/services/broker-charge-service';
-import { mapChargeDataToFinanceSummary,  calculateSalesSummary, mapWaitingItemsToBrokerOrders, mapSettlementFormToSalesBundleInput } from '@/utils/charge-mapper';
+import { mapChargeDataToFinanceSummary,  calculateSalesSummary, mapWaitingItemsToBrokerOrders, mapSettlementFormToSalesBundleInput, mapSalesBundlesToIncomes } from '@/utils/charge-mapper';
 import { IBrokerOrder } from '@/types/broker-order';
+import { ISalesBundleFilter, ISalesBundleListItem } from '@/types/broker-charge';
+import { IIncome, IIncomeFilter } from '@/types/income';
 
 interface IBrokerChargeState {  
   // 기존 운임 관련 상태
@@ -50,6 +53,17 @@ interface IBrokerChargeState {
     endDate?: string;
   };
 
+  // sales bundles 관련 상태 추가
+  salesBundles: ISalesBundleListItem[];
+  salesBundlesAsIncomes: IIncome[]; // IIncome 형태로 변환된 데이터
+  salesBundlesTotal: number;
+  salesBundlesPage: number;
+  salesBundlesPageSize: number;
+  salesBundlesTotalPages: number;
+  salesBundlesIsLoading: boolean;
+  salesBundlesError: string | null;
+  salesBundlesFilter: ISalesBundleFilter;
+
   // 기존 운임 관련 액션
   fetchChargesByOrderId: (orderId: string) => Promise<IChargeGroupWithLines[]>;  
   addCharge: (fee: IAdditionalFeeInput, orderId: string, dispatchId?: string) => Promise<boolean>;  
@@ -72,6 +86,13 @@ interface IBrokerChargeState {
 
   // 새로운 액션
   createSalesBundleFromWaitingItems: (formData?: ISettlementFormData) => Promise<boolean>;
+
+  // sales bundles 관련 액션 추가
+  fetchSalesBundles: () => Promise<ISalesBundleListItem[]>;
+  updateSalesBundlesPage: (page: number) => void;
+  updateSalesBundlesFilter: (filter: Partial<ISalesBundleFilter>) => void;
+  resetSalesBundlesFilter: () => void;
+  resetSalesBundlesState: () => void;
 }
 
 // 정산 폼 초기 데이터
@@ -132,6 +153,24 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
     endDate: undefined,
   },
   
+  // sales bundles 초기 상태 추가
+  salesBundles: [],
+  salesBundlesAsIncomes: [],
+  salesBundlesTotal: 0,
+  salesBundlesPage: 1,
+  salesBundlesPageSize: 10,
+  salesBundlesTotalPages: 0,
+  salesBundlesIsLoading: false,
+  salesBundlesError: null,
+  salesBundlesFilter: {
+    companyId: undefined,
+    status: undefined,
+    startDate: undefined,
+    endDate: undefined,
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
+  },
+
   // 주문 ID로 운임 정보 조회
   fetchChargesByOrderId: async (orderId: string) => {
     try {
@@ -506,5 +545,90 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       });
       return false;
     }
+  },
+
+  // sales bundles 관련 액션 추가
+  fetchSalesBundles: async () => {
+    try {
+      set({ salesBundlesIsLoading: true, salesBundlesError: null });
+      
+      const { salesBundlesPage, salesBundlesPageSize, salesBundlesFilter } = get();
+      
+      const response = await getSalesBundles(
+        salesBundlesPage,
+        salesBundlesPageSize,
+        salesBundlesFilter
+      );
+      
+      // IIncome 형태로 변환
+      const salesBundlesAsIncomes = mapSalesBundlesToIncomes(response.data);
+      
+      set({ 
+        salesBundles: response.data,
+        salesBundlesAsIncomes,
+        salesBundlesTotal: response.total,
+        salesBundlesPage: response.page,
+        salesBundlesPageSize: response.pageSize,
+        salesBundlesTotalPages: response.totalPages,
+        salesBundlesIsLoading: false 
+      });
+
+      console.log('fetchSalesBundles:', response.data);
+      
+      return response.data;
+    } catch (error) {
+      console.error('매출 번들 조회 중 오류 발생:', error);
+      set({ 
+        salesBundlesError: error instanceof Error ? error.message : '매출 번들 조회에 실패했습니다.',
+        salesBundlesIsLoading: false 
+      });
+      return [];
+    }
+  },
+  
+  // 매출 번들 페이지 변경
+  updateSalesBundlesPage: (page: number) => {
+    set({ salesBundlesPage: page });
+    get().fetchSalesBundles();
+  },
+  
+  // 매출 번들 필터 변경
+  updateSalesBundlesFilter: (filter: Partial<ISalesBundleFilter>) => {
+    set({ 
+      salesBundlesFilter: { ...get().salesBundlesFilter, ...filter },
+      salesBundlesPage: 1 // 필터가 변경되면, 첫 페이지로 이동
+    });
+    get().fetchSalesBundles();
+  },
+  
+  // 매출 번들 필터 초기화
+  resetSalesBundlesFilter: () => {
+    set({
+      salesBundlesFilter: {
+        companyId: undefined,
+        startDate: undefined,
+        endDate: undefined,
+      },
+      salesBundlesPage: 1
+    });
+    get().fetchSalesBundles();
+  },
+  
+  // 매출 번들 상태 초기화
+  resetSalesBundlesState: () => {
+    set({
+      salesBundles: [],
+      salesBundlesTotal: 0,
+      salesBundlesPage: 1,
+      salesBundlesPageSize: 10,
+      salesBundlesTotalPages: 0,
+      salesBundlesIsLoading: false,
+      salesBundlesError: null,
+      salesBundlesFilter: {
+        companyId: undefined,
+        startDate: undefined,
+        endDate: undefined,
+      }
+    });
   },
 })); 
