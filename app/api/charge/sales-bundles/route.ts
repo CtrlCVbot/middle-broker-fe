@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, and, desc, asc, sql, gte, lte } from 'drizzle-orm';
+import { eq, and, desc, asc, sql, gte, lte, inArray } from 'drizzle-orm';
 import { db } from '@/db';
 import { salesBundles, salesBundleStatusEnum } from '@/db/schema/salesBundles';
 import { salesBundleItems } from '@/db/schema/salesBundles';
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       : sortOrder === 'desc' ? desc(salesBundles.periodFrom) : asc(salesBundles.periodFrom);
 
     // 데이터 조회 및 총 개수 카운트
-    const [result, total] = await Promise.all([
+    const [salesBundlesResult, total] = await Promise.all([
       db
         .select()
         .from(salesBundles)
@@ -73,11 +73,32 @@ export async function GET(request: NextRequest) {
         .from(salesBundles)
         .where(query)
         .execute()
-        .then(res => Number(res[0].count))
+        .then(res => Number(res[0].count)),
+      
+        
     ]);
+
+
+    // // 2단계: 해당 salesBundles들의 bundleId 추출
+    // const bundleIds = salesBundlesResult.map(bundle => bundle.id);
+
+    // // 3단계: 각 bundleId에 해당하는 salesBundleItems 조회
+    // const items = await db
+    //   .select()
+    //   .from(salesBundleItems)
+    //   .where(inArray(salesBundleItems.bundleId, bundleIds))
+    //   .orderBy(orderBy) // 필요시 item 정렬 방식 지정
+    //   .execute();
+
+    // // 최종 결과 조립
+    // const result = {
+    //   bundles: salesBundlesResult,
+    //   items,
+    //   total,
+    // };
     
     return NextResponse.json({
-      data: result,
+      data: salesBundlesResult,      
       total,
       page,
       pageSize,

@@ -167,7 +167,7 @@ export function BundleMatchingList({
                   onClick={() => handleIncomeClick(income.id)}
                 >
                   <TableCell className="font-medium text-primary underline">
-                    {income.id}
+                    {income.id.slice(0, 8)}
                   </TableCell>
                   <TableCell>
                     {renderStatusBadge(income.status)}

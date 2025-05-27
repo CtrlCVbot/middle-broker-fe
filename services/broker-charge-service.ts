@@ -13,7 +13,8 @@ import {
   CreateSalesBundleInput,
   ISalesBundle,
   ISalesBundleListResponse,
-  ISalesBundleFilter
+  ISalesBundleFilter,
+  ISalesBundleItem
 } from '@/types/broker-charge';
 import { mapAdditionalFeeToChargeGroup, mapAdditionalFeeToChargeLine } from '@/utils/charge-mapper';
 import { IBrokerOrder } from '@/types/broker-order';
@@ -394,3 +395,28 @@ export async function getSalesBundles(
     throw error;
   }
 } 
+
+/**
+ * 매출 번들(정산 묶음) 상세 조회
+ */
+export async function getSalesBundleItems(salesBundleId: string): Promise<ISalesBundleItem[]> {
+  try {
+    const response = await fetch(`/api/charge/sales-bundles/items?salesBundleId=${salesBundleId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || '매출 번들 상세 조회에 실패했습니다.');
+    }
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error('매출 번들 상세 조회 중 오류 발생:', error);
+    throw error;
+  }
+}

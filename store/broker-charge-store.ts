@@ -18,7 +18,8 @@ import {
   calculateSettlementSummary,
   createOrderSale,
   createSalesBundle,
-  getSalesBundles
+  getSalesBundles,
+  getSalesBundleItems
 } from '@/services/broker-charge-service';
 import { mapChargeDataToFinanceSummary,  calculateSalesSummary, mapWaitingItemsToBrokerOrders, mapSettlementFormToSalesBundleInput, mapSalesBundlesToIncomes } from '@/utils/charge-mapper';
 import { IBrokerOrder } from '@/types/broker-order';
@@ -559,6 +560,8 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
         salesBundlesPageSize,
         salesBundlesFilter
       );
+
+      
       
       // IIncome 형태로 변환
       const salesBundlesAsIncomes = mapSalesBundlesToIncomes(response.data);
