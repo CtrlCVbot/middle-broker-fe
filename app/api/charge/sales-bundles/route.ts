@@ -189,6 +189,14 @@ export async function POST(request: NextRequest) {
       });
       
       await Promise.all(itemPromises);
+
+      //orderSales 상태 변경
+      const orderSalesPromises = orderSalesIds.map(id => {
+        return tx.update(orderSales).set({
+          status: 'issued'
+        }).where(eq(orderSales.id, id));
+      });
+      await Promise.all(orderSalesPromises);
       
       // 번들 조정 생성
       if (adjustments && adjustments.length > 0) {

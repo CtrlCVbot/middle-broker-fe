@@ -52,12 +52,12 @@ export async function GET(request: NextRequest) {
       .select({ orderId: orderSales.orderId })
       .from(orderSales);
 
-    console.log("정산이 이미 생성된 주문 ID 조회 완료", orderIdsWithSales);
-
+    conditions.push(eq(orderSales.status, 'draft'));
+    
     // 정산이 아직 생성되지 않은 주문만 필터링
     // conditions.push(
     //   not(inArray(orders.id, orderIdsWithSales.map((item: any) => item.orderId)))
-    // );
+    // );    
     
     const query = and(...conditions);
     
