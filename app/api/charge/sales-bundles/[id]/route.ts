@@ -6,6 +6,7 @@ import { salesBundleItems } from '@/db/schema/salesBundles';
 import { salesBundleAdjustments } from '@/db/schema/salesBundles';
 import { z } from 'zod';
 import { validate as isValidUUID } from 'uuid';
+import { orderSales } from '@/db/schema/orderSales';
 
 // 필드 업데이트 스키마
 const UpdateSalesBundleFieldsSchema = z.object({
@@ -199,6 +200,17 @@ export async function DELETE(
       );
     }
 
+    const existingSalesBundleItems = await db.query.salesBundleItems.findMany({
+      where: eq(salesBundleItems.bundleId, id),
+    });
+
+    if (!existingSalesBundleItems || existingSalesBundleItems.length === 0) {
+      return NextResponse.json(
+        { error: '매출 번들에 관련 주문이 존재하지 않습니다.' },
+        { status: 400 }
+      );
+    }
+
     // 트랜잭션으로 관련 데이터 모두 삭제
     await db.transaction(async (tx) => {
       // 1. 매출 번들 조정 항목 삭제
@@ -215,6 +227,18 @@ export async function DELETE(
       await tx
         .delete(salesBundles)
         .where(eq(salesBundles.id, id));
+
+      // 4. 관련된 모든 orderSales의 상태를 draft로 업데이트
+      const uniqueOrderSalesIds = [
+        ...new Set(existingSalesBundleItems.map((item) => item.orderSalesId)),
+      ];
+
+      for (const orderSalesId of uniqueOrderSalesIds) {
+        await tx
+          .update(orderSales)
+          .set({ status: 'draft' })
+          .where(eq(orderSales.id, orderSalesId));
+      }
     });
 
     return NextResponse.json({

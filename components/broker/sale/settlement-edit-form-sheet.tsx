@@ -764,9 +764,10 @@ export function SettlementEditFormSheet() {
                       <h3 className="text-lg font-bold">회사 정보</h3>
                     </div>
                     
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
+                    {!isEditMode && (
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
                         variant="outline"
                         size="sm"
                         onClick={() => {
@@ -784,8 +785,9 @@ export function SettlementEditFormSheet() {
                         disabled={loading}
                       >
                         초기화
-                      </Button>
-                    </div>
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
                   {/* 선택된 업체 배지 표시 */}
@@ -1678,7 +1680,7 @@ export function SettlementEditFormSheet() {
               </div>
 
               {/* 선택된 화물 목록 - 컴팩트하게 표시 */}
-              {!isEditMode && (
+              {/* {!isEditMode && ( */}
                 <Collapsible className="border rounded-md mt-4">
                   <div className="flex items-center justify-between p-2 bg-muted/50">
                     <h3 className="text-sm font-semibold">선택된 화물 ({orders?.length || 0}개)</h3>
@@ -1737,7 +1739,7 @@ export function SettlementEditFormSheet() {
                     </ScrollArea>
                   </CollapsibleContent>
                 </Collapsible>
-              )}
+              {/* )} */}
             </form>
           </Form>
         </div>
@@ -1770,7 +1772,7 @@ export function SettlementEditFormSheet() {
               size="sm"
             >
               <X className="mr-1 h-4 w-4" />
-              취소
+              닫기
             </Button>
             
             {isEditMode ? (
