@@ -42,7 +42,8 @@ import {
   Building,
   Landmark,
   Hash,
-  Ellipsis
+  Ellipsis,
+  UserPen
 } from "lucide-react";
 import { 
   Popover,
@@ -83,162 +84,7 @@ import { Separator } from "@/components/ui/separator";
 import { useBrokerChargeStore } from '@/store/broker-charge-store';
 import { ISettlementFormData, ISettlementWaitingItem } from "@/types/broker-charge";
 
-// TypeScript로 인터페이스 정의
-interface IAdditionalFee {
-  id: string;
-  type: string;
-  amount: number;
-  memo?: string;
-  orderId?: string;
-  createdAt: string;
-  createdBy: string;
-}
 
-
-// 목업 데이터를 위한 임시 솔루션 (실제 구현시 제거)
-interface IMockStoreState {
-  isOpen: boolean;
-  selectedOrders: IBrokerOrder[];
-  formData: {
-    shipperName: string;
-    shipperCeo: string;
-    businessNumber: string;    
-    billingCompany: string;
-    manager: string;
-    managerContact: string;
-    periodType: 'departure' | 'arrival';
-    startDate: string;
-    endDate: string;
-    isTaxFree: boolean;
-    memo: string;
-  };
-  additionalFees: IAdditionalFee[];
-  companies: string[];
-  managers: string[];
-}
-
-interface MockIncomeFormStore extends IMockStoreState {
-  setFormField: (key: string, value: any) => void;
-  openForm: (orders: IBrokerOrder[]) => void;
-  closeForm: () => void;
-  addAdditionalFee: (fee: any) => void;
-  removeAdditionalFee: (id: string) => void;
-  submitForm: (data: any) => void;
-  isLoading: boolean;
-  resetForm: () => void;
-}
-
-// 목업 useIncomeFormStore (실제 구현시 제거)
-const useIncomeFormStore = (): MockIncomeFormStore => {
-  const [state, setState] = React.useState<IMockStoreState>({
-    isOpen: false,
-    selectedOrders: [] as IBrokerOrder[],
-    formData: { 
-      shipperName: "기본 화주", 
-      shipperCeo: "김중개",
-      businessNumber: "123-45-67890",
-      
-      billingCompany: "기본 화주",
-      manager: "김중개",
-      managerContact: "010-1234-5678",
-      periodType: "departure" as const,
-      startDate: format(new Date(), 'yyyy-MM-dd'),
-      endDate: format(new Date(), 'yyyy-MM-dd'),
-      isTaxFree: false,
-      memo: ""
-    },
-    additionalFees: [],
-    companies: ["화주A", "화주B", "화주C"],
-    managers: ["김중개", "이중개", "박중개"],
-  });
-
-  // 실제로 작동하는 함수들 구현
-  const setFormField = React.useCallback((key: string, value: any) => {
-    setState(prev => ({
-      ...prev,
-      formData: {
-        ...prev.formData,
-        [key]: value
-      }
-    }));
-  }, []);
-
-  const openForm = React.useCallback((orders: IBrokerOrder[]) => {
-    // 화주별로 그룹핑
-    const shipperCounts: Record<string, { count: number, businessNumber: string, ceo: string }> = {};
-    orders.forEach(order => {
-      const shipper = order.shipperName || '미지정';
-      const businessNumber = order.shipperBusinessNumber || '000-00-00000';
-      const ceo = order.shipperCeo || '미지정';
-      if (!shipperCounts[shipper]) {
-        shipperCounts[shipper] = { count: 1, businessNumber, ceo };
-      } else {
-        shipperCounts[shipper].count++;
-      }
-    });
-    // 가장 많은 화주 찾기
-    let maxCount = 0;
-    let mainShipper = '';
-    let mainBusinessNumber = '';
-    let mainShipperCeo = '';
-    for (const shipper in shipperCounts) {
-      if (shipperCounts[shipper].count > maxCount) {
-        maxCount = shipperCounts[shipper].count;
-        mainShipper = shipper;
-        mainBusinessNumber = shipperCounts[shipper].businessNumber;
-        mainShipperCeo = shipperCounts[shipper].ceo;
-      }
-    }
-    setState(prev => ({
-      ...prev,
-      isOpen: true,
-      selectedOrders: orders,
-      formData: {
-        ...prev.formData,
-        shipperName: mainShipper,
-        shipperCeo: mainShipperCeo,
-        businessNumber: mainBusinessNumber,        
-        billingCompany: mainShipper
-      }
-    }));
-  }, []);
-
-  const closeForm = React.useCallback(() => {
-    console.log("closeForm 호출됨");
-    setState(prev => ({
-      ...prev,
-      isOpen: false
-    }));
-  }, []);
-
-  const addAdditionalFee = React.useCallback((fee: any) => {
-    console.log('addAdditionalFee', fee);
-  }, []);
-
-  const removeAdditionalFee = React.useCallback((id: string) => {
-    console.log('removeAdditionalFee', id);
-  }, []);
-
-  const submitForm = React.useCallback((data: any) => {
-    console.log('submitForm', data);
-  }, []);
-
-  const resetForm = React.useCallback(() => {
-    console.log('resetForm');
-  }, []);
-
-  return {
-    ...state,
-    setFormField,
-    openForm,
-    closeForm,
-    addAdditionalFee,
-    removeAdditionalFee,
-    submitForm,
-    isLoading: false,
-    resetForm
-  };
-};
 
 // 정산 생성 폼 스키마
 const formSchema = z.object({
@@ -248,6 +94,7 @@ const formSchema = z.object({
   businessNumber: z.string({
     required_error: "사업자번호는 필수 입력 항목입니다.",
   }),
+  shipperCeo: z.string().optional(),
   manager: z.string({
     required_error: "담당자명은 필수 입력 항목입니다.",
   }),
@@ -319,13 +166,12 @@ export function SettlementEditFormSheet() {
   } = useBrokerChargeStore();
 
   const { isOpen, selectedItems: orders, formData } = settlementForm;
+
+  
   
   // 편집 모드 여부 확인
   const isEditMode = selectedSalesBundleId !== null;
-
-  const { createIncome } = useIncomeStore();
-  const [activeTab, setActiveTab] = useState("info");
-  const [isEditingAdditionalFee, setIsEditingAdditionalFee] = useState(false);
+  
   const [loading, setLoading] = useState(false);
   const [isOrderListOpen, setIsOrderListOpen] = useState(false);
   const [companySearchTerm, setCompanySearchTerm] = useState('');
@@ -349,7 +195,7 @@ export function SettlementEditFormSheet() {
   // 정산 생성 이벤트 리스너 추가
   useEffect(() => {
     // 이벤트 핸들러 함수
-    const handleOpenIncomeForm = (event: Event) => {
+    const handleOpenSettlementForm = (event: Event) => {
       const customEvent = event as CustomEvent<{orders: IBrokerOrder[]}>;
       
       if (customEvent.detail?.orders && Array.isArray(customEvent.detail.orders)) {
@@ -363,11 +209,11 @@ export function SettlementEditFormSheet() {
     };
     
     // 이벤트 리스너 등록
-    window.addEventListener('openIncomeForm', handleOpenIncomeForm);
+    window.addEventListener('openSettlementForm', handleOpenSettlementForm);
     
     // 컴포넌트 언마운트 시 이벤트 리스너 제거
     return () => {
-      window.removeEventListener('openIncomeForm', handleOpenIncomeForm);
+      window.removeEventListener('openSettlementForm', handleOpenSettlementForm);
     };
   }, []);
 
@@ -376,14 +222,18 @@ export function SettlementEditFormSheet() {
     if (isEditMode && editingSalesBundle && isOpen) {
       console.log('편집 모드: 기존 데이터 로드', editingSalesBundle);
       
+      //화주 데이터 로드
       setSelectedCompanyId(editingSalesBundle.companyId || '');
-      console.log('selectedCompanyId:', selectedCompanyId);
-      // 기존 sales bundle 데이터를 폼에 설정
       form.setValue('shipperName', editingSalesBundle.companySnapshot?.name || '');
       form.setValue('businessNumber', editingSalesBundle.companySnapshot?.businessNumber || '');
+      form.setValue('shipperCeo', editingSalesBundle.companySnapshot?.ceoName || '');
+      console.log('selectedCompanyId:', selectedCompanyId);
+      // 담당자 데이터 로드
       form.setValue('manager', editingSalesBundle.managerSnapshot?.name || '');
       form.setValue('managerContact', editingSalesBundle.managerSnapshot?.contact || '');
       form.setValue('managerEmail', editingSalesBundle.managerSnapshot?.email || '');
+
+
       form.setValue('periodType', editingSalesBundle.periodType || 'departure');
       form.setValue('startDate', editingSalesBundle.periodFrom || '');
       form.setValue('endDate', editingSalesBundle.periodTo || '');
@@ -404,6 +254,8 @@ export function SettlementEditFormSheet() {
   // 정산 기간 설정 - 가장 빠른 상차일과 가장 늦은 하차일로 자동 설정 (생성 모드에서만)
   useEffect(() => {
     if (isEditMode || !orders || orders.length === 0 || !isOpen) return;
+
+    
     
     let earliestLoadingDate = new Date(orders[0].pickupDate);
     let latestUnloadingDate = new Date(orders[0].deliveryDate);
@@ -485,8 +337,8 @@ export function SettlementEditFormSheet() {
         if (!shipperCounts[order.companyName]) {
           shipperCounts[order.companyName] = { 
             count: 1,
-            businessNumber: '000-00-00000',
-            ceo: '미지정'
+            businessNumber: order.companyBusinessNumber || '',
+            ceo: order.companyCeo || ''            
           };
         } else {
           shipperCounts[order.companyName].count++;
@@ -507,9 +359,11 @@ export function SettlementEditFormSheet() {
         mainShipperCeo = shipperCounts[shipper].ceo;
       }
     }
-    
-    form.setValue('shipperName', mainShipper);
-    form.setValue('businessNumber', mainBusinessNumber);
+    console.log('mainShipper:', mainShipper);
+    console.log('mainBusinessNumber:', mainBusinessNumber);
+    // form.setValue('shipperName', mainShipper);
+    // form.setValue('businessNumber', mainBusinessNumber);
+
     //form.setValue('shipperCeo', mainShipperCeo);
     // 매출 회사 = 화주로 기본 설정
     //form.setValue('billingCompany', mainShipper);
@@ -653,7 +507,7 @@ export function SettlementEditFormSheet() {
   const shipperGroups = useMemo(() => {
     if (!orders || orders.length === 0) return {};
     
-    const groups: Record<string, { orders: ISettlementWaitingItem[], total: number }> = {};
+    const groups: Record<string, { orders: ISettlementWaitingItem[], total: number, company: { id: string, name: string, businessNumber: string, ceo: string } }> = {};
 
     console.log("화주별 그룹화 orders", orders);
     
@@ -661,7 +515,7 @@ export function SettlementEditFormSheet() {
       const shipper = order.companyName || '미지정';
         
       if (!groups[shipper]) {
-        groups[shipper] = { orders: [], total: 0 };
+        groups[shipper] = { orders: [], total: 0, company: { id: order.companyId || '', name: order.companyName || '', businessNumber: order.companyBusinessNumber || '', ceo: order.companyCeo || '' } };
       }
       groups[shipper].orders.push(order);
       groups[shipper].total += order.amount || 0;
@@ -689,7 +543,7 @@ export function SettlementEditFormSheet() {
     const totalFreight = orders.reduce((sum, order) => sum + (Number(order.amount) || 0), 0);
     const totalDispatch = orders.reduce((sum, order) => sum + (Number(order.dispatchAmount) || 0), 0);
     const totalNet = totalFreight - totalDispatch;
-    const tax = Math.round(totalNet * 0.1);
+    const tax = Math.round(totalFreight * 0.1);
     const totalAmount = totalFreight + tax;
     
     return { totalFreight, totalDispatch, totalNet, tax, totalAmount };
@@ -764,8 +618,10 @@ export function SettlementEditFormSheet() {
                       <h3 className="text-lg font-bold">회사 정보</h3>
                     </div>
                     
-                    {!isEditMode && (
-                      <div className="flex gap-2">
+                    {/* {!isEditMode && (
+                      
+                    )} */}
+                    <div className="flex gap-2">
                         <Button
                           type="button"
                         variant="outline"
@@ -787,11 +643,10 @@ export function SettlementEditFormSheet() {
                         초기화
                         </Button>
                       </div>
-                    )}
                   </div>
 
                   {/* 선택된 업체 배지 표시 */}
-                  {!isEditMode && orders && orders.length > 0 && (
+                  {orders && orders.length > 0 && (
                     <>                    
                     <div className="flex flex-wrap gap-1.5">
                       {Object.keys(shipperGroups).map((shipper) => (
@@ -800,9 +655,10 @@ export function SettlementEditFormSheet() {
                           variant="outline"
                           className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
                           onClick={() => {
-                            setSelectedCompanyId(shipperGroups[shipper].orders[0].companyId || null);
-                            form.setValue("shipperName", shipperGroups[shipper].orders[0].companyName);
-                            form.setValue("businessNumber", shipperGroups[shipper].orders[0].companyBusinessNumber || "000-00-00000"); // 실제로는 해당 업체의 사업자번호
+                            setSelectedCompanyId(shipperGroups[shipper].company.id);
+                            form.setValue("shipperName", shipperGroups[shipper].company.name);
+                            form.setValue("businessNumber", shipperGroups[shipper].company.businessNumber || "000-00-00000"); // 실제로는 해당 업체의 사업자번호
+                            form.setValue("shipperCeo", shipperGroups[shipper].company.ceo || "");
                           }}
                         >                          
                           {shipper} ({shipperGroups[shipper].orders.length}건)
@@ -886,13 +742,12 @@ export function SettlementEditFormSheet() {
                   ) : (
                     <div className="mb-4">                      
                       {/* 회사 정보 + 계좌 정보 (세로 정렬) */}
-                      <div className="flex flex-col px-4 pt-2 border rounded-md bg-muted/30">
+                      <div className="flex items-center justify-between border p-4 rounded-md bg-background bg-muted/30">
 
                         {/* 회사 정보 영역 */}
-                        <div>
+                        {/* <div>
                           <div className="flex justify-between items-center text-sm pb-2">
-                            
-                            {/* 회사명 및 사업자번호*/}
+                                                        
                             <div className="font-medium text-base text-primary truncate">
                               <div className="text-md whitespace-nowrap ">
                                 {form.watch("shipperName") || '회사를 검색해주세요'}
@@ -901,52 +756,52 @@ export function SettlementEditFormSheet() {
                                 {form.watch("businessNumber")}
                               </div>
                             </div>
-
-                            {/* 사업자명 */}
-                            {/* {form.watch("shipperCeo") && (
+                            
+                            {form.watch("shipperCeo") && (
                               <div className="text-muted-foreground text-sm whitespace-nowrap pl-4">
                                 {form.watch("shipperCeo")}
                               </div>
-                            )} */}
+                            )}
                             
                           </div>
 
-                          {/* 선택된 회사의 담당자 뱃지 표시 */}
-                          {selectedCompanyId && brokerManagers.length > 0 && (
-                            // <div className="pb-3">
-                            //   <div className="text-xs text-muted-foreground mb-2">담당자 목록</div>
-                            //   <div className="flex flex-wrap gap-1.5">
-                            //     {selectedCompanyId && brokerManagers.filter(manager => manager.status === '활성').map((manager) => (
-                            //       <Badge 
-                            //         key={manager.id} 
-                            //         variant="outline"
-                            //         className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
-                            //         onClick={() => {
-                            //           form.setValue("manager", manager.name);
-                            //           form.setValue("managerContact", manager.phoneNumber || "");
-                            //           form.setValue("managerEmail", manager.email || "");
-                            //         }}
-                            //       >
-                            //         {manager.name}
-                            //       </Badge>
-                            //     ))}
-                            //   </div>
-                            // </div>
-                            <></>
-                          )}
-                        </div>
+                          
 
-                        <Separator className="mb-4" />
+                          
+                          {selectedCompanyId && brokerManagers.length > 0 && (
+                            <>
+                            <div className="pb-3">
+                              <div className="text-xs text-muted-foreground mb-2">담당자 목록</div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {selectedCompanyId && brokerManagers.filter(manager => manager.status === '활성').map((manager) => (
+                                  <Badge 
+                                    key={manager.id} 
+                                    variant="outline"
+                                    className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
+                                    onClick={() => {
+                                      form.setValue("manager", manager.name);
+                                      form.setValue("managerContact", manager.phoneNumber || "");
+                                      form.setValue("managerEmail", manager.email || "");
+                                    }}
+                                  >
+                                    {manager.name}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                            </>
+                          )}
+                        </div> */}                        
 
                         {/* 계좌 정보 영역 */}
-                        <div>
+                        {/* <div>
                           <div className="text-sm font-medium text-gray-500 pb-2">계좌 정보</div>
                           <div className="grid grid-cols-1 gap-2 w-full pb-5">
 
-                            {/* 은행 + 계좌명 (한 줄 두 컬럼) */}
+                            
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                              {/* 은행 */}
+                            
                               <FormField
                                 control={form.control}
                                 name="bankName"  //"bankName"
@@ -962,7 +817,7 @@ export function SettlementEditFormSheet() {
                                         </SelectTrigger>
                                       </FormControl>
                                       <SelectContent>
-                                        {/* <SelectItem value="001">한국은행</SelectItem> */}
+                                        <SelectItem value="001">한국은행</SelectItem>
                                         <SelectItem value="002">산업은행</SelectItem>
                                         <SelectItem value="003">기업은행</SelectItem>
                                         <SelectItem value="004">국민은행</SelectItem>
@@ -995,7 +850,7 @@ export function SettlementEditFormSheet() {
                                 )}
                               />
 
-                              {/* 계좌명 */}
+                              
                               <FormField
                                 control={form.control}
                                 name="accountHolder"//"accountHolder"
@@ -1018,7 +873,7 @@ export function SettlementEditFormSheet() {
 
                             </div>
 
-                            {/* 계좌번호 (한 줄) */}
+                           
                             <FormField
                               control={form.control}
                               name="accountNumber" //"accountNumber"
@@ -1040,7 +895,80 @@ export function SettlementEditFormSheet() {
                             />
 
                           </div>
-                        </div>
+                        </div> */}
+
+                        {/* 회사 영역 */}                      
+                        <div className={cn("grid gap-2", "grid-cols-1", "w-full")}>
+                            <div>
+                              
+                              <FormField
+                                control={form.control}
+                                name="shipperName"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>                                      
+                                      <div className="relative">
+                                        <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input 
+                                          placeholder="회사명을 입력해주세요." 
+                                          className="h-9 pl-10" 
+                                          {...field} 
+                                        />
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            
+                            <div>
+                              
+                              <FormField
+                                control={form.control}
+                                name="businessNumber"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <div className="relative">
+                                        <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input 
+                                          placeholder="010-0000-0000" 
+                                          className="h-9 pl-10" 
+                                          {...field} 
+                                        />
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+
+                            <div className="mb-1">
+                              
+                              <FormField
+                                control={form.control}
+                                name="shipperCeo"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <div className="relative">
+                                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input 
+                                          placeholder="example@email.com" 
+                                          className="h-9 pl-10" 
+                                          {...field} 
+                                        />
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            
+                          </div>
 
                       </div>
                     </div>
@@ -1051,8 +979,8 @@ export function SettlementEditFormSheet() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2 text-primary">
-                      <User className="h-5 w-5 text-primary" />
-                      <h3 className="text-lg font-bold">담당자 정보</h3>
+                      <UserPen className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-bold">업체 담당자 정보</h3>
                     </div>
                     
                     <div className="flex gap-2">
@@ -1701,11 +1629,12 @@ export function SettlementEditFormSheet() {
                         <TableHeader>
                           <TableRow>
                             <TableHead className="w-[40px] text-xs">번호</TableHead>
+                            <TableHead className="text-xs">업체</TableHead>
                             <TableHead className="text-xs">일정</TableHead>
                             <TableHead className="text-xs">출발지</TableHead>
                             <TableHead className="text-xs">도착지</TableHead>
-                            <TableHead className="text-right text-xs">운송료</TableHead>
-                            <TableHead className="text-right text-xs">배차료</TableHead>
+                            <TableHead className="text-right text-xs">주선료</TableHead>
+                            <TableHead className="text-right text-xs">세금</TableHead>
                             
                           </TableRow>
                         </TableHeader>
@@ -1713,7 +1642,8 @@ export function SettlementEditFormSheet() {
                           {orders && orders.length > 0 ? (
                             orders.map((order, index) => (
                               <TableRow key={order.id}>
-                                <TableCell className="text-xs">{index + 1}</TableCell>                              
+                                <TableCell className="text-xs">{index + 1}</TableCell>     
+                                <TableCell className="text-xs">{order.companyName}</TableCell>                              
                                 <TableCell className="text-xs">
                                   {getSchedule(order.pickupDate, order.deliveryDate, order.pickupDate, order.deliveryDate)}
                                 </TableCell>
@@ -1723,7 +1653,7 @@ export function SettlementEditFormSheet() {
                                   {formatCurrency(order.amount || 0)}
                                 </TableCell>
                                 <TableCell className="text-right text-xs">
-                                  {formatCurrency(order.dispatchAmount || 0)}
+                                  {formatCurrency(order.amount * 0.1 || 0)}
                                 </TableCell>                              
                               </TableRow>
                             ))
@@ -1749,7 +1679,7 @@ export function SettlementEditFormSheet() {
           {/* 금액 요약 */}
           <div className="mb-3 grid grid-cols-3 gap-2 text-sm">
             <div>
-              <div className="text-xs text-muted-foreground">총 운송료</div>
+              <div className="text-xs text-muted-foreground">총 주선료</div>
               <div className="font-medium">{formatCurrency(calculatedTotals.totalFreight)}</div>
             </div>
             <div>
