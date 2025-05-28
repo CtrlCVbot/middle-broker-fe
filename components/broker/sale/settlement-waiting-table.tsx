@@ -45,6 +45,8 @@ export function WaitingTable({
   onOrderSelect,
   onSelectAll,
 }: IWaitingTableProps) {
+
+  console.log(orders);
   // 전체 선택 상태 관리
   const isAllSelected = orders.length > 0 && selectedOrders.length === orders.length;
   const isPartiallySelected = selectedOrders.length > 0 && selectedOrders.length < orders.length;
@@ -108,7 +110,7 @@ export function WaitingTable({
               <TableHead>하차지</TableHead>         
               <TableHead>차량</TableHead>
               <TableHead>차주</TableHead>              
-              <TableHead>운송비</TableHead>
+              <TableHead>청구비용</TableHead>
               <TableHead>결제방식</TableHead>
               <TableHead>관리자</TableHead>
             </TableRow>
@@ -197,7 +199,7 @@ export function WaitingTable({
                   <TableCell className="whitespace-nowrap">
                     <div className="flex flex-col">
                       <span className="font-medium text-sm">
-                        {formatCurrency(order.chargeAmount || order.amount)}원
+                        {formatCurrency(order.amount)}원
                       </span>
                       {order.chargeAmount !== order.amount && (
                         <span className="text-xs text-muted-foreground">

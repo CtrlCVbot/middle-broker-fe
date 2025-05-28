@@ -349,7 +349,7 @@ export default function IncomePage() {
                               companyCeo: item.companyCeo,
                               status: item.isClosed,
                               statusProgress: item.flowStatus,
-                              amount: item.dispatchAmount,
+                              amount: item.amount,
                               chargeAmount: item.chargeAmount,
                               fee: item.dispatchAmount,
                               departureLocation: item.pickupName,
@@ -385,7 +385,7 @@ export default function IncomePage() {
                             .map(item => ({
                               id: item.id,
                               company: item.companyName,
-                              amount: item.chargeAmount,
+                              amount: item.amount,
                               fee: item.dispatchAmount,
                               status: "운송완료",
                               statusProgress: "운송완료",

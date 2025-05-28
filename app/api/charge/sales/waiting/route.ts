@@ -85,8 +85,8 @@ export async function GET(request: NextRequest) {
         assignedDriverSnapshot: orderDispatches.assignedDriverSnapshot,        
         isClosed: orderDispatches.isClosed,
         flowStatus: orderDispatches.brokerFlowStatus,
-        amount: orderSales.totalAmount,
-        
+        amount: orderSales.subtotalAmount,
+        amountWithTax: orderSales.totalAmount,
       })
       .from(orders)
       .leftJoin(companies, eq(orders.companyId, companies.id))
