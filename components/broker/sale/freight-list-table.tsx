@@ -14,6 +14,11 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +48,15 @@ interface IFreightListTableProps {
   onEditItemAdjustment?: (itemId: string, adjustmentId: string) => void;
   onDeleteItemAdjustment?: (itemId: string, adjustmentId: string) => void;
 }
+
+// 개별 추가금 합계 계산 함수
+const calculateAdjustmentTotal = (adjustments: any[]) => {
+  return adjustments.reduce((total, adj) => {
+    return adj.type === 'surcharge' 
+      ? total + Number(adj.amount) 
+      : total - Number(adj.amount);
+  }, 0);
+};
 
 export function FreightListTable({
   mode,
@@ -169,6 +183,9 @@ export function FreightListTable({
                     itemAdjustmentList = freightItem.adjustments || [];
                   }
                   
+                  // 개별 추가금 합계 계산
+                  const adjustmentTotal = calculateAdjustmentTotal(itemAdjustmentList);
+                  
                   return (
                     <TableRow key={displayItem.id}>
                       <TableCell className="text-xs">{index + 1}</TableCell>
@@ -192,79 +209,120 @@ export function FreightListTable({
                       
                       {mode === 'reconciliation' && (
                         <TableCell className="text-center">
-                          <div className="flex flex-col gap-1">
-                            {itemAdjustmentList.length > 0 ? (
-                              <>
-                                {itemAdjustmentList.map((adj) => (
-                                  <div key={adj.id} className="flex items-center gap-1">
-                                    <Badge 
-                                      variant={adj.type === 'surcharge' ? 'default' : 'secondary'}
-                                      className="text-xs"
+                          {itemAdjustmentList.length > 0 ? (
+                            // 추가금이 있는 경우: 합계 표시 + Popover
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 px-2 text-xs"
+                                >
+                                  {formatCurrency(adjustmentTotal)}
+                                  <span className="ml-1 text-xs text-muted-foreground">
+                                    ({itemAdjustmentList.length}개)
+                                  </span>
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-80" align="end">
+                                <div className="space-y-3">
+                                  {/* 상단 추가 버튼 */}
+                                  <div className="flex items-center justify-between">
+                                    <h4 className="text-sm font-semibold">개별 추가금</h4>
+                                    <Button
+                                      size="sm"
+                                      className="h-7 px-2 text-xs"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        console.log('Popover 내 추가 버튼 클릭:', displayItem.id);
+                                        onAddItemAdjustment?.(displayItem.id);
+                                      }}
                                     >
-                                      {adj.type === 'surcharge' ? '추가' : '할인'}: {formatCurrency(adj.amount)}
-                                    </Badge>
-                                    <div className="flex gap-1">
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-5 w-5 p-0"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          console.log('개별 추가금 수정 버튼 클릭:', displayItem.id, adj.id);
-                                          onEditItemAdjustment?.(displayItem.id, adj.id);
-                                        }}
-                                      >
-                                        <Edit className="h-2 w-2" />
-                                      </Button>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-5 w-5 p-0 text-destructive"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          console.log('개별 추가금 삭제 버튼 클릭:', displayItem.id, adj.id);
-                                          onDeleteItemAdjustment?.(displayItem.id, adj.id);
-                                        }}
-                                      >
-                                        <Trash2 className="h-2 w-2" />
-                                      </Button>
+                                      <Plus className="h-3 w-3 mr-1" />
+                                      추가
+                                    </Button>
+                                  </div>
+                                  
+                                  {/* 추가금 목록 */}
+                                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                                    {itemAdjustmentList.map((adj) => (
+                                      <div key={adj.id} className="flex items-center justify-between p-2 border rounded-md">
+                                        <div className="flex items-center gap-2">
+                                          <Badge 
+                                            variant={adj.type === 'surcharge' ? 'default' : 'secondary'}
+                                            className="text-xs"
+                                          >
+                                            {adj.type === 'surcharge' ? '추가' : '할인'}
+                                          </Badge>
+                                          <div className="text-xs">
+                                            <div className="font-medium">{formatCurrency(adj.amount)}</div>
+                                            {adj.description && (
+                                              <div className="text-muted-foreground">{adj.description}</div>
+                                            )}
+                                          </div>
+                                        </div>
+                                        <div className="flex gap-1">
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 w-6 p-0"
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              e.stopPropagation();
+                                              console.log('Popover 내 수정 버튼 클릭:', displayItem.id, adj.id);
+                                              onEditItemAdjustment?.(displayItem.id, adj.id);
+                                            }}
+                                          >
+                                            <Edit className="h-3 w-3" />
+                                          </Button>
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 w-6 p-0 text-destructive"
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              e.stopPropagation();
+                                              console.log('Popover 내 삭제 버튼 클릭:', displayItem.id, adj.id);
+                                              onDeleteItemAdjustment?.(displayItem.id, adj.id);
+                                            }}
+                                          >
+                                            <Trash2 className="h-3 w-3" />
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  
+                                  {/* 합계 정보 */}
+                                  <div className="pt-2 border-t">
+                                    <div className="flex justify-between items-center text-sm">
+                                      <span className="font-medium">총 합계:</span>
+                                      <span className={`font-semibold ${adjustmentTotal >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                                        {formatCurrency(adjustmentTotal)}
+                                      </span>
                                     </div>
                                   </div>
-                                ))}
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 text-xs"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    console.log('개별 추가금 추가 버튼 클릭 (기존 있음):', displayItem.id);
-                                    onAddItemAdjustment?.(displayItem.id);
-                                  }}
-                                >
-                                  <Plus className="h-2 w-2 mr-1" />
-                                  추가
-                                </Button>
-                              </>
-                            ) : (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 text-xs"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  console.log('개별 추가금 추가 버튼 클릭 (새로 추가):', displayItem.id);
-                                  onAddItemAdjustment?.(displayItem.id);
-                                }}
-                              >
-                                <Plus className="h-2 w-2 mr-1" />
-                                추가
-                              </Button>
-                            )}
-                          </div>
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+                          ) : (
+                            // 추가금이 없는 경우: 기존 추가 버튼
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 text-xs"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('개별 추가금 추가 버튼 클릭 (새로 추가):', displayItem.id);
+                                onAddItemAdjustment?.(displayItem.id);
+                              }}
+                            >
+                              <Plus className="h-2 w-2 mr-1" />
+                              추가
+                            </Button>
+                          )}
                         </TableCell>
                       )}
                     </TableRow>
