@@ -311,6 +311,7 @@ export interface ISalesItemAdjustment {
 export interface ISalesBundleItemWithDetails extends ISalesBundleItem {
   orderDetails: {
     orderId: string;
+    companyId: string;
     companyName: string;
     pickupName: string;
     deliveryName: string;

@@ -163,7 +163,8 @@ export function SettlementEditFormSheet() {
     selectedSalesBundleId,
     editingSalesBundle,
     updateSalesBundleData,
-    deleteSalesBundleData
+    deleteSalesBundleData,
+    bundleFreightList
   } = useBrokerChargeStore();
 
   const { isOpen, selectedItems: orders, formData } = settlementForm;
@@ -538,6 +539,40 @@ export function SettlementEditFormSheet() {
     return groups;
   }, [orders]);
 
+  // 수정 모드용 화주별 그룹화 (bundleFreightList 기반)
+  const editModeShipperGroups = useMemo(() => {
+    if (!isEditMode || !bundleFreightList || bundleFreightList.length === 0) return {};
+    
+    const groups: Record<string, { orders: any[], total: number, company: { id: string, name: string, businessNumber: string, ceo: string } }> = {};
+
+    console.log("수정 모드 화주별 그룹화 bundleFreightList", bundleFreightList);
+    
+    bundleFreightList.forEach(item => {
+      const shipper = item.orderDetails.companyName || '미지정';
+        
+      if (!groups[shipper]) {
+        groups[shipper] = { 
+          orders: [], 
+          total: 0, 
+          company: { 
+            id: item.orderDetails.companyId || '', 
+            name: item.orderDetails.companyName || '', 
+            businessNumber: editingSalesBundle?.companySnapshot?.businessNumber || '', 
+            ceo: editingSalesBundle?.companySnapshot?.ceoName || '' 
+          } 
+        };
+      }
+      groups[shipper].orders.push(item);
+      groups[shipper].total += item.orderDetails.amount || 0;
+    });
+    console.log("수정 모드 화주별 그룹화 groups", groups);
+    return groups;
+  }, [isEditMode, bundleFreightList, editingSalesBundle]);
+
+  // 표시할 shipperGroups 결정
+  const displayShipperGroups = isEditMode ? editModeShipperGroups : shipperGroups;
+  const hasShipperGroups = Object.keys(displayShipperGroups).length > 0;
+
   // 선택된 화물의 운임 및 금액 계산
   const calculatedTotals = useMemo(() => {
     const {
@@ -713,22 +748,31 @@ export function SettlementEditFormSheet() {
                       </div>
 
                       {/* 선택된 업체 배지 표시 */}
-                      {orders && orders.length > 0 && (
+                      {hasShipperGroups && (
                         <>                    
                         <div className="flex flex-wrap gap-1.5">
-                          {Object.keys(shipperGroups).map((shipper) => (
+                          {Object.keys(displayShipperGroups).map((shipper) => (
                             <Badge 
                               key={shipper} 
                               variant="outline"
                               className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
                               onClick={() => {
-                                setSelectedCompanyId(shipperGroups[shipper].company.id);
-                                form.setValue("shipperName", shipperGroups[shipper].company.name);
-                                form.setValue("businessNumber", shipperGroups[shipper].company.businessNumber || "000-00-00000"); // 실제로는 해당 업체의 사업자번호
-                                form.setValue("shipperCeo", shipperGroups[shipper].company.ceo || "");
+                                if (isEditMode && editingSalesBundle) {
+                                  // 편집 모드: editingSalesBundle의 회사 정보 사용
+                                  setSelectedCompanyId(editingSalesBundle.companyId || '');
+                                  form.setValue("shipperName", editingSalesBundle.companySnapshot?.name || '');
+                                  form.setValue("businessNumber", editingSalesBundle.companySnapshot?.businessNumber || '');
+                                  form.setValue("shipperCeo", editingSalesBundle.companySnapshot?.ceoName || '');
+                                } else {
+                                  // 생성 모드: 기존 로직 유지
+                                  setSelectedCompanyId(displayShipperGroups[shipper].company.id);
+                                  form.setValue("shipperName", displayShipperGroups[shipper].company.name);
+                                  form.setValue("businessNumber", displayShipperGroups[shipper].company.businessNumber || "000-00-00000");
+                                  form.setValue("shipperCeo", displayShipperGroups[shipper].company.ceo || "");
+                                }
                               }}
                             >                          
-                              {shipper} ({shipperGroups[shipper].orders.length}건)
+                              {shipper} ({displayShipperGroups[shipper].orders.length}건)
                             </Badge>
                           ))}
                         </div>
