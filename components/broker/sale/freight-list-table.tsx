@@ -87,6 +87,8 @@ export function FreightListTable({
   const displayData = mode === 'waiting' ? orders : bundleFreightList;
   const itemCount = displayData.length;
 
+  console.log('화물 탭 오픈: orders:', orders);
+
   // 디버깅: bundleFreightList 변경 감지
   useEffect(() => {
     if (mode === 'reconciliation') {

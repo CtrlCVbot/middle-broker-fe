@@ -15,14 +15,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
 import {
   Select,
   SelectContent,
@@ -67,19 +60,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { toast } from "sonner";
 
 // 컴포넌트
-import { getSchedule } from "@/components/order/order-table-ver01";
-import SettlementAdjustmentsAddForm from "@/components/broker/sale/settlement-adjustments-add-form";
 import { FreightListTable } from "@/components/broker/sale/freight-list-table";
 import { BundleAdjustmentManager } from "@/components/broker/sale/bundle-adjustment-manager";
 import { ItemAdjustmentDialog } from "@/components/broker/sale/item-adjustment-dialog";
@@ -180,6 +167,7 @@ export function SettlementEditFormSheet() {
   } = useBrokerChargeStore();
 
   const { isOpen, selectedItems: orders, formData } = settlementForm;
+  
 
   
   
@@ -195,7 +183,7 @@ export function SettlementEditFormSheet() {
   const { setFilter } = useCompanyStore();
   const companiesQuery = useCompanies();
 
-  console.log('선택된 orders:', orders);
+  
   
   // 담당자 관리 store 사용
   const {
@@ -214,6 +202,8 @@ export function SettlementEditFormSheet() {
   }>({
     open: false
   });
+
+  
 
   // 정산 생성 이벤트 리스너 추가
   useEffect(() => {
@@ -1831,7 +1821,7 @@ export function SettlementEditFormSheet() {
       </SheetContent>
     </Sheet>
 
-    <SettlementAdjustmentsAddForm />
+    {/* <SettlementAdjustmentsAddForm /> */}
     
     {/* 개별 화물 추가금 관리 다이얼로그 */}
     <ItemAdjustmentDialog
