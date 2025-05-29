@@ -144,8 +144,8 @@ export function ItemAdjustmentDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
+      <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>
             {isEditMode ? '개별 추가금 수정' : '개별 추가금 추가'}
@@ -205,10 +205,22 @@ export function ItemAdjustmentDialog({
         </div>
         
         <div className="flex justify-end gap-2 mt-6">
-          <Button variant="outline" onClick={handleClose}>
+          <Button 
+            variant="outline" 
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClose();
+            }}
+          >
             취소
           </Button>
-          <Button onClick={handleSubmit} disabled={adjustmentsLoading}>
+          <Button 
+            onClick={(e) => {
+              e.stopPropagation();
+              handleSubmit();
+            }} 
+            disabled={adjustmentsLoading}
+          >
             <Save className="h-4 w-4 mr-2" />
             {isEditMode ? '수정' : '추가'}
           </Button>

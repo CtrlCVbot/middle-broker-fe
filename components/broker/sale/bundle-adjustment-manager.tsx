@@ -19,7 +19,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -260,7 +259,10 @@ export function BundleAdjustmentManager({
                             variant="ghost"
                             size="sm"
                             className="h-6 w-6 p-0"
-                            onClick={() => handleOpenDialog(adjustment)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenDialog(adjustment);
+                            }}
                           >
                             <Edit className="h-3 w-3" />
                           </Button>
@@ -268,7 +270,10 @@ export function BundleAdjustmentManager({
                             variant="ghost"
                             size="sm"
                             className="h-6 w-6 p-0 text-destructive"
-                            onClick={() => handleDelete(adjustment.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(adjustment.id);
+                            }}
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
@@ -287,22 +292,23 @@ export function BundleAdjustmentManager({
             </Table>
           </ScrollArea>
           
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="w-full"
-                onClick={() => handleOpenDialog()}
-              >
-                <div className="flex items-center gap-2 text-gray-800">
-                  <Plus className="h-3 w-3" />
-                  <span>추가</span>
-                </div>
-              </Button>
-            </DialogTrigger>
-            
-            <DialogContent className="sm:max-w-md">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="w-full"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpenDialog();
+            }}
+          >
+            <div className="flex items-center gap-2 text-gray-800">
+              <Plus className="h-3 w-3" />
+              <span>추가</span>
+            </div>
+          </Button>
+          
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen} modal={true}>
+            <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
               <DialogHeader>
                 <DialogTitle>
                   {editingId ? '통합 추가금 수정' : '통합 추가금 추가'}
@@ -362,10 +368,21 @@ export function BundleAdjustmentManager({
               </div>
               
               <div className="flex justify-end gap-2 mt-6">
-                <Button variant="outline" onClick={handleCloseDialog}>
+                <Button 
+                  variant="outline" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCloseDialog();
+                  }}
+                >
                   취소
                 </Button>
-                <Button onClick={handleSubmit}>
+                <Button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSubmit();
+                  }}
+                >
                   <Save className="h-4 w-4 mr-2" />
                   {editingId ? '수정' : '추가'}
                 </Button>

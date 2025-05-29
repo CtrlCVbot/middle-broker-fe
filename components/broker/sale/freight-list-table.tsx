@@ -187,7 +187,10 @@ export function FreightListTable({
                                         variant="ghost"
                                         size="sm"
                                         className="h-5 w-5 p-0"
-                                        onClick={() => onEditItemAdjustment?.(displayItem.id, adj.id)}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          onEditItemAdjustment?.(displayItem.id, adj.id);
+                                        }}
                                       >
                                         <Edit className="h-2 w-2" />
                                       </Button>
@@ -195,7 +198,10 @@ export function FreightListTable({
                                         variant="ghost"
                                         size="sm"
                                         className="h-5 w-5 p-0 text-destructive"
-                                        onClick={() => onDeleteItemAdjustment?.(displayItem.id, adj.id)}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          onDeleteItemAdjustment?.(displayItem.id, adj.id);
+                                        }}
                                       >
                                         <Trash2 className="h-2 w-2" />
                                       </Button>
@@ -206,7 +212,10 @@ export function FreightListTable({
                                   variant="ghost"
                                   size="sm"
                                   className="h-6 text-xs"
-                                  onClick={() => onAddItemAdjustment?.(displayItem.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onAddItemAdjustment?.(displayItem.id);
+                                  }}
                                 >
                                   <Plus className="h-2 w-2 mr-1" />
                                   추가
@@ -217,7 +226,10 @@ export function FreightListTable({
                                 variant="ghost"
                                 size="sm"
                                 className="h-6 text-xs"
-                                onClick={() => onAddItemAdjustment?.(displayItem.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onAddItemAdjustment?.(displayItem.id);
+                                }}
                               >
                                 <Plus className="h-2 w-2 mr-1" />
                                 추가
