@@ -173,6 +173,7 @@ export function FreightListTable({
                   } else {
                     // ISalesBundleItemWithDetails 구조
                     const freightItem = item as ISalesBundleItemWithDetails;
+                    console.log("freightItem /" +index, freightItem);
                     displayItem = {
                       id: freightItem.id,
                       companyName: freightItem.orderDetails.companyName,
