@@ -97,7 +97,14 @@ export async function POST(
     }
 
     // 현재 사용자 ID (실제 구현 시 인증에서 가져와야 함)
-    const currentUserId = 'current-user-id'; // TODO: 실제 인증 구현
+    //const currentUserId = 'current-user-id'; // TODO: 실제 인증 구현
+    const currentUserId = request.headers.get('x-user-id');
+    if (!currentUserId) {
+      return NextResponse.json(
+        { error: '사용자 정보를 찾을 수 없습니다.', details: 'x-user-id 헤더가 없습니다.' },
+        { status: 401 }
+      );
+    }
 
     // 통합 추가금 생성
     const [newAdjustment] = await db

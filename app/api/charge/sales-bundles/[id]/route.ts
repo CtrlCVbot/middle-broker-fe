@@ -70,7 +70,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     console.log('id', id);
     // UUID 검증
@@ -81,7 +81,13 @@ export async function PATCH(
       );
     }
 
-    const requestUserId = request.headers.get('x-user-id') || '';
+    const requestUserId = request.headers.get('x-user-id');
+    if (!requestUserId) {
+      return NextResponse.json(
+        { error: '사용자 정보를 찾을 수 없습니다.', details: 'x-user-id 헤더가 없습니다.' },
+        { status: 401 }
+      );
+    }
 
     // 요청 데이터 파싱
     const body = await request.json();
@@ -179,7 +185,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // UUID 검증
     if (!isValidUUID(id)) {
