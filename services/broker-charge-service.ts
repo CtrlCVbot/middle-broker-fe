@@ -14,7 +14,14 @@ import {
   ISalesBundle,
   ISalesBundleListResponse,
   ISalesBundleFilter,
-  ISalesBundleItem
+  ISalesBundleItem,
+  ISalesBundleAdjustment,
+  ISalesItemAdjustment,
+  ISalesBundleItemWithDetails,
+  ICreateBundleAdjustmentInput,
+  IUpdateBundleAdjustmentInput,
+  ICreateItemAdjustmentInput,
+  IUpdateItemAdjustmentInput
 } from '@/types/broker-charge';
 import { mapAdditionalFeeToChargeGroup, mapAdditionalFeeToChargeLine } from '@/utils/charge-mapper';
 import { IBrokerOrder } from '@/types/broker-order';
@@ -495,6 +502,240 @@ export async function deleteSalesBundle(id: string): Promise<void> {
     }
   } catch (error) {
     console.error('매출 번들 삭제 중 오류 발생:', error);
+    throw error;
+  }
+}
+
+/**
+ * 통합 추가금 목록 조회
+ */
+export async function getBundleAdjustments(bundleId: string): Promise<ISalesBundleAdjustment[]> {
+  try {
+    const response = await fetch(`/api/charge/sales-bundles/${bundleId}/adjustments`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('통합 추가금 조회에 실패했습니다.');
+    }
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error('통합 추가금 조회 중 오류 발생:', error);
+    throw error;
+  }
+}
+
+/**
+ * 통합 추가금 생성
+ */
+export async function createBundleAdjustment(
+  bundleId: string, 
+  data: ICreateBundleAdjustmentInput
+): Promise<ISalesBundleAdjustment> {
+  try {
+    const response = await fetch(`/api/charge/sales-bundles/${bundleId}/adjustments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || '통합 추가금 생성에 실패했습니다.');
+    }
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error('통합 추가금 생성 중 오류 발생:', error);
+    throw error;
+  }
+}
+
+/**
+ * 통합 추가금 수정
+ */
+export async function updateBundleAdjustment(
+  bundleId: string,
+  adjustmentId: string,
+  data: IUpdateBundleAdjustmentInput
+): Promise<ISalesBundleAdjustment> {
+  try {
+    const response = await fetch(`/api/charge/sales-bundles/${bundleId}/adjustments`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ adjustmentId, ...data })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || '통합 추가금 수정에 실패했습니다.');
+    }
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error('통합 추가금 수정 중 오류 발생:', error);
+    throw error;
+  }
+}
+
+/**
+ * 통합 추가금 삭제
+ */
+export async function deleteBundleAdjustment(bundleId: string, adjustmentId: string): Promise<void> {
+  try {
+    const response = await fetch(`/api/charge/sales-bundles/${bundleId}/adjustments?adjustmentId=${adjustmentId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || '통합 추가금 삭제에 실패했습니다.');
+    }
+  } catch (error) {
+    console.error('통합 추가금 삭제 중 오류 발생:', error);
+    throw error;
+  }
+}
+
+/**
+ * 개별 화물 추가금 목록 조회
+ */
+export async function getItemAdjustments(itemId: string): Promise<ISalesItemAdjustment[]> {
+  try {
+    const response = await fetch(`/api/charge/sales-bundles/items/${itemId}/adjustments`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('개별 화물 추가금 조회에 실패했습니다.');
+    }
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error('개별 화물 추가금 조회 중 오류 발생:', error);
+    throw error;
+  }
+}
+
+/**
+ * 개별 화물 추가금 생성
+ */
+export async function createItemAdjustment(
+  itemId: string, 
+  data: ICreateItemAdjustmentInput
+): Promise<ISalesItemAdjustment> {
+  try {
+    const response = await fetch(`/api/charge/sales-bundles/items/${itemId}/adjustments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || '개별 화물 추가금 생성에 실패했습니다.');
+    }
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error('개별 화물 추가금 생성 중 오류 발생:', error);
+    throw error;
+  }
+}
+
+/**
+ * 개별 화물 추가금 수정
+ */
+export async function updateItemAdjustment(
+  itemId: string,
+  adjustmentId: string,
+  data: IUpdateItemAdjustmentInput
+): Promise<ISalesItemAdjustment> {
+  try {
+    const response = await fetch(`/api/charge/sales-bundles/items/${itemId}/adjustments`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ adjustmentId, ...data })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || '개별 화물 추가금 수정에 실패했습니다.');
+    }
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error('개별 화물 추가금 수정 중 오류 발생:', error);
+    throw error;
+  }
+}
+
+/**
+ * 개별 화물 추가금 삭제
+ */
+export async function deleteItemAdjustment(itemId: string, adjustmentId: string): Promise<void> {
+  try {
+    const response = await fetch(`/api/charge/sales-bundles/items/${itemId}/adjustments?adjustmentId=${adjustmentId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || '개별 화물 추가금 삭제에 실패했습니다.');
+    }
+  } catch (error) {
+    console.error('개별 화물 추가금 삭제 중 오류 발생:', error);
+    throw error;
+  }
+}
+
+/**
+ * 정산 그룹의 화물 목록 조회 (상세 정보 포함)
+ */
+export async function getSalesBundleFreightList(bundleId: string): Promise<ISalesBundleItemWithDetails[]> {
+  try {
+    const response = await fetch(`/api/charge/sales-bundles/${bundleId}/order-list`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('화물 목록 조회에 실패했습니다.');
+    }
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error('화물 목록 조회 중 오류 발생:', error);
     throw error;
   }
 }

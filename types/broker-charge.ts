@@ -290,8 +290,65 @@ export interface ISalesBundleAdjustment {
   type: BundleAdjType;
   description?: string;
   amount: number;
+  taxAmount: number;
   createdAt: string;
-  updatedAt: string;
+  createdBy: string;
+}
+
+// 개별 화물 추가금 타입 (새로 추가)
+export interface ISalesItemAdjustment {
+  id: string;
+  bundleItemId: string;
+  type: BundleAdjType;
+  description?: string;
+  amount: number;
+  taxAmount: number;
+  createdAt: string;
+  createdBy: string;
+}
+
+// 화물 목록 상세 정보 (orderSales, orderDispatches, orders 조인 정보 포함)
+export interface ISalesBundleItemWithDetails extends ISalesBundleItem {
+  orderDetails: {
+    orderId: string;
+    companyName: string;
+    pickupName: string;
+    deliveryName: string;
+    pickupDate: string;
+    deliveryDate: string;
+    amount: number;
+  };
+  adjustments: ISalesItemAdjustment[];
+}
+
+// 통합 추가금 생성/수정 입력 타입
+export interface ICreateBundleAdjustmentInput {
+  type: BundleAdjType;
+  description?: string;
+  amount: number;
+  taxAmount?: number;
+}
+
+export interface IUpdateBundleAdjustmentInput {
+  type?: BundleAdjType;
+  description?: string;
+  amount?: number;
+  taxAmount?: number;
+}
+
+// 개별 화물 추가금 생성/수정 입력 타입
+export interface ICreateItemAdjustmentInput {
+  type: BundleAdjType;
+  description?: string;
+  amount: number;
+  taxAmount?: number;
+}
+
+export interface IUpdateItemAdjustmentInput {
+  type?: BundleAdjType;
+  description?: string;
+  amount?: number;
+  taxAmount?: number;
 }
 
 // sales bundle 생성 요청 타입

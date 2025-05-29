@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { eq, and } from 'drizzle-orm';
 import { db } from '@/db';
-import { salesBundleAdjustments, salesBundles } from '@/db/schema/salesBundles';
+import { salesItemAdjustments, salesBundleItems } from '@/db/schema/salesBundles';
 import { 
-  ICreateBundleAdjustmentInput, 
-  IUpdateBundleAdjustmentInput,
-  ISalesBundleAdjustment
+  ICreateItemAdjustmentInput, 
+  IUpdateItemAdjustmentInput,
+  ISalesItemAdjustment
 } from '@/types/broker-charge';
 import { z } from 'zod';
 
@@ -25,7 +25,7 @@ const updateSchema = z.object({
 });
 
 /**
- * GET: 통합 추가금 목록 조회
+ * GET: 개별 화물 추가금 목록 조회
  */
 export async function GET(
   request: NextRequest,
@@ -34,42 +34,42 @@ export async function GET(
   try {
     const { id } = await params;
 
-    // 정산 그룹 존재 확인
-    const bundle = await db
+    // 화물 항목 존재 확인
+    const bundleItem = await db
       .select()
-      .from(salesBundles)
-      .where(eq(salesBundles.id, id))
+      .from(salesBundleItems)
+      .where(eq(salesBundleItems.id, id))
       .limit(1);
 
-    if (bundle.length === 0) {
+    if (bundleItem.length === 0) {
       return NextResponse.json(
-        { error: '정산 그룹을 찾을 수 없습니다.' },
+        { error: '화물 항목을 찾을 수 없습니다.' },
         { status: 404 }
       );
     }
 
-    // 통합 추가금 목록 조회
+    // 개별 화물 추가금 목록 조회
     const adjustments = await db
       .select()
-      .from(salesBundleAdjustments)
-      .where(eq(salesBundleAdjustments.bundleId, id))
-      .orderBy(salesBundleAdjustments.createdAt);
+      .from(salesItemAdjustments)
+      .where(eq(salesItemAdjustments.bundleItemId, id))
+      .orderBy(salesItemAdjustments.createdAt);
 
     return NextResponse.json({
       data: adjustments,
-      message: '통합 추가금 목록을 성공적으로 조회했습니다.'
+      message: '개별 화물 추가금 목록을 성공적으로 조회했습니다.'
     });
   } catch (error) {
-    console.error('통합 추가금 조회 중 오류:', error);
+    console.error('개별 화물 추가금 조회 중 오류:', error);
     return NextResponse.json(
-      { error: '통합 추가금 조회에 실패했습니다.' },
+      { error: '개별 화물 추가금 조회에 실패했습니다.' },
       { status: 500 }
     );
   }
 }
 
 /**
- * POST: 통합 추가금 생성
+ * POST: 개별 화물 추가금 생성
  */
 export async function POST(
   request: NextRequest,
@@ -82,16 +82,16 @@ export async function POST(
     // 입력 유효성 검증
     const validatedData = createSchema.parse(body);
 
-    // 정산 그룹 존재 확인
-    const bundle = await db
+    // 화물 항목 존재 확인
+    const bundleItem = await db
       .select()
-      .from(salesBundles)
-      .where(eq(salesBundles.id, id))
+      .from(salesBundleItems)
+      .where(eq(salesBundleItems.id, id))
       .limit(1);
 
-    if (bundle.length === 0) {
+    if (bundleItem.length === 0) {
       return NextResponse.json(
-        { error: '정산 그룹을 찾을 수 없습니다.' },
+        { error: '화물 항목을 찾을 수 없습니다.' },
         { status: 404 }
       );
     }
@@ -99,11 +99,11 @@ export async function POST(
     // 현재 사용자 ID (실제 구현 시 인증에서 가져와야 함)
     const currentUserId = 'current-user-id'; // TODO: 실제 인증 구현
 
-    // 통합 추가금 생성
+    // 개별 화물 추가금 생성
     const [newAdjustment] = await db
-      .insert(salesBundleAdjustments)
+      .insert(salesItemAdjustments)
       .values({
-        bundleId: id,
+        bundleItemId: id,
         type: validatedData.type,
         description: validatedData.description,
         amount: validatedData.amount.toString(),
@@ -114,10 +114,10 @@ export async function POST(
 
     return NextResponse.json({
       data: newAdjustment,
-      message: '통합 추가금을 성공적으로 생성했습니다.'
+      message: '개별 화물 추가금을 성공적으로 생성했습니다.'
     }, { status: 201 });
   } catch (error) {
-    console.error('통합 추가금 생성 중 오류:', error);
+    console.error('개별 화물 추가금 생성 중 오류:', error);
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -127,14 +127,14 @@ export async function POST(
     }
 
     return NextResponse.json(
-      { error: '통합 추가금 생성에 실패했습니다.' },
+      { error: '개별 화물 추가금 생성에 실패했습니다.' },
       { status: 500 }
     );
   }
 }
 
 /**
- * PUT: 통합 추가금 수정
+ * PUT: 개별 화물 추가금 수정
  */
 export async function PUT(
   request: NextRequest,
@@ -158,10 +158,10 @@ export async function PUT(
     // 추가금 존재 및 소유권 확인
     const existingAdjustment = await db
       .select()
-      .from(salesBundleAdjustments)
+      .from(salesItemAdjustments)
       .where(and(
-        eq(salesBundleAdjustments.id, adjustmentId),
-        eq(salesBundleAdjustments.bundleId, id)
+        eq(salesItemAdjustments.id, adjustmentId),
+        eq(salesItemAdjustments.bundleItemId, id)
       ))
       .limit(1);
 
@@ -179,19 +179,19 @@ export async function PUT(
     if (validatedData.amount !== undefined) updateValues.amount = validatedData.amount.toString();
     if (validatedData.taxAmount !== undefined) updateValues.taxAmount = validatedData.taxAmount.toString();
 
-    // 통합 추가금 수정
+    // 개별 화물 추가금 수정
     const [updatedAdjustment] = await db
-      .update(salesBundleAdjustments)
+      .update(salesItemAdjustments)
       .set(updateValues)
-      .where(eq(salesBundleAdjustments.id, adjustmentId))
+      .where(eq(salesItemAdjustments.id, adjustmentId))
       .returning();
 
     return NextResponse.json({
       data: updatedAdjustment,
-      message: '통합 추가금을 성공적으로 수정했습니다.'
+      message: '개별 화물 추가금을 성공적으로 수정했습니다.'
     });
   } catch (error) {
-    console.error('통합 추가금 수정 중 오류:', error);
+    console.error('개별 화물 추가금 수정 중 오류:', error);
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -201,14 +201,14 @@ export async function PUT(
     }
 
     return NextResponse.json(
-      { error: '통합 추가금 수정에 실패했습니다.' },
+      { error: '개별 화물 추가금 수정에 실패했습니다.' },
       { status: 500 }
     );
   }
 }
 
 /**
- * DELETE: 통합 추가금 삭제
+ * DELETE: 개별 화물 추가금 삭제
  */
 export async function DELETE(
   request: NextRequest,
@@ -229,10 +229,10 @@ export async function DELETE(
     // 추가금 존재 및 소유권 확인
     const existingAdjustment = await db
       .select()
-      .from(salesBundleAdjustments)
+      .from(salesItemAdjustments)
       .where(and(
-        eq(salesBundleAdjustments.id, adjustmentId),
-        eq(salesBundleAdjustments.bundleId, id)
+        eq(salesItemAdjustments.id, adjustmentId),
+        eq(salesItemAdjustments.bundleItemId, id)
       ))
       .limit(1);
 
@@ -243,19 +243,19 @@ export async function DELETE(
       );
     }
 
-    // 통합 추가금 삭제
+    // 개별 화물 추가금 삭제
     await db
-      .delete(salesBundleAdjustments)
-      .where(eq(salesBundleAdjustments.id, adjustmentId));
+      .delete(salesItemAdjustments)
+      .where(eq(salesItemAdjustments.id, adjustmentId));
 
     return NextResponse.json({
-      message: '통합 추가금을 성공적으로 삭제했습니다.'
+      message: '개별 화물 추가금을 성공적으로 삭제했습니다.'
     });
   } catch (error) {
-    console.error('통합 추가금 삭제 중 오류:', error);
+    console.error('개별 화물 추가금 삭제 중 오류:', error);
     return NextResponse.json(
-      { error: '통합 추가금 삭제에 실패했습니다.' },
+      { error: '개별 화물 추가금 삭제에 실패했습니다.' },
       { status: 500 }
     );
   }
-}
+} 

@@ -8,7 +8,14 @@ import {
   ISettlementSummary,
   ISettlementWaitingResponse,
   ISettlementFormState,
-  ISettlementFormData
+  ISettlementFormData,
+  ISalesBundleAdjustment,
+  ISalesItemAdjustment,
+  ISalesBundleItemWithDetails,
+  ICreateBundleAdjustmentInput,
+  IUpdateBundleAdjustmentInput,
+  ICreateItemAdjustmentInput,
+  IUpdateItemAdjustmentInput
 } from '@/types/broker-charge';
 import { 
   getChargeGroupsByOrderId,
@@ -22,7 +29,16 @@ import {
   getSalesBundleItems,
   getSalesBundleById,
   updateSalesBundle,
-  deleteSalesBundle
+  deleteSalesBundle,
+  getBundleAdjustments,
+  createBundleAdjustment,
+  updateBundleAdjustment,
+  deleteBundleAdjustment,
+  getItemAdjustments,
+  createItemAdjustment,
+  updateItemAdjustment,
+  deleteItemAdjustment,
+  getSalesBundleFreightList
 } from '@/services/broker-charge-service';
 import { mapChargeDataToFinanceSummary,  calculateSalesSummary, mapWaitingItemsToBrokerOrders, mapSettlementFormToSalesBundleInput, mapSalesBundlesToIncomes } from '@/utils/charge-mapper';
 import { IBrokerOrder } from '@/types/broker-order';
@@ -72,6 +88,13 @@ interface IBrokerChargeState {
   salesBundlesError: string | null;
   salesBundlesFilter: ISalesBundleFilter;
 
+  // 새로 추가: 추가금 관련 상태
+  bundleFreightList: ISalesBundleItemWithDetails[];
+  bundleAdjustments: ISalesBundleAdjustment[];
+  itemAdjustments: Map<string, ISalesItemAdjustment[]>; // itemId -> adjustments
+  adjustmentsLoading: boolean;
+  adjustmentsError: string | null;
+
   // 기존 운임 관련 액션
     fetchChargesByOrderId: (orderId: string) => Promise<IChargeGroupWithLines[]>;  
     addCharge: (fee: IAdditionalFeeInput, orderId: string, dispatchId?: string) => Promise<boolean>;  
@@ -106,6 +129,20 @@ interface IBrokerChargeState {
   openSettlementFormForEdit: (bundleId: string) => Promise<void>;
   updateSalesBundleData: (id: string, fields: Record<string, any>, reason?: string) => Promise<boolean>;
   deleteSalesBundleData: (id: string) => Promise<boolean>;
+
+  // 새로 추가: 추가금 관련 액션들
+  fetchBundleFreightList: (bundleId: string) => Promise<ISalesBundleItemWithDetails[]>;
+  fetchBundleAdjustments: (bundleId: string) => Promise<ISalesBundleAdjustment[]>;
+  addBundleAdjustment: (bundleId: string, data: ICreateBundleAdjustmentInput) => Promise<boolean>;
+  editBundleAdjustment: (bundleId: string, adjustmentId: string, data: IUpdateBundleAdjustmentInput) => Promise<boolean>;
+  removeBundleAdjustment: (bundleId: string, adjustmentId: string) => Promise<boolean>;
+  
+  fetchItemAdjustments: (itemId: string) => Promise<ISalesItemAdjustment[]>;
+  addItemAdjustment: (itemId: string, data: ICreateItemAdjustmentInput) => Promise<boolean>;
+  editItemAdjustment: (itemId: string, adjustmentId: string, data: IUpdateItemAdjustmentInput) => Promise<boolean>;
+  removeItemAdjustment: (itemId: string, adjustmentId: string) => Promise<boolean>;
+  
+  resetAdjustmentsState: () => void;
 }
 
 // 정산 폼 초기 데이터
@@ -187,6 +224,13 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
     sortBy: 'createdAt',
     sortOrder: 'desc',
   },
+  
+  // 새로 추가: 추가금 관련 초기 상태
+  bundleFreightList: [],
+  bundleAdjustments: [],
+  itemAdjustments: new Map(),
+  adjustmentsLoading: false,
+  adjustmentsError: null,
   
   // 주문 ID로 운임 정보 조회
   fetchChargesByOrderId: async (orderId: string) => {
@@ -714,5 +758,279 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       });
       return false;
     }
+  },
+
+  // 새로 추가: 추가금 관련 액션들
+  
+  /**
+   * 정산 그룹의 화물 목록 조회
+   */
+  fetchBundleFreightList: async (bundleId: string) => {
+    try {
+      set({ adjustmentsLoading: true, adjustmentsError: null });
+      
+      const freightList = await getSalesBundleFreightList(bundleId);
+      
+      set({ 
+        bundleFreightList: freightList,
+        adjustmentsLoading: false 
+      });
+      
+      return freightList;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '화물 목록 조회에 실패했습니다.';
+      set({ 
+        adjustmentsError: errorMessage,
+        adjustmentsLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  /**
+   * 통합 추가금 목록 조회
+   */
+  fetchBundleAdjustments: async (bundleId: string) => {
+    try {
+      set({ adjustmentsLoading: true, adjustmentsError: null });
+      
+      const adjustments = await getBundleAdjustments(bundleId);
+      
+      set({ 
+        bundleAdjustments: adjustments,
+        adjustmentsLoading: false 
+      });
+      
+      return adjustments;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '통합 추가금 조회에 실패했습니다.';
+      set({ 
+        adjustmentsError: errorMessage,
+        adjustmentsLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  /**
+   * 통합 추가금 생성
+   */
+  addBundleAdjustment: async (bundleId: string, data: ICreateBundleAdjustmentInput) => {
+    try {
+      set({ adjustmentsLoading: true, adjustmentsError: null });
+      
+      const newAdjustment = await createBundleAdjustment(bundleId, data);
+      
+      const currentAdjustments = get().bundleAdjustments;
+      set({ 
+        bundleAdjustments: [...currentAdjustments, newAdjustment],
+        adjustmentsLoading: false 
+      });
+      
+      return true;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '통합 추가금 생성에 실패했습니다.';
+      set({ 
+        adjustmentsError: errorMessage,
+        adjustmentsLoading: false 
+      });
+      return false;
+    }
+  },
+
+  /**
+   * 통합 추가금 수정
+   */
+  editBundleAdjustment: async (bundleId: string, adjustmentId: string, data: IUpdateBundleAdjustmentInput) => {
+    try {
+      set({ adjustmentsLoading: true, adjustmentsError: null });
+      
+      const updatedAdjustment = await updateBundleAdjustment(bundleId, adjustmentId, data);
+      
+      const currentAdjustments = get().bundleAdjustments;
+      const updatedAdjustments = currentAdjustments.map(adj => 
+        adj.id === adjustmentId ? updatedAdjustment : adj
+      );
+      
+      set({ 
+        bundleAdjustments: updatedAdjustments,
+        adjustmentsLoading: false 
+      });
+      
+      return true;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '통합 추가금 수정에 실패했습니다.';
+      set({ 
+        adjustmentsError: errorMessage,
+        adjustmentsLoading: false 
+      });
+      return false;
+    }
+  },
+
+  /**
+   * 통합 추가금 삭제
+   */
+  removeBundleAdjustment: async (bundleId: string, adjustmentId: string) => {
+    try {
+      set({ adjustmentsLoading: true, adjustmentsError: null });
+      
+      await deleteBundleAdjustment(bundleId, adjustmentId);
+      
+      const currentAdjustments = get().bundleAdjustments;
+      const filteredAdjustments = currentAdjustments.filter(adj => adj.id !== adjustmentId);
+      
+      set({ 
+        bundleAdjustments: filteredAdjustments,
+        adjustmentsLoading: false 
+      });
+      
+      return true;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '통합 추가금 삭제에 실패했습니다.';
+      set({ 
+        adjustmentsError: errorMessage,
+        adjustmentsLoading: false 
+      });
+      return false;
+    }
+  },
+
+  /**
+   * 개별 화물 추가금 목록 조회
+   */
+  fetchItemAdjustments: async (itemId: string) => {
+    try {
+      set({ adjustmentsLoading: true, adjustmentsError: null });
+      
+      const adjustments = await getItemAdjustments(itemId);
+      
+      const currentItemAdjustments = get().itemAdjustments;
+      const updatedItemAdjustments = new Map(currentItemAdjustments);
+      updatedItemAdjustments.set(itemId, adjustments);
+      
+      set({ 
+        itemAdjustments: updatedItemAdjustments,
+        adjustmentsLoading: false 
+      });
+      
+      return adjustments;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '개별 화물 추가금 조회에 실패했습니다.';
+      set({ 
+        adjustmentsError: errorMessage,
+        adjustmentsLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  /**
+   * 개별 화물 추가금 생성
+   */
+  addItemAdjustment: async (itemId: string, data: ICreateItemAdjustmentInput) => {
+    try {
+      set({ adjustmentsLoading: true, adjustmentsError: null });
+      
+      const newAdjustment = await createItemAdjustment(itemId, data);
+      
+      const currentItemAdjustments = get().itemAdjustments;
+      const itemAdjustments = currentItemAdjustments.get(itemId) || [];
+      const updatedItemAdjustments = new Map(currentItemAdjustments);
+      updatedItemAdjustments.set(itemId, [...itemAdjustments, newAdjustment]);
+      
+      set({ 
+        itemAdjustments: updatedItemAdjustments,
+        adjustmentsLoading: false 
+      });
+      
+      return true;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '개별 화물 추가금 생성에 실패했습니다.';
+      set({ 
+        adjustmentsError: errorMessage,
+        adjustmentsLoading: false 
+      });
+      return false;
+    }
+  },
+
+  /**
+   * 개별 화물 추가금 수정
+   */
+  editItemAdjustment: async (itemId: string, adjustmentId: string, data: IUpdateItemAdjustmentInput) => {
+    try {
+      set({ adjustmentsLoading: true, adjustmentsError: null });
+      
+      const updatedAdjustment = await updateItemAdjustment(itemId, adjustmentId, data);
+      
+      const currentItemAdjustments = get().itemAdjustments;
+      const itemAdjustments = currentItemAdjustments.get(itemId) || [];
+      const updatedAdjustments = itemAdjustments.map(adj => 
+        adj.id === adjustmentId ? updatedAdjustment : adj
+      );
+      
+      const updatedItemAdjustments = new Map(currentItemAdjustments);
+      updatedItemAdjustments.set(itemId, updatedAdjustments);
+      
+      set({ 
+        itemAdjustments: updatedItemAdjustments,
+        adjustmentsLoading: false 
+      });
+      
+      return true;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '개별 화물 추가금 수정에 실패했습니다.';
+      set({ 
+        adjustmentsError: errorMessage,
+        adjustmentsLoading: false 
+      });
+      return false;
+    }
+  },
+
+  /**
+   * 개별 화물 추가금 삭제
+   */
+  removeItemAdjustment: async (itemId: string, adjustmentId: string) => {
+    try {
+      set({ adjustmentsLoading: true, adjustmentsError: null });
+      
+      await deleteItemAdjustment(itemId, adjustmentId);
+      
+      const currentItemAdjustments = get().itemAdjustments;
+      const itemAdjustments = currentItemAdjustments.get(itemId) || [];
+      const filteredAdjustments = itemAdjustments.filter(adj => adj.id !== adjustmentId);
+      
+      const updatedItemAdjustments = new Map(currentItemAdjustments);
+      updatedItemAdjustments.set(itemId, filteredAdjustments);
+      
+      set({ 
+        itemAdjustments: updatedItemAdjustments,
+        adjustmentsLoading: false 
+      });
+      
+      return true;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '개별 화물 추가금 삭제에 실패했습니다.';
+      set({ 
+        adjustmentsError: errorMessage,
+        adjustmentsLoading: false 
+      });
+      return false;
+    }
+  },
+
+  /**
+   * 추가금 관련 상태 초기화
+   */
+  resetAdjustmentsState: () => {
+    set({
+      bundleFreightList: [],
+      bundleAdjustments: [],
+      itemAdjustments: new Map(),
+      adjustmentsLoading: false,
+      adjustmentsError: null
+    });
   },
 })); 
