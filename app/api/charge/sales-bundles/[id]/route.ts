@@ -72,10 +72,11 @@ export async function PATCH(
   try {
     const { id } = params;
 
+    console.log('id', id);
     // UUID 검증
     if (!isValidUUID(id)) {
       return NextResponse.json(
-        { error: '유효하지 않은 매출 번들 ID입니다.' },
+        { error: '유효하지 않은 매출 번들 ID입니다.', id: id },
         { status: 400 }
       );
     }

@@ -16,9 +16,9 @@ import { users } from "./users";
 import { bankCodeEnum } from "./companies";
 // 번들 상태 Enum 정의
 export const salesBundleStatusEnum = pgEnum('sales_bundle_status', [
-  'draft',     // 작성 중
-  'issued',    // 송장 발행
-  'paid',      // 입금 완료
+  'draft',     // 작성 중 = 정산 대기
+  'issued',    // 송장 발행 = 정산 대사(진행중)
+  'paid',      // 입금 완료 = 정산 완료
   'canceled'   // 취소
 ]);
 
@@ -118,9 +118,11 @@ export const salesBundleAdjustments = pgTable('sales_bundle_adjustments', {
   type: bundleAdjTypeEnum('type').notNull(),
   description: varchar('description', { length: 200 }),
   amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
-  
+  taxAmount: numeric('tax_amount', { precision: 12, scale: 2 }).notNull(),
+
   // 감사 로그
   createdAt: timestamp('created_at').defaultNow().notNull(),
+  createdBy: uuid('created_by').notNull().references(() => users.id, { onDelete: 'cascade' })
 });
 
 // 매출 아이템 조정 테이블 (개별 화물 할인/추가금)
@@ -134,7 +136,10 @@ export const salesItemAdjustments = pgTable('sales_item_adjustments', {
   type: bundleAdjTypeEnum('type').notNull(),
   description: varchar('description', { length: 200 }),
   amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
+  taxAmount: numeric('tax_amount', { precision: 12, scale: 2 }).notNull(),
   
   // 감사 로그
   createdAt: timestamp('created_at').defaultNow().notNull(),
+  createdBy: uuid('created_by').notNull().references(() => users.id, { onDelete: 'cascade' })
+  
 }); 

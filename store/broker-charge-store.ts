@@ -675,6 +675,10 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   updateSalesBundleData: async (id: string, fields: Record<string, any>, reason?: string) => {
     try {
       set({ isLoading: true, error: null });
+
+      console.log('updateSalesBundleData-before:', fields);
+      fields.settlementMemo = fields.memo || null;
+      console.log('updateSalesBundleData-after:', fields);
       await updateSalesBundle(id, fields, reason);
       set({ isLoading: false });
       

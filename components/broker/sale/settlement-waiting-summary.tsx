@@ -120,16 +120,16 @@ const WaitingSummary: React.FC<WaitingSummaryProps> = ({
                     </span>
                   </div>
                   <div className="grid grid-cols-2 gap-y-1 gap-x-2 text-xs">
-                    <div className="text-muted-foreground">주선비</div>
-                    <div className="text-right">
+                    <div className="text-muted-foreground font-medium">주선</div>
+                    <div className="text-right font-medium">
                       {formatCurrency(group.totalFreight)}원
                     </div>
                     <div className="text-muted-foreground">세금</div>
-                    <div className="text-right">
+                    <div className="text-right text-muted-foreground">
                       {formatCurrency(group.totalTax)}원
                     </div>
-                    <div className="text-muted-foreground font-medium">청구비</div>
-                    <div className="text-right font-medium text-primary">
+                    <div className="text-muted-foreground font-semibold">청구</div>
+                    <div className="text-right font-semibold text-blue-800">
                       {formatCurrency(group.totalFreight + group.totalTax)}원
                     </div>
                   </div>
@@ -139,23 +139,23 @@ const WaitingSummary: React.FC<WaitingSummaryProps> = ({
           </div>
 
           {/* 오른쪽: 전체 합계 */}
-          <div className="w-[160px] sm:w-[190px] md:w-[220px] lg:w-[250px] flex-shrink-0 pl-3">
+          <div className="w-[160px] sm:w-[190px] md:w-[220px] lg:w-[250px] xl:w-[350px] flex-shrink-0 pl-3">
             <div className="h-full flex flex-col justify-center">
               <div className="flex items-center gap-1 mb-2">
                 <span className="font-medium text-xs sm:text-sm">전체 합계</span>
               </div>
               <div className="grid grid-cols-3 gap-x-1 sm:gap-x-2 md:gap-x-3 gap-y-1 text-xs sm:text-sm">
                 <div>
-                  <div className="text-xs text-muted-foreground">주선비</div>
+                  <div className="text-xs text-muted-foreground font-medium">주선</div>
                   <div className="font-medium">{formatCurrency(totals.totalFreight)}원</div>
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground">세금비</div>
-                  <div className="font-medium">{formatCurrency(totals.totalTax)}원</div>
+                  <div className="text-xs text-muted-foreground">세금</div>
+                  <div className="font-normal text-muted-foreground">{formatCurrency(totals.totalTax)}원</div>
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground">청구비</div>
-                  <div className="font-medium text-primary">{formatCurrency(totals.totalFreight + totals.totalTax)}원</div>
+                  <div className="text-xs text-muted-foreground font-semibold">청구</div>
+                  <div className="font-semibold text-blue-700">{formatCurrency(totals.totalFreight + totals.totalTax)}원</div>
                 </div>
               </div>
             </div>
