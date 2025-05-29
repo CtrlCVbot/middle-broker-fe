@@ -36,7 +36,6 @@ interface IItemAdjustmentDialogProps {
   onOpenChange: (open: boolean) => void;
   itemId?: string;
   adjustmentId?: string;
-  adjustment?: ISalesItemAdjustment;
 }
 
 interface IAdjustmentFormData {
@@ -57,32 +56,40 @@ export function ItemAdjustmentDialog({
   open,
   onOpenChange,
   itemId,
-  adjustmentId,
-  adjustment
+  adjustmentId
 }: IItemAdjustmentDialogProps) {
   const [formData, setFormData] = useState<IAdjustmentFormData>(initialFormData);
   
   const {
     addItemAdjustment,
     editItemAdjustment,
-    adjustmentsLoading
+    adjustmentsLoading,
+    bundleFreightList
   } = useBrokerChargeStore();
 
-  const isEditMode = Boolean(adjustmentId && adjustment);
+  const isEditMode = Boolean(adjustmentId);
 
   // 수정 모드일 때 기존 데이터로 폼 초기화
   useEffect(() => {
-    if (isEditMode && adjustment) {
-      setFormData({
-        type: adjustment.type,
-        description: adjustment.description || '',
-        amount: adjustment.amount.toString(),
-        taxAmount: adjustment.taxAmount.toString()
-      });
-    } else {
+    if (isEditMode && adjustmentId && itemId && bundleFreightList.length > 0) {
+      console.log('수정 모드: 기존 데이터 찾기', { itemId, adjustmentId });
+      
+      const freightItem = bundleFreightList.find(item => item.id === itemId);
+      const adjustment = freightItem?.adjustments.find(adj => adj.id === adjustmentId);
+      
+      if (adjustment) {
+        console.log('기존 추가금 데이터 로드:', adjustment);
+        setFormData({
+          type: adjustment.type,
+          description: adjustment.description || '',
+          amount: adjustment.amount.toString(),
+          taxAmount: adjustment.taxAmount.toString()
+        });
+      }
+    } else if (!isEditMode) {
       setFormData(initialFormData);
     }
-  }, [isEditMode, adjustment, open]);
+  }, [isEditMode, adjustmentId, itemId, bundleFreightList, open]);
 
   const handleClose = () => {
     setFormData(initialFormData);
@@ -208,7 +215,9 @@ export function ItemAdjustmentDialog({
           <Button 
             variant="outline" 
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
+              console.log('개별 추가금 다이얼로그 취소 버튼 클릭');
               handleClose();
             }}
           >
@@ -216,7 +225,9 @@ export function ItemAdjustmentDialog({
           </Button>
           <Button 
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
+              console.log('개별 추가금 다이얼로그 저장 버튼 클릭');
               handleSubmit();
             }} 
             disabled={adjustmentsLoading}

@@ -80,7 +80,14 @@ export function FreightListTable({
           {mode === 'waiting' ? `선택된 화물` : `정산 화물`} ({itemCount}개)
         </h3>
         <CollapsibleTrigger asChild>
-          <Button variant="ghost" size="sm">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log('화물 목록 토글 버튼 클릭');
+            }}
+          >
             {isOpen ? (
               <ChevronUp className="h-3 w-3" />
             ) : (
@@ -188,7 +195,9 @@ export function FreightListTable({
                                         size="sm"
                                         className="h-5 w-5 p-0"
                                         onClick={(e) => {
+                                          e.preventDefault();
                                           e.stopPropagation();
+                                          console.log('개별 추가금 수정 버튼 클릭:', displayItem.id, adj.id);
                                           onEditItemAdjustment?.(displayItem.id, adj.id);
                                         }}
                                       >
@@ -199,7 +208,9 @@ export function FreightListTable({
                                         size="sm"
                                         className="h-5 w-5 p-0 text-destructive"
                                         onClick={(e) => {
+                                          e.preventDefault();
                                           e.stopPropagation();
+                                          console.log('개별 추가금 삭제 버튼 클릭:', displayItem.id, adj.id);
                                           onDeleteItemAdjustment?.(displayItem.id, adj.id);
                                         }}
                                       >
@@ -213,7 +224,9 @@ export function FreightListTable({
                                   size="sm"
                                   className="h-6 text-xs"
                                   onClick={(e) => {
+                                    e.preventDefault();
                                     e.stopPropagation();
+                                    console.log('개별 추가금 추가 버튼 클릭 (기존 있음):', displayItem.id);
                                     onAddItemAdjustment?.(displayItem.id);
                                   }}
                                 >
@@ -227,7 +240,9 @@ export function FreightListTable({
                                 size="sm"
                                 className="h-6 text-xs"
                                 onClick={(e) => {
+                                  e.preventDefault();
                                   e.stopPropagation();
+                                  console.log('개별 추가금 추가 버튼 클릭 (새로 추가):', displayItem.id);
                                   onAddItemAdjustment?.(displayItem.id);
                                 }}
                               >

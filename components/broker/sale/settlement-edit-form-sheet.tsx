@@ -211,7 +211,6 @@ export function SettlementEditFormSheet() {
     open: boolean;
     itemId?: string;
     adjustmentId?: string;
-    adjustment?: any;
   }>({
     open: false
   });
@@ -1693,25 +1692,23 @@ export function SettlementEditFormSheet() {
                     orders={orders}
                     bundleId={selectedSalesBundleId || undefined}
                     onAddItemAdjustment={(itemId) => {
+                      console.log('개별 추가금 추가 클릭:', itemId);
                       setItemAdjustmentDialog({
                         open: true,
                         itemId
                       });
                     }}
                     onEditItemAdjustment={(itemId, adjustmentId) => {
-                      // 해당 화물의 추가금 데이터를 찾아서 전달
-                      const { bundleFreightList } = useBrokerChargeStore.getState();
-                      const freightItem = bundleFreightList.find(item => item.id === itemId);
-                      const adjustment = freightItem?.adjustments.find(adj => adj.id === adjustmentId);
-                      
+                      console.log('개별 추가금 수정 클릭:', itemId, adjustmentId);
+                      // 수정 모드로 다이얼로그 열기 - adjustment 데이터는 다이얼로그 내부에서 가져오기
                       setItemAdjustmentDialog({
                         open: true,
                         itemId,
-                        adjustmentId,
-                        adjustment
+                        adjustmentId
                       });
                     }}
                     onDeleteItemAdjustment={(itemId, adjustmentId) => {
+                      console.log('개별 추가금 삭제 클릭:', itemId, adjustmentId);
                       if (confirm('정말로 이 추가금을 삭제하시겠습니까?')) {
                         const { removeItemAdjustment } = useBrokerChargeStore.getState();
                         removeItemAdjustment(itemId, adjustmentId);
@@ -1842,7 +1839,6 @@ export function SettlementEditFormSheet() {
       onOpenChange={(open) => setItemAdjustmentDialog(prev => ({ ...prev, open }))}
       itemId={itemAdjustmentDialog.itemId}
       adjustmentId={itemAdjustmentDialog.adjustmentId}
-      adjustment={itemAdjustmentDialog.adjustment}
     />
     </>
   );

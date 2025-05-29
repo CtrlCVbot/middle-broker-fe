@@ -206,7 +206,14 @@ export function BundleAdjustmentManager({
         <div className="flex items-center justify-between p-2 bg-muted/50">
           <h3 className="text-sm font-semibold">통합 정산 추가금 ({bundleAdjustments.length}개)</h3>
           <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log('통합 추가금 토글 버튼 클릭');
+              }}
+            >
               {isOpen ? (
                 <ChevronUp className="h-3 w-3" />
               ) : (
@@ -260,7 +267,9 @@ export function BundleAdjustmentManager({
                             size="sm"
                             className="h-6 w-6 p-0"
                             onClick={(e) => {
+                              e.preventDefault();
                               e.stopPropagation();
+                              console.log('통합 추가금 수정 버튼 클릭:', adjustment.id);
                               handleOpenDialog(adjustment);
                             }}
                           >
@@ -271,7 +280,9 @@ export function BundleAdjustmentManager({
                             size="sm"
                             className="h-6 w-6 p-0 text-destructive"
                             onClick={(e) => {
+                              e.preventDefault();
                               e.stopPropagation();
+                              console.log('통합 추가금 삭제 버튼 클릭:', adjustment.id);
                               handleDelete(adjustment.id);
                             }}
                           >
@@ -297,7 +308,9 @@ export function BundleAdjustmentManager({
             size="sm" 
             className="w-full"
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
+              console.log('통합 추가금 추가 버튼 클릭');
               handleOpenDialog();
             }}
           >
@@ -371,7 +384,9 @@ export function BundleAdjustmentManager({
                 <Button 
                   variant="outline" 
                   onClick={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
+                    console.log('통합 추가금 다이얼로그 취소 버튼 클릭');
                     handleCloseDialog();
                   }}
                 >
@@ -379,7 +394,9 @@ export function BundleAdjustmentManager({
                 </Button>
                 <Button 
                   onClick={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
+                    console.log('통합 추가금 다이얼로그 저장 버튼 클릭');
                     handleSubmit();
                   }}
                 >
