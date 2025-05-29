@@ -48,7 +48,7 @@ export async function GET(
         updatedAt: salesBundleItems.updatedAt,
         
         // Order Sale 정보
-        orderSaleAmount: orderSales.totalAmount,
+        orderSaleAmount: orderSales.subtotalAmount,
         
         // Order 정보
         orderId: orders.id,
@@ -68,7 +68,7 @@ export async function GET(
         companyCeo: companies.ceoName,
         
         // Dispatch 정보 (필요에 따라)
-        // dispatchAmount: orderDispatches.totalAmount,
+        dispatchAmount: orderSales.subtotalAmount,
         // dispatchDriverSnapshot: orderDispatches.driverSnapshot,
       })
       .from(salesBundleItems)
