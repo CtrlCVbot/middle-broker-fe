@@ -73,6 +73,20 @@ export function FreightListTable({
   const displayData = mode === 'waiting' ? orders : bundleFreightList;
   const itemCount = displayData.length;
 
+  // 디버깅: bundleFreightList 변경 감지
+  useEffect(() => {
+    if (mode === 'reconciliation') {
+      console.log('FreightListTable - bundleFreightList 변경됨:', {
+        bundleId,
+        itemCount: bundleFreightList.length,
+        bundleFreightList: bundleFreightList.map(item => ({
+          id: item.id,
+          adjustmentsCount: item.adjustments?.length || 0
+        }))
+      });
+    }
+  }, [bundleFreightList, mode, bundleId]);
+
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="border rounded-md mt-4">
       <div className="flex items-center justify-between p-2 bg-muted/50">

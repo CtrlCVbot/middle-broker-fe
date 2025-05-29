@@ -934,15 +934,31 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       
       const newAdjustment = await createItemAdjustment(itemId, data);
       
+      // 1. itemAdjustments Map 업데이트
       const currentItemAdjustments = get().itemAdjustments;
       const itemAdjustments = currentItemAdjustments.get(itemId) || [];
       const updatedItemAdjustments = new Map(currentItemAdjustments);
       updatedItemAdjustments.set(itemId, [...itemAdjustments, newAdjustment]);
       
+      // 2. bundleFreightList의 해당 아이템에도 새로운 추가금 추가 (화면 즉시 업데이트용)
+      const currentBundleFreightList = get().bundleFreightList;
+      const updatedBundleFreightList = currentBundleFreightList.map(freightItem => {
+        if (freightItem.id === itemId) {
+          return {
+            ...freightItem,
+            adjustments: [...(freightItem.adjustments || []), newAdjustment]
+          };
+        }
+        return freightItem;
+      });
+      
       set({ 
         itemAdjustments: updatedItemAdjustments,
+        bundleFreightList: updatedBundleFreightList,
         adjustmentsLoading: false 
       });
+      
+      console.log('개별 추가금 추가 완료 - 로컬 상태 업데이트:', { itemId, newAdjustment });
       
       return true;
     } catch (error) {
@@ -964,6 +980,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       
       const updatedAdjustment = await updateItemAdjustment(itemId, adjustmentId, data);
       
+      // 1. itemAdjustments Map 업데이트
       const currentItemAdjustments = get().itemAdjustments;
       const itemAdjustments = currentItemAdjustments.get(itemId) || [];
       const updatedAdjustments = itemAdjustments.map(adj => 
@@ -973,10 +990,27 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       const updatedItemAdjustments = new Map(currentItemAdjustments);
       updatedItemAdjustments.set(itemId, updatedAdjustments);
       
+      // 2. bundleFreightList의 해당 아이템 추가금도 업데이트 (화면 즉시 업데이트용)
+      const currentBundleFreightList = get().bundleFreightList;
+      const updatedBundleFreightList = currentBundleFreightList.map(freightItem => {
+        if (freightItem.id === itemId) {
+          return {
+            ...freightItem,
+            adjustments: (freightItem.adjustments || []).map(adj => 
+              adj.id === adjustmentId ? updatedAdjustment : adj
+            )
+          };
+        }
+        return freightItem;
+      });
+      
       set({ 
         itemAdjustments: updatedItemAdjustments,
+        bundleFreightList: updatedBundleFreightList,
         adjustmentsLoading: false 
       });
+      
+      console.log('개별 추가금 수정 완료 - 로컬 상태 업데이트:', { itemId, adjustmentId, updatedAdjustment });
       
       return true;
     } catch (error) {
@@ -998,6 +1032,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       
       await deleteItemAdjustment(itemId, adjustmentId);
       
+      // 1. itemAdjustments Map 업데이트
       const currentItemAdjustments = get().itemAdjustments;
       const itemAdjustments = currentItemAdjustments.get(itemId) || [];
       const filteredAdjustments = itemAdjustments.filter(adj => adj.id !== adjustmentId);
@@ -1005,10 +1040,25 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       const updatedItemAdjustments = new Map(currentItemAdjustments);
       updatedItemAdjustments.set(itemId, filteredAdjustments);
       
+      // 2. bundleFreightList의 해당 아이템에서도 추가금 제거 (화면 즉시 업데이트용)
+      const currentBundleFreightList = get().bundleFreightList;
+      const updatedBundleFreightList = currentBundleFreightList.map(freightItem => {
+        if (freightItem.id === itemId) {
+          return {
+            ...freightItem,
+            adjustments: (freightItem.adjustments || []).filter(adj => adj.id !== adjustmentId)
+          };
+        }
+        return freightItem;
+      });
+      
       set({ 
         itemAdjustments: updatedItemAdjustments,
+        bundleFreightList: updatedBundleFreightList,
         adjustmentsLoading: false 
       });
+      
+      console.log('개별 추가금 삭제 완료 - 로컬 상태 업데이트:', { itemId, adjustmentId });
       
       return true;
     } catch (error) {

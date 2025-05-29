@@ -64,18 +64,30 @@ export function ItemAdjustmentDialog({
     addItemAdjustment,
     editItemAdjustment,
     adjustmentsLoading,
-    bundleFreightList
+    bundleFreightList,
+    itemAdjustments
   } = useBrokerChargeStore();
 
   const isEditMode = Boolean(adjustmentId);
 
   // 수정 모드일 때 기존 데이터로 폼 초기화
   useEffect(() => {
-    if (isEditMode && adjustmentId && itemId && bundleFreightList.length > 0) {
+    if (isEditMode && adjustmentId && itemId) {
       console.log('수정 모드: 기존 데이터 찾기', { itemId, adjustmentId });
       
-      const freightItem = bundleFreightList.find(item => item.id === itemId);
-      const adjustment = freightItem?.adjustments.find(adj => adj.id === adjustmentId);
+      let adjustment = null;
+      
+      // 1. bundleFreightList에서 찾기
+      if (bundleFreightList.length > 0) {
+        const freightItem = bundleFreightList.find(item => item.id === itemId);
+        adjustment = freightItem?.adjustments.find(adj => adj.id === adjustmentId);
+      }
+      
+      // 2. bundleFreightList에서 찾지 못했다면 itemAdjustments Map에서 찾기
+      if (!adjustment && itemAdjustments.has(itemId)) {
+        const adjustmentsList = itemAdjustments.get(itemId) || [];
+        adjustment = adjustmentsList.find(adj => adj.id === adjustmentId);
+      }
       
       if (adjustment) {
         console.log('기존 추가금 데이터 로드:', adjustment);
@@ -85,11 +97,14 @@ export function ItemAdjustmentDialog({
           amount: adjustment.amount.toString(),
           taxAmount: adjustment.taxAmount.toString()
         });
+      } else {
+        console.log('추가금 데이터를 찾을 수 없음 - 빈 폼으로 초기화');
+        setFormData(initialFormData);
       }
     } else if (!isEditMode) {
       setFormData(initialFormData);
     }
-  }, [isEditMode, adjustmentId, itemId, bundleFreightList, open]);
+  }, [isEditMode, adjustmentId, itemId, bundleFreightList, itemAdjustments, open]);
 
   const handleClose = () => {
     setFormData(initialFormData);
