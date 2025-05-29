@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { db } from '@/db';
 import { 
   salesBundles, 
@@ -88,10 +88,7 @@ export async function GET(
       itemAdjustments = await db
         .select()
         .from(salesItemAdjustments)
-        .where(eq(salesItemAdjustments.bundleItemId, bundleItemIds[0])); // 임시로 첫 번째만 조회
-      
-      // 실제로는 IN 절을 사용해야 하지만 여기서는 간단히 처리
-      // TODO: Drizzle의 inArray 함수 사용 개선 필요
+        .where(inArray(salesItemAdjustments.bundleItemId, bundleItemIds));
     }
 
     // 결과 데이터 구성
@@ -128,7 +125,7 @@ export async function GET(
           createdAt: adj.createdAt?.toISOString() || '',
           createdBy: adj.createdBy,
         }))
-    }));
+    })as any);
 
     return NextResponse.json({
       data: result,
