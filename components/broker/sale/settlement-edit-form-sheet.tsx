@@ -80,6 +80,9 @@ import { toast } from "sonner";
 // 컴포넌트
 import { getSchedule } from "@/components/order/order-table-ver01";
 import SettlementAdjustmentsAddForm from "@/components/broker/sale/settlement-adjustments-add-form";
+import { FreightListTable } from "@/components/broker/sale/freight-list-table";
+import { BundleAdjustmentManager } from "@/components/broker/sale/bundle-adjustment-manager";
+import { ItemAdjustmentDialog } from "@/components/broker/sale/item-adjustment-dialog";
 
 // 타입
 import { IBrokerOrder } from "@/types/broker-order";
@@ -202,6 +205,16 @@ export function SettlementEditFormSheet() {
     loadManagers,
     currentCompanyId
   } = useBrokerCompanyManagerStore();
+
+  // 개별 화물 추가금 다이얼로그 상태
+  const [itemAdjustmentDialog, setItemAdjustmentDialog] = useState<{
+    open: boolean;
+    itemId?: string;
+    adjustmentId?: string;
+    adjustment?: any;
+  }>({
+    open: false
+  });
 
   // 정산 생성 이벤트 리스너 추가
   useEffect(() => {
@@ -538,27 +551,71 @@ export function SettlementEditFormSheet() {
 
   // 선택된 화물의 운임 및 금액 계산
   const calculatedTotals = useMemo(() => {
+    const {
+      bundleAdjustments,
+      bundleFreightList
+    } = useBrokerChargeStore.getState();
+
     if (isEditMode && editingSalesBundle) {
-      // 편집 모드: 기존 sales bundle 데이터 사용
+      // 편집 모드: 기존 sales bundle 데이터 + 추가금 계산
+      let bundleAdjustmentTotal = 0;
+      let itemAdjustmentTotal = 0;
+
+      // 통합 추가금 계산
+      bundleAdjustments.forEach(adj => {
+        if (adj.type === 'surcharge') {
+          bundleAdjustmentTotal += adj.amount;
+        } else {
+          bundleAdjustmentTotal -= adj.amount;
+        }
+      });
+
+      // 개별 화물 추가금 계산
+      bundleFreightList.forEach(item => {
+        item.adjustments?.forEach(adj => {
+          if (adj.type === 'surcharge') {
+            itemAdjustmentTotal += adj.amount;
+          } else {
+            itemAdjustmentTotal -= adj.amount;
+          }
+        });
+      });
+
+      const baseAmount = editingSalesBundle.totalBaseAmount || 0;
+      const totalAdjustments = bundleAdjustmentTotal + itemAdjustmentTotal;
+      const netAmount = baseAmount + totalAdjustments;
+      const tax = Math.round(netAmount * 0.1);
+      const totalAmount = netAmount + tax;
+
       return {
-        totalFreight: editingSalesBundle.totalBaseAmount || 0,
-        totalDispatch: 0, // sales bundle에는 배차료 정보가 없음
-        totalNet: editingSalesBundle.totalBaseAmount || 0,
-        tax: editingSalesBundle.totalTaxAmount || 0,
-        totalAmount: editingSalesBundle.totalAmount || 0
+        totalFreight: baseAmount,
+        totalAdjustments,
+        totalNet: netAmount,
+        tax,
+        totalAmount
       };
     }
     
-    // 생성 모드: 선택된 화물 기반 계산
-    if (!orders || orders.length === 0) return { totalFreight: 0, totalDispatch: 0, totalNet: 0, tax: 0, totalAmount: 0 };
+    // 생성 모드: 선택된 화물 기반 계산 (추가금은 아직 없음)
+    if (!orders || orders.length === 0) return { 
+      totalFreight: 0, 
+      totalAdjustments: 0, 
+      totalNet: 0, 
+      tax: 0, 
+      totalAmount: 0 
+    };
     
     const totalFreight = orders.reduce((sum, order) => sum + (Number(order.amount) || 0), 0);
-    const totalDispatch = orders.reduce((sum, order) => sum + (Number(order.dispatchAmount) || 0), 0);
-    const totalNet = totalFreight - totalDispatch;
     const tax = Math.round(totalFreight * 0.1);
     const totalAmount = totalFreight + tax;
     
-    return { totalFreight, totalDispatch, totalNet, tax, totalAmount };
+    return { 
+      totalFreight, 
+      totalAdjustments: 0, 
+      totalNet: totalFreight, 
+      tax, 
+      totalAmount 
+    };
   }, [orders, isEditMode, editingSalesBundle]);
 
   // 검색어 변경 함수
@@ -1630,160 +1687,43 @@ export function SettlementEditFormSheet() {
                 </TabsContent>
 
                 <TabsContent value="freight">
-                  {/* 선택된 화물 목록 - 컴팩트하게 표시 */}                  
-                  <Collapsible className="border rounded-md mt-4">
-                    <div className="flex items-center justify-between p-2 bg-muted/50">
-                      <h3 className="text-sm font-semibold">선택된 화물 ({orders?.length || 0}개)</h3>
-                      <CollapsibleTrigger asChild>
-                        <Button variant="ghost" size="sm" onClick={() => setIsOrderListOpen(!isOrderListOpen)}>
-                          {isOrderListOpen ? (
-                            <ChevronUp className="h-3 w-3" />
-                          ) : (
-                            <ChevronDown className="h-3 w-3" />
-                          )}
-                          <span className="sr-only">토글 화물 목록</span>
-                        </Button>
-                      </CollapsibleTrigger>
-                    </div>
-                    <CollapsibleContent>
-                      <ScrollArea className="h-36 rounded-b-md">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-[40px] text-xs">번호</TableHead>
-                              <TableHead className="text-xs">업체</TableHead>
-                              <TableHead className="text-xs">일정</TableHead>
-                              <TableHead className="text-xs">출발지</TableHead>
-                              <TableHead className="text-xs">도착지</TableHead>
-                              <TableHead className="text-right text-xs">주선료</TableHead>
-                              <TableHead className="text-right text-xs">세금</TableHead>
-                              
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {orders && orders.length > 0 ? (
-                              orders.map((order, index) => (
-                                <TableRow key={order.id}>
-                                  <TableCell className="text-xs">{index + 1}</TableCell>     
-                                  <TableCell className="text-xs">{order.companyName}</TableCell>                              
-                                  <TableCell className="text-xs">
-                                    {getSchedule(order.pickupDate, order.deliveryDate, order.pickupDate, order.deliveryDate)}
-                                  </TableCell>
-                                  <TableCell className="text-xs">{order.pickupName}</TableCell>
-                                  <TableCell className="text-xs">{order.deliveryName}</TableCell>
-                                  <TableCell className="text-right text-xs">
-                                    {formatCurrency(order.amount || 0)}
-                                  </TableCell>
-                                  <TableCell className="text-right text-xs">
-                                    {formatCurrency(order.amount * 0.1 || 0)}
-                                  </TableCell>                              
-                                </TableRow>
-                              ))
-                            ) : (
-                              <TableRow>
-                                <TableCell colSpan={7} className="h-16 text-center text-xs">
-                                  선택된 화물이 없습니다.
-                                </TableCell>
-                              </TableRow>
-                            )}
-                          </TableBody>
-                        </Table>
-                      </ScrollArea>
-                    </CollapsibleContent>
-                  </Collapsible>
-
-                  <Collapsible className="border rounded-md mt-4">
-                    <div className="flex items-center justify-between p-2 bg-muted/50">
-                      <h3 className="text-sm font-semibold">통합 정산 추가금 (개)</h3>
+                  {/* 화물 목록 컴포넌트 */}
+                  <FreightListTable
+                    mode={isEditMode ? 'reconciliation' : 'waiting'}
+                    orders={orders}
+                    bundleId={selectedSalesBundleId || undefined}
+                    onAddItemAdjustment={(itemId) => {
+                      setItemAdjustmentDialog({
+                        open: true,
+                        itemId
+                      });
+                    }}
+                    onEditItemAdjustment={(itemId, adjustmentId) => {
+                      // 해당 화물의 추가금 데이터를 찾아서 전달
+                      const { bundleFreightList } = useBrokerChargeStore.getState();
+                      const freightItem = bundleFreightList.find(item => item.id === itemId);
+                      const adjustment = freightItem?.adjustments.find(adj => adj.id === adjustmentId);
                       
-                      <CollapsibleTrigger asChild>
-                        <Button variant="ghost" size="sm" onClick={() => setIsOrderListOpen(!isOrderListOpen)}>
-                          {isOrderListOpen ? (
-                            <ChevronUp className="h-3 w-3" />
-                          ) : (
-                            <ChevronDown className="h-3 w-3" />
-                          )}
-                          <span className="sr-only">토글 추가금 목록</span>
-                        </Button>
-                      </CollapsibleTrigger>
-                    </div>
-                    <CollapsibleContent>
-                      <ScrollArea className="h-36 rounded-b-md">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-[40px] text-xs">번호</TableHead>
-                              <TableHead className="text-xs">type</TableHead>
-                              <TableHead className="text-xs">description</TableHead>
-                              <TableHead className="text-xs">amount</TableHead>
-                              <TableHead className="text-xs">taxAmount</TableHead>  
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            <TableRow>
-                              <TableCell colSpan={7} className="h-16 text-center text-xs">
-                                추가금이 없습니다.
-                              </TableCell>
-                            </TableRow>
-                          </TableBody>
-                        </Table>
-                      </ScrollArea>
-                      <Button variant="ghost" size="sm" className="w-full">
-                        <div className="flex items-center gap-2 text-gray-800">
-                          <Plus className="h-3 w-3" />
-                          <span>추가</span>
-                        </div>
-                      </Button>
-                    </CollapsibleContent>
-                  </Collapsible>
+                      setItemAdjustmentDialog({
+                        open: true,
+                        itemId,
+                        adjustmentId,
+                        adjustment
+                      });
+                    }}
+                    onDeleteItemAdjustment={(itemId, adjustmentId) => {
+                      if (confirm('정말로 이 추가금을 삭제하시겠습니까?')) {
+                        const { removeItemAdjustment } = useBrokerChargeStore.getState();
+                        removeItemAdjustment(itemId, adjustmentId);
+                      }
+                    }}
+                  />
 
-                  <Collapsible className="border rounded-md mt-4">
-                    <div className="flex items-center justify-between p-2 bg-muted/50">
-                      <h3 className="text-sm font-semibold">개별 화물 추가금 (개)</h3>
-                      
-                      <CollapsibleTrigger asChild>  
-                        
-                        <Button variant="ghost" size="sm" onClick={() => setIsOrderListOpen(!isOrderListOpen)}>
-                          {isOrderListOpen ? (
-                            <ChevronUp className="h-3 w-3" />
-                          ) : (
-                            <ChevronDown className="h-3 w-3" />
-                          )}
-                          <span className="sr-only">토글 추가금 목록</span>
-                        </Button>
-                      </CollapsibleTrigger>
-                    </div>
-                    <CollapsibleContent>
-                      <ScrollArea className="h-36 rounded-b-md">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-[40px] text-xs">orderId</TableHead>
-                              <TableHead className="text-xs">type</TableHead>
-                              <TableHead className="text-xs">description</TableHead>
-                              <TableHead className="text-xs">amount</TableHead>
-                              <TableHead className="text-xs">taxAmount</TableHead>  
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            <TableRow>
-                              <TableCell colSpan={7} className="h-16 text-center text-xs">
-                                추가금이 없습니다.
-                              </TableCell>
-                            </TableRow>
-                          </TableBody>
-                        </Table>
-                      </ScrollArea>
-                      {/* <Button variant="ghost" size="sm" className="w-full">
-                        <div className="flex items-center gap-2 text-gray-800">
-                          <Plus className="h-3 w-3" />
-                          <span>추가</span>
-                        </div>
-                      </Button> */}
-                    </CollapsibleContent>
-                  </Collapsible>
-                  
-                  
+                  {/* 통합 추가금 관리 컴포넌트 */}
+                  <BundleAdjustmentManager
+                    bundleId={selectedSalesBundleId || undefined}
+                    isEditMode={isEditMode}
+                  />
                 </TabsContent>
               </Tabs>
 
@@ -1795,10 +1735,14 @@ export function SettlementEditFormSheet() {
         {/* 하단 고정 영역 - 금액 요약 및 버튼 */}
         <div className="absolute bottom-0 left-0 right-0 border-t bg-background px-6 pt-4 pb-8">
           {/* 금액 요약 */}
-          <div className="mb-3 grid grid-cols-3 gap-2 text-sm">
+          <div className="mb-3 grid grid-cols-4 gap-2 text-sm">
             <div>
               <div className="text-xs text-muted-foreground">총 주선료</div>
               <div className="font-medium">{formatCurrency(calculatedTotals.totalFreight)}</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">추가금</div>
+              <div className="font-medium">{formatCurrency(calculatedTotals.totalAdjustments || 0)}</div>
             </div>
             <div>
               <div className="text-xs text-muted-foreground">총 세금</div>
@@ -1891,6 +1835,15 @@ export function SettlementEditFormSheet() {
     </Sheet>
 
     <SettlementAdjustmentsAddForm />
+    
+    {/* 개별 화물 추가금 관리 다이얼로그 */}
+    <ItemAdjustmentDialog
+      open={itemAdjustmentDialog.open}
+      onOpenChange={(open) => setItemAdjustmentDialog(prev => ({ ...prev, open }))}
+      itemId={itemAdjustmentDialog.itemId}
+      adjustmentId={itemAdjustmentDialog.adjustmentId}
+      adjustment={itemAdjustmentDialog.adjustment}
+    />
     </>
   );
 } 
