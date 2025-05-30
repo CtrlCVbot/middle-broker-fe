@@ -260,6 +260,12 @@ export interface ICompanySnapshot {
   email: string;
 }
 
+export interface ICompanySnapshotForSales extends ICompanySnapshot {
+  id: string;
+  businessNumber: string;
+  ceoName: string;
+}
+
 // 사용자 스냅샷 인터페이스
 export interface IUserSnapshot {
   name: string;

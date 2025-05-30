@@ -84,6 +84,7 @@ import { useBrokerChargeStore } from '@/store/broker-charge-store';
 import { formatCurrency, cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+import { constrainedMemory } from "process";
 
 
 
@@ -164,7 +165,9 @@ export function SettlementEditFormSheet() {
     editingSalesBundle,
     updateSalesBundleData,
     deleteSalesBundleData,
-    bundleFreightList
+    bundleFreightList,
+    bundleAdjustments,
+    fetchBundleAdjustments
   } = useBrokerChargeStore();
 
   const { isOpen, selectedItems: orders, formData } = settlementForm;
@@ -337,6 +340,16 @@ export function SettlementEditFormSheet() {
       form.setValue('endDate', end);
     }
   };
+
+
+  // 정산 대사 모드에서 통합 추가금 로딩
+  useEffect(() => {
+    console.log("정산 대사 모드에서 통합 추가금 로딩");
+
+    if (isEditMode && editingSalesBundle && isOpen) {
+      fetchBundleAdjustments(editingSalesBundle.id);
+    }
+  }, [fetchBundleAdjustments]);
 
   // 화주 데이터 - 대부분의 화물이 같은 화주일 경우 해당 화주를 기본값으로 설정
   useEffect(() => {
@@ -576,14 +589,21 @@ export function SettlementEditFormSheet() {
   // 선택된 화물의 운임 및 금액 계산
   const calculatedTotals = useMemo(() => {
     const {
-      bundleAdjustments,
-      bundleFreightList
+      //bundleAdjustments,
+      //bundleFreightList
     } = useBrokerChargeStore.getState();
+
+    console.log("calculatedTotals 호출");
+    console.log("isEditMode:", isEditMode);
+    console.log("editingSalesBundle:", editingSalesBundle);
 
     if (isEditMode && editingSalesBundle) {
       // 편집 모드: 기존 sales bundle 데이터 + 추가금 계산
       let bundleAdjustmentTotal = 0;
       let itemAdjustmentTotal = 0;
+
+      console.log("편집 모드 통합 추가금 계산 bundleAdjustments", bundleAdjustments);
+      console.log("편집 모드 개별 화물 추가금 계산 bundleFreightList", bundleFreightList);
 
       // 통합 추가금 계산
       bundleAdjustments.forEach(adj => {

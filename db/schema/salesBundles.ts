@@ -11,7 +11,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { companies } from "./companies";
 import { orderSales } from "./orderSales";
-import { ICompanySnapshot, IUserSnapshot } from "@/types/order-ver01";
+import { ICompanySnapshot, ICompanySnapshotForSales, IUserSnapshot } from "@/types/order-ver01";
 import { users } from "./users";
 import { bankCodeEnum } from "./companies";
 // 번들 상태 Enum 정의
@@ -50,6 +50,7 @@ export const salesBundles = pgTable('sales_bundles', {
   // 고객 정보 - 청구 회사
   companyId: uuid('company_id').notNull().references(() => companies.id),
   companySnapshot: jsonb('company_snapshot').$type<ICompanySnapshot>(),
+  companiesSnapshot: jsonb('companies_snapshot').$type<ICompanySnapshotForSales[]>(), //선택된 화물들의 회사 목록 정보
   managerId: uuid('manager_id').references(() => users.id),
   managerSnapshot: jsonb('manager_snapshot').$type<IUserSnapshot>(),
 
@@ -85,10 +86,18 @@ export const salesBundles = pgTable('sales_bundles', {
   totalTaxAmount: numeric('total_tax_amount', { precision: 14, scale: 2 }), //총 세액
   totalAmountWithTax: numeric('total_amount_with_tax', { precision: 14, scale: 2 }), //총 금액(세액포함)=청구금액
   status: salesBundleStatusEnum('status').default('draft').notNull(), //상태
-  
+
+  // 추가금액 정보
+  itemExtraAmount: numeric('item_extra_amount', { precision: 14, scale: 2 }), //총 추가금액(화물 레벨)
+  itemExtraAmountTax: numeric('item_extra_amount_tax', { precision: 14, scale: 2 }), //총 추가금액(화물 레벨) 세액
+  bundleExtraAmount : numeric('bundle_extra_amount', { precision: 14, scale: 2 }), //총 추가금액(그룹화 레벨)
+  bundleExtraAmountTax: numeric('bundle_extra_amount_tax', { precision: 14, scale: 2 }), //총 추가금액(그룹화 레벨) 세액
+
   // 감사 로그
   createdAt: timestamp('created_at').defaultNow().notNull(),
+  createdBy: uuid('created_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  updatedBy: uuid('updated_by').notNull().references(() => users.id, { onDelete: 'cascade' })
 });
 
 // 매출 번들 아이템 테이블 (화물 매핑)
@@ -143,3 +152,5 @@ export const salesItemAdjustments = pgTable('sales_item_adjustments', {
   createdBy: uuid('created_by').notNull().references(() => users.id, { onDelete: 'cascade' })
   
 }); 
+
+
