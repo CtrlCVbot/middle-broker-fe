@@ -76,9 +76,8 @@ export const salesBundles = pgTable('sales_bundles', {
   depositReceivedAt: date('deposit_received_at'),      // 입금 완료일 (실제 입금일)
 
   settlementConfirmedAt: date('settlement_confirmed_at'), // 정산 승인일 (회계팀 승인 등)
-  settlementBatchId: varchar('settlement_batch_id', { length: 50 }), // 정산 회차 ID입니다. 예: "2025-05-[companyId]-SALES-BATCH-01"처럼 관리 가능하며, 배치 단위 정산 처리 시 사용
-  settledAt: date('settled_at'),                       // 최종 정산 완료일 (회계 처리일)
-
+  settlementBatchId: varchar('settlement_batch_id', { length: 50 }), // 정산 회차 ID
+  settledAt: date('settled_at'), // 정산 완료일
   
   // 인보이스 정보
   invoiceNo: varchar('invoice_no', { length: 50 }), //세금계산서 번호
