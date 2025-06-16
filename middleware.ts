@@ -16,6 +16,20 @@ const protectedRoutes = [
   '/payments',
   '/invoices',
   '/settlements',
+  '/broker',
+  '/broker/order-ver01/list',
+  '/broker/order-ver01/list/:id',
+  '/broker/order-ver01/list/:id/edit',
+  '/broker/company/list',
+  '/broker/company/list/:id',
+  '/broker/company/list/:id/edit',
+  '/broker/driver/list',
+  '/broker/driver/list/:id',
+  '/broker/driver/list/:id/edit',
+  '/broker/sale',
+  '/broker/sale/waiting',
+  '/broker/sale/waiting/:id',
+  '/broker/sale/waiting/:id/edit',
 ]
 
 // 로그인 상태에서 접근 불가능한 경로
