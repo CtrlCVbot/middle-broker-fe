@@ -273,10 +273,12 @@ export const mockUsers: IUser[] = [
     department: "일반부서",
     position: "사원",
     rank: "사원",
-    created_by: "system",
-    updated_by: "system",
+    //created_by: "system",
+    //updated_by: "system",
+    createdAt: new Date(),
+    updatedAt: new Date(),
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    //updated_at: new Date().toISOString()
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440001",
@@ -291,10 +293,12 @@ export const mockUsers: IUser[] = [
     department: "관리부서",
     position: "관리자",
     rank: "관리자",
-    created_by: "system",
-    updated_by: "system",
+    //created_by: "system",
+    //updated_by: "system",
+    createdAt: new Date(),
+    updatedAt: new Date(),
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    //updated_at: new Date().toISOString()
   }
 ];
 
@@ -308,9 +312,9 @@ export const getAddressesByPage = (page: number, limit: number, search?: string,
     console.log("검색어", searchTerm);
     filteredData = filteredData.filter(
       (address) =>
-        address.name.toLowerCase().includes(searchTerm) ||
-        address.roadAddress.toLowerCase().includes(searchTerm) ||
-        address.jibunAddress.toLowerCase().includes(searchTerm) ||
+        address.name?.toLowerCase().includes(searchTerm) ||
+        address.roadAddress?.toLowerCase().includes(searchTerm) ||
+        address.jibunAddress?.toLowerCase().includes(searchTerm) ||
         address.detailAddress?.toLowerCase().includes(searchTerm) ||
         address.postalCode?.includes(searchTerm) ||
         address.contactName?.toLowerCase().includes(searchTerm) ||
@@ -351,12 +355,16 @@ const convertLegacyToNewAddress = (legacy: ILegacyAddress): IAddress => {
     roadAddress: legacy.address,
     jibunAddress: legacy.address,
     detailAddress: legacy.detailedAddress,
+    postalCode: null,
     contactName: legacy.manager,
     contactPhone: legacy.contact,
     type: legacy.type === "상차지" ? "load" : "drop" as AddressType,
     isFrequent: false,
     createdAt: new Date(),
     updatedAt: new Date(),
+    memo: null,
+    createdBy: null,
+    updatedBy: null,
     metadata: {
       originalInput: `${legacy.address} ${legacy.detailedAddress}`,
       source: "LEGACY"
@@ -368,7 +376,7 @@ const convertLegacyToNewAddress = (legacy: ILegacyAddress): IAddress => {
 export const addAddress = (address: Omit<IAddress, "id" | "createdAt" | "updatedAt" | "isFrequent">) => {
   // 새 ID 생성 (기존 ID 중 가장 큰 값 + 1)
   const newId = (mockAddresses.length > 0 
-    ? Math.max(...mockAddresses.map(addr => parseInt(addr.id))) + 1 
+    ? Math.max(...mockAddresses.map(addr => parseInt(addr.id || "0"))) + 1 
     : 1).toString();
     
   // 새 주소 객체 생성
