@@ -61,6 +61,11 @@ export function generateMockDispatchData(searchParams: URLSearchParams): IOrderW
       cargoName: `테스트 화물 ${i + 1}`,
       requestedVehicleType: vehicleTypes[vehicleTypeIdx],
       requestedVehicleWeight: vehicleWeights[vehicleWeightIdx],
+      companyId: 'COMPANY001',
+      contactUserSnapshot: {
+        name: `화주담당자 ${i + 1}`,
+        phone: `010-1111-${1000 + i}`,
+      },
       pickup: {
         name: `상차지 업체 ${i + 1}`,
         contactName: `상차지 담당자 ${i + 1}`,
@@ -97,7 +102,6 @@ export function generateMockDispatchData(searchParams: URLSearchParams): IOrderW
       priceType: '기본',
       taxType: '과세',
       isCanceled: false,
-      companyId: 'COMPANY001',
       memo: `화물 메모 ${i + 1}`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -162,7 +166,7 @@ export function generateMockDispatchData(searchParams: URLSearchParams): IOrderW
     };
     
     mockData.push({
-      order: orderInfo,
+      order: orderInfo as any,
       dispatch: dispatchInfo as any
     });
   }
