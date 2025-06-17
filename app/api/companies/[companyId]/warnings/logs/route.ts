@@ -12,7 +12,7 @@ import { authOptions } from '@/app/api/auth/config';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { companyId: string } }
+  { params }: { params: Promise<{ companyId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -23,7 +23,7 @@ export async function GET(
       );
     }
 
-    const { companyId } = params;
+    const companyId = (await params).companyId;
 
     // 업체 존재 여부 확인
     const companyExists = await db.query.companies.findFirst({

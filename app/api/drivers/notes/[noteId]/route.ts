@@ -20,10 +20,10 @@ const UpdateNoteSchema = z.object({
 // 특이사항 상세 조회 API (GET /api/drivers/notes/[noteId])
 export async function GET(
   request: NextRequest,
-  { params }: { params: { noteId: string } }
+  { params }: { params: Promise<{ noteId: string }> }
 ) {
   try {
-    const { noteId } = params;
+    const noteId = (await params).noteId;
 
     // UUID 형식 검증
     if (!isValidUUID(noteId)) {
@@ -71,10 +71,10 @@ export async function GET(
 // 특이사항 수정 API (PUT /api/drivers/notes/[noteId])
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { noteId: string } }
+  { params }: { params: Promise<{ noteId: string }> }
 ) {
   try {
-    const { noteId } = params;
+    const noteId = (await params).noteId;
 
     // UUID 형식 검증
     if (!isValidUUID(noteId)) {
@@ -198,10 +198,10 @@ export async function PUT(
 // 특이사항 삭제 API (DELETE /api/drivers/notes/[noteId])
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { noteId: string } }
+  { params }: { params: Promise<{ noteId: string }> }
 ) {
   try {
-    const { noteId } = params;
+    const noteId = (await params).noteId;
 
     // UUID 형식 검증
     if (!isValidUUID(noteId)) {

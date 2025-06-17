@@ -43,10 +43,10 @@ const UpdateDriverSchema = z.object({
 // GET /api/drivers/[driverId] - 차주 상세 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { driverId: string } }
+  { params }: { params: Promise<{ driverId: string }> }
 ) {
   try {
-    const { driverId } = params;
+    const driverId = (await params).driverId;
 
     // UUID 형식 검증
     if (!isValidUUID(driverId)) {
@@ -108,10 +108,10 @@ export async function GET(
 // PUT /api/drivers/[driverId] - 차주 정보 수정
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { driverId: string } }
+  { params }: { params: Promise<{ driverId: string }> }
 ) {
   try {
-    const { driverId } = params;
+    const driverId = (await params).driverId;
 
     // UUID 형식 검증
     if (!isValidUUID(driverId)) {
@@ -252,10 +252,10 @@ export async function PUT(
 // DELETE /api/drivers/[driverId] - 차주 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { driverId: string } }
+  { params }: { params: Promise<{ driverId: string }> }
 ) {
   try {
-    const { driverId } = params;
+    const driverId = (await params).driverId;
 
     // UUID 형식 검증
     if (!isValidUUID(driverId)) {

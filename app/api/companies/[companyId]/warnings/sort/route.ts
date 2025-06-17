@@ -22,7 +22,7 @@ const sortOrderSchema = z.object({
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { companyId: string } }
+  { params }: { params: Promise<{ companyId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -33,7 +33,7 @@ export async function POST(
       );
     }
 
-    const { companyId } = params;
+    const companyId = (await params).companyId;
     const body = await request.json();
 
     // 요청 검증

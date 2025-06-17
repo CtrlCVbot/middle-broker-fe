@@ -21,11 +21,11 @@ const UpdateDriverFieldsSchema = z.object({
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { driverId: string } }
+  { params }: { params: Promise<{ driverId: string }> }
 ) {
   try {
     // Next.js 13.4.19 이상에서는 params를 비동기적으로 처리해야 함
-    const { driverId } = await params;
+    const driverId = (await params).driverId;
 
     // UUID 검증
     if (!isValidUUID(driverId)) {
