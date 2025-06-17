@@ -10,8 +10,7 @@ import {
 } from "@/components/ui/context-menu";
 import { IBrokerCompany } from "@/types/broker-company";
 import { ILegacyCompany } from "@/types/company";
-// import { useBrokerCompanyStore } from "@/store/broker-company-store";
-import { useCompanyStore } from "@/store/company-store";
+import { useCompanyStore, useDeleteCompany, useChangeCompanyStatus } from "@/store/company-store";
 import { Eye, Trash, Edit, ClipboardCopy, RefreshCw, Download, Ban } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -22,12 +21,12 @@ interface BrokerCompanyContextMenuProps {
 
 export function BrokerCompanyContextMenu({ company, children }: BrokerCompanyContextMenuProps) {
   const { toast } = useToast();
-  // const { selectCompany, deleteCompanies, changeCompaniesStatus, refreshCompanyList } = useBrokerCompanyStore();
-  const { selectCompany, deleteCompanies, changeCompaniesStatus, refreshCompanyList } = useCompanyStore();
+  const { fetchCompanies } = useCompanyStore();
+  const deleteCompanyMutation = useDeleteCompany();
+  const changeStatusMutation = useChangeCompanyStatus();
 
   const handleViewDetails = () => {
-    // selectCompany(company);
-    selectCompany(company);
+    // 상세 정보 보기 기능은 아직 구현되지 않았으므로 토스트만 표시
     toast({
       title: "회사 상세 정보",
       description: `${company.name} 회사의 상세 정보를 불러왔습니다.`,
@@ -46,8 +45,7 @@ export function BrokerCompanyContextMenu({ company, children }: BrokerCompanyCon
 
   const handleDelete = async () => {
     try {
-      // await deleteCompanies([company.id]);
-      await deleteCompanies([company.id]);
+      await deleteCompanyMutation.mutateAsync({ id: company.id });
       toast({
         title: "회사 삭제됨",
         description: `${company.name} 회사가 삭제되었습니다.`,
@@ -61,13 +59,21 @@ export function BrokerCompanyContextMenu({ company, children }: BrokerCompanyCon
     }
   };
 
-  const handleStatusChange = async (status: string) => {
+  const handleStatusChange = async (statusLabel: string) => {
     try {
-      // await changeCompaniesStatus([company.id], status);
-      await changeCompaniesStatus([company.id], status);
+      const status = statusLabel === "활성" ? "active" : "inactive";
+      await changeStatusMutation.mutateAsync({
+        id: company.id,
+        data: {
+          status,
+          reason: `상태가 ${statusLabel}으로 변경됨`,
+          requestUserId: "system" // 실제 사용자 ID로 대체 필요
+        }
+      });
+      
       toast({
         title: "상태 변경됨",
-        description: `${company.name} 회사의 상태가 ${status}로 변경되었습니다.`,
+        description: `${company.name} 회사의 상태가 ${statusLabel}로 변경되었습니다.`,
       });
     } catch (error) {
       toast({
@@ -80,8 +86,7 @@ export function BrokerCompanyContextMenu({ company, children }: BrokerCompanyCon
 
   const handleRefresh = async () => {
     try {
-      // await refreshCompanyList();
-      await refreshCompanyList();
+      await fetchCompanies();
       toast({
         title: "새로고침 완료",
         description: "중개사 회사 목록이 새로고침되었습니다.",

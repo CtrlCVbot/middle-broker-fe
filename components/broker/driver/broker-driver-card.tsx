@@ -141,7 +141,7 @@ export function BrokerDriverCard({ driver, onDriverClick }: BrokerDriverCardProp
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Calendar className="h-3.5 w-3.5" />
-              <span>등록: {formatDate(driver.createdAt)}</span>
+              <span>등록: {driver.createdAt ? formatDate(driver.createdAt) : '-'}</span>
             </div>
             <div className="flex items-center gap-1 text-xs">
               <Clock className="h-3.5 w-3.5 text-muted-foreground" />
