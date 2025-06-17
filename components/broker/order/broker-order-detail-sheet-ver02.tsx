@@ -182,8 +182,8 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
       setSelectedStatus(orderData.status);            
       // 차주 정보가 있는지 확인하여 hasDriverInfo 상태 업데이트      
       const driverExists = Boolean(        
-        orderData.vehicle?.driver?.name &&         
-        orderData.vehicle.driver.name !== ""      
+        orderData.vehicle?.licensePlate &&         
+        orderData.vehicle.licensePlate !== ""      
       );            
       setHasDriverInfo(driverExists);      
       console.log("차주 정보 존재 여부:", driverExists, orderData.vehicle?.driver);    

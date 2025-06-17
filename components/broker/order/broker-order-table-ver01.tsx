@@ -305,7 +305,7 @@ export function BrokerOrderTable({
                       </div> 
                     </TableCell>
                     <TableCell>
-                      {order.driverName ? (
+                      {order.assignedVehicleNumber ? (
                         <div className="flex flex-col">
                           <div className="text-md font-medium">
                             {order.driverName}
