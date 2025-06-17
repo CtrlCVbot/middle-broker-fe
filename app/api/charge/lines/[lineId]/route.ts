@@ -10,10 +10,10 @@ import { authOptions } from '@/app/api/auth/config';
 // 운임 라인 상세 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { lineId: string } }
+  { params }: { params: Promise<{ lineId: string }> }
 ) {
   try {
-    const { lineId } = params;
+    const { lineId } = await params;
 
     // 운임 라인 조회
     const chargeLine = await db.query.chargeLines.findFirst({
@@ -52,7 +52,7 @@ const UpdateChargeLineSchema = z.object({
 // 운임 라인 수정
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { lineId: string } }
+  { params }: { params: Promise<{ lineId: string }> }
 ) {
   try {
     // const session = await getServerSession(authOptions);
@@ -63,7 +63,7 @@ export async function PATCH(
     //   );
     // }
 
-    const { lineId } = params;
+    const { lineId } = await params;
     //const userId = session.user.id;
     const userId = request.headers.get('x-user-id') || '';
     if (!userId) {
@@ -141,7 +141,7 @@ export async function PATCH(
 // 운임 라인 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { lineId: string } }
+  { params }: { params: Promise<{ lineId: string }> }
 ) {
   try {
     // const session = await getServerSession(authOptions);
@@ -152,7 +152,7 @@ export async function DELETE(
     //   );
     // }
 
-    const { lineId } = params;
+    const { lineId } = await params;
     
     // 운임 라인 존재 여부 확인
     const existingLine = await db.query.chargeLines.findFirst({

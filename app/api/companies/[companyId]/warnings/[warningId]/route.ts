@@ -21,10 +21,10 @@ const warningUpdateSchema = z.object({
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { companyId: string; warningId: string } }
+  { params }: { params: Promise<{ companyId: string; warningId: string }> }
 ) {
   try {
-    const { companyId, warningId } = params;
+    const { companyId, warningId } = await params;
 
     // 주의사항 조회
     const warning = await db.query.companyWarnings.findFirst({
@@ -57,7 +57,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { companyId: string; warningId: string } }
+  { params }: { params: Promise<{ companyId: string; warningId: string }> }
 ) {
   try {
     // const session = await getServerSession(authOptions);
@@ -68,7 +68,7 @@ export async function PATCH(
     //   );
     // }
 
-    const { companyId, warningId } = params;
+    const { companyId, warningId } = await params;
     const body = await request.json();
 
     // 요청 검증
@@ -158,7 +158,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { companyId: string; warningId: string } }
+  { params }: { params: Promise<{ companyId: string; warningId: string }> }
 ) {
   try {
     // const session = await getServerSession(authOptions);
@@ -169,7 +169,7 @@ export async function DELETE(
     //   );
     // }
 
-    const { companyId, warningId } = params;
+    const { companyId, warningId } = await params;
     console.log('companyId', companyId);
     console.log('warningId', warningId);
     

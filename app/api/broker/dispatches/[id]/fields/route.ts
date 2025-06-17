@@ -17,11 +17,11 @@ const UpdateDispatchFieldsSchema = z.object({
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { dispatchId: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Next.js 13.4.19 이상에서는 params를 비동기적으로 처리해야 함
-    const { dispatchId } = await params;
+    const { id: dispatchId } = await params;
 
     // UUID 검증
     if (!isValidUUID(dispatchId)) {

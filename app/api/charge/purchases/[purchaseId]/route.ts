@@ -10,10 +10,10 @@ import { authOptions } from '@/app/api/auth/config';
 // 매입 전표 상세 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { purchaseId: string } }
+  { params }: { params: Promise<{ purchaseId: string }> }
 ) {
   try {
-    const { purchaseId } = params;
+    const { purchaseId } = await params;
 
     // 매입 전표 조회
     const purchase = await db.query.orderPurchases.findFirst({
@@ -78,7 +78,7 @@ const UpdateOrderPurchaseSchema = z.object({
 // 매입 전표 수정
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { purchaseId: string } }
+  { params }: { params: Promise<{ purchaseId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -89,7 +89,7 @@ export async function PATCH(
       );
     }
 
-    const { purchaseId } = params;
+    const { purchaseId } = await params;
     const userId = session.user.id;
     const body = await request.json();
     
@@ -161,7 +161,7 @@ export async function PATCH(
 // 매입 전표 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { purchaseId: string } }
+  { params }: { params: Promise<{ purchaseId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -172,7 +172,7 @@ export async function DELETE(
       );
     }
 
-    const { purchaseId } = params;
+    const { purchaseId } = await params;
     
     // 매입 전표 존재 여부 확인
     const existingPurchase = await db.query.orderPurchases.findFirst({

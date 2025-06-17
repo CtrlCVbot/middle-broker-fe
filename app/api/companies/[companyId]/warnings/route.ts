@@ -22,10 +22,10 @@ const warningCreateSchema = z.object({
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { companyId: string } }
+  { params }: { params: Promise<{ companyId: string }> }
 ) {
   try {
-    const { companyId } = params;
+    const { companyId } = await params;
 
     console.log('companyId', companyId);
 
@@ -63,7 +63,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { companyId: string } }
+  { params }: { params: Promise<{ companyId: string }> }
 ) {
   try {
     // const session = await getServerSession(authOptions);
@@ -75,7 +75,7 @@ export async function POST(
     //   );
     // }
 
-    const { companyId } = params;
+    const { companyId } = await params;
     const body = await request.json();
 
     // 요청 검증

@@ -44,7 +44,7 @@ const UpdateCompanyStatusSchema = z.object({
 //params는 context에서 전달되는 두 번째 인자이고, App Router에서는 다음과 같이 함수 인자에서 받아올 수 있습니다.
 export async function GET(
   request: NextRequest,
-  { params }: { params: { companyId: string } }
+  { params }: { params: Promise<{ companyId: string }> }
 ) {
   try {
     // params 객체를 비동기적으로 처리
@@ -109,11 +109,11 @@ export async function GET(
 // PUT /api/companies/[companyId] - 업체 정보 수정
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { companyId: string } }
+  { params }: { params: Promise<{ companyId: string }> }
 ) {
   try {
     // params 객체를 비동기적으로 처리
-    const { companyId } = params;
+    const { companyId } = await params;
 
     // UUID 형식 검증
     if (!isValidUUID(companyId)) {
@@ -304,11 +304,11 @@ export async function PUT(
 // DELETE /api/companies/[companyId] - 업체 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { companyId: string } }
+  { params }: { params: Promise<{ companyId: string }> }
 ) {
   try {
     // params 객체를 비동기적으로 처리
-    const { companyId } = params;
+    const { companyId } = await params;
 
     // UUID 형식 검증
     if (!isValidUUID(companyId)) {

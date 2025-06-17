@@ -10,10 +10,10 @@ import { chargeLines } from '@/db/schema/chargeLines';
 // 운임 그룹 상세 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { groupId: string } }
+  { params }: { params: Promise<{ groupId: string }> }
 ) {
   try {
-    const { groupId } = params;
+    const { groupId } = await params;
 
     // 운임 그룹 조회
     const chargeGroup = await db.query.chargeGroups.findFirst({
@@ -51,7 +51,7 @@ const UpdateChargeGroupSchema = z.object({
 // 운임 그룹 수정
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { groupId: string } }
+  { params }: { params: Promise<{ groupId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -62,7 +62,7 @@ export async function PATCH(
     //   );
     // }
 
-    const { groupId } = params;
+    const { groupId } = await params;
     //const userId = session.user.id;
     const userId = request.headers.get('x-user-id') || '';
     if (!userId) {
@@ -130,7 +130,7 @@ export async function PATCH(
 // 운임 그룹 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { groupId: string } }
+  { params }: { params: Promise<{ groupId: string }> }
 ) {
   try {
     // const session = await getServerSession(authOptions);
@@ -147,7 +147,7 @@ export async function DELETE(
         { status: 401 }
       );
     }
-    const { groupId } = params;
+    const { groupId } = await params;
     
     // 운임 그룹 존재 여부 확인
     const existingGroup = await db.query.chargeGroups.findFirst({

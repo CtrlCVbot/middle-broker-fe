@@ -20,10 +20,10 @@ const QueryParamsSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { companyId: string } }
+  { params }: { params: Promise<{ companyId: string }> }
 ) {
   try {
-    const companyId = params.companyId;
+    const { companyId } = await params;
 
     // UUID 검증
     if (!isValidUUID(companyId)) {

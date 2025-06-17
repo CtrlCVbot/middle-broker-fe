@@ -17,7 +17,7 @@ const UpdateSalesBundleFieldsSchema = z.object({
 // 개별 매출 번들 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
@@ -67,7 +67,7 @@ export async function GET(
 // 매출 번들 필드 업데이트
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
@@ -182,7 +182,7 @@ export async function PATCH(
 // 매출 번들 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;

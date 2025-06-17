@@ -9,10 +9,10 @@ import { authOptions } from '@/app/api/auth/config';
 // 매출 인보이스 상세 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { saleId: string } }
+  { params }: { params: Promise<{ saleId: string }> }
 ) {
   try {
-    const { saleId } = params;
+    const { saleId } = await params;
 
     // 매출 인보이스 조회
     const sale = await db.query.orderSales.findFirst({
@@ -74,7 +74,7 @@ const UpdateOrderSaleSchema = z.object({
 // 매출 인보이스 수정
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { saleId: string } }
+  { params }: { params: Promise<{ saleId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -85,7 +85,7 @@ export async function PATCH(
       );
     }
 
-    const { saleId } = params;
+    const { saleId } = await params;
     const userId = session.user.id;
     const body = await request.json();
     
@@ -157,7 +157,7 @@ export async function PATCH(
 // 매출 인보이스 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { saleId: string } }
+  { params }: { params: Promise<{ saleId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -168,7 +168,7 @@ export async function DELETE(
       );
     }
 
-    const { saleId } = params;
+    const { saleId } = await params;
     
     // 매출 인보이스 존재 여부 확인
     const existingSale = await db.query.orderSales.findFirst({
