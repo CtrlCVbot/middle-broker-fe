@@ -204,6 +204,10 @@ export const getBrokerCompanyById = (id: string): Partial<IBrokerCompany> | unde
 
 // 업체 정보 업데이트 함수
 export const updateBrokerCompany = (updatedCompany: Partial<IBrokerCompany>): Partial<IBrokerCompany> => {
+  if (!updatedCompany.id) {
+    throw new Error('업체 ID가 없습니다.');
+  }
+  
   const index = mockCompanies.findIndex(company => company.id === updatedCompany.id);
   
   if (index !== -1) {

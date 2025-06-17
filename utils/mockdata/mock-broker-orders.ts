@@ -241,6 +241,7 @@ const generateMockBrokerOrders = (count: number): IBrokerOrder[] => {
         contact
       },
       shipperName: company,
+      shipperCeo: "대표자",
       createdAt: date.toISOString().split('T')[0],
       updatedAt: date.toISOString().split('T')[0],
       
