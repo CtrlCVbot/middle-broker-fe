@@ -17,7 +17,7 @@ const UpdateDispatchFieldsSchema = z.object({
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { dispatchId: string } }
+  { params }: { params: Promise<{ dispatchId: string }> }
 ) {
   try {
     // Next.js 13.4.19 이상에서는 params를 비동기적으로 처리해야 함

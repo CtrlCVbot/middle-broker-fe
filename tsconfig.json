@@ -23,7 +23,8 @@
       "@/utils/*": ["./utils/*"],
       "@/types/*": ["./types/*"],
       "@/db/*": ["./db/*"]
-    }
+    },
+    "types": ["node", "jest"]
   },
   "ts-node": {
     "esm": true

@@ -10,10 +10,10 @@ import { chargeLines } from '@/db/schema/chargeLines';
 // 운임 그룹 상세 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { groupId: string } }
+  { params }: { params: Promise<{ groupId: string }> }
 ) {
   try {
-    const { groupId } = params;
+    const { groupId } = await params;
 
     // 운임 그룹 조회
     const chargeGroup = await db.query.chargeGroups.findFirst({

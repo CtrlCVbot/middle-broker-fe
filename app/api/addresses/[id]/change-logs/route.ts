@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { addressChangeLogs } from '@/db/schema/addressChangeLogs';
 import { z } from 'zod';
 
+
 // UUID 검증
 function isValidUUID(uuid: string) {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -21,10 +22,10 @@ const QueryParamsSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // UUID 검증
     if (!isValidUUID(id)) {

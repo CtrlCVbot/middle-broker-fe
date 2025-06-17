@@ -11,7 +11,7 @@ import { authOptions } from '@/app/api/auth/config';
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 인증 확인
@@ -23,7 +23,9 @@ export async function PATCH(
     //   );
     // }
 
-    const dispatchId = params.id;
+    const { id } = await params;
+
+    const dispatchId = id;
     const userId = request.headers.get('x-user-id') || '';
 
     // 디스패치 정보 조회
