@@ -14,7 +14,7 @@ const FieldUpdateSchema = z.object({
 });
 
 interface RouteContext {
-  params: Promise<{ userId: string }>;
+  params: { userId: string };
 }
 
 export async function PATCH(

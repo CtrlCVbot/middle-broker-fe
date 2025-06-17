@@ -17,10 +17,10 @@ import { ISalesBundleItemWithDetails } from '@/types/broker-charge';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
 
     // 정산 그룹 존재 확인
     const bundle = await db

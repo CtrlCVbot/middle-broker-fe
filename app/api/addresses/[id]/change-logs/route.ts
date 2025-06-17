@@ -5,6 +5,7 @@ import { addressChangeLogs } from '@/db/schema/addressChangeLogs';
 import { z } from 'zod';
 
 
+
 // UUID 검증
 function isValidUUID(uuid: string) {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -22,10 +23,10 @@ const QueryParamsSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> } // 1. 타입을 Promise로 명시
 ) {
   try {
-    const { id } = await params;
+    const id = (await params).id;  // 2. await로 Promise의 값을 추출
 
     // UUID 검증
     if (!isValidUUID(id)) {

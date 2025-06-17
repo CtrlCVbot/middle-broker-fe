@@ -23,7 +23,7 @@ export async function PATCH(
     //   );
     // }
 
-    const { id } = await params;
+    const id = (await params).id;
 
     const dispatchId = id;
     const userId = request.headers.get('x-user-id') || '';
