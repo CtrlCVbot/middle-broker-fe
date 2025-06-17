@@ -2,7 +2,7 @@ import { IAddress, AddressType, ILegacyAddress } from "@/types/address";
 import { IUser } from "@/types/user";
 
 // 주소록 모킹 데이터
-export const mockAddresses: IAddress[] = [
+export const mockAddresses: Partial<IAddress>[] = [
   {
     //id: "1",
     name: "남산롯데캐슬",
@@ -14,8 +14,8 @@ export const mockAddresses: IAddress[] = [
     contactPhone: "010-7491-2425",
     type: "load" as AddressType,
     isFrequent: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     metadata: {
       originalInput: "서울 중구 회현동1가 208 남산롯데캐슬 102-701",
       source: "KAKAO",
@@ -37,8 +37,8 @@ export const mockAddresses: IAddress[] = [
     contactPhone: "010-3456-7890",
     type: "drop" as AddressType,
     isFrequent: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     metadata: {
       originalInput: "서울 강남구 역삼동 858 강남스테이션 201호",
       source: "KAKAO",
@@ -60,8 +60,8 @@ export const mockAddresses: IAddress[] = [
     contactPhone: "010-2345-6789",
     type: "load" as AddressType,
     isFrequent: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     metadata: {
       originalInput: "부산 영도구 해양로 45 부산항만창고 창고동 A-12",
       source: "KAKAO",
@@ -83,8 +83,8 @@ export const mockAddresses: IAddress[] = [
     contactPhone: "010-9876-5432",
     type: "drop" as AddressType,
     isFrequent: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     metadata: {
       originalInput: "인천 서구 경서동 680-1 인천물류센터 제2터미널",
       source: "KAKAO",
@@ -105,8 +105,8 @@ export const mockAddresses: IAddress[] = [
     contactPhone: "010-4567-8901",
     type: "load" as AddressType,
     isFrequent: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     metadata: {
       originalInput: "대전 유성구 대학로 99 대전 중앙창고 과학단지 C동",
       source: "KAKAO",
@@ -128,8 +128,8 @@ export const mockAddresses: IAddress[] = [
     contactPhone: "010-5678-9012",
     type: "drop" as AddressType,
     isFrequent: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     metadata: {
       originalInput: "광주 광산구 무진대로 251 광주 운송센터 물류파크 2층",
       source: "KAKAO",
@@ -151,8 +151,8 @@ export const mockAddresses: IAddress[] = [
     contactPhone: "010-6789-0123",
     type: "load" as AddressType,
     isFrequent: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     metadata: {
       originalInput: "울산 남구 산업로 304 울산항 물류시설 항만단지 B블록",
       source: "KAKAO",
@@ -174,8 +174,8 @@ export const mockAddresses: IAddress[] = [
     contactPhone: "010-7890-1234",
     type: "drop" as AddressType,
     isFrequent: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     metadata: {
       originalInput: "제주 제주시 연동 263-15 제주 도심물류 제주빌딩 1층",
       source: "KAKAO",
@@ -197,8 +197,8 @@ export const mockAddresses: IAddress[] = [
     contactPhone: "010-8901-2345",
     type: "load" as AddressType,
     isFrequent: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     metadata: {
       originalInput: "경기 수원시 영통구 신원로 88 수원 신갈창고 지하 1층",
       source: "KAKAO",
@@ -220,8 +220,8 @@ export const mockAddresses: IAddress[] = [
     contactPhone: "010-9012-3456",
     type: "drop" as AddressType,
     isFrequent: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     metadata: {
       originalInput: "경기 평택시 포승읍 평택항로 98 평택항 국제물류 국제터미널",
       source: "KAKAO",
@@ -243,8 +243,8 @@ export const mockAddresses: IAddress[] = [
     contactPhone: "010-4567-8901",
     type: "load" as AddressType,
     isFrequent: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     metadata: {
       originalInput: "대전 유성구 대학로 99 대전 중앙창고 과학단지 C동",
       source: "KAKAO",
@@ -275,8 +275,8 @@ export const mockUsers: IUser[] = [
     rank: "사원",
     created_by: "system",
     updated_by: "system",
-    created_at: new Date(),
-    updated_at: new Date()
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440001",
@@ -293,8 +293,8 @@ export const mockUsers: IUser[] = [
     rank: "관리자",
     created_by: "system",
     updated_by: "system",
-    created_at: new Date(),
-    updated_at: new Date()
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   }
 ];
 
@@ -355,8 +355,8 @@ const convertLegacyToNewAddress = (legacy: ILegacyAddress): IAddress => {
     contactPhone: legacy.contact,
     type: legacy.type === "상차지" ? "load" : "drop" as AddressType,
     isFrequent: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     metadata: {
       originalInput: `${legacy.address} ${legacy.detailedAddress}`,
       source: "LEGACY"
@@ -376,8 +376,8 @@ export const addAddress = (address: Omit<IAddress, "id" | "createdAt" | "updated
     id: newId,
     ...address,
     isFrequent: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    createdAt: new Date(),
+    updatedAt: new Date()
   };
   
   // 목록에 추가

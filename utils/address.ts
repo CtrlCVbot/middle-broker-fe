@@ -44,15 +44,15 @@ export async function generateAddressSnapshot(addressId: string): Promise<IAddre
       contactName: address.contactName,
       contactPhone: address.contactPhone,
       metadata: {
-        originalInput: address.metadata?.originalInput,
-        source: address.metadata?.source,
-        lat: address.metadata?.lat,
-        lng: address.metadata?.lng,
-        buildingName: address.metadata?.buildingName,
-        floor: address.metadata?.floor,
-        tags: address.metadata?.tags ?? [],
+        originalInput: (address.metadata as any)?.originalInput,
+        source: (address.metadata as any)?.source,
+        lat: (address.metadata as any)?.lat,
+        lng: (address.metadata as any)?.lng,
+        buildingName: (address.metadata as any)?.buildingName,
+        floor: (address.metadata as any)?.floor,
+        tags: (address.metadata as any)?.tags ?? [],
       },
-      memo: address.memo,
+      memo: (address.memo as any)?.memo,
     };
 
     // 캐시에 저장

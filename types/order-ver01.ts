@@ -315,6 +315,7 @@ export interface IAddressSnapshot {
 
   contactName: string | null;    // 담당자명
   contactPhone: string | null;   // 전화번호
+  memo?: string | null; // 메모
 
 }
 // 운송 옵션 스냅샷 인터페이스

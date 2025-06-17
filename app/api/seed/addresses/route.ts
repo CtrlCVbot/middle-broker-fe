@@ -20,18 +20,18 @@ export async function GET() {
     const formattedAddresses = mockAddresses.map(address => {
       // DB 스키마에 맞게 데이터 변환
       return {
-        id: address.id,
-        name: address.name,
-        type: address.type,
-        roadAddress: address.roadAddress,
-        jibunAddress: address.jibunAddress,
-        detailAddress: address.detailAddress,
-        postalCode: address.postalCode,
-        contactName: address.contactName,
-        contactPhone: address.contactPhone,
-        memo: address.memo,
-        isFrequent: address.isFrequent,
-        metadata: address.metadata,
+        id: address.id || undefined,
+        name: address.name || '',
+        type: address.type || 'any',
+        roadAddress: address.roadAddress || '',
+        jibunAddress: address.jibunAddress || '',
+        detailAddress: address.detailAddress || null,
+        postalCode: address.postalCode || null,
+        contactName: address.contactName || null,
+        contactPhone: address.contactPhone || null,
+        memo: address.memo || null,
+        isFrequent: address.isFrequent || false,
+        metadata: address.metadata || {},
         createdAt: new Date(),
         updatedAt: new Date(),
         createdBy: null,
@@ -40,7 +40,7 @@ export async function GET() {
     });
     
     // 모든 주소 데이터 한 번에 삽입
-    const insertedAddresses = await db.insert(addresses).values(formattedAddresses).returning({ id: addresses.id });
+    const insertedAddresses = await db.insert(addresses).values(formattedAddresses as any).returning({ id: addresses.id });
     
     return NextResponse.json({
       success: true,

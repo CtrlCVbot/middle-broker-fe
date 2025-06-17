@@ -26,8 +26,10 @@ interface OrderStatusLogProps {
 
 // 상태별 아이콘 맵핑
 const statusIcons: Record<OrderStatusType, React.ReactNode> = {
+  '운송요청': <ClipboardList className="h-4 w-4" />,
   '배차대기': <ClipboardList className="h-4 w-4" />,
   '배차완료': <Truck className="h-4 w-4" />,
+  '상차대기': <Clock className="h-4 w-4" />,
   '상차완료': <Package className="h-4 w-4" />,
   '운송중': <Navigation className="h-4 w-4" />,
   '하차완료': <Package2 className="h-4 w-4" />,
@@ -36,8 +38,10 @@ const statusIcons: Record<OrderStatusType, React.ReactNode> = {
 
 // 상태별 색상 맵핑
 const statusColors: Record<OrderStatusType, string> = {
+  '운송요청': 'bg-gray-100 text-gray-600',
   '배차대기': 'bg-slate-100 text-slate-600',
   '배차완료': 'bg-blue-100 text-blue-600',
+  '상차대기': 'bg-yellow-100 text-yellow-600',
   '상차완료': 'bg-green-100 text-green-600',
   '운송중': 'bg-amber-100 text-amber-600',
   '하차완료': 'bg-violet-100 text-violet-600',
