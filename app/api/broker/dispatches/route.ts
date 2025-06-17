@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { ZodError } from 'zod';
 import { dispatchListQuerySchema } from '@/types/broker-dispatch';
-import { getDispatchList } from '@/services/broker-dispatch-service';
+import { getBrokerDispatchList } from '@/services/order-service';
 // import { authOptions } from '@/lib/auth';
 
 /**
@@ -37,7 +37,8 @@ export async function GET(request: NextRequest) {
     const validatedQuery = dispatchListQuerySchema.parse(queryParams);
     
     // 4. 서비스 호출
-    const result = await getDispatchList(validatedQuery, userId);
+    const { page = 1, pageSize = 10, ...filter } = validatedQuery;
+    const result = await getBrokerDispatchList(page, pageSize, filter);
     
     // 5. 응답 반환
     return NextResponse.json({
