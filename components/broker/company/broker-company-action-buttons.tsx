@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useCompanyStore } from '@/store/company-store';
+import { useCompanyStore, useBatchUpdateCompanies } from '@/store/company-store';
 import { BrokerCompanyRegisterSheet } from './broker-company-register-sheet';
 import {
   AlertDialog,
@@ -57,9 +57,10 @@ export function BrokerCompanyActionButtons({
   const { 
     selectedCompanyIds, 
     clearSelectedCompanyIds,
-    fetchCompanies,
-    batchUpdateCompanies
+    fetchCompanies
   } = useCompanyStore();
+  
+  const batchUpdateCompaniesMutation = useBatchUpdateCompanies();
   
   // 상태 관리
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -73,7 +74,10 @@ export function BrokerCompanyActionButtons({
   const handleExcelDownload = async () => {
     try {
       const action = 'export';
-      await batchUpdateCompanies(selectedCompanyIds, action);
+      await batchUpdateCompaniesMutation.mutateAsync({ 
+        companyIds: selectedCompanyIds, 
+        action 
+      });
       toast.success('엑셀 파일 다운로드가 시작되었습니다.');
     } catch (error) {
       toast.error('엑셀 다운로드 중 오류가 발생했습니다.');
@@ -103,7 +107,11 @@ export function BrokerCompanyActionButtons({
       const action = 'import';
       const formData = new FormData();
       formData.append('file', file);
-      await batchUpdateCompanies([], action, undefined, formData);
+      await batchUpdateCompaniesMutation.mutateAsync({ 
+        companyIds: [], 
+        action, 
+        formData 
+      });
       
       clearInterval(interval);
       setUploadProgress(100);
@@ -137,7 +145,7 @@ export function BrokerCompanyActionButtons({
       return;
     }
     
-    setStatusValue(action === 'active' ? 'active' : 'inactive');
+    setStatusValue(action === 'activate' ? 'active' : 'inactive');
     setIsStatusDialogOpen(true);
   };
   
@@ -150,7 +158,11 @@ export function BrokerCompanyActionButtons({
 
     try {
       const action = statusValue === 'active' ? 'activate' : 'deactivate';
-      await batchUpdateCompanies(selectedCompanyIds, action, statusReason);
+      await batchUpdateCompaniesMutation.mutateAsync({ 
+        companyIds: selectedCompanyIds, 
+        action, 
+        reason: statusReason 
+      });
 
       setIsStatusDialogOpen(false);
       clearSelectedCompanyIds();
@@ -175,7 +187,11 @@ export function BrokerCompanyActionButtons({
   // 삭제 확인
   const handleConfirmDelete = async () => {
     try {
-      await batchUpdateCompanies(selectedCompanyIds, 'delete', deleteReason);
+      await batchUpdateCompaniesMutation.mutateAsync({ 
+        companyIds: selectedCompanyIds, 
+        action: 'delete', 
+        reason: deleteReason 
+      });
       
       setIsDeleteDialogOpen(false);
       clearSelectedCompanyIds();
@@ -194,7 +210,7 @@ export function BrokerCompanyActionButtons({
   };
   
   // 로딩 상태
-  const isLoading = batchUpdateCompanies.isPending;
+  const isLoading = batchUpdateCompaniesMutation.isPending;
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
@@ -268,10 +284,10 @@ export function BrokerCompanyActionButtons({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleOpenStatusChangeDialog('active')}>
+              <DropdownMenuItem onClick={() => handleOpenStatusChangeDialog('activate')}>
                 활성화
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleOpenStatusChangeDialog('inactive')}>
+              <DropdownMenuItem onClick={() => handleOpenStatusChangeDialog('deactivate')}>
                 비활성화
               </DropdownMenuItem>
               <DropdownMenuSeparator />

@@ -146,8 +146,9 @@ export interface CompanyStatusChangeRequest {
 // 회사 배치 처리 요청 인터페이스
 export interface CompanyBatchRequest {
   companyIds: string[];
-  action: 'activate' | 'deactivate' | 'delete';
+  action: 'activate' | 'deactivate' | 'delete' | 'export' | 'import';
   reason?: string;
+  formData?: FormData;
 }
 
 // 회사 유효성 검사 응답 인터페이스

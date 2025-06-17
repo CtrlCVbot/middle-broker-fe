@@ -84,7 +84,7 @@ interface ICompanyState {
   updateCompany: (company: ILegacyCompany) => Promise<ILegacyCompany | null>;
   deleteCompany: (id: string) => Promise<boolean>;
   changeCompanyStatus: (id: string, status: 'active' | 'inactive', reason?: string) => Promise<boolean>;
-  batchUpdateCompanies: (ids: string[], action: 'activate' | 'deactivate' | 'delete', reason?: string) => Promise<boolean>;
+  batchUpdateCompanies: (ids: string[], action: 'activate' | 'deactivate' | 'delete' | 'export' | 'import', reason?: string, formData?: FormData) => Promise<boolean>;
   
   // 레거시 호환을 위한 변환 함수
   getLegacyFormatCompanies: (companies: ICompany[]) => ILegacyCompany[];
@@ -297,14 +297,15 @@ export const useCompanyStore = create<ICompanyState>()(
         }
       },
       
-      batchUpdateCompanies: async (ids, action, reason) => {
+      batchUpdateCompanies: async (ids, action, reason, formData) => {
         set({ isLoading: true, error: null });
         
         try {
           await companyService.batchUpdateCompanies({
             companyIds: ids,
             action,
-            reason
+            reason,
+            formData
           });
           
           set({ isLoading: false });
@@ -509,7 +510,7 @@ export const useBatchUpdateCompanies = () => {
   const { clearSelectedCompanyIds } = useCompanyStore();
   
   return useMutation({
-    mutationFn: (data: { companyIds: string[]; action: 'activate' | 'deactivate' | 'delete'; reason?: string }) => 
+    mutationFn: (data: { companyIds: string[]; action: 'activate' | 'deactivate' | 'delete' | 'export' | 'import'; reason?: string; formData?: FormData }) => 
       companyService.batchUpdateCompanies(data),
     onSuccess: () => {
       // 성공 시 업체 목록 쿼리 무효화하여 자동 갱신 및 선택 항목 초기화

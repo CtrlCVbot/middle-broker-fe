@@ -9,13 +9,14 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { IBrokerCompany } from "@/types/broker-company";
+import { ILegacyCompany } from "@/types/company";
 // import { useBrokerCompanyStore } from "@/store/broker-company-store";
 import { useCompanyStore } from "@/store/company-store";
 import { Eye, Trash, Edit, ClipboardCopy, RefreshCw, Download, Ban } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface BrokerCompanyContextMenuProps {
-  company: IBrokerCompany;
+  company: IBrokerCompany | ILegacyCompany;
   children: React.ReactNode;
 }
 
