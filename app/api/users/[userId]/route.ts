@@ -11,10 +11,10 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ): Promise<NextResponse> {
   try {
-    const userId = params.userId;
+    const userId = (await params).userId;
 
     // userId 파라미터 검증
     if (!userId) {
@@ -65,10 +65,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const userId = params.userId;
+    const userId = (await params).userId;
     const body = await request.json();
 
     // UUID 형식 검증
@@ -145,10 +145,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const userId = params.userId;
+    const userId = (await params).userId;
 
     // UUID 형식 검증
     if (!UUID_REGEX.test(userId)) {

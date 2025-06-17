@@ -63,12 +63,12 @@ const UpdateOrderSchema = z.object({
 // GET /api/orders/[orderId] - 화물 상세 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
     console.log("GET 호출됨");
     console.log("params:", params);
-    const { orderId } = await params;
+    const { orderId } = (await params);
     console.log("orderId:", orderId);
 
     // UUID 형식 검증
@@ -166,10 +166,10 @@ export async function GET(
 // PUT /api/orders/[orderId] - 화물 정보 수정
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
-    const { orderId } = params;
+    const { orderId } = (await params);
 
     // UUID 형식 검증
     if (!isValidUUID(orderId)) {
@@ -348,10 +348,10 @@ export async function PUT(
 // DELETE /api/orders/[orderId] - 화물 삭제 (실제 삭제가 아닌 취소 처리)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
-    const { orderId } = params;
+    const { orderId } = (await params);
 
     // UUID 형식 검증
     if (!isValidUUID(orderId)) {

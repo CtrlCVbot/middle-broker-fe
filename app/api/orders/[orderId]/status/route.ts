@@ -30,10 +30,10 @@ const UpdateOrderStatusSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
-    const { orderId } = params;
+    const { orderId } = (await params);
 
     // UUID 형식 검증
     if (!isValidUUID(orderId)) {

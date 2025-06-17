@@ -16,7 +16,7 @@ const QuerySchema = z.object({
 });
 
 interface RouteContext {
-  params: { userId: string };
+  params: Promise<{ userId: string }>;
 }
 
 export async function GET(
@@ -24,8 +24,7 @@ export async function GET(
   context: RouteContext
 ) {
   try {
-    const params = await context.params;
-    const { userId } = params;
+    const { userId } = (await context.params);
 
     // UUID 형식 검증
     if (!uuidValidate(userId)) {

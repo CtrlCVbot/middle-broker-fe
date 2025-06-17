@@ -17,10 +17,10 @@ const orderIdSchema = z.string().uuid('유효한 주문 ID 형식이 아닙니�
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   // 구조 분해 할당으로 orderId를 직접 추출
-  const { orderId } = await params;
+  const { orderId } = (await params);
   console.log('orderId: ', orderId);
   
   try {

@@ -12,10 +12,10 @@ function isValidUUID(uuid: string): boolean {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
-    const { orderId } = params;
+    const { orderId } = (await params);
     const searchParams = request.nextUrl.searchParams;
     
     // 페이지네이션 파라미터
