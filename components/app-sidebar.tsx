@@ -26,6 +26,7 @@ import { NavBroker } from "@/components/nav-broker"
 import { NavProjects } from "@/components/nav-projects"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
+import { NavTest } from "@/components/nav-test"
 import {
   Sidebar,
   SidebarContent,
@@ -221,6 +222,7 @@ export const data = {
 
 
   navSecondary: [
+    
     {
       title: "지원",
       url: "#",
@@ -232,23 +234,20 @@ export const data = {
       icon: Send,
     },
   ],
-  projects: [
+
+  navTest: [
     {
-      name: "디자인 엔지니어링",
+      title: "테스트",
       url: "#",
-      icon: Frame,
-    },
-    {
-      name: "영업 및 마케팅",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "여행",
-      url: "#",
-      icon: Map,
-    },
-  ],
+      icon: LifeBuoy,
+      items: [
+        {
+          title: "엑셀 기능",
+          url: "/test/excel",
+        }        
+      ],
+    }
+  ]
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -273,9 +272,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavBroker items={data.navBroker} />
-        <NavProjects projects={data.projects} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavBroker items={data.navBroker} />        
+        <NavTest items={data.navTest} />
+        {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
