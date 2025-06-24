@@ -1,9 +1,12 @@
+'use client';
+
 import { ExcelDownloadButton } from './ExcelDownloadButton';
 import { ExcelUploadButton } from './ExcelUploadButton';
 import { ExcelSampleDownloadButton } from './ExcelSampleDownloadButton';
 import { ExcelRandomSampleDownloadButton } from './ExcelRandomSampleDownloadButton';
 import { companyExcelConfig, orderExcelConfig } from '@/configs/excel-configs';
 import { useState } from 'react';
+import { generateRandomCompanyData } from '@/utils/excel';
 
 // 샘플/랜덤 데이터 생성 함수 예시
 const companySampleData = [
@@ -27,18 +30,7 @@ const companySampleData = [
   },
 ];
 
-function generateRandomCompanyData(count: number) {
-  // 실제 구현에서는 faker 등 활용
-  return Array.from({ length: count }, (_, i) => ({
-    name: `랜덤회사${i + 1}`,
-    businessNumber: `100-00-0000${i}`,
-    ceoName: `대표${i + 1}`,
-    type: 'shipper',
-    status: 'active',
-    address: { postal: '', road: '', detail: '' },
-    contact: { tel: '', mobile: '', email: '' },
-  }));
-}
+
 
 /**
  * 화물 목록 엑셀 다운로드 테스트 페이지
@@ -55,7 +47,7 @@ export default function ExcelTestPage() {
       <section>
         <h1 className="text-xl font-bold mb-2">화물 목록 엑셀 다운로드</h1>
         <p className="mb-2 text-gray-600">아래 버튼을 클릭하면 화물 목록 데이터를 엑셀 파일로 다운로드할 수 있습니다.</p>
-        <ExcelDownloadButton config={orderExcelConfig} data={orderData} filename="orders.xlsx" />
+        <ExcelDownloadButton config={orderExcelConfig} filename="orders.xlsx" />
       </section>
       <section>
         <h2 className="text-lg font-bold mb-2">회사 정보 엑셀 업로드</h2>
