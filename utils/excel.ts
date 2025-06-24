@@ -2,8 +2,63 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import { fakerKO } from '@faker-js/faker';
+import { companyExcelConfig } from '@/configs/excel-configs';
 
 const faker = fakerKO;
+
+export interface ExcelConfig {
+  columns: Array<{ header: string; key: string; width?: number }>;
+  apiEndpoint: string;
+  headerMapping: Record<string, string>;
+  defaultValues?: Record<string, any>;
+}
+
+export function mapExcelRowToApi(row: any, headerMapping: Record<string, string>, defaultValues?: Record<string, any>) {
+  const result: any = { ...(defaultValues || {}) };
+  for (const [header, value] of Object.entries(row)) {
+    const apiField = headerMapping[header];
+    if (!apiField) continue;
+    // 중첩 필드 지원 (address.postal 등)
+    if (apiField.includes('.')) {
+      const [parent, child] = apiField.split('.');
+      result[parent] = result[parent] || {};
+      result[parent][child] = value;
+    } else {
+      result[apiField] = value;
+    }
+  }
+  return result;
+}
+
+export async function downloadExcel<T>(data: T[], config: ExcelConfig, filename?: string) {
+  try {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sheet1');
+    worksheet.columns = config.columns;
+    data.forEach((row) => worksheet.addRow(row));
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), filename || `export_${new Date().toISOString().slice(0,10)}.xlsx`);
+  } catch (error) {
+    console.error('엑셀 다운로드 오류:', error);
+    alert('엑셀 파일 생성 또는 다운로드 중 오류가 발생했습니다.');
+  }
+}
+
+export async function uploadExcel(file: File, config: ExcelConfig): Promise<any> {
+  const data = await file.arrayBuffer();
+  const workbook = XLSX.read(data);
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+  const json = XLSX.utils.sheet_to_json(sheet);
+  const mapped = json.map(row => mapExcelRowToApi(row, config.headerMapping, config.defaultValues));
+  const res = await fetch(config.apiEndpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(mapped),
+  });
+  if (!res.ok) throw new Error('API 업로드 실패');
+  return res.json();
+}
 
 // =========================
 // 화물 관련 엑셀 함수
@@ -49,42 +104,6 @@ export async function downloadOrdersExcel(data: any[]) {
 // 회사 관련 엑셀 함수
 // =========================
 
-// =========================
-// 엑셀 헤더 → API 필드명 매핑 테이블
-// =========================
-const COMPANY_HEADER_MAP: Record<string, string> = {
-  '회사명': 'name',
-  '사업자번호': 'businessNumber',
-  '대표자명': 'ceoName',
-  '업체유형': 'type',
-  '상태': 'status',
-  '우편번호': 'address.postal',
-  '도로명주소': 'address.road',
-  '상세주소': 'address.detail',
-  '대표전화': 'contact.tel',
-  '휴대폰': 'contact.mobile',
-  '이메일': 'contact.email',
-};
-
-function mapExcelRowToCompany(row: any): any {
-  const result: any = { address: {}, contact: {} };
-  for (const [header, value] of Object.entries(row)) {
-    const apiField = COMPANY_HEADER_MAP[header];
-    if (!apiField) continue;
-    if (apiField.startsWith('address.')) {
-      result.address[apiField.split('.')[1]] = value;
-    } else if (apiField.startsWith('contact.')) {
-      result.contact[apiField.split('.')[1]] = value;
-    } else {
-      result[apiField] = value;
-    }
-  }
-  // type, status 기본값 처리
-  if (!result.type) result.type = 'shipper';
-  if (!result.status) result.status = 'active';
-  return result;
-}
-
 /**
  * 엑셀 파일을 파싱하여 회사 정보 배열로 변환 후 API로 업로드
  * @param file 엑셀 파일 객체
@@ -97,7 +116,7 @@ export async function parseExcelFileAndUpload(file: File): Promise<string> {
   const json = XLSX.utils.sheet_to_json(sheet);
   // 엑셀 → API 구조 변환
   console.log(json);
-  const mapped = json.map(mapExcelRowToCompany);
+  const mapped = json.map(row => mapExcelRowToApi(row, companyExcelConfig.headerMapping, companyExcelConfig.defaultValues));
   console.log(mapped);
   const res = await fetch('/api/companies', {
     method: 'POST',

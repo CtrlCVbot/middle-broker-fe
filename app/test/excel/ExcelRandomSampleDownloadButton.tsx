@@ -1,10 +1,21 @@
 'use client';
 import { Button } from '@/components/ui/button';
-import { downloadRandomCompanySampleExcel } from '@/utils/excel';
+import { downloadExcel, ExcelConfig } from '@/utils/excel';
 
-export function ExcelRandomSampleDownloadButton() {
+interface ExcelRandomSampleDownloadButtonProps {
+  config: ExcelConfig;
+  generateData: (count: number) => any[];
+  count?: number;
+  filename?: string;
+}
+
+export function ExcelRandomSampleDownloadButton({ config, generateData, count = 20, filename }: ExcelRandomSampleDownloadButtonProps) {
+  const handleDownload = () => {
+    const data = generateData(count);
+    downloadExcel(data, config, filename);
+  };
   return (
-    <Button onClick={() => downloadRandomCompanySampleExcel(20)}>
+    <Button onClick={handleDownload}>
       랜덤 샘플 엑셀 다운로드
     </Button>
   );
