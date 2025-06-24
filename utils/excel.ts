@@ -59,6 +59,7 @@ export async function parseExcelFileAndUpload(file: File): Promise<string> {
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
   const json = XLSX.utils.sheet_to_json(sheet);
+  console.log(json);
   const res = await fetch('/api/companies', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -117,11 +118,18 @@ export function generateRandomCompanyData(count: number = 10) {
       ceo: faker.person.fullName(),
       phone: '010-' + faker.string.numeric(4) + '-' + faker.string.numeric(4),
       address: faker.location.streetAddress(true),
-      email: faker.internet.email(),
-      website: faker.internet.url(),
+      email: generateSimpleEmail(),
+      //website: faker.internet.url(),
     });
   }
   return companies;
+}
+
+function generateSimpleEmail() {
+  //const name = faker.person.firstName().toLowerCase();
+  //const id = faker.number.int({ min: 100, max: 999 });
+  const id = faker.string.alphanumeric(4)
+  return `faker${id}@example.com`;
 }
 
 /**
