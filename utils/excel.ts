@@ -49,6 +49,42 @@ export async function downloadOrdersExcel(data: any[]) {
 // 회사 관련 엑셀 함수
 // =========================
 
+// =========================
+// 엑셀 헤더 → API 필드명 매핑 테이블
+// =========================
+const COMPANY_HEADER_MAP: Record<string, string> = {
+  '회사명': 'name',
+  '사업자번호': 'businessNumber',
+  '대표자명': 'ceoName',
+  '업체유형': 'type',
+  '상태': 'status',
+  '우편번호': 'address.postal',
+  '도로명주소': 'address.road',
+  '상세주소': 'address.detail',
+  '대표전화': 'contact.tel',
+  '휴대폰': 'contact.mobile',
+  '이메일': 'contact.email',
+};
+
+function mapExcelRowToCompany(row: any): any {
+  const result: any = { address: {}, contact: {} };
+  for (const [header, value] of Object.entries(row)) {
+    const apiField = COMPANY_HEADER_MAP[header];
+    if (!apiField) continue;
+    if (apiField.startsWith('address.')) {
+      result.address[apiField.split('.')[1]] = value;
+    } else if (apiField.startsWith('contact.')) {
+      result.contact[apiField.split('.')[1]] = value;
+    } else {
+      result[apiField] = value;
+    }
+  }
+  // type, status 기본값 처리
+  if (!result.type) result.type = 'shipper';
+  if (!result.status) result.status = 'active';
+  return result;
+}
+
 /**
  * 엑셀 파일을 파싱하여 회사 정보 배열로 변환 후 API로 업로드
  * @param file 엑셀 파일 객체
@@ -59,11 +95,14 @@ export async function parseExcelFileAndUpload(file: File): Promise<string> {
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
   const json = XLSX.utils.sheet_to_json(sheet);
+  // 엑셀 → API 구조 변환
   console.log(json);
+  const mapped = json.map(mapExcelRowToCompany);
+  console.log(mapped);
   const res = await fetch('/api/companies', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(json),
+    body: JSON.stringify(mapped),
   });
   if (!res.ok) throw new Error('API 업로드 실패');
   return '업로드 성공';
@@ -147,7 +186,7 @@ export async function downloadRandomCompanySampleExcel(count: number = 10) {
       { header: '연락처', key: 'phone', width: 15 },
       { header: '주소', key: 'address', width: 30 },
       { header: '이메일', key: 'email', width: 25 },
-      { header: '웹사이트', key: 'website', width: 25 },
+      //{ header: '웹사이트', key: 'website', width: 25 },
     ];
     const randomData = generateRandomCompanyData(count);
     randomData.forEach(company => worksheet.addRow(company));
