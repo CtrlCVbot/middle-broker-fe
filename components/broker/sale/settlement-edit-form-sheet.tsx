@@ -70,6 +70,8 @@ import { toast } from "sonner";
 import { FreightListTable } from "@/components/broker/sale/freight-list-table";
 import { BundleAdjustmentManager } from "@/components/broker/sale/bundle-adjustment-manager";
 import { ItemAdjustmentDialog } from "@/components/broker/sale/item-adjustment-dialog";
+import { CompanyInfoSection } from "@/components/broker/sale/company-info-section";
+import { ManagerInfoSection } from "@/components/broker/sale/manager-info-section";
 
 // 타입
 import { IBrokerOrder } from "@/types/broker-order";
@@ -733,591 +735,74 @@ export function SettlementEditFormSheet() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-2">
 
                     {/* 회사 정보 섹션 */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2 text-primary">
-                          <Building2 className="h-5 w-5 text-primary" />
-                          <h3 className="text-lg font-bold">회사 정보</h3>
-                        </div>
-                        
-                        {/* {!isEditMode && (
-                          
-                        )} */}
-                        <div className="flex gap-2">
-                            <Button
-                              type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              form.reset({
-                              ...form.getValues(),
-                              shipperName: "",                          
-                              businessNumber: "",
-                              manager: "",
-                              managerContact: "",
-                              managerEmail: "",
-                              });
-                              setSelectedCompanyId(null);
-                              setSelectedManagerId(null);
-                            }}
-                            disabled={loading}
-                          >
-                            초기화
-                            </Button>
-                          </div>
-                      </div>
-
-                      {/* 선택된 업체 배지 표시 */}
-                      {hasShipperGroups && (
-                        <>                    
-                        <div className="flex flex-wrap gap-1.5">
-                          {Object.keys(displayShipperGroups).map((shipper) => (
-                            <Badge 
-                              key={shipper} 
-                              variant="outline"
-                              className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
-                              onClick={() => {
-                                if (isEditMode && editingSalesBundle) {
-                                  // 편집 모드: editingSalesBundle의 회사 정보 사용
-                                  setSelectedCompanyId(editingSalesBundle.companyId || '');
-                                  form.setValue("shipperName", editingSalesBundle.companySnapshot?.name || '');
-                                  form.setValue("businessNumber", editingSalesBundle.companySnapshot?.businessNumber || '');
-                                  form.setValue("shipperCeo", editingSalesBundle.companySnapshot?.ceoName || '');
-                                } else {
-                                  // 생성 모드: 기존 로직 유지
-                                  setSelectedCompanyId(displayShipperGroups[shipper].company.id);
-                                  form.setValue("shipperName", displayShipperGroups[shipper].company.name);
-                                  form.setValue("businessNumber", displayShipperGroups[shipper].company.businessNumber || "000-00-00000");
-                                  form.setValue("shipperCeo", displayShipperGroups[shipper].company.ceo || "");
-                                }
-                              }}
-                            >                          
-                              {shipper} ({displayShipperGroups[shipper].orders.length}건)
-                            </Badge>
-                          ))}
-                        </div>
-                        </>
-                      )}
-
-                      {form.watch("shipperName") === "기본 화주" || form.watch("shipperName") === "" ? (
-                        <div className="flex flex-col items-center justify-center py-4 border-5 border-dashed border-gray-300 rounded-md bg-gray-100 mb-2">
-                          <Building2 className="h-8 w-8 text-muted-foreground mb-2" />
-                          <p className="text-sm text-muted-foreground mb-4">청구 회사 정보를 검색해주세요</p>
-                          <div className="flex gap-2">
-                            <FormField
-                              control={form.control}
-                              name="shipperName"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <Popover>
-                                    <PopoverTrigger asChild>
-                                      <Button type="button">
-                                        <Search className="h-4 w-4 mr-2" />
-                                        회사 조회
-                                      </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-full p-0" align="start">
-                                      <div className="border-b p-2">
-                                        <div className="flex items-center gap-2">
-                                          <Input
-                                            placeholder="회사명 검색"
-                                            className="h-8"
-                                            type="search"
-                                            value={companySearchTerm}
-                                            onChange={e => setCompanySearchTerm(e.target.value)}
-                                            onKeyDown={e => {
-                                              if (e.key === 'Enter') {
-                                                handleCompanySearch();
-                                              }
-                                            }}
-                                          />
-                                          <Button size="sm" className="h-8 px-2" onClick={handleCompanySearch}>검색</Button>
-                                        </div>
-                                      </div>
-                                      <ScrollArea className="h-60">
-                                        <div className="p-2">
-                                          {companiesQuery.data?.data.map((company) => (
-                                            <div
-                                              key={company.id}
-                                              className="flex items-center justify-between px-2 py-1.5 hover:bg-secondary/50 rounded-md cursor-pointer"
-                                              onClick={() => {
-                                                field.onChange(company.name);
-                                                form.setValue("businessNumber", company.businessNumber || "-");
-                                                setSelectedCompanyId(company.id);
-                                              }}
-                                            >
-                                              <div className="flex flex-col">
-                                                <span className="font-medium">{company.name}</span>
-                                                <span className="text-xs text-muted-foreground">{company.businessNumber}</span>
-                                              </div>
-                                              {company.name === field.value && (
-                                                <CheckCircle className="h-4 w-4 text-primary" />
-                                              )}
-                                            </div>
-                                          ))}
-                                          {companiesQuery.isLoading && (
-                                            <div className="text-xs text-muted-foreground p-2">검색 중...</div>
-                                          )}
-                                          {!companiesQuery.isLoading && companiesQuery.data?.data.length === 0 && (
-                                            <div className="text-xs text-muted-foreground p-2">검색 결과가 없습니다.</div>
-                                          )}
-                                        </div>
-                                      </ScrollArea>
-                                    </PopoverContent>
-                                  </Popover>
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="mb-4">                      
-                          {/* 회사 정보 + 계좌 정보 (세로 정렬) */}
-                          <div className="flex items-center justify-between border p-4 rounded-md bg-background bg-muted/30">
-
-                            {/* 회사 정보 영역 */}
-                            {/* <div>
-                              <div className="flex justify-between items-center text-sm pb-2">
-                                                            
-                                <div className="font-medium text-base text-primary truncate">
-                                  <div className="text-md whitespace-nowrap ">
-                                    {form.watch("shipperName") || '회사를 검색해주세요'}
-                                  </div>
-                                  <div className="text-muted-foreground text-sm whitespace-nowrap">
-                                    {form.watch("businessNumber")}
-                                  </div>
-                                </div>
-                                
-                                {form.watch("shipperCeo") && (
-                                  <div className="text-muted-foreground text-sm whitespace-nowrap pl-4">
-                                    {form.watch("shipperCeo")}
-                                  </div>
-                                )}
-                                
-                              </div>
-
-                              
-
-                              
-                              {selectedCompanyId && brokerManagers.length > 0 && (
-                                <>
-                                <div className="pb-3">
-                                  <div className="text-xs text-muted-foreground mb-2">담당자 목록</div>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {selectedCompanyId && brokerManagers.filter(manager => manager.status === '활성').map((manager) => (
-                                      <Badge 
-                                        key={manager.id} 
-                                        variant="outline"
-                                        className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
-                                        onClick={() => {
-                                          form.setValue("manager", manager.name);
-                                          form.setValue("managerContact", manager.phoneNumber || "");
-                                          form.setValue("managerEmail", manager.email || "");
-                                        }}
-                                      >
-                                        {manager.name}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                </div>
-                                </>
-                              )}
-                            </div> */}                        
-
-                            {/* 계좌 정보 영역 */}
-                            {/* <div>
-                              <div className="text-sm font-medium text-gray-500 pb-2">계좌 정보</div>
-                              <div className="grid grid-cols-1 gap-2 w-full pb-5">
-
-                                
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                                
-                                  <FormField
-                                    control={form.control}
-                                    name="bankName"  //"bankName"
-                                    render={({ field }) => (
-                                      
-
-                                      <FormItem>
-                                        
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                          <FormControl>
-                                            <SelectTrigger>                                          
-                                              <SelectValue placeholder="은행을 선택하세요" />
-                                            </SelectTrigger>
-                                          </FormControl>
-                                          <SelectContent>
-                                            <SelectItem value="001">한국은행</SelectItem>
-                                            <SelectItem value="002">산업은행</SelectItem>
-                                            <SelectItem value="003">기업은행</SelectItem>
-                                            <SelectItem value="004">국민은행</SelectItem>
-                                            <SelectItem value="007">수협은행</SelectItem>
-                                            <SelectItem value="008">수출입은행</SelectItem>
-                                            <SelectItem value="011">농협은행</SelectItem>
-                                            <SelectItem value="020">우리은행</SelectItem>
-                                            <SelectItem value="023">SC제일은행</SelectItem>
-                                            <SelectItem value="027">씨티은행</SelectItem>
-                                            <SelectItem value="031">대구은행</SelectItem>
-                                            <SelectItem value="032">부산은행</SelectItem>
-                                            <SelectItem value="034">광주은행</SelectItem>
-                                            <SelectItem value="035">제주은행</SelectItem>
-                                            <SelectItem value="037">전북은행</SelectItem>
-                                            <SelectItem value="039">경남은행</SelectItem>
-                                            <SelectItem value="045">새마을금고중앙회</SelectItem>
-                                            <SelectItem value="048">신협중앙회</SelectItem>
-                                            <SelectItem value="050">상호저축은행</SelectItem>
-                                            <SelectItem value="071">우체국</SelectItem>
-                                            <SelectItem value="081">하나은행</SelectItem>
-                                            <SelectItem value="088">신한은행</SelectItem>
-                                            <SelectItem value="089">케이뱅크</SelectItem>
-                                            <SelectItem value="090">카카오뱅크</SelectItem>
-                                            <SelectItem value="092">토스뱅크</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                        
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-
-                                  
-                                  <FormField
-                                    control={form.control}
-                                    name="accountHolder"//"accountHolder"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>
-                                          <div className="relative">
-                                            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                            <Input 
-                                              placeholder="예금주명" 
-                                              className="h-9 pl-10" 
-                                              {...field} 
-                                            />
-                                          </div>
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-
-                                </div>
-
-                              
-                                <FormField
-                                  control={form.control}
-                                  name="accountNumber" //"accountNumber"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormControl>
-                                        <div className="relative">
-                                          <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                          <Input 
-                                            placeholder="계좌번호" 
-                                            className="h-9 pl-10" 
-                                            {...field} 
-                                          />
-                                        </div>
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-
-                              </div>
-                            </div> */}
-
-                            {/* 회사 영역 */}                      
-                            <div className={cn("grid gap-2", "grid-cols-1", "w-full")}>
-                                <div>
-                                  
-                                  <FormField
-                                    control={form.control}
-                                    name="shipperName"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>                                      
-                                          <div className="relative">
-                                            <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                            <Input 
-                                              placeholder="회사명을 입력해주세요." 
-                                              className="h-9 pl-10" 
-                                              {...field} 
-                                            />
-                                          </div>
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </div>
-                                
-                                <div>
-                                  
-                                  <FormField
-                                    control={form.control}
-                                    name="businessNumber"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>
-                                          <div className="relative">
-                                            <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                            <Input 
-                                              placeholder="010-0000-0000" 
-                                              className="h-9 pl-10" 
-                                              {...field} 
-                                            />
-                                          </div>
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </div>
-
-                                <div className="mb-1">
-                                  
-                                  <FormField
-                                    control={form.control}
-                                    name="shipperCeo"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>
-                                          <div className="relative">
-                                            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                            <Input 
-                                              placeholder="example@email.com" 
-                                              className="h-9 pl-10" 
-                                              {...field} 
-                                            />
-                                          </div>
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </div>
-                                
-                              </div>
-
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    <CompanyInfoSection
+                      form={form}
+                      companySearchTerm={companySearchTerm}
+                      setCompanySearchTerm={setCompanySearchTerm}
+                      companies={companiesQuery.data?.data ?? []}
+                      onSelectCompany={(company) => {
+                        form.setValue("shipperName", company.name);
+                        form.setValue("businessNumber", company.businessNumber || "-");
+                        if (company.ceoName) {
+                          form.setValue("shipperCeo", company.ceoName);
+                        }
+                        setSelectedCompanyId(company.id);
+                        // 회사 선택 시 담당자 목록 로드
+                        if (company.id) {
+                          loadManagers(company.id);
+                        }
+                      }}
+                      selectedCompanyId={selectedCompanyId}
+                      onReset={() => {
+                        form.reset({
+                          ...form.getValues(),
+                          shipperName: "",
+                          businessNumber: "",
+                          shipperCeo: "",
+                          manager: "",
+                          managerContact: "",
+                          managerEmail: "",
+                        });
+                        setSelectedCompanyId(null);
+                        setSelectedManagerId(null);
+                      }}
+                      onCompanySearch={handleCompanySearch}
+                      isEditMode={isEditMode}
+                      editingSalesBundle={editingSalesBundle}
+                      displayShipperGroups={displayShipperGroups}
+                      hasShipperGroups={hasShipperGroups}
+                      loading={loading}
+                      isLoadingCompanies={companiesQuery.isLoading}
+                    />
 
                     {/* 담당자 정보 섹션 */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2 text-primary">
-                          <UserPen className="h-5 w-5 text-primary" />
-                          <h3 className="text-lg font-bold">업체 담당자 정보</h3>
-                        </div>
-                        
-                        <div className="flex gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            
-                            onClick={() => {
-                              form.reset({
-                              ...form.getValues(),
-                              manager: "",
-                              managerContact: "",
-                              managerEmail: "",
-                              });
-                              setSelectedManagerId(null);
-                            }}
-                            disabled={loading}
-                          >
-                            초기화
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap gap-1.5">
-                        {selectedCompanyId && brokerManagers.filter(manager => manager.status === '활성').map((manager) => (
-                          <Badge 
-                            key={manager.id} 
-                            variant="outline"
-                            className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
-                            onClick={() => {
-                              setSelectedManagerId(manager.id);
-                              form.setValue("manager", manager.name);
-                              form.setValue("managerContact", manager.phoneNumber || "");
-                              form.setValue("managerEmail", manager.email || "");
-                            }}
-                          >
-                            {manager.name}
-                          </Badge>
-                        ))}
-                        {!selectedCompanyId && (
-                          <div className="text-xs text-muted-foreground py-1">
-                            {isEditMode ? '회사 정보가 설정되지 않았습니다' : '먼저 회사를 선택해주세요'}
-                          </div>
-                        )}
-                      </div>
-                      
-                      {!form.watch("manager") || form.watch("manager") === "김중개" ? (
-                        <div className="flex flex-col items-center justify-center py-4 border-5 border-dashed rounded-md bg-muted/30 mb-2">
-                          <User className="h-8 w-8 text-muted-foreground mb-2" />
-                          <p className="text-sm text-muted-foreground mb-4">
-                            {!selectedCompanyId ? '먼저 회사를 선택해주세요' : '담당자 정보를 입력해주세요'}
-                          </p>
-                          <div className="flex gap-2">
-                            <FormField
-                              control={form.control}
-                              name="manager"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <Popover>
-                                    <PopoverTrigger asChild>
-                                      <Button type="button" disabled={!selectedCompanyId}>
-                                        <Search className="h-4 w-4 mr-2" />
-                                        담당자 조회
-                                      </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-full p-0" align="start">
-                                      <div className="border-b p-2">
-                                        <div className="flex items-center gap-2">
-                                          <Input
-                                            placeholder="담당자명 검색"
-                                            className="h-8"
-                                            type="search"
-                                            value={managerSearchTerm}
-                                            onChange={e => setManagerSearchTerm(e.target.value)}
-                                            onKeyDown={e => {
-                                              if (e.key === 'Enter') {
-                                                handleManagerSearch();
-                                              }
-                                            }}
-                                          />
-                                          <Button size="sm" className="h-8 px-2" onClick={handleManagerSearch}>검색</Button>
-                                        </div>
-                                      </div>
-                                      <ScrollArea className="h-60">
-                                        <div className="p-2">
-                                          {isLoadingManagers ? (
-                                            <div className="text-xs text-muted-foreground p-2">검색 중...</div>
-                                          ) : brokerManagers.filter(manager => manager.status === '활성').length > 0 ? (
-                                            brokerManagers.filter(manager => manager.status === '활성').map((manager) => (
-                                              <div
-                                                key={manager.id}
-                                                className="flex items-center justify-between px-2 py-1.5 hover:bg-secondary/50 rounded-md cursor-pointer"
-                                                onClick={() => {
-                                                  field.onChange(manager.name);
-                                                  form.setValue("managerContact", manager.phoneNumber || "");
-                                                  form.setValue("managerEmail", manager.email || "");
-                                                }}
-                                              >
-                                                <div className="flex flex-col">
-                                                  <span className="font-medium">{manager.name}</span>
-                                                  <span className="text-xs text-muted-foreground">{manager.phoneNumber}</span>
-                                                  <span className="text-xs text-muted-foreground">{manager.roles.join(', ')}</span>
-                                                </div>
-                                                {manager.name === field.value && (
-                                                  <CheckCircle className="h-4 w-4 text-primary" />
-                                                )}
-                                              </div>
-                                            ))
-                                          ) : (
-                                            <div className="text-xs text-muted-foreground p-2">담당자가 없습니다.</div>
-                                          )}
-                                        </div>
-                                      </ScrollArea>
-                                    </PopoverContent>
-                                  </Popover>
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          {/* 담당자 정보 표시 영역 */}
-                          <div className="mb-4">
-                            <div className="flex items-center justify-between border p-4 rounded-md bg-background bg-muted/30">
-                              
-                              {/* 담당자 영역 */}                      
-                              <div className={cn("grid gap-2", "grid-cols-1", "w-full")}>
-                                <div>
-                                  
-                                  <FormField
-                                    control={form.control}
-                                    name="manager"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>                                      
-                                          <div className="relative">
-                                            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                            <Input 
-                                              placeholder="담당자 이름을 입력해주세요." 
-                                              className="h-9 pl-10" 
-                                              {...field} 
-                                            />
-                                          </div>
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </div>
-                                
-                                <div>
-                                  
-                                  <FormField
-                                    control={form.control}
-                                    name="managerContact"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>
-                                          <div className="relative">
-                                            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                            <Input 
-                                              placeholder="010-0000-0000" 
-                                              className="h-9 pl-10" 
-                                              {...field} 
-                                            />
-                                          </div>
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </div>
-
-                                <div className="mb-1">
-                                  
-                                  <FormField
-                                    control={form.control}
-                                    name="managerEmail"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>
-                                          <div className="relative">
-                                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                            <Input 
-                                              placeholder="example@email.com" 
-                                              className="h-9 pl-10" 
-                                              {...field} 
-                                            />
-                                          </div>
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </div>
-                                
-                              </div>
-                              
-                            </div>
-                            
-                          </div>
-                        </>
-                      )}
-                    </div>                
+                    <ManagerInfoSection
+                      form={form}
+                      managerSearchTerm={managerSearchTerm}
+                      setManagerSearchTerm={setManagerSearchTerm}
+                      managers={brokerManagers.filter(manager => manager.status === '활성')}
+                      onSelectManager={(manager) => {
+                        setSelectedManagerId(manager.id);
+                        form.setValue("manager", manager.name);
+                        form.setValue("managerContact", manager.phoneNumber || "");
+                        form.setValue("managerEmail", manager.email || "");
+                      }}
+                      selectedManagerId={selectedManagerId}
+                      onReset={() => {
+                        form.reset({
+                          ...form.getValues(),
+                          manager: "",
+                          managerContact: "",
+                          managerEmail: "",
+                        });
+                        setSelectedManagerId(null);
+                      }}
+                      onManagerSearch={handleManagerSearch}
+                      isEditMode={isEditMode}
+                      loading={loading}
+                      isLoadingManagers={isLoadingManagers}
+                      companySelected={!!selectedCompanyId}
+                    />                
 
                   </div>
 
