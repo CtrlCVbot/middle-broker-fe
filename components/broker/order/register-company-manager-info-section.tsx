@@ -116,9 +116,9 @@ export function CompanyManagerInfoSection({
         ) : null}
 
         {form.watch("shipperName") === "기본 화주" || form.watch("shipperName") === "" ? (
-          <div className="flex flex-col items-center justify-center py-4 border-2 border-dashed border-gray-300 rounded-md bg-gray-50 mb-2">
+          <div className="flex flex-col items-center justify-center py-4 border-2 border-dashed border-gray-300 rounded-md bg-gray-50 mb-2 mt-6">
             <Building2 className="h-8 w-8 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground mb-4">청구 회사 정보를 검색해주세요</p>
+            <p className="text-sm text-muted-foreground mb-4">요청 화주 정보를 검색해주세요</p>
             <div className="flex gap-2">
               <FormField
                 control={form.control}
@@ -129,7 +129,7 @@ export function CompanyManagerInfoSection({
                       <PopoverTrigger asChild>
                         <Button type="button">
                           <Search className="h-4 w-4 mr-2" />
-                          회사 조회
+                          화주 조회
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-full p-0" align="start">
@@ -216,7 +216,7 @@ export function CompanyManagerInfoSection({
               </div>
             </div> */}
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mt-6">
               {/* <div className="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
                 <div className="text-xl">🏢</div>
               </div> */}
@@ -247,11 +247,14 @@ export function CompanyManagerInfoSection({
               >
                 {manager.name}
               </Badge>
-            ))}
+            ))}            
           </div>
 
           {(!form.watch('manager') || form.watch('manager') === '김중개') ? (
-            <></>
+            <div className="flex flex-col items-center justify-center py-4 border-2 border-dashed border-gray-300 rounded-md bg-gray-50">
+              
+              <p className="text-sm text-muted-foreground">담당자 선택해주세요</p>              
+            </div>
             // <div className="flex flex-col items-center justify-center py-4 border-2 border-dashed border-gray-300 rounded-md bg-gray-50 mb-2">
             //   <User className="h-8 w-8 text-muted-foreground mb-2" />
             //   <p className="text-sm text-muted-foreground mb-4">담당자 정보를 입력해주세요</p>
