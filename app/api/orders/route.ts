@@ -257,6 +257,7 @@ export async function POST(request: NextRequest) {
         contactUserId: requestUserId,
         contactUserMail: requestUser.email,
         contactUserPhone: requestUser.phone_number,
+        
         contactUserSnapshot: {
         name: requestUser.name,
         email: requestUser.email,

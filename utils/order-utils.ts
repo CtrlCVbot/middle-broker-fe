@@ -114,14 +114,31 @@ export const showValidationError = (message: string, field?: string) => {
 /**
  * 폼 데이터 유효성 검증 함수
  * @param formData 폼 데이터
+ * @param selectedCompanyId 선택된 회사 ID
+ * @param selectedManagerId 선택된 담당자 ID
  * @returns 유효성 검증 통과 여부
  */
-export const validateOrderFormData = (formData: any): boolean => {
+export const validateOrderFormData = (formData: any, selectedCompanyId?: string | null, selectedManagerId?: string | null): boolean => {
+  console.log("formData", formData);
+
+  // 업체 및 담당자 선택 필수 검증
+  if (!selectedCompanyId) {
+    showValidationError("업체를 선택해주세요.", "company");
+    return false;
+  }
+  
+  if (!selectedManagerId) {
+    showValidationError("담당자를 선택해주세요.", "manager");
+    return false;
+  }
+
   // 화물 품목 검증
   if (!formData.cargoType || formData.cargoType.trim().length < 2) {
     showValidationError("화물 품목은 최소 2자 이상 입력해야 합니다.", "cargoType");
     return false;
   }
+ 
+  
 
   // 상차지 정보 검증
   const departure = formData.departure;

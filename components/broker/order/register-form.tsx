@@ -29,9 +29,6 @@ import { useForm } from "react-hook-form";
 import { useOrderRegisterStore } from "@/store/order-register-store";
 import { useOrderEditStore } from "@/store/order-edit-store";
 import { 
-  OrderVehicleType, 
-  OrderVehicleWeight, 
-  ITransportOptionsSnapshot,
   ORDER_VEHICLE_TYPES,
   ORDER_VEHICLE_WEIGHTS
 } from "@/types/order-ver01";
@@ -138,7 +135,7 @@ const {
 } = useBrokerCompanyManagerStore();
 
 
-  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
+  const isMobile = false; //typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const router = useRouter();
   
   // Zustand 스토어에서 상태와 액션 가져오기
@@ -224,6 +221,7 @@ const {
     
     // 폼 초기값 설정
     return {
+      
       vehicleType: registerData.vehicleType,
       weightType: registerData.weightType,
       cargoType: registerData.cargoType || '',
@@ -239,9 +237,11 @@ const {
     defaultValues: {
       ...initForm(),
       // 회사 및 담당자 정보 필드 추가
+      selectedCompanyId: '',      
       shipperName: '',
       businessNumber: '',
       shipperCeo: '',
+      selectedManagerId: '',
       manager: '',
       managerContact: '',
       managerEmail: '',
@@ -268,8 +268,8 @@ const {
   
   // 폼 제출 처리 함수 업데이트
   const handleFormSubmit = async (data: any) => {
-    // 폼 유효성 검증
-    const isValid = validateOrderFormData(registerData);
+    // 폼 유효성 검증 (회사/담당자 선택 포함)
+    const isValid = validateOrderFormData(registerData, selectedCompanyId, selectedManagerId);
     console.log("폼 유효성 검증:", isValid);
     console.log("폼 데이터:", registerData);
     if (!isValid) {
@@ -336,9 +336,6 @@ const {
     }
   }, [registerData.remark]);
 
-
-  //---
-  
 
   // 회사 검색 함수
   const handleCompanySearch = () => {
