@@ -60,6 +60,7 @@ import { CompanyInfoSection as BrokerCompanyInfoSection } from '@/components/bro
 import { ManagerInfoSection as BrokerManagerInfoSection } from '@/components/broker/order/manager-info-section';
 import { CompanyInfoSection } from '@/components/broker/order/register-company-info-section';
 import { ManagerInfoSection } from '@/components/broker/order/register-manager-info-section';
+import { CompanyManagerInfoSection } from '@/components/broker/order/register-company-manager-info-section';
 import { RegisterCargoInfoCard } from '@/components/broker/order/register-cargo-info-card';
 import { RegisterTransportOptionCard } from '@/components/broker/order/register-transport-option-card';
 import { RegisterEstimateInfoCard } from '@/components/broker/order/register-estimate-info-card';
@@ -772,7 +773,7 @@ const {
               {/* 회사, 담당자 정보 */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4 ">
                   {/* 왼쪽: 요청 회사 정보 카드 */}
-                  <Card>
+                  {/* <Card>
                     <CardContent>
                       <CompanyInfoSection
                         form={form}
@@ -812,10 +813,10 @@ const {
                         isLoadingCompanies={companiesQuery.isLoading}                        
                       />
                     </CardContent>
-                  </Card>
+                  </Card> */}
 
                   {/* 중간: 요청 담당자 정보 카드 */}
-                  <Card>
+                  {/* <Card>
                     <CardContent>
                       <ManagerInfoSection
                         form={form}
@@ -845,9 +846,66 @@ const {
                         companySelected={!!selectedCompanyId}
                       />
                     </CardContent>
+                  </Card> */}
+
+                  {/* 회사 및 담당자 통합 정보 */}
+                  <div className="lg:col-span-1">
+                  <Card>
+                    <CardContent>
+                      <CompanyManagerInfoSection
+                        form={form}
+                        companySearchTerm={companySearchTerm}
+                        setCompanySearchTerm={setCompanySearchTerm}
+                        companies={companiesQuery.data?.data ?? []}
+                        onSelectCompany={(company) => {
+                          form.setValue("shipperName", company.name);
+                          form.setValue("businessNumber", company.businessNumber || "");
+                          if (company.ceoName) {
+                            form.setValue("shipperCeo", company.ceoName);
+                          }
+                          setSelectedCompanyId(company.id);
+                          // 회사 선택 시 담당자 목록 로드
+                          if (company.id) {
+                            loadManagers(company.id);
+                          }
+                        }}
+                        selectedCompanyId={selectedCompanyId}
+                        onCompanySearch={handleCompanySearch}
+                        isLoadingCompanies={companiesQuery.isLoading}
+                        managerSearchTerm={managerSearchTerm}
+                        setManagerSearchTerm={setManagerSearchTerm}
+                        managers={brokerManagers.filter(manager => manager.status === '활성')}
+                        onSelectManager={(manager) => {
+                          setSelectedManagerId(manager.id);
+                          form.setValue("manager", manager.name);
+                          form.setValue("managerContact", manager.phoneNumber || "");
+                          form.setValue("managerEmail", manager.email || "");
+                        }}
+                        selectedManagerId={selectedManagerId}
+                        onManagerSearch={handleManagerSearch}
+                        isLoadingManagers={isLoadingManagers}
+                        onReset={() => {
+                          form.reset({
+                            ...form.getValues(),
+                            shipperName: "",
+                            businessNumber: "",
+                            shipperCeo: "",
+                            manager: "",
+                            managerContact: "",
+                            managerEmail: "",
+                          });
+                          setSelectedCompanyId(null);
+                          setSelectedManagerId(null);
+                        }}
+                        isEditMode={editMode}
+                        loading={isSubmitting}
+                      />
+                    </CardContent>
                   </Card>
+                  </div>
 
                   {/* 오른쪽: 화물 정보 카드 */}
+                  <div className="lg:col-span-2">
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                       <CardTitle className="text-lg flex items-center">
@@ -973,6 +1031,7 @@ const {
                     </CardContent>
                     
                   </Card>
+                  </div>
               </div>
 
               {/* 출발지, 도착지 정보/화물 정보 */}
@@ -1011,16 +1070,7 @@ const {
 
                 {/* 오른쪽: 화물 정보 카드 */}
                 <div className="lg:col-span-1 space-y-4">
-                  {/* 추가 정보 영역 */}
-                  <Card>
-                    <CardContent>
-                      <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                        <Info className="h-8 w-8 mb-2" />
-                        <p className="text-sm text-center">추가 정보 영역</p>
-                        <p className="text-xs text-center mt-1">향후 확장 예정</p>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  
 
                   {/* 운송 옵션 카드 */}
                   <Card>

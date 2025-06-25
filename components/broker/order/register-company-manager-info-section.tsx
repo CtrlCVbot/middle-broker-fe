@@ -86,10 +86,7 @@ export function CompanyManagerInfoSection({
 
       {/* 회사 정보 섹션 */}
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Building2 className="h-4 w-4 text-muted-foreground" />
-          <h4 className="font-medium">회사 정보</h4>
-        </div>
+        
 
         {/* 선택된 업체 배지 표시 (settlement에서 사용) */}
         {hasShipperGroups ? (
@@ -265,12 +262,7 @@ export function CompanyManagerInfoSection({
       </div>
 
       {/* 담당자 정보 섹션 */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <User className="h-4 w-4 text-muted-foreground" />
-          <h4 className="font-medium">담당자 정보</h4>
-        </div>
-
+      <div className="space-y-2">        
         {/* 담당자 배지 표시 */}
         <div className="flex flex-wrap gap-1.5 min-h-[24px]">
           {companySelected && managers.filter((m: any) => m.status === '활성').map((manager) => (
