@@ -55,6 +55,9 @@ import { validateOrderFormData } from '@/utils/order-utils';
 import { RegisterSuccessDialog } from '@/components/order/register-success-dialog';
 
 import { OrderStepProgress } from "./order-step-progress";
+import { CompanySearchSection } from '@/components/broker/order/company-search-section';
+import { CompanyInfoSection } from '@/components/broker/order/company-info-section';
+import { ManagerInfoSection } from '@/components/broker/order/manager-info-section';
 
 interface OrderRegisterFormProps {
   onSubmit: () => void;
@@ -465,6 +468,29 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
+                  {/* 업체 검색/선택 */}
+                  <CompanySearchSection
+                    selectedCompany={registerData.departure.company ? { name: registerData.departure.company } : undefined}
+                    onSelectCompany={company => setDeparture({ company: company.name })}
+                  />
+                  {/* 회사 정보 입력 */}
+                  <CompanyInfoSection
+                    companyInfo={{
+                      name: registerData.departure.company || '',
+                      address: registerData.departure.address || '',
+                      contact: registerData.departure.contact || ''
+                    }}
+                    onChange={info => setDeparture(info)}
+                  />
+                  {/* 담당자 정보 입력 */}
+                  <ManagerInfoSection
+                    managerInfo={{
+                      name: registerData.departure.name || '',
+                      contact: registerData.departure.contact || ''
+                    }}
+                    onChange={info => setDeparture(info)}
+                  />
+                  {/* 기존 LocationForm 등 나머지 출발지 입력 UI */}
                   <LocationForm
                     type="departure"
                     locationInfo={registerData.departure}
