@@ -14,6 +14,7 @@ export interface IManagerInfoSectionProps {
   onSelectManager: (manager: any) => void;
   selectedManagerId: string | null;
   onReset: () => void;
+  onManagerSearch: () => void;
   isEditMode?: boolean;
   loading?: boolean;
   isLoadingManagers?: boolean;
@@ -28,6 +29,7 @@ export function ManagerInfoSection({
   onSelectManager,
   selectedManagerId,
   onReset,
+  onManagerSearch,
   isEditMode,
   loading,
   isLoadingManagers,
@@ -81,7 +83,13 @@ export function ManagerInfoSection({
                       type="search"
                       value={managerSearchTerm}
                       onChange={e => setManagerSearchTerm(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          onManagerSearch();
+                        }
+                      }}
                     />
+                    <Button size="sm" className="h-8 px-2" onClick={onManagerSearch}>검색</Button>
                   </div>
                 </div>
                 <ScrollArea className="h-60">
