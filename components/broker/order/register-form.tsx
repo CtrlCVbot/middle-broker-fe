@@ -771,271 +771,194 @@ const {
               
             <CardContent>
               {/* 회사, 담당자 정보 */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4 ">
-                  {/* 왼쪽: 요청 회사 정보 카드 */}
-                  {/* <Card>
-                    <CardContent>
-                      <CompanyInfoSection
-                        form={form}
-                        companySearchTerm={companySearchTerm}
-                        setCompanySearchTerm={setCompanySearchTerm}
-                        //companies={[]} // TODO: 실제 회사 데이터 연결
-                        companies={companiesQuery.data?.data ?? []}
-                        onSelectCompany={(company) => {
-                          form.setValue("shipperName", company.name);
-                          form.setValue("businessNumber", company.businessNumber || "");
-                          if (company.ceoName) {
-                            form.setValue("shipperCeo", company.ceoName);
-                          }
-                          setSelectedCompanyId(company.id);
-                          // 회사 선택 시 담당자 목록 로드
-                          if (company.id) {
-                            loadManagers(company.id);
-                          }
-                        }}
-                        selectedCompanyId={selectedCompanyId}
-                        onReset={() => {
-                          form.reset({
-                            ...form.getValues(),
-                            shipperName: "",
-                            businessNumber: "",
-                            shipperCeo: "",
-                            manager: "",
-                            managerContact: "",
-                            managerEmail: "",
-                          });
-                          setSelectedCompanyId(null);
-                          setSelectedManagerId(null);
-                        }}
-                        onCompanySearch={handleCompanySearch}
-                        isEditMode={editMode}                        
-                        loading={isSubmitting}
-                        isLoadingCompanies={companiesQuery.isLoading}                        
-                      />
-                    </CardContent>
-                  </Card> */}
-
-                  {/* 중간: 요청 담당자 정보 카드 */}
-                  {/* <Card>
-                    <CardContent>
-                      <ManagerInfoSection
-                        form={form}
-                        managerSearchTerm={managerSearchTerm}
-                        setManagerSearchTerm={setManagerSearchTerm}
-                        managers={brokerManagers.filter(manager => manager.status === '활성')}
-                        onSelectManager={(manager) => {
-                          setSelectedManagerId(manager.id);
-                          form.setValue("manager", manager.name);
-                          form.setValue("managerContact", manager.phoneNumber || "");
-                          form.setValue("managerEmail", manager.email || "");
-                        }}
-                        selectedManagerId={selectedManagerId}
-                        onReset={() => {
-                          form.reset({
-                            ...form.getValues(),
-                            manager: "",
-                            managerContact: "",
-                            managerEmail: "",
-                          });
-                          setSelectedManagerId(null);
-                        }}
-                        onManagerSearch={handleManagerSearch}
-                        isEditMode={editMode}
-                        loading={isSubmitting}
-                        isLoadingManagers={isLoadingManagers}
-                        companySelected={!!selectedCompanyId}
-                      />
-                    </CardContent>
-                  </Card> */}
-
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4 items-stretch">
                   {/* 회사 및 담당자 통합 정보 */}
                   <div className="lg:col-span-1">
-                  <Card>
-                    <CardContent>
-                      <CompanyManagerInfoSection
-                        form={form}
-                        companySearchTerm={companySearchTerm}
-                        setCompanySearchTerm={setCompanySearchTerm}
-                        companies={companiesQuery.data?.data ?? []}
-                        onSelectCompany={(company) => {
-                          form.setValue("shipperName", company.name);
-                          form.setValue("businessNumber", company.businessNumber || "");
-                          if (company.ceoName) {
-                            form.setValue("shipperCeo", company.ceoName);
-                          }
-                          setSelectedCompanyId(company.id);
-                          // 회사 선택 시 담당자 목록 로드
-                          if (company.id) {
-                            loadManagers(company.id);
-                          }
-                        }}
-                        selectedCompanyId={selectedCompanyId}
-                        onCompanySearch={handleCompanySearch}
-                        isLoadingCompanies={companiesQuery.isLoading}
-                        managerSearchTerm={managerSearchTerm}
-                        setManagerSearchTerm={setManagerSearchTerm}
-                        managers={brokerManagers.filter(manager => manager.status === '활성')}
-                        onSelectManager={(manager) => {
-                          setSelectedManagerId(manager.id);
-                          form.setValue("manager", manager.name);
-                          form.setValue("managerContact", manager.phoneNumber || "");
-                          form.setValue("managerEmail", manager.email || "");
-                        }}
-                        selectedManagerId={selectedManagerId}
-                        onManagerSearch={handleManagerSearch}
-                        isLoadingManagers={isLoadingManagers}
-                        onReset={() => {
-                          form.reset({
-                            ...form.getValues(),
-                            shipperName: "",
-                            businessNumber: "",
-                            shipperCeo: "",
-                            manager: "",
-                            managerContact: "",
-                            managerEmail: "",
-                          });
-                          setSelectedCompanyId(null);
-                          setSelectedManagerId(null);
-                        }}
-                        isEditMode={editMode}
-                        loading={isSubmitting}
-                      />
-                    </CardContent>
-                  </Card>
+                    <Card className="h-full">
+                      <CardContent className="h-full">
+                        <CompanyManagerInfoSection
+                          form={form}
+                          companySearchTerm={companySearchTerm}
+                          setCompanySearchTerm={setCompanySearchTerm}
+                          companies={companiesQuery.data?.data ?? []}
+                          onSelectCompany={(company) => {
+                            form.setValue("shipperName", company.name);
+                            form.setValue("businessNumber", company.businessNumber || "");
+                            if (company.ceoName) {
+                              form.setValue("shipperCeo", company.ceoName);
+                            }
+                            setSelectedCompanyId(company.id);
+                            // 회사 선택 시 담당자 목록 로드
+                            if (company.id) {
+                              loadManagers(company.id);
+                            }
+                          }}
+                          selectedCompanyId={selectedCompanyId}
+                          onCompanySearch={handleCompanySearch}
+                          isLoadingCompanies={companiesQuery.isLoading}
+                          managerSearchTerm={managerSearchTerm}
+                          setManagerSearchTerm={setManagerSearchTerm}
+                          managers={brokerManagers.filter(manager => manager.status === '활성')}
+                          onSelectManager={(manager) => {
+                            setSelectedManagerId(manager.id);
+                            form.setValue("manager", manager.name);
+                            form.setValue("managerContact", manager.phoneNumber || "");
+                            form.setValue("managerEmail", manager.email || "");
+                          }}
+                          selectedManagerId={selectedManagerId}
+                          onManagerSearch={handleManagerSearch}
+                          isLoadingManagers={isLoadingManagers}
+                          onReset={() => {
+                            form.reset({
+                              ...form.getValues(),
+                              shipperName: "",
+                              businessNumber: "",
+                              shipperCeo: "",
+                              manager: "",
+                              managerContact: "",
+                              managerEmail: "",
+                            });
+                            setSelectedCompanyId(null);
+                            setSelectedManagerId(null);
+                          }}
+                          isEditMode={editMode}
+                          loading={isSubmitting}
+                        />
+                      </CardContent>
+                    </Card>
                   </div>
 
                   {/* 오른쪽: 화물 정보 카드 */}
                   <div className="lg:col-span-2">
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                      <CardTitle className="text-lg flex items-center">
-                        <Container className="h-5 w-5 mr-2" />
-                        <div className="flex items-center">
-                          화물 정보 <span className="text-destructive">*</span>
-                        </div>
-                      </CardTitle>
+                    <Card className="h-full">
+                      <CardHeader className="flex flex-row items-center justify-between">
+                        <CardTitle className="text-lg flex items-center">
+                          <Container className="h-5 w-5 mr-2" />
+                          <div className="flex items-center">
+                            화물 정보 <span className="text-destructive">*</span>
+                          </div>
+                        </CardTitle>
 
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setShowCargoInfo((prev) => !prev)}
-                      > 
-                        {showCargoInfo ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                      </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setShowCargoInfo((prev) => !prev)}
+                        > 
+                          {showCargoInfo ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </Button>
 
-                    </CardHeader>
-                  
-                    <CardContent>
-                      <div className="space-y-4">
-                        {/* 중량 / 차량 종류 */}
-                        <div className="grid grid-cols-1 md:grid-cols-2">
+                      </CardHeader>
+                    
+                      <CardContent className="flex-1">
+                        <div className="space-y-4">
+                          {/* 중량 / 차량 종류 */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                          <div>
-                            <div className="text-sm font-medium mb-2 flex items-center">
-                              <Weight className="h-4 w-4 mr-2 text-muted-foreground" />중량
-                            </div>
-                            <Select
-                              value={registerData.weightType}
-                              onValueChange={(value) => setWeightType(value as any)}
-                              disabled={editMode && !isEditable('weightType')}
-                            >
-                              <SelectTrigger 
-                                onClick={() => handleDisabledFieldClick('weightType')}
-                                className={editMode && !isEditable('weightType') ? 'bg-gray-100' : ''}
+                            <div>
+                              <div className="text-sm font-medium mb-2 flex items-center">
+                                <Weight className="h-4 w-4 mr-2 text-muted-foreground" />중량
+                              </div>
+                              <Select
+                                value={registerData.weightType}
+                                onValueChange={(value) => setWeightType(value as any)}
+                                disabled={editMode && !isEditable('weightType')}
                               >
-                              <SelectValue placeholder="차량 중량 선택" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {ORDER_VEHICLE_WEIGHTS.map((type) => (
-                                  <SelectItem key={type} value={type}>
-                                    {type}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                                <SelectTrigger 
+                                  onClick={() => handleDisabledFieldClick('weightType')}
+                                  className={editMode && !isEditable('weightType') ? 'bg-gray-100' : ''}
+                                >
+                                <SelectValue placeholder="차량 중량 선택" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {ORDER_VEHICLE_WEIGHTS.map((type) => (
+                                    <SelectItem key={type} value={type}>
+                                      {type}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div>
+                              <div className="text-sm font-medium mb-2 flex items-center">
+                                <Truck className="h-4 w-4 mr-2 text-muted-foreground" />종류
+                              </div>
+                              <Select
+                                value={registerData.vehicleType}
+                                onValueChange={(value) => setVehicleType(value as any)}
+                                disabled={editMode && !isEditable('vehicleType')}
+                              >
+                                <SelectTrigger 
+                                  onClick={() => handleDisabledFieldClick('vehicleType')}
+                                  className={editMode && !isEditable('vehicleType') ? 'bg-gray-100' : ''}
+                                >
+                                  <SelectValue placeholder="차량 종류 선택" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {ORDER_VEHICLE_TYPES.map((type) => (
+                                    <SelectItem key={type} value={type}>
+                                      {type}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                          </div>
+                          
+                          {/* 화물 품목 */}
+                          <div className="col-span-12 md:col-span-10 flex items-end gap-2">
+                              <div className="flex-1">
+                                <div className="text-sm font-medium mb-2 flex items-center">
+                                  화물 품목
+                                </div>
+                                <Input
+                                  placeholder="화물 품목을 입력하세요 (최대 38자)"
+                                  maxLength={38}
+                                  value={registerData.cargoType}
+                                  onChange={(e) => setCargoType(e.target.value)}
+                                  disabled={editMode && !isEditable('cargoType')}
+                                  className={editMode && !isEditable('cargoType') ? 'bg-gray-100' : ''}
+                                  onClick={() => handleDisabledFieldClick('cargoType')}
+                                />
+                                <p className="text-xs text-right text-muted-foreground mt-1">
+                                  {registerData.cargoType.length}/38자
+                                </p>
+                              </div>
                           </div>
 
-                          <div>
-                            <div className="text-sm font-medium mb-2 flex items-center">
-                              <Truck className="h-4 w-4 mr-2 text-muted-foreground" />종류
+                          {/* 비고 - 조건부 렌더링 */}
+                          {showCargoInfo && (
+                            <div className="animate-in fade-in-50 duration-200">
+                              <div className="flex items-center justify-between">
+                                <FormLabel>비고</FormLabel>
+                                {editMode && isEditable('remark') && (
+                                  <div className="flex items-center text-xs text-green-600">
+                                    <Info className="h-3 w-3 mr-1" />
+                                    편집 가능
+                                  </div>
+                                )}
+                              </div>
+                              <Textarea
+                                placeholder="비고 (선택사항)"
+                                value={registerData.remark || ''}
+                                onChange={(e) => setRemark(e.target.value)}
+                                className={cn("resize-none h-20", editMode && !isEditable('remark') ? 'bg-gray-100' : '')}
+                                disabled={editMode && !isEditable('remark')}
+                                onClick={() => handleDisabledFieldClick('remark')}
+                              />
                             </div>
-                            <Select
-                              value={registerData.vehicleType}
-                              onValueChange={(value) => setVehicleType(value as any)}
-                              disabled={editMode && !isEditable('vehicleType')}
-                            >
-                              <SelectTrigger 
-                                onClick={() => handleDisabledFieldClick('vehicleType')}
-                                className={editMode && !isEditable('vehicleType') ? 'bg-gray-100' : ''}
-                              >
-                                <SelectValue placeholder="차량 종류 선택" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {ORDER_VEHICLE_TYPES.map((type) => (
-                                  <SelectItem key={type} value={type}>
-                                    {type}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
+                          )}
                         </div>
                         
-                        {/* 화물 품목 */}
-                        <div className="col-span-12 md:col-span-10 flex items-end gap-2">
-                            <div className="flex-1">
-                              <div className="text-sm font-medium mb-2 flex items-center">
-                                화물 품목
-                              </div>
-                              <Input
-                                placeholder="화물 품목을 입력하세요 (최대 38자)"
-                                maxLength={38}
-                                value={registerData.cargoType}
-                                onChange={(e) => setCargoType(e.target.value)}
-                                disabled={editMode && !isEditable('cargoType')}
-                                className={editMode && !isEditable('cargoType') ? 'bg-gray-100' : ''}
-                                onClick={() => handleDisabledFieldClick('cargoType')}
-                              />
-                              <p className="text-xs text-right text-muted-foreground mt-1">
-                                {registerData.cargoType.length}/38자
-                              </p>
-                            </div>
-                        </div>
-
-                        {/* 비고 - 조건부 렌더링 */}
-                        {showCargoInfo && (
-                          <div className="animate-in fade-in-50 duration-200">
-                            <div className="flex items-center justify-between">
-                              <FormLabel>비고</FormLabel>
-                              {editMode && isEditable('remark') && (
-                                <div className="flex items-center text-xs text-green-600">
-                                  <Info className="h-3 w-3 mr-1" />
-                                  편집 가능
-                                </div>
-                              )}
-                            </div>
-                            <Textarea
-                              placeholder="비고 (선택사항)"
-                              value={registerData.remark || ''}
-                              onChange={(e) => setRemark(e.target.value)}
-                              className={cn("resize-none h-20", editMode && !isEditable('remark') ? 'bg-gray-100' : '')}
-                              disabled={editMode && !isEditable('remark')}
-                              onClick={() => handleDisabledFieldClick('remark')}
-                            />
-                          </div>
-                        )}
-                      </div>
-                      
-                    </CardContent>
-                    
-                  </Card>
+                      </CardContent>                      
+                    </Card>
                   </div>
               </div>
 
               {/* 출발지, 도착지 정보/화물 정보 */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* 중간: 출발지/도착지 정보 카드 */}
                 <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">              
 
@@ -1069,8 +992,7 @@ const {
                 </div>
 
                 {/* 오른쪽: 화물 정보 카드 */}
-                <div className="lg:col-span-1 space-y-4">
-                  
+                <div className="lg:col-span-1 space-y-4">                  
 
                   {/* 운송 옵션 카드 */}
                   <Card>
