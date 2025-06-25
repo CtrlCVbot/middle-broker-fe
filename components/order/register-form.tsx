@@ -58,6 +58,9 @@ import { OrderStepProgress } from "./order-step-progress";
 import { CompanySearchSection } from '@/components/broker/order/company-search-section';
 import { CompanyInfoSection } from '@/components/broker/order/company-info-section';
 import { ManagerInfoSection } from '@/components/broker/order/manager-info-section';
+import { RegisterCargoInfoCard } from '@/components/broker/order/register-cargo-info-card';
+import { RegisterTransportOptionCard } from '@/components/broker/order/register-transport-option-card';
+import { RegisterEstimateInfoCard } from '@/components/broker/order/register-estimate-info-card';
 
 interface OrderRegisterFormProps {
   onSubmit: () => void;
@@ -639,42 +642,11 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span>예상 거리</span>
-                <span className="font-medium">
-                  {isCalculating ? (
-                    <span className="animate-pulse">계산 중...</span>
-                  ) : (
-                    <span>
-                      {typeof registerData.estimatedDistance === 'number' ? 
-                        `${registerData.estimatedDistance.toLocaleString()}km` : 
-                        editMode && originalData ? 
-                          `${0}km` : 
-                          '0km'
-                      }
-                    </span>
-                  )}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span>예상 금액</span>
-                <span className="font-bold text-primary">
-                  {isCalculating ? (
-                    <span className="animate-pulse">계산 중...</span>
-                  ) : (
-                    <span>
-                      {typeof registerData.estimatedAmount === 'number' ? 
-                        `${registerData.estimatedAmount.toLocaleString()}원` : 
-                        editMode && originalData ? 
-                          originalData.amount : 
-                          '0원'
-                      }
-                    </span>
-                  )}
-                </span>
-              </div>
-            </div>
+            <RegisterEstimateInfoCard
+              estimatedDistance={registerData.estimatedDistance}
+              estimatedAmount={registerData.estimatedAmount}
+              isCalculating={isCalculating}
+            />
           </CardContent>
         </Card>
       </div>
@@ -934,12 +906,10 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                 </CardHeader>
                 {showOptions && (
                   <CardContent>
-                    <OptionSelector
-                      options={TRANSPORT_OPTIONS}
+                    <RegisterTransportOptionCard
                       selectedOptions={registerData.selectedOptions}
                       onToggle={toggleOption}
                       disabled={editMode && !isEditable('selectedOptions')}
-                      onDisabledClick={() => handleDisabledFieldClick('selectedOptions')}
                     />
                   </CardContent>
                 )}
@@ -954,43 +924,11 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">예상 거리</span>
-                      <span className="font-medium">
-                        {isCalculating ? (
-                            <span className="animate-pulse">계산 중...</span>
-                          ) : (
-                            typeof registerData.estimatedDistance === 'number' ? (
-                              <AnimatedNumber number={registerData.estimatedDistance} suffix="km" />
-                            ) : editMode && originalData ? (
-                              <AnimatedNumber number={0} suffix="km" />
-                            ) : (
-                              '0km'
-                            )
-                          )}
-                      </span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">
-                        {editMode ? '운송 금액' : '예상 금액'}
-                      </span>
-                      <span className="text-xl font-bold text-primary">
-                        {isCalculating ? (
-                            <span className="animate-pulse">계산 중...</span>
-                          ) : (
-                            typeof registerData.estimatedAmount === 'number' ? (
-                              <AnimatedNumber number={registerData.estimatedAmount} suffix="원" />
-                            ) : editMode && originalData ? (
-                              <AnimatedNumber number={Number(originalData.amount ?? 0)} suffix="원" />
-                            ) : (
-                              '0원'
-                            )
-                          )}
-                      </span>
-                    </div>
-                  </div>
+                  <RegisterEstimateInfoCard
+                    estimatedDistance={registerData.estimatedDistance}
+                    estimatedAmount={registerData.estimatedAmount}
+                    isCalculating={isCalculating}
+                  />
                 </CardContent>
               </Card>
 
