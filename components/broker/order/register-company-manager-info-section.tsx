@@ -242,7 +242,12 @@ export function CompanyManagerInfoSection({
               <Badge
                 key={manager.id}
                 variant="outline"
-                className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
+                className={cn(
+                  "cursor-pointer px-2 py-1 text-xs hover:bg-secondary",
+                  manager.id === selectedManagerId
+                    ? "bg-primary text-white border-primary hover:bg-primary/90"
+                    : ""
+                )}
                 onClick={() => onSelectManager(manager)}
               >
                 {manager.name}
