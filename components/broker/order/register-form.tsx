@@ -992,26 +992,6 @@ const {
                               {registerData.cargoType.length}/38자
                             </p>
                           </div>
-                          
-                          {/* <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  type="button" 
-                                  variant="outline" 
-                                  size="icon" 
-                                  className="mb-5"
-                                  onClick={() => setShowRemark(!showRemark)}
-                                  disabled={editMode && !isEditable('remark')}
-                                >
-                                  {showRemark ? <ChevronUp className="h-4 w-4" /> : <PencilIcon className="h-4 w-4" />}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>비고 입력란 {showRemark ? '숨기기' : '표시하기'}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider> */}
                       </div>
 
                       {/* 비고 - 조건부 렌더링 */}
