@@ -707,11 +707,11 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
             </CardHeader>
               
             <CardContent className="grid grid-rows-2 lg:grid-rows-2 gap-4 ">
+              {/* 회사, 담당자 정보 */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">
                   {/* 왼쪽: 요청 회사 정보 카드 */}
                   {/* 중간: 요청 담당자 정보 카드 */}
-                  {/* 오른쪽: ??? */}
-                  
+                  {/* 오른쪽: ??? */}                  
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">
