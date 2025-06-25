@@ -56,8 +56,10 @@ import { RegisterSuccessDialog } from '@/components/order/register-success-dialo
 
 import { OrderStepProgress } from "@/components/order/order-step-progress";
 import { CompanySearchSection } from '@/components/broker/order/company-search-section';
-import { CompanyInfoSection } from '@/components/broker/order/company-info-section';
-import { ManagerInfoSection } from '@/components/broker/order/manager-info-section';
+import { CompanyInfoSection as BrokerCompanyInfoSection } from '@/components/broker/order/company-info-section';
+import { ManagerInfoSection as BrokerManagerInfoSection } from '@/components/broker/order/manager-info-section';
+import { CompanyInfoSection } from '@/components/broker/sale/company-info-section';
+import { ManagerInfoSection } from '@/components/broker/sale/manager-info-section';
 import { RegisterCargoInfoCard } from '@/components/broker/order/register-cargo-info-card';
 import { RegisterTransportOptionCard } from '@/components/broker/order/register-transport-option-card';
 import { RegisterEstimateInfoCard } from '@/components/broker/order/register-estimate-info-card';
@@ -115,6 +117,10 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
   const [showCargoInfo, setShowCargoInfo] = useState<boolean>(false);
   const [successDialogOpen, setSuccessDialogOpen] = useState<boolean>(false);
   const [registeredOrderId, setRegisteredOrderId] = useState<string>('');
+  const [companySearchTerm, setCompanySearchTerm] = useState('');
+  const [managerSearchTerm, setManagerSearchTerm] = useState('');
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const [selectedManagerId, setSelectedManagerId] = useState<string | null>(null);
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const router = useRouter();
   
@@ -213,7 +219,16 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
   
   // React Hook Form
   const form = useForm({
-    defaultValues: initForm()
+    defaultValues: {
+      ...initForm(),
+      // 회사 및 담당자 정보 필드 추가
+      shipperName: '',
+      businessNumber: '',
+      shipperCeo: '',
+      manager: '',
+      managerContact: '',
+      managerEmail: '',
+    }
   });
   
   // 폼 데이터 업데이트 (수정 모드에서 폼 필드가 초기 데이터와 연결되도록 추가)
@@ -303,6 +318,18 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
       setShowRemark(true);
     }
   }, [registerData.remark]);
+
+  // 회사 검색 함수
+  const handleCompanySearch = () => {
+    // TODO: 실제 회사 검색 API 호출
+    console.log('회사 검색:', companySearchTerm);
+  };
+
+  // 담당자 검색 함수
+  const handleManagerSearch = () => {
+    // TODO: 실제 담당자 검색 API 호출
+    console.log('담당자 검색:', managerSearchTerm);
+  };
   
   // 모바일 환경에서는 단일 컬럼 레이아웃으로 변경
   if (isMobile) {
@@ -477,7 +504,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                     onSelectCompany={company => setDeparture({ ...registerData.departure, company: company.name })}
                   />
                   {/* 회사 정보 입력 */}
-                  <CompanyInfoSection
+                  <BrokerCompanyInfoSection
                     companyInfo={{
                       name: registerData.departure.company || '',
                       address: registerData.departure.address || '',
@@ -486,7 +513,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                     onChange={info => setDeparture({ ...registerData.departure, ...info })}
                   />
                   {/* 담당자 정보 입력 */}
-                  <ManagerInfoSection
+                  <BrokerManagerInfoSection
                     managerInfo={{
                       name: registerData.departure.name || '',
                       contact: registerData.departure.contact || ''
@@ -706,12 +733,79 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
               </div>
             </CardHeader>
               
-            <CardContent className="grid grid-rows-2 lg:grid-rows-2 gap-4 ">
+            <CardContent>
               {/* 회사, 담당자 정보 */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4 ">
                   {/* 왼쪽: 요청 회사 정보 카드 */}
+                  <Card>
+                    <CardContent className="pt-6">
+                      <CompanyInfoSection
+                        form={form}
+                        companySearchTerm={companySearchTerm}
+                        setCompanySearchTerm={setCompanySearchTerm}
+                        companies={[]} // TODO: 실제 회사 데이터 연결
+                        onSelectCompany={(company) => {
+                          form.setValue("shipperName", company.name);
+                          form.setValue("businessNumber", company.businessNumber || "");
+                          form.setValue("shipperCeo", company.ceoName || "");
+                          setSelectedCompanyId(company.id);
+                        }}
+                        selectedCompanyId={selectedCompanyId}
+                        onReset={() => {
+                          form.setValue("shipperName", "");
+                          form.setValue("businessNumber", "");
+                          form.setValue("shipperCeo", "");
+                          setSelectedCompanyId(null);
+                          setSelectedManagerId(null);
+                        }}
+                        onCompanySearch={handleCompanySearch}
+                        isEditMode={editMode}
+                        loading={isSubmitting}
+                        isLoadingCompanies={false}
+                      />
+                    </CardContent>
+                  </Card>
+
                   {/* 중간: 요청 담당자 정보 카드 */}
-                  {/* 오른쪽: ??? */}                  
+                  <Card>
+                    <CardContent className="pt-6">
+                      <ManagerInfoSection
+                        form={form}
+                        managerSearchTerm={managerSearchTerm}
+                        setManagerSearchTerm={setManagerSearchTerm}
+                        managers={[]} // TODO: 실제 담당자 데이터 연결
+                        onSelectManager={(manager) => {
+                          setSelectedManagerId(manager.id);
+                          form.setValue("manager", manager.name);
+                          form.setValue("managerContact", manager.phoneNumber || "");
+                          form.setValue("managerEmail", manager.email || "");
+                        }}
+                        selectedManagerId={selectedManagerId}
+                        onReset={() => {
+                          form.setValue("manager", "");
+                          form.setValue("managerContact", "");
+                          form.setValue("managerEmail", "");
+                          setSelectedManagerId(null);
+                        }}
+                        onManagerSearch={handleManagerSearch}
+                        isEditMode={editMode}
+                        loading={isSubmitting}
+                        isLoadingManagers={false}
+                        companySelected={!!selectedCompanyId}
+                      />
+                    </CardContent>
+                  </Card>
+
+                  {/* 오른쪽: 추가 정보 또는 예약 공간 */}
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                        <Info className="h-8 w-8 mb-2" />
+                        <p className="text-sm text-center">추가 정보 영역</p>
+                        <p className="text-xs text-center mt-1">향후 확장 예정</p>
+                      </div>
+                    </CardContent>
+                  </Card>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">
