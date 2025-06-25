@@ -50,10 +50,10 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/components/ui/use-toast";
 import { useRouter } from 'next/navigation';
-import { registerOrder, convertFormDataToApiRequest } from '@/services/order-service';
-import { handleApiError, handleOrderRegisterSuccess, validateOrderFormData } from '@/utils/order-utils';
+
+import { validateOrderFormData } from '@/utils/order-utils';
 import { RegisterSuccessDialog } from '@/components/order/register-success-dialog';
-import { OrderProgress } from "./order-progress";
+
 import { OrderStepProgress } from "./order-step-progress";
 
 interface OrderRegisterFormProps {
@@ -766,7 +766,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
               
                 <CardContent>
                   <div className="space-y-4">
-                    {/* 회사명 / 담당자 */}
+                    {/* 중량 / 차량 종류 */}
                     <div className="grid grid-cols-1 md:grid-cols-2">
 
                       <div>

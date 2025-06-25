@@ -157,6 +157,11 @@ export const data = {
       icon: LifeBuoy,
     },
     {
+      title: "오더 등록",
+      url: "/broker/order-ver01/register",
+      icon: LifeBuoy,
+    },
+    {
       title: "업체 관리",
       url: "/broker/company/list",
       icon: Building,
