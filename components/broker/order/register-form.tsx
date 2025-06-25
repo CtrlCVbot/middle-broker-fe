@@ -64,6 +64,9 @@ import { RegisterCargoInfoCard } from '@/components/broker/order/register-cargo-
 import { RegisterTransportOptionCard } from '@/components/broker/order/register-transport-option-card';
 import { RegisterEstimateInfoCard } from '@/components/broker/order/register-estimate-info-card';
 
+import { useCompanies, useCompanyStore } from "@/store/company-store";
+import { useBrokerCompanyManagerStore } from "@/store/broker-company-manager-store";
+
 interface OrderRegisterFormProps {
   onSubmit: () => void;
   editMode?: boolean;
@@ -121,6 +124,19 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
   const [managerSearchTerm, setManagerSearchTerm] = useState('');
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [selectedManagerId, setSelectedManagerId] = useState<string | null>(null);
+  const { setFilter } = useCompanyStore();
+  const companiesQuery = useCompanies();
+
+// 담당자 관리 store 사용
+const {
+  managers: brokerManagers,
+  isLoading: isLoadingManagers,
+  setFilter: setManagerFilter,
+  loadManagers,
+  currentCompanyId
+} = useBrokerCompanyManagerStore();
+
+
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const router = useRouter();
   
@@ -319,15 +335,34 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
     }
   }, [registerData.remark]);
 
+
+  //---
+  
+
   // 회사 검색 함수
   const handleCompanySearch = () => {
     // TODO: 실제 회사 검색 API 호출
+    setFilter({ keyword: companySearchTerm });
     console.log('회사 검색:', companySearchTerm);
   };
+
+  // 회사 선택 시 담당자 목록 로드
+  useEffect(() => {
+    if (selectedCompanyId) {
+      console.log('🔍 선택된 회사 ID로 담당자 목록 로드:', selectedCompanyId);
+      loadManagers(selectedCompanyId);
+    }
+  }, [selectedCompanyId, loadManagers]);
 
   // 담당자 검색 함수
   const handleManagerSearch = () => {
     // TODO: 실제 담당자 검색 API 호출
+    if (selectedCompanyId) {
+      setManagerFilter({ 
+        searchTerm: managerSearchTerm,
+        showInactive: false 
+      });
+    }
     console.log('담당자 검색:', managerSearchTerm);
   };
   
@@ -738,42 +773,55 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4 ">
                   {/* 왼쪽: 요청 회사 정보 카드 */}
                   <Card>
-                    <CardContent className="pt-6">
+                    <CardContent>
                       <CompanyInfoSection
                         form={form}
                         companySearchTerm={companySearchTerm}
                         setCompanySearchTerm={setCompanySearchTerm}
-                        companies={[]} // TODO: 실제 회사 데이터 연결
+                        //companies={[]} // TODO: 실제 회사 데이터 연결
+                        companies={companiesQuery.data?.data ?? []}
                         onSelectCompany={(company) => {
                           form.setValue("shipperName", company.name);
                           form.setValue("businessNumber", company.businessNumber || "");
-                          form.setValue("shipperCeo", company.ceoName || "");
+                          if (company.ceoName) {
+                            form.setValue("shipperCeo", company.ceoName);
+                          }
                           setSelectedCompanyId(company.id);
+                          // 회사 선택 시 담당자 목록 로드
+                          if (company.id) {
+                            loadManagers(company.id);
+                          }
                         }}
                         selectedCompanyId={selectedCompanyId}
                         onReset={() => {
-                          form.setValue("shipperName", "");
-                          form.setValue("businessNumber", "");
-                          form.setValue("shipperCeo", "");
+                          form.reset({
+                            ...form.getValues(),
+                            shipperName: "",
+                            businessNumber: "",
+                            shipperCeo: "",
+                            manager: "",
+                            managerContact: "",
+                            managerEmail: "",
+                          });
                           setSelectedCompanyId(null);
                           setSelectedManagerId(null);
                         }}
                         onCompanySearch={handleCompanySearch}
-                        isEditMode={editMode}
+                        isEditMode={editMode}                        
                         loading={isSubmitting}
-                        isLoadingCompanies={false}
+                        isLoadingCompanies={companiesQuery.isLoading}                        
                       />
                     </CardContent>
                   </Card>
 
                   {/* 중간: 요청 담당자 정보 카드 */}
                   <Card>
-                    <CardContent className="pt-6">
+                    <CardContent>
                       <ManagerInfoSection
                         form={form}
                         managerSearchTerm={managerSearchTerm}
                         setManagerSearchTerm={setManagerSearchTerm}
-                        managers={[]} // TODO: 실제 담당자 데이터 연결
+                        managers={brokerManagers.filter(manager => manager.status === '활성')}
                         onSelectManager={(manager) => {
                           setSelectedManagerId(manager.id);
                           form.setValue("manager", manager.name);
@@ -782,15 +830,18 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                         }}
                         selectedManagerId={selectedManagerId}
                         onReset={() => {
-                          form.setValue("manager", "");
-                          form.setValue("managerContact", "");
-                          form.setValue("managerEmail", "");
+                          form.reset({
+                            ...form.getValues(),
+                            manager: "",
+                            managerContact: "",
+                            managerEmail: "",
+                          });
                           setSelectedManagerId(null);
                         }}
                         onManagerSearch={handleManagerSearch}
                         isEditMode={editMode}
                         loading={isSubmitting}
-                        isLoadingManagers={false}
+                        isLoadingManagers={isLoadingManagers}
                         companySelected={!!selectedCompanyId}
                       />
                     </CardContent>
@@ -808,6 +859,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
                   </Card>
               </div>
 
+              {/* 출발지, 도착지 정보/화물 정보 */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">
                 {/* 중간: 출발지/도착지 정보 카드 */}
                 <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">              

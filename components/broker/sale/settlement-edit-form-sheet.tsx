@@ -664,7 +664,7 @@ export function SettlementEditFormSheet() {
     };
   }, [orders, isEditMode, editingSalesBundle]);
 
-  // 검색어 변경 함수
+  // 회사 검색 함수
   const handleCompanySearch = () => {
     setFilter({ keyword: companySearchTerm });
   };

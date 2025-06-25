@@ -110,7 +110,7 @@ export const useBrokerCompanyManagerStore = create<BrokerCompanyManagerState>((s
       
       // API 호출로 대체
       const response = await BrokerManagerService.getManagers(companyId, filter);
-      
+      console.log("🔍 담당자 목록 로드 결과:", response);
       // 상태 업데이트
       set({ 
         managers: response.data,
