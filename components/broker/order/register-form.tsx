@@ -58,7 +58,7 @@ import { ManagerInfoSection as BrokerManagerInfoSection } from '@/components/bro
 import { CompanyInfoSection } from '@/components/broker/order/register-company-info-section';
 import { ManagerInfoSection } from '@/components/broker/order/register-manager-info-section';
 import { CompanyManagerInfoSection } from '@/components/broker/order/register-company-manager-info-section';
-import { RegisterCargoInfoCard } from '@/components/broker/order/register-cargo-info-card';
+
 import { RegisterTransportOptionCard } from '@/components/broker/order/register-transport-option-card';
 import { RegisterEstimateInfoCard } from '@/components/broker/order/register-estimate-info-card';
 
@@ -269,6 +269,7 @@ const {
   // 폼 제출 처리 함수 업데이트
   const handleFormSubmit = async (data: any) => {
     // 폼 유효성 검증 (회사/담당자 선택 포함)
+    console.log("폼 데이터:", registerData);
     const isValid = validateOrderFormData(registerData, selectedCompanyId, selectedManagerId);
     console.log("폼 유효성 검증:", isValid);
     console.log("폼 데이터:", registerData);

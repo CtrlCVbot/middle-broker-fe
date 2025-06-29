@@ -96,6 +96,7 @@ export interface ICreateOrderResponse {
 export const registerOrder = async (orderData: ICreateOrderRequest): Promise<ICreateOrderResponse> => {
   try {
     // API 호출 전 스키마 유효성 검증
+    console.log("API orderData", orderData);
     const validationResult = validateOrderData(orderData);
     if (!validationResult.success) {
       // 첫 번째 에러 메시지 표시
