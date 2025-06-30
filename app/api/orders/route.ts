@@ -194,7 +194,10 @@ const CreateOrderSchema = z.object({
   
   // 화주 회사 정보
   companyId: z.string().uuid(),
-  companySnapshot: z.any().optional() // JSON 타입은 any로 처리
+  companySnapshot: z.any().optional(), // JSON 타입은 any로 처리
+  
+  // 선택된 담당자 정보
+  selectedManagerId: z.string().uuid().optional()
 });
 
 export async function POST(request: NextRequest) {
@@ -231,18 +234,35 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
-    const [requestUserCompany] = await db
+    
+    // 선택된 회사 정보 조회
+    const [selectedCompany] = await db
       .select()
       .from(companies)
       .where(eq(companies.id, orderData.companyId))
       .limit(1)
       .execute();
 
-    if (!requestUserCompany) {
+    if (!selectedCompany) {
       return NextResponse.json(
-        { error: '화주 회사를 찾을 수 없습니다.' },
+        { error: '선택된 회사를 찾을 수 없습니다.' },
         { status: 404 }
       );
+    }
+
+    // 선택된 담당자 정보 조회 (있는 경우)
+    let selectedManager = null;
+    if (orderData.selectedManagerId) {
+      const [manager] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, orderData.selectedManagerId))
+        .limit(1)
+        .execute();
+      
+      if (manager) {
+        selectedManager = manager;
+      }
     }
 
     // 현재 시간
@@ -253,17 +273,17 @@ export async function POST(request: NextRequest) {
       .insert(orders)
       .values({
         companyId: orderData.companyId,
-        companySnapshot: requestUserCompany,
-        contactUserId: requestUserId,
-        contactUserMail: requestUser.email,
-        contactUserPhone: requestUser.phone_number,
+        companySnapshot: selectedCompany,
+        contactUserId: selectedManager?.id || requestUserId,
+        contactUserMail: selectedManager?.email || requestUser.email,
+        contactUserPhone: selectedManager?.phone_number || requestUser.phone_number,
         
         contactUserSnapshot: {
-        name: requestUser.name,
-        email: requestUser.email,
-        mobile: requestUser.phone_number,
-        department: requestUser.department,
-        position: requestUser.position,
+        name: selectedManager?.name || requestUser.name,
+        email: selectedManager?.email || requestUser.email,
+        mobile: selectedManager?.phone_number || requestUser.phone_number,
+        department: selectedManager?.department || requestUser.department,
+        position: selectedManager?.position || requestUser.position,
         }as IUserSnapshot,
 
         flowStatus: orderFlowStatusEnum.enumValues[0],

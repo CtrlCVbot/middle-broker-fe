@@ -63,7 +63,9 @@ const initialOrderRegisterData: IOrderRegisterData = {
   },
   selectedOptions: [],
   estimatedDistance: undefined,
-  estimatedAmount: undefined
+  estimatedAmount: undefined,
+  selectedCompanyId: undefined,
+  selectedManagerId: undefined
 };
 
 // 최근 사용 주소 저장 인터페이스
@@ -90,6 +92,8 @@ export interface IOrderRegisterStore {
   toggleOption: (optionId: string) => void;
   setEstimatedInfo: (distance: number, amount: number) => void;
   setIsCalculating: (isCalculating: boolean) => void;
+  setSelectedCompanyId: (companyId: string | undefined) => void;
+  setSelectedManagerId: (managerId: string | undefined) => void;
   resetForm: () => void;
   addRecentLocation: (type: 'departure' | 'destination', info: ILocationInfo) => void;
   useRecentLocation: (type: 'departure' | 'destination', locationId: string) => void;
@@ -159,6 +163,16 @@ export const useOrderRegisterStore = create<IOrderRegisterStore>()(
       setIsCalculating: (isCalculating) => 
         set((state) => ({
           isCalculating
+        })),
+        
+      setSelectedCompanyId: (companyId) => 
+        set((state) => ({
+          registerData: { ...state.registerData, selectedCompanyId: companyId }
+        })),
+        
+      setSelectedManagerId: (managerId) => 
+        set((state) => ({
+          registerData: { ...state.registerData, selectedManagerId: managerId }
         })),
         
       resetForm: () => 

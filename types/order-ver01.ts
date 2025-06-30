@@ -116,6 +116,8 @@ export interface IOrderRegisterData {
   selectedOptions: string[];
   estimatedDistance?: number;
   estimatedAmount?: number;
+  selectedCompanyId?: string;
+  selectedManagerId?: string;
 } 
 
 // 검색 필터 인터페이스

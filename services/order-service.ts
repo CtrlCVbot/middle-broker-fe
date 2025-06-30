@@ -51,6 +51,9 @@ export interface ICreateOrderRequest {
   // 화주 회사 정보
   companyId: string;
   companySnapshot?: ICompanySnapshot;
+  
+  // 선택된 담당자 정보
+  selectedManagerId?: string;
 }
 
 // 화물 등록 응답 인터페이스
@@ -195,7 +198,8 @@ export const convertFormDataToApiRequest = (formData: any): ICreateOrderRequest 
     priceType: "기본",
     taxType: "과세",
     
-    companyId: user?.companyId || '',
+    companyId: formData.selectedCompanyId || user?.companyId || '',
+    selectedManagerId: formData.selectedManagerId,
   };
   
   // 변환된 데이터의 유효성 검증 (디버깅 목적)

@@ -190,6 +190,14 @@ const {
         editStore.setRegisterData({ selectedOptions: currentOptions });
       } 
     : registerStore.toggleOption;
+    
+  const setStoreCompanyId = editMode 
+    ? (companyId: string | undefined) => editStore.setRegisterData({ selectedCompanyId: companyId }) 
+    : registerStore.setSelectedCompanyId;
+    
+  const setStoreManagerId = editMode 
+    ? (managerId: string | undefined) => editStore.setRegisterData({ selectedManagerId: managerId }) 
+    : registerStore.setSelectedManagerId;
   
   // editMode일 때 필드 상태 제어를 위한 추가 state
   const { isFieldEditable, originalData } = editStore;
@@ -270,7 +278,7 @@ const {
   const handleFormSubmit = async (data: any) => {
     // 폼 유효성 검증 (회사/담당자 선택 포함)
     console.log("폼 데이터:", registerData);
-    const isValid = validateOrderFormData(registerData, selectedCompanyId, selectedManagerId);
+    const isValid = validateOrderFormData(registerData, registerData.selectedCompanyId, registerData.selectedManagerId);
     console.log("폼 유효성 검증:", isValid);
     console.log("폼 데이터:", registerData);
     if (!isValid) {
@@ -785,7 +793,9 @@ const {
                             if (company.ceoName) {
                               form.setValue("shipperCeo", company.ceoName);
                             }
+                            // 로컬 상태와 스토어 상태 모두 업데이트
                             setSelectedCompanyId(company.id);
+                            setStoreCompanyId(company.id);
                             // 회사 선택 시 담당자 목록 로드
                             if (company.id) {
                               loadManagers(company.id);
@@ -799,6 +809,7 @@ const {
                           managers={brokerManagers.filter(manager => manager.status === '활성')}
                           onSelectManager={(manager) => {
                             setSelectedManagerId(manager.id);
+                            setStoreManagerId(manager.id);
                             form.setValue("manager", manager.name);
                             form.setValue("managerContact", manager.phoneNumber || "");
                             form.setValue("managerEmail", manager.email || "");
@@ -818,6 +829,8 @@ const {
                             });
                             setSelectedCompanyId(null);
                             setSelectedManagerId(null);
+                            setStoreCompanyId(undefined);
+                            setStoreManagerId(undefined);
                           }}
                           isEditMode={editMode}
                           loading={isSubmitting}
