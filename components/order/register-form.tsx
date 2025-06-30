@@ -958,14 +958,12 @@ const {
                                 onClick={() => handleDisabledFieldClick('remark')}
                               />
                             </div>
-                                        )}
-              </div>
-              </div>
-
-            </CardContent>
-          </Card>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
-              </div>
+                </div>
 
               {/* 출발지, 도착지 정보/화물 정보 */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -1066,6 +1064,7 @@ const {
                   )}
                 </Button>
               )}
+                </div>
               </div>
 
             </CardContent>
