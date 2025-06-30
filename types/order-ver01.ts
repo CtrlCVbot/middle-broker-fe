@@ -1,5 +1,7 @@
 // 화주 화물 관리 시스템 타입 정의
 import { IAddress } from './address';
+// Settlement 관련 타입 임포트
+import { SettlementStatus } from "./settlement";
 
 // 화물 상태 타입 정의
 export const ORDER_FLOW_STATUSES = [
@@ -385,6 +387,37 @@ export interface IOrderListResponse {
   data: IOrder[];
   pagination: IOrderPagination;
 } 
+
+// order.ts에서 사용되던 간단한 화물 정보 인터페이스 (호환성을 위해 유지)
+export interface ISimpleOrder {
+  id: string;                  // 화물번호 (고유 식별자)
+  status: OrderStatusType;     // 상태 (배차대기, 배차완료, 상차완료, 하차완료 등)
+  departureDateTime: string;   // 출발 일시
+  departureCity: string;       // 출발지 도시
+  departureLocation: string;   // 출발지
+  arrivalDateTime: string;     // 도착 예정 일시
+  arrivalCity: string;         // 도착지 도시
+  arrivalLocation: string;     // 도착지
+  amount: number;              // 금액
+  fee: number;                 // 수수료
+  vehicle: {                   // 차량 정보
+    type: string;              // 차량 종류
+    weight: string;            // 중량
+  };
+  driver: {                    // 차주 정보
+    name: string;              // 차주명
+    contact: string;           // 연락처
+  };
+  createdAt: string;           // 등록일
+  settlementStatus?: SettlementStatus; // 정산 상태
+  settlementId?: string;       // 정산 ID
+}
+
+// order.ts에서 사용되던 목록 조회 응답 인터페이스 (호환성을 위해 유지)
+export interface ISimpleOrderResponse {
+  data: ISimpleOrder[];        // 화물 목록 데이터
+  pagination: IOrderPagination; // 페이징 정보
+}
 
 // 배차 상태 진행도를 계산하는 함수
 export const getProgressPercentage = (currentStatus: OrderFlowStatus): number => {

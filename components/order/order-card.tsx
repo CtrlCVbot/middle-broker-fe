@@ -17,7 +17,7 @@ import {
   DollarSign,
   User,
 } from "lucide-react";
-import { IOrder } from "@/types/order";
+import { ISimpleOrder } from "@/types/order-ver01";
 import { formatCurrency } from "@/lib/utils";
 import { useOrderDetailStore } from "@/store/order-detail-store";
 
@@ -42,7 +42,7 @@ const getStatusBadge = (status: string) => {
 };
 
 interface OrderCardProps {
-  orders: IOrder[];
+  orders: ISimpleOrder[];
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;

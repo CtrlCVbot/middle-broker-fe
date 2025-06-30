@@ -1,4 +1,4 @@
-import { IOrder, IOrderResponse } from "@/types/order";
+import { ISimpleOrder, ISimpleOrderResponse } from "@/types/order-ver01";
 
 // 도시 목록 (상수로 먼저 정의)
 export const CITIES = [
@@ -52,7 +52,7 @@ export const WEIGHT_TYPES = [
 ];
 
 // 목업 화물 데이터
-export const mockOrders: IOrder[] = [
+export const mockOrders: ISimpleOrder[] = [
   {
     id: "202103150123",
     status: "배차대기",
@@ -382,7 +382,7 @@ export const getOrdersByPage = (
   status?: string,
   startDate?: string,
   endDate?: string
-): IOrderResponse => {
+): ISimpleOrderResponse => {
   let filteredData = [...mockOrders];
   
   // 출발지 도시 필터링

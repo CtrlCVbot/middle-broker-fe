@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-import { IOrder } from "@/types/order";
+import { ISimpleOrder } from "@/types/order-ver01";
 import { formatCurrency } from "@/lib/utils";
 import { useOrderDetailStore } from "@/store/order-detail-store";
 import { ko } from "date-fns/locale";
@@ -56,7 +56,7 @@ const getDateTimeformat = (date: string) => {
 }
 
 interface OrderTableProps {
-  orders: IOrder[];
+  orders: ISimpleOrder[];
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;

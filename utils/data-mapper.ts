@@ -1,4 +1,4 @@
-import { IOrder as IFrontendOrder, OrderStatusType } from "@/types/order";
+import { ISimpleOrder as IFrontendOrder, OrderStatusType } from "@/types/order-ver01";
 import { IOrder as IBackendOrder, OrderFlowStatus, IOrderListResponse } from "@/types/order-ver01";
 import { IBrokerOrder, IBrokerOrderResponse, IBrokerOrderSummary } from "@/types/broker-order";
 import { IOrderWithDispatchItem, IOrderWithDispatchListResponse, IOrderWithDispatchDetailResponse } from "@/types/order-with-dispatch";
