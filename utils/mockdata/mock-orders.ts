@@ -1,4 +1,4 @@
-import { ISimpleOrder, ISimpleOrderResponse } from "@/types/order-ver01";
+import { ISimpleOrder, ISimpleOrderResponse } from "@/types/order";
 
 // 도시 목록 (상수로 먼저 정의)
 export const CITIES = [

@@ -3,7 +3,7 @@
 import React from "react";
 import { Progress } from "@/components/ui/progress";
 
-import { ORDER_FLOW_STATUSES, OrderFlowStatus, getProgressPercentage, isStatusAtLeast } from "@/types/order-ver01";
+import { ORDER_FLOW_STATUSES, OrderFlowStatus, getProgressPercentage, isStatusAtLeast } from "@/types/order";
 import { cn } from "@/lib/utils";
 import { getStatusBadge, getStatusColor } from "./order-table-ver01";
 

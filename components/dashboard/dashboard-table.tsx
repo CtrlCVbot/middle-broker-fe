@@ -9,7 +9,7 @@ import { Package, RefreshCw, ArrowRight, Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import { OrderStatusType } from "@/types/order-ver01";
+import { OrderStatusType } from "@/types/order";
 
 
 // 상태에 따른 배지 색상 및 스타일

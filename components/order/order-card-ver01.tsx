@@ -24,7 +24,7 @@ import {
   LogOut,
   LogIn,
 } from "lucide-react";
-import { IOrder } from "@/types/order-ver01";
+import { IOrder } from "@/types/order";
 import { cn, formatCurrency } from "@/lib/utils";
 import { useOrderDetailStore } from "@/store/order-detail-store";
 import { getSchedule, getTime, getStatusColor, getStatusBadge } from "./order-table-ver01";

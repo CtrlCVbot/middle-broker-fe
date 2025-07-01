@@ -3,7 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { FormLabel } from '@/components/ui/form';
-import { ORDER_VEHICLE_TYPES, ORDER_VEHICLE_WEIGHTS } from '@/types/order-ver01';
+import { ORDER_VEHICLE_TYPES, ORDER_VEHICLE_WEIGHTS } from '@/types/order';
 
 export interface IRegisterCargoInfoCardProps {
   vehicleType: string;

@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { getStatusColor } from '@/components/order/order-table-ver01';
-import { ORDER_FLOW_STATUSES } from '@/types/order-ver01';
+import { ORDER_FLOW_STATUSES } from '@/types/order';
 import { updateDispatchFields } from '@/services/broker-dispatch-service';
 import { useToast } from '@/components/ui/use-toast';
 import { 

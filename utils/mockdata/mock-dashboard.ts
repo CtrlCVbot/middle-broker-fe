@@ -1,4 +1,4 @@
-import { OrderStatusType } from "@/types/order-ver01";
+import { OrderStatusType } from "@/types/order";
 import { addDays, format, subDays } from "date-fns";
 import { ko } from "date-fns/locale";
 

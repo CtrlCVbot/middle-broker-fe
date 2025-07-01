@@ -5,7 +5,7 @@ import { companies } from '@/db/schema/companies'; // companies 테이블 import
 import { users } from '@/db/schema/users'; // users 테이블 import (기사, 주선사 담당자)
 import { vehicleTypeEnum, vehicleWeightEnum } from '@/db/schema/orders'; // 기존 Enum 재사용 또는 필요시 분리
 import { dispatchStatusEnum } from '@/db/schema/orders'; // 현재는 기존 것 사용 가정
-import { ICompanySnapshot, IDriverSnapshot, IUserSnapshot } from '@/types/order-ver01';
+import { ICompanySnapshot, IDriverSnapshot, IUserSnapshot } from '@/types/order';
 import { drivers } from './drivers';
 
 // (선택적) 주선사 배차 관련 스냅샷 타입 정의

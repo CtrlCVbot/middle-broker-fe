@@ -2,7 +2,7 @@
 
 import { Check, Truck } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { ORDER_FLOW_STATUSES, OrderFlowStatus, isStatusAtLeast } from "@/types/order-ver01"
+import { ORDER_FLOW_STATUSES, OrderFlowStatus, isStatusAtLeast } from "@/types/order"
 import { getStatusBadge, getStatusColor } from "./order-table-ver01";
 
 interface OrderStepProgressProps {

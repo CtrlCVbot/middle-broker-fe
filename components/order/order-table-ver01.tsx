@@ -28,7 +28,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-import { IOrder } from "@/types/order-ver01";
+import { IOrder } from "@/types/order";
 import { formatCurrency } from "@/lib/utils";
 import { useOrderDetailStore } from "@/store/order-detail-store";
 import { ko } from "date-fns/locale";

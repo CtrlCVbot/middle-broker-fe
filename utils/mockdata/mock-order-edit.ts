@@ -1,5 +1,5 @@
 import { IOrderDetail, mockOrderDetails } from './mock-orders-detail';
-import { IOrderRegisterData } from '@/types/order-ver01';
+import { IOrderRegisterData } from '@/types/order';
 
 // 화물 수정 함수 (목업)
 export const updateOrder = async (

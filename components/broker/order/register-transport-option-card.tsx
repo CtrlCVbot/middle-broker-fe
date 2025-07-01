@@ -1,6 +1,6 @@
 import React from 'react';
 import { OptionSelector } from '@/components/order/register-option-selector';
-import { TRANSPORT_OPTIONS } from '@/types/order-ver01';
+import { TRANSPORT_OPTIONS } from '@/types/order';
 
 export interface IRegisterTransportOptionCardProps {
   selectedOptions: string[];

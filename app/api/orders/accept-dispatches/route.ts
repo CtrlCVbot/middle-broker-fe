@@ -7,7 +7,7 @@ import { getCurrentUser } from '@/utils/auth';
 import { z } from 'zod';
 import { users } from '@/db/schema/users';
 import { companies } from '@/db/schema/companies';
-import { IUserSnapshot } from '@/types/order-ver01';
+import { IUserSnapshot } from '@/types/order';
 
 // 요청 스키마 검증
 const acceptDispatchesSchema = z.object({

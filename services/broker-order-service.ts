@@ -1,9 +1,9 @@
 import { ApiClient, IApiError } from '@/utils/api-client';
-import { IAddressSnapshot, ICompanySnapshot, IPriceSnapshot, ITransportOptionsSnapshot } from '@/types/order-ver01';
+import { IAddressSnapshot, ICompanySnapshot, IPriceSnapshot, ITransportOptionsSnapshot } from '@/types/order';
 import { getCurrentUser } from '@/utils/auth';
 import { validateOrderData, validateOrderDataWithErrors } from '@/utils/order-validation';
 import { showValidationError } from '@/utils/order-utils';
-import { IOrder, IOrderListResponse, OrderFlowStatus, OrderVehicleType, OrderVehicleWeight } from "@/types/order-ver01";
+import { IOrder, IOrderListResponse, OrderFlowStatus, OrderVehicleType, OrderVehicleWeight } from "@/types/order";
 import { IOrderWithDispatchListResponse, IOrderWithDispatchDetailResponse } from "@/types/order-with-dispatch";
 import { mapApiResponseToBrokerDispatchList, mapApiResponseToBrokerDispatchDetail } from '@/utils/data-mapper';
 

@@ -15,7 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { useOrderRegisterStore } from "@/store/order-register-store";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMutation } from "@tanstack/react-query";
-import { TRANSPORT_OPTIONS } from "@/types/order-ver01";
+import { TRANSPORT_OPTIONS } from "@/types/order";
 import { useToast } from "@/components/ui/use-toast";
 import { CheckCircleIcon, MapPinIcon, PackageIcon, TruckIcon, HandCoins, Phone, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";

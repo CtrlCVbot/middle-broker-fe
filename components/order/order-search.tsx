@@ -23,7 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { ORDER_STATUS, OrderStatusType } from "@/types/order-ver01";
+import { ORDER_STATUS, OrderStatusType } from "@/types/order";
 
 export function OrderSearch() {
   const {

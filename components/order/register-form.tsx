@@ -24,26 +24,23 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatusFlow } from "@/components/order/status-badge";
+
 import { useForm } from "react-hook-form";
 import { useOrderRegisterStore } from "@/store/order-register-store";
 import { useOrderEditStore } from "@/store/order-edit-store";
-import { 
-  OrderVehicleType, 
-  OrderVehicleWeight, 
-  ITransportOptionsSnapshot,
+import {  
   ORDER_VEHICLE_TYPES,
   ORDER_VEHICLE_WEIGHTS
-} from "@/types/order-ver01";
+} from "@/types/order";
 
 import { 
   calculateAmount, 
   calculateDistance, 
   //searchAddress 
 } from "@/utils/mockdata/mock-register";
-import { LocationForm } from "@/components/order/register-location-form";
+
 import { LocationFormVer01 } from "@/components/order/register-location-form-ver01";
-import { OptionSelector } from "./register-option-selector";
+
 import { TruckIcon, MapPinIcon, Settings2 as OptionsIcon, Calculator as CalculatorIcon, ChevronDown, ChevronUp, PencilIcon, Info, Weight, Truck, Container, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -55,11 +52,9 @@ import { validateOrderFormData } from '@/utils/order-utils';
 import { RegisterSuccessDialog } from '@/components/order/register-success-dialog';
 
 import { OrderStepProgress } from "./order-step-progress";
-import { CompanySearchSection } from '@/components/broker/order/company-search-section';
-import { CompanyInfoSection } from '@/components/broker/order/company-info-section';
-import { ManagerInfoSection } from '@/components/broker/order/manager-info-section';
+
 import { CompanyManagerInfoSection } from '@/components/broker/order/register-company-manager-info-section';
-import { RegisterCargoInfoCard } from '@/components/broker/order/register-cargo-info-card';
+
 import { RegisterTransportOptionCard } from '@/components/broker/order/register-transport-option-card';
 import { RegisterEstimateInfoCard } from '@/components/broker/order/register-estimate-info-card';
 
@@ -371,356 +366,7 @@ const {
     console.log('담당자 검색:', managerSearchTerm);
   };
   
-  // 모바일 환경에서는 단일 컬럼 레이아웃으로 변경
-  if (isMobile) {
-    return (
-      <div className="space-y-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-3 mb-4">
-            <TabsTrigger value="vehicle">차량정보</TabsTrigger>
-            <TabsTrigger value="departure">출발지</TabsTrigger>
-            <TabsTrigger value="destination">도착지</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="vehicle" className="space-y-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <TruckIcon className="h-5 w-5 mr-2" />
-                  차량 및 화물 정보
-                </CardTitle>
-                {editMode && originalData && (
-                  <div className="pt-2">
-                    <div className="text-sm font-medium text-muted-foreground mb-2">배차 진행 상태</div>
-                    <StatusFlow currentStatus={originalData.status as any} />
-                  </div>
-                )}
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form className="space-y-4">
-                    <div className="grid grid-cols-12 gap-4">
-                      
-                      {/* 차량 종류 */}
-                      <div className="col-span-12 md:col-span-1">
-                        <FormLabel>차량 종류</FormLabel>
-                        <Select
-                          value={registerData.vehicleType}
-                          onValueChange={(value) => setVehicleType(value as any)}
-                          disabled={editMode && !isEditable('vehicleType')}
-                        >
-                          <SelectTrigger 
-                            onClick={() => handleDisabledFieldClick('vehicleType')}
-                            className={editMode && !isEditable('vehicleType') ? 'bg-gray-100' : ''}
-                          >
-                            <SelectValue placeholder="차량 종류 선택" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ORDER_VEHICLE_TYPES.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      {/* 차량 중량 */}
-                      <div className="col-span-12 md:col-span-1">
-                        <FormLabel>중량</FormLabel>
-                        <Select
-                          value={registerData.weightType}
-                          onValueChange={(value) => setWeightType(value as any)}
-                          disabled={editMode && !isEditable('weightType')}
-                        >
-                          <SelectTrigger 
-                            onClick={() => handleDisabledFieldClick('weightType')}
-                            className={editMode && !isEditable('weightType') ? 'bg-gray-100' : ''}
-                          >
-                            <SelectValue placeholder="중량 선택" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ORDER_VEHICLE_WEIGHTS.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* 화물 품목 */}
-                      <div className="col-span-12 md:col-span-10 flex items-end gap-2">
-                        <div className="flex-1">
-                          <FormLabel>화물 품목</FormLabel>
-                          <Input
-                            placeholder="화물 품목을 입력하세요 (최대 38자)"
-                            maxLength={38}
-                            value={registerData.cargoType}
-                            onChange={(e) => setCargoType(e.target.value)}
-                            disabled={editMode && !isEditable('cargoType')}
-                            className={editMode && !isEditable('cargoType') ? 'bg-gray-100' : ''}
-                            onClick={() => handleDisabledFieldClick('cargoType')}
-                          />
-                          <p className="text-xs text-right text-muted-foreground mt-1">
-                            {registerData.cargoType.length}/38자
-                          </p>
-                        </div>
-                        
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button 
-                                type="button" 
-                                variant="outline" 
-                                size="icon" 
-                                className="mb-5"
-                                onClick={() => setShowRemark(!showRemark)}
-                                disabled={editMode && !isEditable('remark')}
-                              >
-                                {showRemark ? <ChevronUp className="h-4 w-4" /> : <PencilIcon className="h-4 w-4" />}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>비고 입력란 {showRemark ? '숨기기' : '표시하기'}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-
-                    </div>
-                    
-                    
-                    
-                    {/* 비고 - 조건부 렌더링 */}
-                    {(showRemark || (editMode && registerData.remark)) && (
-                      <div className="animate-in fade-in-50 duration-200">
-                        <div className="flex items-center justify-between">
-                          <FormLabel>비고</FormLabel>
-                          {editMode && isEditable('remark') && (
-                            <div className="flex items-center text-xs text-green-600">
-                              <Info className="h-3 w-3 mr-1" />
-                              편집 가능
-                            </div>
-                          )}
-                        </div>
-                        <Textarea
-                          placeholder="비고 (선택사항)"
-                          value={registerData.remark || ''}
-                          onChange={(e) => setRemark(e.target.value)}
-                          className={cn("resize-none h-20", editMode && !isEditable('remark') ? 'bg-gray-100' : '')}
-                          disabled={editMode && !isEditable('remark')}
-                          onClick={() => handleDisabledFieldClick('remark')}
-                        />
-                      </div>
-                    )}
-                    
-                    <Button
-                      type="button"
-                      onClick={() => setActiveTab("departure")}
-                      className="w-full mt-4"
-                    >
-                      다음: 출발지 정보
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="departure" className="pt-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <MapPinIcon className="h-5 w-5 mr-2 text-blue-500" />
-                  출발지 정보
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* 업체 검색/선택 */}
-                  <CompanySearchSection
-                    selectedCompany={registerData.departure.company ? { name: registerData.departure.company } : undefined}
-                    onSelectCompany={company => setDeparture({ ...registerData.departure, company: company.name })}
-                  />
-                  {/* 회사 정보 입력 */}
-                  <CompanyInfoSection
-                    companyInfo={{
-                      name: registerData.departure.company || '',
-                      address: registerData.departure.address || '',
-                      contact: registerData.departure.contact || ''
-                    }}
-                    onChange={info => setDeparture({ ...registerData.departure, ...info })}
-                  />
-                  {/* 담당자 정보 입력 */}
-                  <ManagerInfoSection
-                    managerInfo={{
-                      name: registerData.departure.name || '',
-                      contact: registerData.departure.contact || ''
-                    }}
-                    onChange={info => setDeparture({ ...registerData.departure, ...info })}
-                  />
-                  {/* 기존 LocationForm 등 나머지 출발지 입력 UI */}
-                  <LocationForm
-                    type="departure"
-                    locationInfo={registerData.departure}
-                    onChange={(info) => setDeparture(info as any)}
-                    title="출발지 정보"
-                    disabled={editMode && !isEditable('departure')}
-                    onDisabledClick={() => handleDisabledFieldClick('departure')}
-                  />
-                  
-                  <div className="flex justify-between mt-6">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setActiveTab("vehicle")}
-                    >
-                      이전
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={() => setActiveTab("destination")}
-                    >
-                      다음: 도착지 정보
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="destination">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <MapPinIcon className="h-5 w-5 mr-2 text-red-500" />
-                  도착지 정보
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <LocationForm
-                    type="destination"
-                    locationInfo={registerData.destination}
-                    onChange={(info) => setDestination(info as any)}
-                    title="도착지 정보"
-                    disabled={editMode && !isEditable('destination')}
-                    onDisabledClick={() => handleDisabledFieldClick('destination')}
-                  />
-                  
-                  <div className="flex justify-between mt-6">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setActiveTab("departure")}
-                    >
-                      이전
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        const isValid = validateOrderFormData(registerData);
-                        if (isValid) {
-                          onSubmit();
-                        }
-                      }}
-                    >
-                      화물 등록
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="departureCopy" className="pt-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <MapPinIcon className="h-5 w-5 mr-2 text-bule-500" />
-                  출발지 정보 복사
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <LocationFormVer01
-                  type="departure"
-                  locationInfo={registerData.departure}
-                  onChange={(info) => setDeparture(info as any)}
-                  compact={true}
-                  disabled={editMode && !isEditable('departure')}
-                  onDisabledClick={() => handleDisabledFieldClick('departure')}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="destinationCopy">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <MapPinIcon className="h-5 w-5 mr-2 text-red-500" />
-                  도착지 정보
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <LocationForm
-                    type="destination"
-                    locationInfo={registerData.destination}
-                    onChange={(info) => setDestination(info as any)}
-                    title="도착지 정보"
-                    disabled={editMode && !isEditable('destination')}
-                    onDisabledClick={() => handleDisabledFieldClick('destination')}
-                  />
-                  
-                  <div className="flex justify-between mt-6">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setActiveTab("departure")}
-                    >
-                      이전
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        const isValid = validateOrderFormData(registerData);
-                        if (isValid) {
-                          onSubmit();
-                        }
-                      }}
-                    >
-                      화물 등록
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-        
-        {/* 모바일에서도 예상 정보 카드 표시 */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center">
-              <CalculatorIcon className="h-5 w-5 mr-2" />
-              예상 정보
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RegisterEstimateInfoCard
-              estimatedDistance={registerData.estimatedDistance}
-              estimatedAmount={registerData.estimatedAmount}
-              isCalculating={isCalculating}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
   
-  // 데스크톱 환경에서는 2단 컬럼 레이아웃으로 표시
   return (
     <>
       <Form {...form}>

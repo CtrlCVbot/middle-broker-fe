@@ -31,7 +31,7 @@ import { useOrderEditStore } from "@/store/order-edit-store";
 import { 
   ORDER_VEHICLE_TYPES,
   ORDER_VEHICLE_WEIGHTS
-} from "@/types/order-ver01";
+} from "@/types/order";
 
 import { 
   calculateAmount, 

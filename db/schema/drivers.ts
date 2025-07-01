@@ -12,7 +12,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { companies } from './companies';
 import { users } from './users';
-import { IAddressSnapshot, IUserSnapshot } from '@/types/order-ver01';
+import { IAddressSnapshot, IUserSnapshot } from '@/types/order';
 import { vehicleWeightEnum, vehicleTypeEnum } from './orders';
 
 

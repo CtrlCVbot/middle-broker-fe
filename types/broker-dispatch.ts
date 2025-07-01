@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { orderDispatches, vehicleConnectionEnum } from '@/db/schema/orderDispatches';
 import { dispatchStatusEnum, vehicleTypeEnum, vehicleWeightEnum } from '@/db/schema/orders';
-import { ICompanySnapshot, IUserSnapshot } from '@/types/order-ver01';
+import { ICompanySnapshot, IUserSnapshot } from '@/types/order';
 
 // 목록 조회 응답 아이템 타입
 export interface IOrderDispatchListItem {

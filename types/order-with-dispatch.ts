@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ICompanySnapshot, IUserSnapshot } from '@/types/order-ver01';
+import { ICompanySnapshot, IUserSnapshot } from '@/types/order';
 
 /**
  * 주문과 배차 정보를 함께 조회하는 API의 응답 타입 정의

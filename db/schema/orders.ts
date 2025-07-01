@@ -2,7 +2,7 @@ import { pgTable, uuid, varchar, numeric, integer, boolean, timestamp, date, tim
 import { companies } from '@/db/schema/companies';
 import { users } from '@/db/schema/users';
 import { addresses } from '@/db/schema/addresses';
-import { IAddressSnapshot, IPriceSnapshot, IUserSnapshot, ITransportOptionsSnapshot, ICompanySnapshot } from '@/types/order-ver01';
+import { IAddressSnapshot, IPriceSnapshot, IUserSnapshot, ITransportOptionsSnapshot, ICompanySnapshot } from '@/types/order';
 import { IAddress } from '@/types/address';
 
 // 화물 상태 Enum 정의

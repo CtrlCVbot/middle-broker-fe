@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BrokerStatusDropdown } from './broker-status-dropdown';
-import { ORDER_FLOW_STATUSES } from '@/types/order-ver01';
+import { ORDER_FLOW_STATUSES } from '@/types/order';
 import { v4 as uuidv4 } from 'uuid';
 
 // 이 컴포넌트는 배차상태 드롭다운 사용 예시를 보여주는 데모 컴포넌트입니다.

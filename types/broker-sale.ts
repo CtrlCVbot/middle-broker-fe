@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { orderFlowStatusEnum } from '@/db/schema/orders';
-import { ICompanySnapshot, IDriverSnapshot, IUserSnapshot } from '@/types/order-ver01';
+import { ICompanySnapshot, IDriverSnapshot, IUserSnapshot } from '@/types/order';
 
 /**
  * 매출 정산 관련 타입 정의

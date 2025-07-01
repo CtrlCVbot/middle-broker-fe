@@ -1,5 +1,5 @@
 import { IBrokerDriver, DriverStatus, VehicleType, TonnageType, PermissionType, ICargoBox, IDriverAccount, IDriverNote } from "@/types/broker-driver";
-import { IAddressSnapshot } from "@/types/order-ver01";
+import { IAddressSnapshot } from "@/types/order";
 
 /**
  * 프론트엔드 차주 폼 데이터를 API 요청 형식으로 변환

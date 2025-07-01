@@ -1,4 +1,4 @@
-import { ICompanySnapshot } from "./order-ver01";
+import { ICompanySnapshot } from "./order";
 
 // 차주 관련 타입 정의
 export type DriverStatus = '활성' | '비활성';

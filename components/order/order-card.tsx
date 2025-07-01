@@ -17,7 +17,7 @@ import {
   DollarSign,
   User,
 } from "lucide-react";
-import { ISimpleOrder } from "@/types/order-ver01";
+import { ISimpleOrder } from "@/types/order";
 import { formatCurrency } from "@/lib/utils";
 import { useOrderDetailStore } from "@/store/order-detail-store";
 

@@ -11,7 +11,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { companies } from "./companies";
 import { orderSales } from "./orderSales";
-import { ICompanySnapshot, ICompanySnapshotForSales, IUserSnapshot } from "@/types/order-ver01";
+import { ICompanySnapshot, ICompanySnapshotForSales, IUserSnapshot } from "@/types/order";
 import { users } from "./users";
 import { bankCodeEnum } from "./companies";
 // 번들 상태 Enum 정의

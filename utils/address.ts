@@ -1,7 +1,7 @@
 import { db } from '@/db';
 import { addresses } from '@/db/schema/addresses';
 import { eq } from 'drizzle-orm';
-import { IAddressSnapshot } from '@/types/order-ver01';
+import { IAddressSnapshot } from '@/types/order';
 
 // 메모이제이션을 위한 캐시 맵
 const addressSnapshotCache = new Map<string, { data: IAddressSnapshot, timestamp: number }>();

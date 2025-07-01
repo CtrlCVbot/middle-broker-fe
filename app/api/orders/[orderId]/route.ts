@@ -5,7 +5,7 @@ import { orders } from '@/db/schema/orders';
 import { users } from '@/db/schema/users';
 import { z } from 'zod';
 import { logOrderChange } from '@/utils/order-change-logger';
-import { IUserSnapshot } from '@/types/order-ver01';
+import { IUserSnapshot } from '@/types/order';
 import { validate as isValidUUID, version as getUUIDVersion } from 'uuid';
 
 
