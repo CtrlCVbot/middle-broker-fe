@@ -30,8 +30,15 @@ import { cn } from '@/lib/utils';
 import { RECENT_LOCATIONS, MOCK_RECENT_LOCATIONS_ADDRESS } from '@/utils/mockdata/mock-register';
 import { IKakaoAddressResult, IAddress } from '@/types/address';
 import { SearchAddressDialog } from '@/components/address/search-address-dialog';
-import { TIME_OPTIONS, findNearestTenMinuteTime, adjustMinutesToHalfHour } from '@/utils/time-utils';
+import { findNearestTenMinuteTime, adjustMinutesToHalfHour } from '@/utils/time-utils';
 
+// 시간 옵션 생성 (00~23)
+const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => 
+  i.toString().padStart(2, '0')
+);
+
+// 분 옵션 생성 (10분 단위)
+const MINUTE_OPTIONS = ['00', '10', '20', '30', '40', '50'];
 
 interface LocationFormProps {
   type: 'departure' | 'destination';
@@ -54,6 +61,33 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
 }) => {
   const { useRecentLocation } = useOrderRegisterStore();
   const [hasSearchedAddress, setHasSearchedAddress] = useState(!!locationInfo.address);
+  
+  // 시간 파싱 헬퍼 함수
+  const parseTime = (timeString: string) => {
+    if (!timeString) return { hour: '', minute: '' };
+    const [hour, minute] = timeString.split(':');
+    return { hour: hour || '', minute: minute || '' };
+  };
+  
+  // 시간 조합 헬퍼 함수
+  const combineTime = (hour: string, minute: string) => {
+    return `${hour}:${minute}`;
+  };
+  
+  // 현재 시간 값에서 시간과 분 추출
+  const { hour: currentHour, minute: currentMinute } = parseTime(locationInfo.time || '');
+  
+  // 시간 변경 핸들러
+  const handleHourChange = (newHour: string) => {
+    const newTime = combineTime(newHour, currentMinute || '00');
+    onChange({ time: newTime });
+  };
+  
+  // 분 변경 핸들러
+  const handleMinuteChange = (newMinute: string) => {
+    const newTime = combineTime(currentHour || '00', newMinute);
+    onChange({ time: newTime });
+  };
   
   // 날짜 상태 관리
   const [date, setDate] = useState<Date | undefined>(() => {
@@ -523,25 +557,53 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                 {type === 'departure' ? '상차 시간' : '하차 시간'} <span className="text-destructive">*</span>
               </div>
             </div>
-            <Select
-              value={locationInfo.time || ''}
-              onValueChange={(value) => onChange({ time: value })}
-              disabled={disabled}
-            >
-              <SelectTrigger 
-                className={disabled ? 'bg-muted' : ''}
-                onClick={handleDisabledClick}
-              >
-                <SelectValue placeholder="시간을 선택하세요" />
-              </SelectTrigger>
-              <SelectContent className="max-h-60">
-                {TIME_OPTIONS.map((timeOption) => (
-                  <SelectItem key={timeOption} value={timeOption}>
-                    {timeOption}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="grid grid-cols-2 gap-2">
+              {/* 시간 선택 */}
+              <div>
+                <Select
+                  value={currentHour}
+                  onValueChange={handleHourChange}
+                  disabled={disabled}
+                >
+                  <SelectTrigger 
+                    className={disabled ? 'bg-muted' : ''}
+                    onClick={handleDisabledClick}
+                  >
+                    <SelectValue placeholder="시" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {HOUR_OPTIONS.map((hour) => (
+                      <SelectItem key={hour} value={hour}>
+                        {hour}시
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* 분 선택 */}
+              <div>
+                <Select
+                  value={currentMinute}
+                  onValueChange={handleMinuteChange}
+                  disabled={disabled}
+                >
+                  <SelectTrigger 
+                    className={disabled ? 'bg-muted' : ''}
+                    onClick={handleDisabledClick}
+                  >
+                    <SelectValue placeholder="분" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MINUTE_OPTIONS.map((minute) => (
+                      <SelectItem key={minute} value={minute}>
+                        {minute}분
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
         </div>
       </div>
