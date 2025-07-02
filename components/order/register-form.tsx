@@ -61,6 +61,10 @@ import { RegisterEstimateInfoCard } from '@/components/broker/order/register-est
 import { useCompanies, useCompanyStore } from "@/store/company-store";
 import { useBrokerCompanyManagerStore } from "@/store/broker-company-manager-store";
 
+// 추가: 자동 설정을 위한 imports
+import { useAuthStore } from "@/store/auth-store";
+import { getCompanyById } from "@/services/company-service";
+
 interface OrderRegisterFormProps {
   onSubmit: () => void;
   editMode?: boolean;
@@ -93,17 +97,7 @@ export function AnimatedNumber({ number, duration = 500, suffix = '' }: Animated
   return <span>{display.toLocaleString()}{suffix}</span>;
 }
 
-// TRANSPORT_OPTIONS 상수 정의 (기존 코드 호환성을 위해)
-const TRANSPORT_OPTIONS = [
-  { id: 'early_delivery', label: '빠른배차' },
-  { id: 'forklift_load', label: '지게차 상차' },
-  { id: 'forklift_unload', label: '지게차 하차' },
-  { id: 'exclusive_load', label: '단독배차' },
-  { id: 'mixed_load', label: '혼적 가능' },
-  { id: 'pay_on_delivery', label: '착불' },
-  { id: 'duplicate_load', label: '중복화물 가능' },
-  { id: 'special_load', label: '특수화물 필요' }
-];
+
 
 export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: OrderRegisterFormProps) {
   const [activeTab, setActiveTab] = useState<string>("vehicle");
@@ -118,6 +112,13 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
   const [managerSearchTerm, setManagerSearchTerm] = useState('');
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [selectedManagerId, setSelectedManagerId] = useState<string | null>(null);
+  
+  // 추가: 자동 설정 관련 상태
+  const [isAutoSettingLoading, setIsAutoSettingLoading] = useState(false);
+  const [autoSettingError, setAutoSettingError] = useState<string | null>(null);
+  const [isCompanyAutoSet, setIsCompanyAutoSet] = useState(false);
+  const [isManagerAutoSet, setIsManagerAutoSet] = useState(false);
+  
   const { setFilter } = useCompanyStore();
   const companiesQuery = useCompanies();
 
@@ -129,6 +130,9 @@ const {
   loadManagers,
   currentCompanyId
 } = useBrokerCompanyManagerStore();
+
+// 추가: Auth store에서 사용자 정보 가져오기
+const { user, isLoggedIn } = useAuthStore();
 
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const router = useRouter();
@@ -213,7 +217,95 @@ const {
       });
     }
   };
+
+  // 추가: 자동 설정 핵심 함수
+  const handleAutoSetCompanyInfo = async () => {
+    // 조건 체크: 로그인 + companyId 존재 + 아직 회사 미선택
+    if (!user?.companyId || selectedCompanyId || !isLoggedIn()) return;
+    
+    setIsAutoSettingLoading(true);
+    setAutoSettingError(null);
+    
+    try {
+      console.log('🔄 로그인 정보로 자동 설정 시작:', { 
+        userId: user.id, 
+        companyId: user.companyId 
+      });
+      
+      // 1. 회사 정보 조회
+      const company = await getCompanyById(user.companyId);
+      console.log('✅ 회사 정보 조회 성공:', company);
+      
+      // 2. 폼 필드 자동 설정
+      form.setValue("shipperName", company.name);
+      form.setValue("businessNumber", company.businessNumber || "");
+      form.setValue("shipperCeo", company.ceoName || "");
+      
+      // 3. 로컬 상태 및 스토어 상태 업데이트
+      setSelectedCompanyId(company.id);
+      setStoreCompanyId(company.id);
+      setIsCompanyAutoSet(true); // 자동 설정 표시
+      
+      // 4. 담당자 목록 로드
+      console.log('🔄 담당자 목록 로드 시작...');
+      await loadManagers(company.id);
+      
+      // 성공 토스트 표시
+      toast({
+        title: "자동 설정 완료",
+        description: "로그인 정보로 회사가 자동 설정되었습니다.",
+        variant: "default",
+      });
+      
+    } catch (error) {
+      console.error("❌ 자동 설정 오류:", error);
+      setAutoSettingError("로그인 정보로 자동 설정 중 오류가 발생했습니다.");
+      // 에러 토스트 표시
+      toast({
+        title: "자동 설정 실패",
+        description: "수동으로 회사와 담당자를 선택해주세요.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAutoSettingLoading(false);
+    }
+  };
   
+  // 추가: 담당자 목록 로드 후 현재 사용자 자동 선택
+  useEffect(() => {
+    // 조건: 회사 선택됨 + 담당자 미선택 + 담당자 목록 존재 + 현재 로그인한 사용자 존재
+    if (
+      selectedCompanyId && 
+      !selectedManagerId && 
+      brokerManagers.length > 0 && 
+      user?.email &&
+      !editMode
+    ) {
+      const currentUserAsManager = brokerManagers.find(
+        m => m.email === user.email && m.status === '활성'
+      );
+      
+      if (currentUserAsManager) {
+        console.log('✅ 현재 사용자를 담당자로 자동 설정:', currentUserAsManager.name);
+        setSelectedManagerId(currentUserAsManager.id);
+        setStoreManagerId(currentUserAsManager.id);
+        setIsManagerAutoSet(true); // 자동 설정 표시
+        form.setValue("manager", currentUserAsManager.name);
+        form.setValue("managerContact", currentUserAsManager.phoneNumber || "");
+        form.setValue("managerEmail", currentUserAsManager.email);
+        
+        // 담당자 자동 설정 완료 토스트
+        toast({
+          title: "담당자 자동 설정 완료",
+          description: `${currentUserAsManager.name}님이 담당자로 설정되었습니다.`,
+          variant: "default",
+        });
+      } else {
+        console.log('⚠️ 현재 사용자를 담당자 목록에서 찾을 수 없음');
+      }
+    }
+  }, [selectedCompanyId, brokerManagers, user?.email, selectedManagerId, editMode]);
+
   // React Hook Form 초기화 함수
   const initForm = () => {
     if (editMode && originalData) {
@@ -249,6 +341,21 @@ const {
       managerEmail: '',
     }
   });
+
+  // 추가: 컴포넌트 마운트 시 자동 설정 실행
+  useEffect(() => {
+    // 조건: 로그인 상태 + 등록 모드 + 회사 미선택 + 사용자에 회사ID 존재
+    if (
+      isLoggedIn() && 
+      !editMode && 
+      user?.companyId && 
+      !selectedCompanyId && 
+      !isAutoSettingLoading
+    ) {
+      console.log('🚀 자동 설정 조건 충족, 실행 시작...');
+      handleAutoSetCompanyInfo();
+    }
+  }, [isLoggedIn(), user?.companyId, selectedCompanyId, editMode]);
   
   // 폼 데이터 업데이트 (수정 모드에서 폼 필드가 초기 데이터와 연결되도록 추가)
   useEffect(() => {
@@ -373,28 +480,7 @@ const {
         <form onSubmit={form.handleSubmit(handleFormSubmit)}>
 
           <Card className="border-none shadow-none">
-            {/* <CardHeader>    
-              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <CardTitle>
-                    {editMode  ? (
-                      <>운송 정보 수정 - #{orderNumber?.slice(0, 8)}  </> 
-                    ) : (
-                      <>운송 요청</>
-                    )}
-                  </CardTitle>                  
-                  <CardDescription className="text-sm text-muted-foreground">{editMode ? (
-                      "요청한 운송 정보를 수정하세요. 배차 상태에 따라 수정 가능한 항목이 제한될 수 있습니다."
-                    ) : (
-                      "운송 요청할 화물 정보를 입력하고 등록해주세요."
-                    )}
-                      
-                  </CardDescription>
-                </div>
-              </div>
-                
-            </CardHeader> */}
-
+            
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div className="flex flex-col w-full">
@@ -440,6 +526,9 @@ const {
                             // 로컬 상태와 스토어 상태 모두 업데이트
                             setSelectedCompanyId(company.id);
                             setStoreCompanyId(company.id);
+                            // 수동 선택 시 자동 설정 상태 리셋
+                            setIsCompanyAutoSet(false);
+                            setIsManagerAutoSet(false);
                             // 회사 선택 시 담당자 목록 로드
                             if (company.id) {
                               loadManagers(company.id);
@@ -454,6 +543,8 @@ const {
                           onSelectManager={(manager) => {
                             setSelectedManagerId(manager.id);
                             setStoreManagerId(manager.id);
+                            // 수동 선택 시 자동 설정 상태 리셋
+                            setIsManagerAutoSet(false);
                             form.setValue("manager", manager.name);
                             form.setValue("managerContact", manager.phoneNumber || "");
                             form.setValue("managerEmail", manager.email || "");
@@ -475,9 +566,24 @@ const {
                             setSelectedManagerId(null);
                             setStoreCompanyId(undefined);
                             setStoreManagerId(undefined);
+                            
+                            // 자동 설정 상태도 초기화
+                            setAutoSettingError(null);
+                            setIsCompanyAutoSet(false);
+                            setIsManagerAutoSet(false);
+                            
+                            // 자동 설정 재실행 (조건이 맞으면)
+                            if (isLoggedIn() && user?.companyId && !editMode) {
+                              setTimeout(() => handleAutoSetCompanyInfo(), 100);
+                            }
                           }}
                           isEditMode={editMode}
                           loading={isSubmitting}
+                          // 추가: 자동 설정 관련 props
+                          isAutoSettingLoading={isAutoSettingLoading}
+                          autoSettingError={autoSettingError}
+                          isCompanyAutoSet={isCompanyAutoSet}
+                          isManagerAutoSet={isManagerAutoSet}
                         />
                       </CardContent>
                     </Card>

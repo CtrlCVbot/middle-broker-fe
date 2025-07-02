@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Building2, Search, CheckCircle, Hash, User, Phone, Mail } from 'lucide-react';
+import { Building2, Search, CheckCircle, Hash, User, Phone, Mail, Loader2 } from 'lucide-react';
 import {
   FormControl,
   FormField,
@@ -40,6 +40,11 @@ export interface ICompanyManagerInfoSectionProps {
   editingSalesBundle?: any;
   displayShipperGroups?: Record<string, any>;
   hasShipperGroups?: boolean;
+  // 추가: 자동 설정 관련 props
+  isAutoSettingLoading?: boolean;
+  autoSettingError?: string | null;
+  isCompanyAutoSet?: boolean;
+  isManagerAutoSet?: boolean;
 }
 
 export function CompanyManagerInfoSection({
@@ -64,6 +69,11 @@ export function CompanyManagerInfoSection({
   editingSalesBundle,
   displayShipperGroups = {},
   hasShipperGroups = false,
+  // 추가: 자동 설정 관련 props
+  isAutoSettingLoading = false,
+  autoSettingError = null,
+  isCompanyAutoSet = false,
+  isManagerAutoSet = false,
 }: ICompanyManagerInfoSectionProps) {
   const companySelected = !!selectedCompanyId;
 
@@ -79,11 +89,26 @@ export function CompanyManagerInfoSection({
           variant="outline"
           size="sm"
           onClick={onReset}
-          disabled={loading}
+          disabled={loading || isAutoSettingLoading}
         >
           전체 초기화
         </Button>
       </div>
+
+      {/* 자동 설정 상태 표시 */}
+      {isAutoSettingLoading && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2 p-2 bg-blue-50 rounded-md border border-blue-200">
+          <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+          <span className="text-blue-700">로그인 정보로 자동 설정 중...</span>
+        </div>
+      )}
+
+      {/* 자동 설정 에러 표시 */}
+      {autoSettingError && (
+        <div className="text-sm text-red-600 mb-2 p-2 bg-red-50 rounded-md border border-red-200">
+          {autoSettingError}
+        </div>
+      )}
 
       {/* 회사 정보 섹션 */}
       <div className="space-y-2">        
@@ -118,7 +143,9 @@ export function CompanyManagerInfoSection({
         {form.watch("shipperName") === "기본 화주" || form.watch("shipperName") === "" ? (
           <div className="flex flex-col items-center justify-center py-4 border-2 border-dashed border-gray-300 rounded-md bg-gray-50 mb-2 mt-6">
             <Building2 className="h-8 w-8 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground mb-4">요청 화주 정보를 검색해주세요</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              {isAutoSettingLoading ? "자동 설정 중..." : "요청 화주 정보를 검색해주세요"}
+            </p>
             <div className="flex gap-2">
               <FormField
                 control={form.control}
@@ -127,7 +154,7 @@ export function CompanyManagerInfoSection({
                   <FormItem>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button type="button">
+                        <Button type="button" disabled={isAutoSettingLoading}>
                           <Search className="h-4 w-4 mr-2" />
                           화주 조회
                         </Button>
@@ -188,40 +215,18 @@ export function CompanyManagerInfoSection({
           </div>
         ) : (
           <div>
-            {/* <div className="border p-4 rounded-md bg-muted/30">
-              <div className="grid gap-2">
-                <div>
-                  <FormField
-                    control={form.control}
-                    name="shipperName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="relative">
-                            <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input 
-                              placeholder="회사명을 입력해주세요." 
-                              className="h-9 pl-10" 
-                              {...field} 
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>                
-                
-                
-              </div>
-            </div> */}
-            
             <div className="flex items-center gap-3 mt-6">
-              {/* <div className="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
-                <div className="text-xl">🏢</div>
-              </div> */}
               <div>
-                <p className="text-xs text-gray-500">회사명</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-xs text-gray-500">회사명</p>
+                  {/* 자동 설정 완료 배지 (실제로 자동 설정된 경우만 표시) */}
+                  {isCompanyAutoSet && !isAutoSettingLoading && !autoSettingError && (
+                    <Badge variant="secondary" className="text-xs">
+                      <CheckCircle className="h-3 w-3 mr-1 text-green-600" />
+                      자동 설정됨
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-base font-semibold">{form.watch("shipperName")}</p>                            
               </div>
             </div>
@@ -238,141 +243,58 @@ export function CompanyManagerInfoSection({
           <p className="text-xs text-gray-500">담당자</p>
           {/* 담당자 배지 표시 */}
           <div className="flex flex-wrap gap-1.5 min-h-[24px]">
-            {managers.filter((m: any) => m.status === '활성').map((manager) => (
-              <Badge
-                key={manager.id}
-                variant="outline"
-                className={cn(
-                  "cursor-pointer px-2 py-1 text-xs hover:bg-secondary",
-                  manager.id === selectedManagerId
-                    ? "bg-primary text-white border-primary hover:bg-primary/90"
-                    : ""
-                )}
-                onClick={() => onSelectManager(manager)}
-              >
-                {manager.name}
-              </Badge>
-            ))}            
+            {isAutoSettingLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span className="text-xs">담당자 로드 중...</span>
+              </div>
+            ) : (
+              managers.filter((m: any) => m.status === '활성').map((manager) => (
+                <Badge
+                  key={manager.id}
+                  variant="outline"
+                  className={cn(
+                    "cursor-pointer px-2 py-1 text-xs hover:bg-secondary",
+                    manager.id === selectedManagerId
+                      ? "bg-primary text-white border-primary hover:bg-primary/90"
+                      : ""
+                  )}
+                  onClick={() => onSelectManager(manager)}
+                >
+                  {manager.name}
+                </Badge>
+              ))
+            )}
           </div>
 
           {(!form.watch('manager') || form.watch('manager') === '김중개') ? (
             <div className="flex flex-col items-center justify-center py-4 border-2 border-dashed border-gray-300 rounded-md bg-gray-50">
-              
-              <p className="text-sm text-muted-foreground">담당자 선택해주세요</p>              
+              <p className="text-sm text-muted-foreground">
+                {isAutoSettingLoading ? "담당자 자동 설정 중..." : "담당자 선택해주세요"}
+              </p>              
             </div>
-            // <div className="flex flex-col items-center justify-center py-4 border-2 border-dashed border-gray-300 rounded-md bg-gray-50 mb-2">
-            //   <User className="h-8 w-8 text-muted-foreground mb-2" />
-            //   <p className="text-sm text-muted-foreground mb-4">담당자 정보를 입력해주세요</p>
-            //   <div className="flex gap-2">
-            //     <Popover>
-            //       <PopoverTrigger asChild>
-            //         <Button type="button">
-            //           <Search className="h-4 w-4 mr-2" /> 담당자 조회
-            //         </Button>
-            //       </PopoverTrigger>
-            //       <PopoverContent className="w-full p-0" align="start">
-            //         <div className="border-b p-2">
-            //           <div className="flex items-center gap-2">
-            //             <Input
-            //               placeholder="담당자명 검색"
-            //               className="h-8"
-            //               type="search"
-            //               value={managerSearchTerm}
-            //               onChange={e => setManagerSearchTerm(e.target.value)}
-            //               onKeyDown={e => {
-            //                 if (e.key === 'Enter') {
-            //                   onManagerSearch();
-            //                 }
-            //               }}
-            //             />
-            //             <Button size="sm" className="h-8 px-2" onClick={onManagerSearch}>검색</Button>
-            //           </div>
-            //         </div>
-            //         <ScrollArea className="h-60">
-            //           <div className="p-2">
-            //             {isLoadingManagers ? (
-            //               <div className="text-xs text-muted-foreground p-2">검색 중...</div>
-            //             ) : managers.filter((m: any) => m.status === '활성').length > 0 ? (
-            //               managers.filter((m: any) => m.status === '활성').map((manager) => (
-            //                 <div
-            //                   key={manager.id}
-            //                   className="flex items-center justify-between px-2 py-1.5 hover:bg-secondary/50 rounded-md cursor-pointer"
-            //                   onClick={() => onSelectManager(manager)}
-            //                 >
-            //                   <div className="flex flex-col">
-            //                     <span className="font-medium">{manager.name}</span>
-            //                     <span className="text-xs text-muted-foreground">{manager.phoneNumber}</span>
-            //                     <span className="text-xs text-muted-foreground">{manager.roles?.join(', ')}</span>
-            //                   </div>
-            //                   {manager.id === selectedManagerId && (
-            //                     <CheckCircle className="h-4 w-4 text-primary" />
-            //                   )}
-            //                 </div>
-            //               ))
-            //             ) : (
-            //               <div className="text-xs text-muted-foreground p-2">담당자가 없습니다.</div>
-            //             )}
-            //           </div>
-            //         </ScrollArea>
-            //       </PopoverContent>
-            //     </Popover>
-            //   </div>
-            // </div>
           ) : (
             <div>
-            {/* <div className="mb-4">
-              <div className="border p-4 rounded-md bg-muted/30">
-                <div className="grid gap-2">
-                  <div>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="담당자 이름을 입력해주세요."
-                        className="h-9 pl-10"
-                        value={form.watch('manager') || ''}
-                        onChange={e => form.setValue('manager', e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="010-0000-0000"
-                        className="h-9 pl-10"
-                        value={form.watch('managerContact') || ''}
-                        onChange={e => form.setValue('managerContact', e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="example@email.com"
-                        className="h-9 pl-10"
-                        value={form.watch('managerEmail') || ''}
-                        onChange={e => form.setValue('managerEmail', e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div> */}
-
             <div className="flex items-center justify-between rounded-md border-2 border-gray-100 p-1 px-2">
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0 w-7 h-7 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
                 <div className="text-lg">👤</div>
               </div>
               <div>
-                <p className="text-sm font-medium">{form.watch('manager')}</p>            
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-sm font-medium">{form.watch('manager')}</p>
+                  {/* 자동 설정 완료 배지 (담당자) */}
+                  {isManagerAutoSet && !isAutoSettingLoading && !autoSettingError && (
+                    <Badge variant="secondary" className="text-xs">
+                      <CheckCircle className="h-3 w-3 mr-1 text-green-600" />
+                      자동 설정됨
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-xs text-gray-500 truncate">{form.watch('managerContact')}</p>
                 <p className="text-xs text-gray-500 truncate">{form.watch('managerEmail')}</p>
               </div>
             </div>
-
-
             </div>
             </div>
           )}
