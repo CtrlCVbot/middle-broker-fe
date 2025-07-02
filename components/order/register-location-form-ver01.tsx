@@ -571,125 +571,79 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
               </div>
             </div>
             
-            {/* 옵션 6: 스마트 인풋 + 버튼 */}
-            <div className="mb-4 p-3 border rounded-lg bg-blue-50">
-              <div className="text-xs text-blue-600 mb-2 font-medium">옵션 6: 스마트 인풋 + 버튼</div>
-              {!isEditing ? (
-                <div className="flex items-center justify-between">
-                  <div className="text-lg font-mono">
-                    {locationInfo.time || '--:--'}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditing(true)}
-                    disabled={disabled}
-                  >
-                    수정
-                  </Button>
+            {!isEditing ? (
+              <div className="flex items-center justify-between border rounded-lg p-3 bg-background">
+                <div className="text-lg font-mono text-foreground">
+                  {locationInfo.time || '--:--'}
                 </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Select
-                    value={currentHour}
-                    onValueChange={handleHourChange}
-                    disabled={disabled}
-                  >
-                    <SelectTrigger className="w-20">
-                      <SelectValue placeholder="시" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {HOUR_OPTIONS.map((hour) => (
-                        <SelectItem key={hour} value={hour}>
-                          {hour}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  
-                  <span className="text-muted-foreground">:</span>
-                  
-                  <Select
-                    value={currentMinute}
-                    onValueChange={handleMinuteChange}
-                    disabled={disabled}
-                  >
-                    <SelectTrigger className="w-20">
-                      <SelectValue placeholder="분" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {MINUTE_OPTIONS.map((minute) => (
-                        <SelectItem key={minute} value={minute}>
-                          {minute}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  
-                  <Button
-                    type="button"
-                    variant="default"
-                    size="sm"
-                    onClick={handleEditComplete}
-                  >
-                    완료
-                  </Button>
-                </div>
-              )}
-            </div>
-            
-            {/* 옵션 1: 시간/분 분리 Select */}
-            <div className="p-3 border rounded-lg bg-green-50">
-              <div className="text-xs text-green-600 mb-2 font-medium">옵션 1: 시간/분 분리 Select</div>
-              <div className="grid grid-cols-2 gap-2">
-                {/* 시간 선택 */}
-                <div>
-                  <Select
-                    value={currentHour}
-                    onValueChange={handleHourChange}
-                    disabled={disabled}
-                  >
-                    <SelectTrigger 
-                      className={disabled ? 'bg-muted' : ''}
-                      onClick={handleDisabledClick}
-                    >
-                      <SelectValue placeholder="시" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {HOUR_OPTIONS.map((hour) => (
-                        <SelectItem key={hour} value={hour}>
-                          {hour}시
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                {/* 분 선택 */}
-                <div>
-                  <Select
-                    value={currentMinute}
-                    onValueChange={handleMinuteChange}
-                    disabled={disabled}
-                  >
-                    <SelectTrigger 
-                      className={disabled ? 'bg-muted' : ''}
-                      onClick={handleDisabledClick}
-                    >
-                      <SelectValue placeholder="분" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {MINUTE_OPTIONS.map((minute) => (
-                        <SelectItem key={minute} value={minute}>
-                          {minute}분
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditing(true)}
+                  disabled={disabled}
+                  className={disabled ? 'bg-muted' : ''}
+                >
+                  시간 설정
+                </Button>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center gap-2 border rounded-lg p-3 bg-background">
+                <Select
+                  value={currentHour}
+                  onValueChange={handleHourChange}
+                  disabled={disabled}
+                >
+                  <SelectTrigger className="w-20">
+                    <SelectValue placeholder="시" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {HOUR_OPTIONS.map((hour) => (
+                      <SelectItem key={hour} value={hour}>
+                        {hour}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                <span className="text-lg text-muted-foreground">:</span>
+                
+                <Select
+                  value={currentMinute}
+                  onValueChange={handleMinuteChange}
+                  disabled={disabled}
+                >
+                  <SelectTrigger className="w-20">
+                    <SelectValue placeholder="분" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MINUTE_OPTIONS.map((minute) => (
+                      <SelectItem key={minute} value={minute}>
+                        {minute}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                <Button
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  onClick={handleEditComplete}
+                >
+                  완료
+                </Button>
+                
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditing(false)}
+                >
+                  취소
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
