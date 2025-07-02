@@ -448,11 +448,6 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
       {/* 일정 정보 영역 */}
       {hasSearchedAddress && (
       <div className="border rounded-lg p-4 bg-muted/30">
-        {/* <div className="flex items-center gap-2 mb-4 text-primary">
-          <CalendarIcon className="h-5 w-5" />
-          <h3 className="font-medium">{type === 'departure' ? '상차 일정' : '하차 일정'} 정보</h3>
-        </div> */}
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <div className="flex items-center gap-2">

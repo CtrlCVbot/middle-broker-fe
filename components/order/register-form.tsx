@@ -118,6 +118,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
   const [autoSettingError, setAutoSettingError] = useState<string | null>(null);
   const [isCompanyAutoSet, setIsCompanyAutoSet] = useState(false);
   const [isManagerAutoSet, setIsManagerAutoSet] = useState(false);
+  const [isManualReset, setIsManualReset] = useState(false); // 수동 초기화 여부 추적
   
   const { setFilter } = useCompanyStore();
   const companiesQuery = useCompanies();
@@ -344,18 +345,19 @@ const { user, isLoggedIn } = useAuthStore();
 
   // 추가: 컴포넌트 마운트 시 자동 설정 실행
   useEffect(() => {
-    // 조건: 로그인 상태 + 등록 모드 + 회사 미선택 + 사용자에 회사ID 존재
+    // 조건: 로그인 상태 + 등록 모드 + 회사 미선택 + 사용자에 회사ID 존재 + 수동 초기화 안함
     if (
       isLoggedIn() && 
       !editMode && 
       user?.companyId && 
       !selectedCompanyId && 
-      !isAutoSettingLoading
+      !isAutoSettingLoading &&
+      !isManualReset // 수동 초기화 하지 않은 경우에만 자동 설정
     ) {
       console.log('🚀 자동 설정 조건 충족, 실행 시작...');
       handleAutoSetCompanyInfo();
     }
-  }, [isLoggedIn(), user?.companyId, selectedCompanyId, editMode]);
+  }, [isLoggedIn(), user?.companyId, selectedCompanyId, editMode, isManualReset]);
   
   // 폼 데이터 업데이트 (수정 모드에서 폼 필드가 초기 데이터와 연결되도록 추가)
   useEffect(() => {
@@ -572,10 +574,8 @@ const { user, isLoggedIn } = useAuthStore();
                             setIsCompanyAutoSet(false);
                             setIsManagerAutoSet(false);
                             
-                            // 자동 설정 재실행 (조건이 맞으면)
-                            if (isLoggedIn() && user?.companyId && !editMode) {
-                              setTimeout(() => handleAutoSetCompanyInfo(), 100);
-                            }
+                            // 수동 초기화 상태 설정 (자동 설정 방지)
+                            setIsManualReset(true);
                           }}
                           isEditMode={editMode}
                           loading={isSubmitting}

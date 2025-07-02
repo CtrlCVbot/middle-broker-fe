@@ -69,11 +69,13 @@ export function CompanyManagerInfoSection({
   editingSalesBundle,
   displayShipperGroups = {},
   hasShipperGroups = false,
+
   // 추가: 자동 설정 관련 props
   isAutoSettingLoading = false,
   autoSettingError = null,
   isCompanyAutoSet = false,
   isManagerAutoSet = false,
+  //
 }: ICompanyManagerInfoSectionProps) {
   const companySelected = !!selectedCompanyId;
 
