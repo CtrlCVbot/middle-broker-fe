@@ -64,6 +64,7 @@ import { useBrokerCompanyManagerStore } from "@/store/broker-company-manager-sto
 // 추가: 자동 설정을 위한 imports
 import { useAuthStore } from "@/store/auth-store";
 import { getCompanyById } from "@/services/company-service";
+import { format } from 'date-fns';
 
 interface OrderRegisterFormProps {
   onSubmit: () => void;
@@ -439,6 +440,52 @@ const { user, isLoggedIn } = useAuthStore();
     registerData.destination.address,
     registerData.weightType,
     registerData.selectedOptions
+  ]);
+
+  // 상차지 시간 설정 시 하차지 시간 자동 설정 (상차지 + 1시간)
+  useEffect(() => {
+    const { departure, destination } = registerData;
+    
+    // 조건: 상차지 날짜/시간 모두 설정 && 하차지 날짜/시간 미설정
+    if (departure.date && departure.time && 
+        (!destination.date || !destination.time)) {
+      
+      try {
+        // 상차지 시간을 Date 객체로 변환
+        const departureDateTime = new Date(`${departure.date} ${departure.time}`);
+        
+        // 유효한 날짜인지 확인
+        if (isNaN(departureDateTime.getTime())) {
+          console.warn('상차지 날짜/시간 형식이 올바르지 않습니다:', departure.date, departure.time);
+          return;
+        }
+        
+        // 1시간 추가 (3600000 밀리초)
+        const destinationDateTime = new Date(departureDateTime.getTime() + 60 * 60 * 1000);
+        
+        // 날짜와 시간 문자열로 변환
+        const destinationDate = format(destinationDateTime, 'yyyy-MM-dd');
+        const destinationTime = format(destinationDateTime, 'HH:mm');
+        
+        // 하차지 정보 업데이트 (기존 정보는 유지하고 날짜/시간만 변경)
+        setDestination({
+          ...destination,
+          date: destinationDate,
+          time: destinationTime
+        });
+        
+        console.log(`하차지 시간 자동 설정: ${departure.date} ${departure.time} → ${destinationDate} ${destinationTime}`);
+        
+      } catch (error) {
+        console.error('하차지 시간 자동 설정 중 오류:', error);
+      }
+    }
+  }, [
+    registerData.departure.date, 
+    registerData.departure.time, 
+    registerData.destination.date, 
+    registerData.destination.time,
+    setDestination
   ]);
   
   // 비고 필드가 비어있지 않으면 자동으로 표시

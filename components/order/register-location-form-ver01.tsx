@@ -198,6 +198,24 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
     // locationInfo가 변경되면 주소 검색 상태도 업데이트
     setHasSearchedAddress(!!locationInfo.address);
   }, [locationInfo.date, date, locationInfo.address]);
+
+  // 주소가 선택되었을 때 자동으로 날짜/시간 설정 (현재 시간 + 6시간)
+  useEffect(() => {
+    if (hasSearchedAddress && !locationInfo.date && !locationInfo.time) {
+      const now = new Date();
+      const futureTime = new Date(now.getTime() + 6 * 60 * 60 * 1000); // 6시간 후
+      
+      const formattedDate = format(futureTime, 'yyyy-MM-dd');
+      const formattedTime = format(futureTime, 'HH:mm', { locale: ko });
+      
+      onChange({
+        date: formattedDate,
+        time: formattedTime
+      });
+      
+      setDate(futureTime);
+    }
+  }, [hasSearchedAddress, locationInfo.date, locationInfo.time, onChange]);
   
   // 최근 주소 항목 클릭 핸들러
   const handleRecentLocationClick = (location: ILocationInfo) => {
