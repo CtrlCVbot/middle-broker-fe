@@ -150,7 +150,7 @@ export async function GET(request: NextRequest) {
 
     // 사용자의 회사 ID 조회
     const user = await db
-      .select({ companyId: users.companyId })
+      .select({ companyId: users.company_id })
       .from(users)
       .where(eq(users.id, userId))
       .limit(1)
@@ -170,25 +170,23 @@ export async function GET(request: NextRequest) {
 
     const companyId = user[0].companyId;
 
-    // 타입별 최근 주문 조회
-    let orderQuery;
-    let selectFields;
+    // 타입별 최근 주문 조회 및 주소 데이터 변환
+    let addresses: IAddress[] = [];
 
     if (type === 'pickup') {
-      selectFields = {
-        id: orders.id,
-        pickupAddressSnapshot: orders.pickupAddressSnapshot,
-        pickupName: orders.pickupName,
-        pickupContactName: orders.pickupContactName,
-        pickupContactPhone: orders.pickupContactPhone,
-        createdAt: orders.createdAt,
-        updatedAt: orders.updatedAt,
-        createdBy: orders.createdBy,
-        updatedBy: orders.updatedBy
-      };
-      
-      orderQuery = db
-        .select(selectFields)
+      // 상차지 주문 조회
+      const pickupOrders = await db
+        .select({
+          id: orders.id,
+          pickupAddressSnapshot: orders.pickupAddressSnapshot,
+          pickupName: orders.pickupName,
+          pickupContactName: orders.pickupContactName,
+          pickupContactPhone: orders.pickupContactPhone,
+          createdAt: orders.createdAt,
+          updatedAt: orders.updatedAt,
+          createdBy: orders.createdBy,
+          updatedBy: orders.updatedBy
+        })
         .from(orders)
         .where(
           and(
@@ -198,22 +196,28 @@ export async function GET(request: NextRequest) {
           )
         )
         .orderBy(desc(orders.createdAt))
-        .limit(200); // 충분히 많은 수를 가져와서 중복 제거 후 limit 적용
+        .limit(200) // 충분히 많은 수를 가져와서 중복 제거 후 limit 적용
+        .execute();
+
+      // 상차지 주소 데이터 변환
+      addresses = pickupOrders
+        .filter(order => order.pickupAddressSnapshot) // null 체크
+        .map(transformPickupOrderToAddress);
+        
     } else {
-      selectFields = {
-        id: orders.id,
-        deliveryAddressSnapshot: orders.deliveryAddressSnapshot,
-        deliveryName: orders.deliveryName,
-        deliveryContactName: orders.deliveryContactName,
-        deliveryContactPhone: orders.deliveryContactPhone,
-        createdAt: orders.createdAt,
-        updatedAt: orders.updatedAt,
-        createdBy: orders.createdBy,
-        updatedBy: orders.updatedBy
-      };
-      
-      orderQuery = db
-        .select(selectFields)
+      // 하차지 주문 조회
+      const deliveryOrders = await db
+        .select({
+          id: orders.id,
+          deliveryAddressSnapshot: orders.deliveryAddressSnapshot,
+          deliveryName: orders.deliveryName,
+          deliveryContactName: orders.deliveryContactName,
+          deliveryContactPhone: orders.deliveryContactPhone,
+          createdAt: orders.createdAt,
+          updatedAt: orders.updatedAt,
+          createdBy: orders.createdBy,
+          updatedBy: orders.updatedBy
+        })
         .from(orders)
         .where(
           and(
@@ -223,20 +227,11 @@ export async function GET(request: NextRequest) {
           )
         )
         .orderBy(desc(orders.createdAt))
-        .limit(200); // 충분히 많은 수를 가져와서 중복 제거 후 limit 적용
-    }
+        .limit(200) // 충분히 많은 수를 가져와서 중복 제거 후 limit 적용
+        .execute();
 
-    const recentOrders = await orderQuery.execute();
-
-    // 주소 데이터 변환
-    let addresses: IAddress[] = [];
-    
-    if (type === 'pickup') {
-      addresses = recentOrders
-        .filter(order => order.pickupAddressSnapshot) // null 체크
-        .map(transformPickupOrderToAddress);
-    } else {
-      addresses = recentOrders
+      // 하차지 주소 데이터 변환
+      addresses = deliveryOrders
         .filter(order => order.deliveryAddressSnapshot) // null 체크
         .map(transformDeliveryOrderToAddress);
     }
