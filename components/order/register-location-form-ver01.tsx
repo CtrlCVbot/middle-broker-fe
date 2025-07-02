@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FormLabel } from "@/components/ui/form";
@@ -77,30 +77,50 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
   // 현재 시간 값에서 시간과 분 추출
   const { hour: currentHour, minute: currentMinute } = parseTime(locationInfo.time || '');
   
-  // 옵션6용 편집 모드 상태
-  const [isEditing, setIsEditing] = useState(false);
+  // 시간 편집 Popover 상태
+  const [isTimePopoverOpen, setIsTimePopoverOpen] = useState(false);
   
-  // 시간 변경 핸들러
-  const handleHourChange = (newHour: string) => {
-    const newTime = combineTime(newHour, currentMinute || '00');
+  // 편집 모드에서 임시로 사용할 시간/분 상태
+  const [tempHour, setTempHour] = useState('');
+  const [tempMinute, setTempMinute] = useState('');
+  
+  // 시간 편집 Popover 열기 핸들러
+  const handleOpenTimePopover = () => {
+    setTempHour(currentHour || '');
+    setTempMinute(currentMinute || '');
+    setIsTimePopoverOpen(true);
+  };
+  
+  // 임시 시간 변경 핸들러
+  const handleTempHourChange = (newHour: string) => {
+    setTempHour(newHour);
+  };
+  
+  // 임시 분 변경 핸들러
+  const handleTempMinuteChange = (newMinute: string) => {
+    setTempMinute(newMinute);
+  };
+  
+  // 시간 편집 완료 핸들러
+  const handleTimeEditComplete = useCallback(() => {
+    // 임시 상태에서 실제 상태로 반영
+    const finalHour = tempHour || '00';
+    const finalMinute = tempMinute || '00';
+    const newTime = combineTime(finalHour, finalMinute);
     onChange({ time: newTime });
+    setIsTimePopoverOpen(false);
+    setTempHour('');
+    setTempMinute('');
+  }, [tempHour, tempMinute, onChange]);
+  
+  // 시간 편집 취소 핸들러
+  const handleTimeEditCancel = () => {
+    setIsTimePopoverOpen(false);
+    setTempHour('');
+    setTempMinute('');
   };
   
-  // 분 변경 핸들러
-  const handleMinuteChange = (newMinute: string) => {
-    const newTime = combineTime(currentHour || '00', newMinute);
-    onChange({ time: newTime });
-  };
-  
-  // 옵션6용 편집 완료 핸들러
-  const handleEditComplete = () => {
-    // 시간이나 분이 비어있으면 기본값 설정
-    if (!currentHour || !currentMinute) {
-      const defaultTime = combineTime(currentHour || '00', currentMinute || '00');
-      onChange({ time: defaultTime });
-    }
-    setIsEditing(false);
-  };
+
   
   // 날짜 상태 관리
   const [date, setDate] = useState<Date | undefined>(() => {
@@ -571,81 +591,85 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
               </div>
             </div>
             
-            {!isEditing ? (
-              <div className="flex items-center justify-between border rounded-lg px-3 bg-background h-10">
-                <div className="text-sm font-mono text-foreground">
-                  {locationInfo.time || '--:--'}
+            <Popover open={isTimePopoverOpen} onOpenChange={setIsTimePopoverOpen}>
+              <PopoverTrigger asChild>
+                <div 
+                  className={cn(
+                    "flex items-center justify-center border rounded-lg px-3 bg-background h-10 transition-colors",
+                    disabled 
+                      ? "bg-muted cursor-not-allowed" 
+                      : "cursor-pointer hover:bg-muted/50"
+                  )}
+                  onClick={disabled ? handleDisabledClick : handleOpenTimePopover}
+                >
+                  <div className="text-sm font-mono text-foreground">
+                    {locationInfo.time || '시간을 선택하세요'}
+                  </div>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsEditing(true)}
-                  disabled={disabled}
-                  className={disabled ? 'bg-muted' : ''}
-                >
-                  시간 설정
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 border rounded-lg px-3 bg-background h-10">
-                <Select
-                  value={currentHour}
-                  onValueChange={handleHourChange}
-                  disabled={disabled}
-                >
-                  <SelectTrigger className="w-16 h-8">
-                    <SelectValue placeholder="시" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-60">
-                    {HOUR_OPTIONS.map((hour) => (
-                      <SelectItem key={hour} value={hour}>
-                        {hour}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                <span className="text-sm text-muted-foreground">:</span>
-                
-                <Select
-                  value={currentMinute}
-                  onValueChange={handleMinuteChange}
-                  disabled={disabled}
-                >
-                  <SelectTrigger className="w-16 h-8">
-                    <SelectValue placeholder="분" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MINUTE_OPTIONS.map((minute) => (
-                      <SelectItem key={minute} value={minute}>
-                        {minute}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                <Button
-                  type="button"
-                  variant="default"
-                  size="sm"
-                  onClick={handleEditComplete}
-                  className="h-8 px-2 text-xs"
-                >
-                  완료
-                </Button>
-                
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsEditing(false)}
-                  className="h-8 px-2 text-xs"
-                >
-                  취소
-                </Button>
-              </div>
-            )}
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-4">
+                <div className="space-y-4">
+                  <div className="text-sm font-medium text-center">
+                    {type === 'departure' ? '상차 시간' : '하차 시간'} 설정
+                  </div>
+                  
+                  <div className="flex items-center gap-3 justify-center">
+                    <Select
+                      value={tempHour}
+                      onValueChange={handleTempHourChange}
+                    >
+                      <SelectTrigger className="w-20 h-9">
+                        <SelectValue placeholder="시" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-60">
+                        {HOUR_OPTIONS.map((hour) => (
+                          <SelectItem key={hour} value={hour}>
+                            {hour}시
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    <span className="text-lg font-bold text-muted-foreground">:</span>
+                    
+                    <Select
+                      value={tempMinute}
+                      onValueChange={handleTempMinuteChange}
+                    >
+                      <SelectTrigger className="w-20 h-9">
+                        <SelectValue placeholder="분" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MINUTE_OPTIONS.map((minute) => (
+                          <SelectItem key={minute} value={minute}>
+                            {minute}분
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="flex gap-2 justify-end">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleTimeEditCancel}
+                    >
+                      취소
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="default"
+                      size="sm"
+                      onClick={handleTimeEditComplete}
+                    >
+                      확인
+                    </Button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
       </div>
