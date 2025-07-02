@@ -13,6 +13,13 @@ import {
   DialogClose,
   DialogTrigger 
 } from "@/components/ui/dialog";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ILocationInfo } from '@/types/order';
 import { format } from 'date-fns';
@@ -23,6 +30,7 @@ import { cn } from '@/lib/utils';
 import { RECENT_LOCATIONS, MOCK_RECENT_LOCATIONS_ADDRESS } from '@/utils/mockdata/mock-register';
 import { IKakaoAddressResult, IAddress } from '@/types/address';
 import { SearchAddressDialog } from '@/components/address/search-address-dialog';
+import { TIME_OPTIONS, findNearestTenMinuteTime, adjustMinutesToHalfHour } from '@/utils/time-utils';
 
 
 interface LocationFormProps {
@@ -125,17 +133,20 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
 
     // 타입별 시간 오프셋 (단위: 시간)
     const timeOffsetByType: Record<'departure' | 'destination', number> = {
-      departure: 3,    // 상차: 현재 + 3시간
-      destination: 4,  // 하차: 현재 + 4시간
+      departure: 6,    // 상차: 현재 + 6시간
+      destination: 7,  // 하차: 현재 + 7시간 (상차 + 1시간)
     };
 
     // 선택한 타입에 따라 미래 시간 계산
     const offsetHours = timeOffsetByType[type];
     const futureTime = new Date(now.getTime() + offsetHours * 60 * 60 * 1000);
 
+    // 분을 00분 또는 30분으로 조정
+    const adjustedTime = adjustMinutesToHalfHour(futureTime);
+
     // 시간 포맷팅 (HH:mm)
-    const formattedDate = format(futureTime, 'yyyy-MM-dd');
-    const formattedTime = format(futureTime, 'HH:mm', { locale: ko });
+    const formattedDate = format(adjustedTime, 'yyyy-MM-dd');
+    const formattedTime = format(adjustedTime, 'HH:mm', { locale: ko });
 
     // 최종 날짜 + 시간 정보
     const dateTimeInfo = {
@@ -205,15 +216,18 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
       const now = new Date();
       const futureTime = new Date(now.getTime() + 6 * 60 * 60 * 1000); // 6시간 후
       
-      const formattedDate = format(futureTime, 'yyyy-MM-dd');
-      const formattedTime = format(futureTime, 'HH:mm', { locale: ko });
+      // 분을 00분 또는 30분으로 조정
+      const adjustedTime = adjustMinutesToHalfHour(futureTime);
+      
+      const formattedDate = format(adjustedTime, 'yyyy-MM-dd');
+      const formattedTime = format(adjustedTime, 'HH:mm', { locale: ko });
       
       onChange({
         date: formattedDate,
         time: formattedTime
       });
       
-      setDate(futureTime);
+      setDate(adjustedTime);
     }
   }, [hasSearchedAddress, locationInfo.date, locationInfo.time, onChange]);
   
@@ -509,15 +523,25 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                 {type === 'departure' ? '상차 시간' : '하차 시간'} <span className="text-destructive">*</span>
               </div>
             </div>
-            <Input
-              type="time"
+            <Select
               value={locationInfo.time || ''}
-              onChange={(e) => onChange({ time: e.target.value })}
-              placeholder="시간을 입력하세요"
+              onValueChange={(value) => onChange({ time: value })}
               disabled={disabled}
-              className={disabled ? 'bg-muted' : ''}
-              onClick={handleDisabledClick}
-            />
+            >
+              <SelectTrigger 
+                className={disabled ? 'bg-muted' : ''}
+                onClick={handleDisabledClick}
+              >
+                <SelectValue placeholder="시간을 선택하세요" />
+              </SelectTrigger>
+              <SelectContent className="max-h-60">
+                {TIME_OPTIONS.map((timeOption) => (
+                  <SelectItem key={timeOption} value={timeOption}>
+                    {timeOption}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>

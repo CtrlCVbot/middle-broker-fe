@@ -65,6 +65,7 @@ import { useBrokerCompanyManagerStore } from "@/store/broker-company-manager-sto
 import { useAuthStore } from "@/store/auth-store";
 import { getCompanyById } from "@/services/company-service";
 import { format } from 'date-fns';
+import { adjustMinutesToHalfHour } from '@/utils/time-utils';
 
 interface OrderRegisterFormProps {
   onSubmit: () => void;
@@ -463,9 +464,12 @@ const { user, isLoggedIn } = useAuthStore();
         // 1시간 추가 (3600000 밀리초)
         const destinationDateTime = new Date(departureDateTime.getTime() + 60 * 60 * 1000);
         
+        // 분을 00분 또는 30분으로 조정
+        const adjustedDestinationTime = adjustMinutesToHalfHour(destinationDateTime);
+        
         // 날짜와 시간 문자열로 변환
-        const destinationDate = format(destinationDateTime, 'yyyy-MM-dd');
-        const destinationTime = format(destinationDateTime, 'HH:mm');
+        const destinationDate = format(adjustedDestinationTime, 'yyyy-MM-dd');
+        const destinationTime = format(adjustedDestinationTime, 'HH:mm');
         
         // 하차지 정보 업데이트 (기존 정보는 유지하고 날짜/시간만 변경)
         setDestination({
