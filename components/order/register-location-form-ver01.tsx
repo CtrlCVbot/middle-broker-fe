@@ -429,6 +429,63 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
 
         {hasSearchedAddress ? (
           <>
+            {/* 연락처 정보 영역 */}
+            <div className="border rounded-lg p-4 bg-muted/30 mb-6">
+              <div className="space-y-4">
+                {/* 회사명 / 담당자 */}
+                <div className={cn("grid gap-4", compact ? "grid-cols-2" : "grid-cols-1 md:grid-cols-2")}>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Building className="h-5 w-5 mb-2" />
+                      <div className="text-sm font-medium mb-2">회사명</div>
+                    </div>
+                    <Input
+                      value={locationInfo.company || ''}
+                      onChange={(e) => onChange({ company: e.target.value })}
+                      placeholder="회사명을 입력하세요"
+                      disabled={disabled}
+                      className={disabled ? 'bg-muted' : ''}
+                      onClick={handleDisabledClick}
+                    />
+                  </div>
+                  
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <User className="h-5 w-5 mb-2" />
+                      <div className="text-sm font-medium mb-2">담당자</div>
+                    </div>
+                    <Input
+                      value={locationInfo.name || ''}
+                      onChange={(e) => onChange({ name: e.target.value })}
+                      placeholder="담당자 이름을 입력하세요"
+                      disabled={disabled}
+                      className={disabled ? 'bg-muted' : ''}
+                      onClick={handleDisabledClick}
+                    />
+                  </div>
+                </div>
+                
+                {/* 연락처 */}
+                <div>
+                  <div className="text-sm font-medium mb-2">연락처</div>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      value={locationInfo.contact || ''}
+                      onChange={handlePhoneChange}
+                      placeholder="연락처를 입력하세요"
+                      disabled={disabled}
+                      className={cn(disabled ? 'bg-muted' : '', "pl-10")}
+                      onClick={handleDisabledClick}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    숫자와 하이픈(-)만 입력 가능합니다 (예: 010-1234-5678)
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* 주소 표시 영역 */}
             <div className="mb-4">
               <div className="flex items-center justify-between border p-4 rounded bg-background bg-muted/30">
@@ -446,7 +503,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
             </div>
             
             {/* 상세 주소 입력 */}
-            <div className="mb-4">
+            <div className="mb-6">
               <div className="text-sm font-medium mb-2">상세 주소 :</div>
               <Input
                 value={locationInfo.detailedAddress || ''}
@@ -455,8 +512,137 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                 disabled={disabled}
                 className={disabled ? 'bg-muted' : ''}
                 onClick={handleDisabledClick}
-              />
-            </div>
+                             />
+             </div>
+
+             {/* 일정 정보 영역 */}
+             <div className="border rounded-lg p-4 bg-muted/30">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div>
+                   <div className="flex items-center gap-2">
+                     {/* <CalendarIcon className="h-5 w-5 mb-2" /> */}
+                     <div className="text-sm font-medium mb-2">
+                       {type === 'departure' ? '상차일' : '하차일'} <span className="text-destructive">*</span>
+                     </div>
+                   </div>
+                   <Popover>
+                     <PopoverTrigger asChild>
+                       <Button
+                         variant="outline"
+                         className={cn(
+                           "w-full justify-start text-left",
+                           !date && "text-muted-foreground",
+                           disabled && "bg-muted"
+                         )}
+                         disabled={disabled}
+                         onClick={disabled ? handleDisabledClick : undefined}
+                       >
+                         <CalendarIcon className="mr-2 h-4 w-4" />
+                         {date ? format(date, 'PPP', { locale: ko }) : "날짜 선택"}
+                       </Button>
+                     </PopoverTrigger>
+                     <PopoverContent className="w-auto p-0">
+                       <Calendar
+                         mode="single"
+                         selected={date}
+                         onSelect={handleDateChange}
+                         initialFocus
+                         locale={ko}
+                       />
+                     </PopoverContent>
+                   </Popover>
+                 </div>
+                 
+                 <div>
+                   <div className="flex items-center gap-2">
+                     {/* <Clock className="h-5 w-5 mb-2" /> */}
+                     <div className="text-sm font-medium mb-2">
+                       {type === 'departure' ? '상차 시간' : '하차 시간'} <span className="text-destructive">*</span>
+                     </div>
+                   </div>
+                   
+                   <Popover open={isTimePopoverOpen} onOpenChange={setIsTimePopoverOpen}>
+                     <PopoverTrigger asChild>
+                       <div 
+                         className={cn(
+                           "flex items-center justify-center border rounded-lg px-3 bg-background h-10 transition-colors",
+                           disabled 
+                             ? "bg-muted cursor-not-allowed" 
+                             : "cursor-pointer hover:bg-muted/50"
+                         )}
+                         onClick={disabled ? handleDisabledClick : handleOpenTimePopover}
+                       >
+                         <div className="text-sm font-mono text-foreground">
+                           {locationInfo.time || '시간을 선택하세요'}
+                         </div>
+                       </div>
+                     </PopoverTrigger>
+                     <PopoverContent className="w-auto p-4">
+                       <div className="space-y-4">
+                         <div className="text-sm font-medium text-center">
+                           {type === 'departure' ? '상차 시간' : '하차 시간'} 설정
+                         </div>
+                         
+                         <div className="flex items-center gap-3 justify-center">
+                           <Select
+                             value={tempHour}
+                             onValueChange={handleTempHourChange}
+                           >
+                             <SelectTrigger className="w-20 h-9">
+                               <SelectValue placeholder="시" />
+                             </SelectTrigger>
+                             <SelectContent className="max-h-60">
+                               {HOUR_OPTIONS.map((hour) => (
+                                 <SelectItem key={hour} value={hour}>
+                                   {hour}시
+                                 </SelectItem>
+                               ))}
+                             </SelectContent>
+                           </Select>
+                           
+                           <span className="text-lg font-bold text-muted-foreground">:</span>
+                           
+                           <Select
+                             value={tempMinute}
+                             onValueChange={handleTempMinuteChange}
+                           >
+                             <SelectTrigger className="w-20 h-9">
+                               <SelectValue placeholder="분" />
+                             </SelectTrigger>
+                             <SelectContent>
+                               {MINUTE_OPTIONS.map((minute) => (
+                                 <SelectItem key={minute} value={minute}>
+                                   {minute}분
+                                 </SelectItem>
+                               ))}
+                             </SelectContent>
+                           </Select>
+                         </div>
+                         
+                         <div className="flex gap-2 justify-end">
+                           <Button
+                             type="button"
+                             variant="outline"
+                             size="sm"
+                             onClick={handleTimeEditCancel}
+                           >
+                             취소
+                           </Button>
+                           <Button
+                             type="button"
+                             variant="default"
+                             size="sm"
+                             onClick={handleTimeEditComplete}
+                           >
+                             확인
+                           </Button>
+                         </div>
+                       </div>
+                     </PopoverContent>
+                   </Popover>
+                 </div>
+               </div>
+             </div>
           </>
         ) : (
           <div className={cn("flex flex-col items-center justify-center py-8 border-5 border-dashed rounded-md bg-muted/30",
@@ -480,201 +666,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
         )}
       </div>
       
-      {/* 연락처 정보 영역 */}
-      {hasSearchedAddress && (
-      <div className="border rounded-lg p-4 bg-muted/30">
-        {/* <div className="flex items-center gap-2 mb-4 text-primary">
-          <User className="h-5 w-5" />
-          <h3 className="font-medium">{type === 'departure' ? '상차 담당자' : '하차 담당자'} 정보</h3>
-        </div> */}
 
-        <div className="space-y-4">
-          {/* 회사명 / 담당자 */}
-          <div className={cn("grid gap-4", compact ? "grid-cols-2" : "grid-cols-1 md:grid-cols-2")}>
-            <div>
-              <div className="flex items-center gap-2">
-                <Building className="h-5 w-5 mb-2" />
-                <div className="text-sm font-medium mb-2">회사명</div>
-              </div>
-              <Input
-                value={locationInfo.company || ''}
-                onChange={(e) => onChange({ company: e.target.value })}
-                placeholder="회사명을 입력하세요"
-                disabled={disabled}
-                className={disabled ? 'bg-muted' : ''}
-                onClick={handleDisabledClick}
-              />
-            </div>
-            
-            <div>
-              <div className="flex items-center gap-2">
-                <User className="h-5 w-5 mb-2" />
-                <div className="text-sm font-medium mb-2">담당자</div>
-              </div>
-              <Input
-                value={locationInfo.name || ''}
-                onChange={(e) => onChange({ name: e.target.value })}
-                placeholder="담당자 이름을 입력하세요"
-                disabled={disabled}
-                className={disabled ? 'bg-muted' : ''}
-                onClick={handleDisabledClick}
-              />
-            </div>
-          </div>
-          
-          {/* 연락처 */}
-          <div>
-            <div className="text-sm font-medium mb-2">연락처</div>
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                value={locationInfo.contact || ''}
-                onChange={handlePhoneChange}
-                placeholder="연락처를 입력하세요"
-                disabled={disabled}
-                className={cn(disabled ? 'bg-muted' : '', "pl-10")}
-                onClick={handleDisabledClick}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              숫자와 하이픈(-)만 입력 가능합니다 (예: 010-1234-5678)
-            </p>
-          </div>
-        </div>
-      </div>
-      )}
-      
-      {/* 일정 정보 영역 */}
-      {hasSearchedAddress && (
-      <div className="border rounded-lg p-4 bg-muted/30">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              {/* <CalendarIcon className="h-5 w-5 mb-2" /> */}
-              <div className="text-sm font-medium mb-2">
-                {type === 'departure' ? '상차일' : '하차일'} <span className="text-destructive">*</span>
-              </div>
-            </div>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left",
-                    !date && "text-muted-foreground",
-                    disabled && "bg-muted"
-                  )}
-                  disabled={disabled}
-                  onClick={disabled ? handleDisabledClick : undefined}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, 'PPP', { locale: ko }) : "날짜 선택"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={handleDateChange}
-                  initialFocus
-                  locale={ko}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          
-          <div>
-            <div className="flex items-center gap-2">
-              {/* <Clock className="h-5 w-5 mb-2" /> */}
-              <div className="text-sm font-medium mb-2">
-                {type === 'departure' ? '상차 시간' : '하차 시간'} <span className="text-destructive">*</span>
-              </div>
-            </div>
-            
-            <Popover open={isTimePopoverOpen} onOpenChange={setIsTimePopoverOpen}>
-              <PopoverTrigger asChild>
-                <div 
-                  className={cn(
-                    "flex items-center justify-center border rounded-lg px-3 bg-background h-10 transition-colors",
-                    disabled 
-                      ? "bg-muted cursor-not-allowed" 
-                      : "cursor-pointer hover:bg-muted/50"
-                  )}
-                  onClick={disabled ? handleDisabledClick : handleOpenTimePopover}
-                >
-                  <div className="text-sm font-mono text-foreground">
-                    {locationInfo.time || '시간을 선택하세요'}
-                  </div>
-                </div>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-4">
-                <div className="space-y-4">
-                  <div className="text-sm font-medium text-center">
-                    {type === 'departure' ? '상차 시간' : '하차 시간'} 설정
-                  </div>
-                  
-                  <div className="flex items-center gap-3 justify-center">
-                    <Select
-                      value={tempHour}
-                      onValueChange={handleTempHourChange}
-                    >
-                      <SelectTrigger className="w-20 h-9">
-                        <SelectValue placeholder="시" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-60">
-                        {HOUR_OPTIONS.map((hour) => (
-                          <SelectItem key={hour} value={hour}>
-                            {hour}시
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    
-                    <span className="text-lg font-bold text-muted-foreground">:</span>
-                    
-                    <Select
-                      value={tempMinute}
-                      onValueChange={handleTempMinuteChange}
-                    >
-                      <SelectTrigger className="w-20 h-9">
-                        <SelectValue placeholder="분" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {MINUTE_OPTIONS.map((minute) => (
-                          <SelectItem key={minute} value={minute}>
-                            {minute}분
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="flex gap-2 justify-end">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleTimeEditCancel}
-                    >
-                      취소
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="default"
-                      size="sm"
-                      onClick={handleTimeEditComplete}
-                    >
-                      확인
-                    </Button>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-          </div>
-        </div>
-      </div>
-      )}
-      
       
 
       {/* 주소 검색 다이얼로그 */}
