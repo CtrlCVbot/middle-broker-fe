@@ -249,7 +249,11 @@ export const data = {
         {
           title: "엑셀 기능",
           url: "/test/excel",
-        }        
+        } ,
+        {
+          title: "카카오",
+          url: "/test/kakao",
+        } ,       
       ],
     }
   ]
