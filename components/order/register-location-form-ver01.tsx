@@ -90,6 +90,30 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
   
   // 현재 시간 값에서 시간과 분 추출
   const { hour: currentHour, minute: currentMinute } = parseTime(locationInfo.time || '');
+
+  // 주소 검색 관련 상태 (useEffect에서 사용되므로 먼저 선언)
+  const [searchResults, setSearchResults] = useState<IKakaoAddressResult[]>([]);
+
+  // 디버깅: recentAddresses와 searchResults의 key 확인
+  React.useEffect(() => {
+    if (recentAddresses.length > 0) {
+      const recentKeys = recentAddresses.map((location, idx) => location.id || `recent-${idx}`);
+      const duplicateRecentKeys = recentKeys.filter((key, index) => recentKeys.indexOf(key) !== index);
+      if (duplicateRecentKeys.length > 0) {
+        console.warn('🔍 LocationForm recentAddresses에서 중복된 key 발견:', duplicateRecentKeys);
+        console.warn('🔍 전체 recentAddresses 배열:', recentAddresses);
+      }
+    }
+    
+    if (searchResults.length > 0) {
+      const searchKeys = searchResults.map((result, index) => result.id || `search-result-${index}`);
+      const duplicateSearchKeys = searchKeys.filter((key, index) => searchKeys.indexOf(key) !== index);
+      if (duplicateSearchKeys.length > 0) {
+        console.warn('🔍 LocationForm searchResults에서 중복된 key 발견:', duplicateSearchKeys);
+        console.warn('🔍 전체 searchResults 배열:', searchResults);
+      }
+    }
+  }, [recentAddresses, searchResults]);
   
   // 시간 편집 Popover 상태
   const [isTimePopoverOpen, setIsTimePopoverOpen] = useState(false);
@@ -153,7 +177,6 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
   
   // 주소 검색 관련 상태
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<IKakaoAddressResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
@@ -448,7 +471,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {recentAddresses.map((location, idx) => (
                 <Button
-                  key={location.id}
+                  key={location.id || `recent-${idx}`}
                   variant="outline"
                   className={cn("h-auto py-2 justify-start text-left",
                     type === 'departure' ? 'hover:bg-gray-200 cursor-pointer hover:text-green-800' : 'hover:bg-gray-200 cursor-pointer hover:text-blue-800'
@@ -744,8 +767,8 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
           {searchResults.length > 0 && (
             <ScrollArea className="h-[350px] rounded-md border border-input p-1">
               <div className="space-y-1">
-                {searchResults.map((result) => (
-                  <DialogClose key={result.id} asChild>
+                {searchResults.map((result, index) => (
+                  <DialogClose key={result.id || `search-result-${index}`} asChild>
                     <Button
                       variant="ghost"
                       className="w-full justify-start text-left p-3 h-auto"
