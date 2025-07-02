@@ -572,8 +572,8 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
             </div>
             
             {!isEditing ? (
-              <div className="flex items-center justify-between border rounded-lg p-3 bg-background">
-                <div className="text-lg font-mono text-foreground">
+              <div className="flex items-center justify-between border rounded-lg px-3 bg-background h-10">
+                <div className="text-sm font-mono text-foreground">
                   {locationInfo.time || '--:--'}
                 </div>
                 <Button
@@ -588,13 +588,13 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center gap-2 border rounded-lg p-3 bg-background">
+              <div className="flex items-center gap-2 border rounded-lg px-3 bg-background h-10">
                 <Select
                   value={currentHour}
                   onValueChange={handleHourChange}
                   disabled={disabled}
                 >
-                  <SelectTrigger className="w-20">
+                  <SelectTrigger className="w-16 h-8">
                     <SelectValue placeholder="시" />
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
@@ -606,14 +606,14 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                   </SelectContent>
                 </Select>
                 
-                <span className="text-lg text-muted-foreground">:</span>
+                <span className="text-sm text-muted-foreground">:</span>
                 
                 <Select
                   value={currentMinute}
                   onValueChange={handleMinuteChange}
                   disabled={disabled}
                 >
-                  <SelectTrigger className="w-20">
+                  <SelectTrigger className="w-16 h-8">
                     <SelectValue placeholder="분" />
                   </SelectTrigger>
                   <SelectContent>
@@ -630,6 +630,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                   variant="default"
                   size="sm"
                   onClick={handleEditComplete}
+                  className="h-8 px-2 text-xs"
                 >
                   완료
                 </Button>
@@ -639,6 +640,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsEditing(false)}
+                  className="h-8 px-2 text-xs"
                 >
                   취소
                 </Button>
