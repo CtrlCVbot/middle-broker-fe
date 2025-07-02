@@ -211,6 +211,91 @@ export class AddressService {
   }
 
   /**
+   * 최근 사용 주소 조회 (상차지)
+   * @param limit 조회할 주소 개수 (기본값: 10, 최대: 20)
+   */
+  static async getRecentPickupAddresses(limit: number = 10): Promise<IAddress[]> {
+    try {
+      const queryParams = new URLSearchParams({
+        type: 'pickup',
+        limit: Math.min(Math.max(limit, 1), 20).toString()
+      });
+
+      const response = await apiClient.get<{
+        success: boolean;
+        data: IAddress[];
+        total: number;
+        type: 'pickup' | 'delivery';
+      }>(`/addresses/recent?${queryParams.toString()}`, {
+        useCache: true,
+        cacheLifetime: 5 * 60 * 1000 // 5분 캐싱
+      });
+
+      return response.data || [];
+    } catch (error) {
+      console.error('[AddressService] 최근 상차지 조회 실패:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 최근 사용 주소 조회 (하차지)
+   * @param limit 조회할 주소 개수 (기본값: 10, 최대: 20)
+   */
+  static async getRecentDeliveryAddresses(limit: number = 10): Promise<IAddress[]> {
+    try {
+      const queryParams = new URLSearchParams({
+        type: 'delivery',
+        limit: Math.min(Math.max(limit, 1), 20).toString()
+      });
+
+      const response = await apiClient.get<{
+        success: boolean;
+        data: IAddress[];
+        total: number;
+        type: 'pickup' | 'delivery';
+      }>(`/addresses/recent?${queryParams.toString()}`, {
+        useCache: true,
+        cacheLifetime: 5 * 60 * 1000 // 5분 캐싱
+      });
+
+      return response.data || [];
+    } catch (error) {
+      console.error('[AddressService] 최근 하차지 조회 실패:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 최근 사용 주소 조회 (타입별)
+   * @param type 주소 타입 ('pickup' | 'delivery')
+   * @param limit 조회할 주소 개수 (기본값: 10, 최대: 20)
+   */
+  static async getRecentAddresses(type: 'pickup' | 'delivery', limit: number = 10): Promise<IAddress[]> {
+    try {
+      const queryParams = new URLSearchParams({
+        type,
+        limit: Math.min(Math.max(limit, 1), 20).toString()
+      });
+
+      const response = await apiClient.get<{
+        success: boolean;
+        data: IAddress[];
+        total: number;
+        type: 'pickup' | 'delivery';
+      }>(`/addresses/recent?${queryParams.toString()}`, {
+        useCache: true,
+        cacheLifetime: 5 * 60 * 1000 // 5분 캐싱
+      });
+
+      return response.data || [];
+    } catch (error) {
+      console.error(`[AddressService] 최근 ${type === 'pickup' ? '상차지' : '하차지'} 조회 실패:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * API 캐시 무효화
    * - 주소 데이터 변경 이후 호출하여 캐시 초기화
    */

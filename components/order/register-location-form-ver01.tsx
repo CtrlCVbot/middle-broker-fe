@@ -27,7 +27,7 @@ import { ko } from 'date-fns/locale';
 import { CalendarIcon, Search as SearchIcon, Map, Phone, Building2, User, Loader2, MapPin, Building, Clock, Pin, LogOut, LogIn } from 'lucide-react';
 import { useOrderRegisterStore } from '@/store/order-register-store';
 import { cn } from '@/lib/utils';
-import { RECENT_LOCATIONS, MOCK_RECENT_LOCATIONS_ADDRESS } from '@/utils/mockdata/mock-register';
+import { useRecentAddresses } from '@/hooks/useRecentAddresses';
 import { IKakaoAddressResult, IAddress } from '@/types/address';
 import { SearchAddressDialog } from '@/components/address/search-address-dialog';
 import { findNearestTenMinuteTime, adjustMinutesToHalfHour } from '@/utils/time-utils';
@@ -61,6 +61,20 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
 }) => {
   const { useRecentLocation } = useOrderRegisterStore();
   const [hasSearchedAddress, setHasSearchedAddress] = useState(!!locationInfo.address);
+  
+  // type 변환: 'departure' -> 'pickup', 'destination' -> 'delivery'
+  const addressType = type === 'departure' ? 'pickup' : 'delivery';
+  
+  // 타입별로 실제 데이터 fetch
+  const { 
+    data: recentAddresses = [], 
+    isLoading: isLoadingRecentAddresses,
+    error: recentAddressesError 
+  } = useRecentAddresses({ 
+    type: addressType,
+    limit: 4,
+    enabled: !hasSearchedAddress && compact 
+  });
   
   // 시간 파싱 헬퍼 함수
   const parseTime = (timeString: string) => {
@@ -399,17 +413,42 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
         </div>
 
         {/* 최근 사용 주소 */}
-        {!hasSearchedAddress && (compact && MOCK_RECENT_LOCATIONS_ADDRESS && MOCK_RECENT_LOCATIONS_ADDRESS.length > 0) && (
+        {/* 로딩 상태 UI */}
+        {!hasSearchedAddress && compact && isLoadingRecentAddresses && (
+          <div className="border rounded-lg p-4 bg-muted/30 mb-4">
+            <div className="flex items-center gap-2 mb-4">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span className="text-sm">
+                최근 사용 {type === 'departure' ? '상차지' : '하차지'} 불러오는 중...
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* 에러 상태 UI */}
+        {!hasSearchedAddress && compact && recentAddressesError && (
+          <div className="text-sm text-red-500 p-2 rounded-md bg-red-50 mb-2">
+            최근 사용 {type === 'departure' ? '상차지' : '하차지'}를 불러올 수 없습니다.
+          </div>
+        )}
+
+        {/* 데이터 표시 */}
+        {!hasSearchedAddress && 
+         !isLoadingRecentAddresses && 
+         recentAddresses.length > 0 && 
+         compact && (
           <div className="border rounded-lg p-4 bg-muted/30 mb-4">
             <div className="flex items-center gap-2 mb-4 text-primary">
               <Pin className="h-5 w-5" />
-              <h3 className="font-medium">최근 사용 주소</h3>
+              <h3 className="font-medium">
+                최근 사용 {type === 'departure' ? '상차지' : '하차지'}
+              </h3>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {MOCK_RECENT_LOCATIONS_ADDRESS.slice(0, 4).map((location, idx) => (
+              {recentAddresses.map((location, idx) => (
                 <Button
-                  key={idx}
+                  key={location.id}
                   variant="outline"
                   className={cn("h-auto py-2 justify-start text-left",
                     type === 'departure' ? 'hover:bg-gray-200 cursor-pointer hover:text-green-800' : 'hover:bg-gray-200 cursor-pointer hover:text-blue-800'
