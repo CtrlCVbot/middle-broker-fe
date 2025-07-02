@@ -51,7 +51,7 @@ function transformPickupOrderToAddress(order: any): IAddress {
   const snapshot = order.pickupAddressSnapshot as IAddressSnapshot;
   
   return {
-    id: `pickup_${order.id}`, // 임시 ID 생성
+    id: order.pickupAddressId,//`pickup_${order.id}`, // 임시 ID 생성
     name: order.pickupName || snapshot?.name || '장소명 없음',
     type: 'load' as AddressType,
     roadAddress: snapshot?.roadAddress || '',
@@ -83,7 +83,7 @@ function transformDeliveryOrderToAddress(order: any): IAddress {
   const snapshot = order.deliveryAddressSnapshot as IAddressSnapshot;
   
   return {
-    id: `delivery_${order.id}`, // 임시 ID 생성
+    id: order.deliveryAddressId,//`delivery_${order.id}`, // 임시 ID 생성
     name: order.deliveryName || snapshot?.name || '장소명 없음',
     type: 'drop' as AddressType,
     roadAddress: snapshot?.roadAddress || '',
@@ -178,6 +178,7 @@ export async function GET(request: NextRequest) {
       const pickupOrders = await db
         .select({
           id: orders.id,
+          pickupAddressId: orders.pickupAddressId,
           pickupAddressSnapshot: orders.pickupAddressSnapshot,
           pickupName: orders.pickupName,
           pickupContactName: orders.pickupContactName,
@@ -209,6 +210,7 @@ export async function GET(request: NextRequest) {
       const deliveryOrders = await db
         .select({
           id: orders.id,
+          deliveryAddressId: orders.deliveryAddressId,
           deliveryAddressSnapshot: orders.deliveryAddressSnapshot,
           deliveryName: orders.deliveryName,
           deliveryContactName: orders.deliveryContactName,

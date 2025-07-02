@@ -1,4 +1,5 @@
-import { pgTable, uuid, varchar, numeric, integer, boolean, timestamp, date, time, json, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, numeric, integer, boolean, timestamp, date, time, json, pgEnum, index } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { companies } from '@/db/schema/companies';
 import { users } from '@/db/schema/users';
 import { addresses } from '@/db/schema/addresses';
@@ -123,6 +124,16 @@ export const orders = pgTable('orders', {
     .notNull(),
   updatedBySnapshot: json('updated_by_snapshot').$type<IUserSnapshot>(), //수정자 스냅샷
   updatedAt: timestamp('updated_at').defaultNow(), //수정일
-});
+}, (table) => [
+  // 최근 상차지 조회를 위한 인덱스
+  index('idx_orders_company_pickup_created')
+    .on(table.companyId, table.createdAt.desc())
+    .where(sql`${table.pickupAddressSnapshot} IS NOT NULL`),
+  
+  // 최근 하차지 조회를 위한 인덱스  
+  index('idx_orders_company_delivery_created')
+    .on(table.companyId, table.createdAt.desc())
+    .where(sql`${table.deliveryAddressSnapshot} IS NOT NULL`),
+]);
 
  
