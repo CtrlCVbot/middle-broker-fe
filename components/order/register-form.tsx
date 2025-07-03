@@ -35,9 +35,9 @@ import {
 
 import { 
   calculateAmount, 
-  calculateDistance, 
   //searchAddress 
 } from "@/utils/mockdata/mock-register";
+import { DistanceClientService } from "@/services/distance-client-service";
 
 import { LocationFormVer01 } from "@/components/order/register-location-form-ver01";
 
@@ -411,11 +411,48 @@ const { user, isLoggedIn } = useAuthStore();
         setIsCalculating(true);
         
         try {
-          // 거리 계산
-          const distance = await calculateDistance(departure.address, destination.address);
+          // 실제 거리 계산 (카카오 API 사용)
+          let distance = 0;
           
-          // 금액 계산
-          const amount = await calculateAmount(distance, weightType, selectedOptions);
+          // 좌표 정보가 있는 경우 실제 API 호출
+          if (departure.latitude && departure.longitude && 
+              destination.latitude && destination.longitude) {
+            
+            const result = await DistanceClientService.calculateDistanceByAddresses({
+              pickupAddressId: departure.id || `temp_pickup_${Date.now()}`,
+              deliveryAddressId: destination.id || `temp_delivery_${Date.now()}`,
+              pickupCoordinates: {
+                lat: departure.latitude,
+                lng: departure.longitude
+              },
+              deliveryCoordinates: {
+                lat: destination.latitude,
+                lng: destination.longitude
+              },
+              priority: 'RECOMMEND'
+            });
+            
+            if (result.success && result.distanceKm) {
+              distance = result.distanceKm;
+              console.log(`✅ 실제 거리 계산 완료: ${distance}km`);
+            } else {
+              console.warn('거리 계산 실패, fallback 사용:', result.error);
+              // fallback: 직선 거리 계산
+              distance = await DistanceClientService.calculateMockDistance(
+                departure.latitude,
+                departure.longitude,
+                destination.latitude,
+                destination.longitude
+              );
+            }
+          } else {
+            // 좌표가 없는 경우 기존 mock 함수 사용 (임시)
+            console.warn('좌표 정보 없음, mock 거리 계산 사용');
+            distance = Math.floor(Math.random() * 100) + 20; // 20~120km 범위
+          }
+          
+          // 예상 금액은 "협의"로 설정 (0으로 설정하여 UI에서 "협의" 표시)
+          const amount = 0; // 협의 금액으로 설정
 
           // 계산 결과를 store에 반영
           if (editMode) {
@@ -426,8 +463,30 @@ const { user, isLoggedIn } = useAuthStore();
           } else {
             registerStore.setEstimatedInfo(distance, amount);
           }
+          
+          console.log(`📊 거리: ${distance}km, 예상금액: 협의`);
+          
         } catch (error) {
-          console.error("계산 중 오류 발생:", error);
+          console.error("거리 계산 중 오류 발생:", error);
+          
+          // 에러 발생 시 기본값 설정
+          const fallbackDistance = 50; // 기본 50km
+          const fallbackAmount = 0; // 협의
+          
+          if (editMode) {
+            editStore.setRegisterData({
+              estimatedDistance: fallbackDistance,
+              estimatedAmount: fallbackAmount,
+            });
+          } else {
+            registerStore.setEstimatedInfo(fallbackDistance, fallbackAmount);
+          }
+          
+          toast({
+            title: "거리 계산 오류",
+            description: "거리 계산 중 문제가 발생했습니다. 기본값으로 설정됩니다.",
+            variant: "destructive",
+          });
         } finally {
           setIsCalculating(false);
         }

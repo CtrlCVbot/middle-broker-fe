@@ -15,7 +15,9 @@ export function RegisterEstimateInfoCard({ estimatedDistance, estimatedAmount, i
       ) : (
         <>
           <div>예상 거리: <span className="font-bold">{estimatedDistance ?? '-'} km</span></div>
-          <div>예상 금액: <span className="font-bold">{estimatedAmount ? estimatedAmount.toLocaleString() : '-'} 원</span></div>
+          <div>예상 금액: <span className="font-bold">
+            {estimatedAmount === 0 ? '협의' : (estimatedAmount ? `${estimatedAmount.toLocaleString()} 원` : '-')}
+          </span></div>
           
         </>
       )}

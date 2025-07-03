@@ -5,6 +5,8 @@ import { users } from '@/db/schema/users';
 import { addresses } from '@/db/schema/addresses';
 import { IAddressSnapshot, IPriceSnapshot, IUserSnapshot, ITransportOptionsSnapshot, ICompanySnapshot } from '@/types/order';
 import { IAddress } from '@/types/address';
+import { IDistanceMetadata } from '@/types/distance';
+import { calculationMethodEnum } from '@/db/schema/distanceCache';
 
 // 화물 상태 Enum 정의
 export const orderFlowStatusEnum = pgEnum('order_flow_status', [  
@@ -110,6 +112,22 @@ export const orders = pgTable('orders', {
   //거리 및 가격 정보
   estimatedDistance: numeric('estimated_distance', { precision: 8, scale: 2 }), //예상 거리
   estimatedPriceAmount: numeric('estimated_price_amount', { precision: 12, scale: 2 }), //예상 가격
+
+  // 실제 거리 정보 (카카오 API 기반)
+  actualDistanceKm: numeric('actual_distance_km', { precision: 10, scale: 2 }), // 실제 측정된 거리
+  actualDurationMinutes: integer('actual_duration_minutes'), // 실제 소요 시간
+
+  // 거리 계산 방법 기록
+  distanceCalculationMethod: calculationMethodEnum('distance_calculation_method').default('api'),
+  
+  // 거리 계산 시점 기록
+  distanceCalculatedAt: timestamp('distance_calculated_at'),
+  
+  // 캐시 데이터 참조 (distance_cache 테이블 참조)
+  distanceCacheId: uuid('distance_cache_id'), // .references(() => distanceCache.id), 
+  
+  // 거리 계산 정확도 메타데이터
+  distanceMetadata: json('distance_metadata').$type<IDistanceMetadata>(),
   priceType: priceTypeEnum('price_type').notNull().default('기본'), //가격 타입
   taxType: taxTypeEnum('tax_type').notNull().default('과세'), //세율 타입
   priceSnapshot: json('price_snapshot').$type<IPriceSnapshot>(), //가격 스냅샷
@@ -134,6 +152,15 @@ export const orders = pgTable('orders', {
   index('idx_orders_company_delivery_created')
     .on(table.companyId, table.createdAt.desc())
     .where(sql`${table.deliveryAddressSnapshot} IS NOT NULL`),
+
+  // 거리 계산 방법별 조회 최적화
+  index('idx_orders_distance_method')
+    .on(table.distanceCalculationMethod, table.createdAt.desc()),
+  
+  // 실제 거리 기준 조회 (통계 분석용)
+  index('idx_orders_actual_distance')
+    .on(table.actualDistanceKm, table.createdAt.desc())
+    .where(sql`${table.actualDistanceKm} IS NOT NULL`),
 ]);
 
  
