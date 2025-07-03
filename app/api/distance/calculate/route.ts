@@ -30,13 +30,9 @@ export async function POST(req: NextRequest) {
     const ipAddress = headersList.get('x-forwarded-for') || 
                       headersList.get('x-real-ip') || 
                       '127.0.0.1';
-    //const authHeader = headersList.get('authorization');
+   
     const requestId = headersList.get('request-id');
 
-    
-    
-    // JWT 토큰에서 사용자 ID 추출
-    //const userId = extractUserIdFromAuthHeader(authHeader);
     
     // 사용자 인증 확인
     if (!requestId) {
@@ -49,18 +45,8 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
-    
-    // 토큰 만료 확인
-    // if (authHeader && isJwtTokenExpired(authHeader)) {
-    //   return NextResponse.json(
-    //     { 
-    //       success: false,
-    //       error: 'Token expired',
-    //       errorCode: 'TOKEN_EXPIRED'
-    //     },
-    //     { status: 401 }
-    //   );
-    // }
+    console.log('requestId--->', requestId);
+ 
     
     // 요청 본문 파싱
     const body = await req.json();
@@ -118,7 +104,8 @@ export async function POST(req: NextRequest) {
     console.log(`🔍 거리 계산 요청 시작: ${request.pickupAddressId} -> ${request.deliveryAddressId}`);
     
     // 거리 계산 수행
-    const result = await DistanceCalculationService.calculateDistance(request);
+    console.log('거리 계산 수행 requestId--->', requestId);
+    const result = await DistanceCalculationService.calculateDistance(request, requestId);
     const responseTime = Date.now() - startTime;
     
     // API 사용량 기록 (성공)

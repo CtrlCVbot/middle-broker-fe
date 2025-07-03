@@ -12,6 +12,7 @@ import {
 import { KakaoDirectionsService } from './kakao-directions-service';
 import { IKakaoDirectionsParams } from '@/types/kakao-directions';
 import { useAuthStore } from '@/store/auth-store';
+import { headers } from 'next/headers';
 
 /**
  * 거리 계산 서비스
@@ -29,10 +30,11 @@ export class DistanceCalculationService {
    * 메인 거리 계산 함수
    * 캐시 우선 조회 -> 주소 변경 확인 -> API 호출 순으로 처리
    */
-  static async calculateDistance(request: IDistanceCalculationRequest): Promise<IDistanceCalculationResult> {
+  static async calculateDistance(request: IDistanceCalculationRequest, userId?: string): Promise<IDistanceCalculationResult> {
     try {
+      
       console.log(`🔍 거리 계산 요청: ${request.pickupAddressId} -> ${request.deliveryAddressId}`);
-
+      console.log('userId--->', userId);
       // 1. DB에서 기존 데이터 검색
       const cachedDistance = await this.findCachedDistance(request);
       
@@ -67,7 +69,7 @@ export class DistanceCalculationService {
       
       // 3. 카카오 API 호출
       console.log('🌐 카카오 API 호출 중...');
-      return await this.calculateDistanceFromAPI(request);
+      return await this.calculateDistanceFromAPI(request, userId);
       
     } catch (error) {
       console.error('❌ 거리 계산 실패:', error);
@@ -134,7 +136,7 @@ export class DistanceCalculationService {
   /**
    * 카카오 API로부터 거리 계산
    */
-  private static async calculateDistanceFromAPI(request: IDistanceCalculationRequest): Promise<IDistanceCalculationResult> {
+  private static async calculateDistanceFromAPI(request: IDistanceCalculationRequest, userId?: string): Promise<IDistanceCalculationResult> {
     const startTime = Date.now();
     let apiUsageId: string | undefined;
     
@@ -153,8 +155,8 @@ export class DistanceCalculationService {
       const responseTime = Date.now() - startTime;
       
       console.log(`✅ API 응답 시간: ${responseTime}ms`);
-      const user = useAuthStore.getState().getUser();
-      console.log('useAuthStore!!!', user);
+      console.log('userId--->', userId);
+      
       // API 사용량 기록
       apiUsageId = await this.recordApiUsage({
         apiType: 'directions',
@@ -162,7 +164,7 @@ export class DistanceCalculationService {
         responseStatus: 200,
         responseTimeMs: responseTime,
         success: true,
-        userId: user?.id,
+        userId: userId,
         resultCount: result.routes?.length || 0
       });
       
@@ -215,6 +217,7 @@ export class DistanceCalculationService {
         responseStatus: error instanceof Error && 'status' in error ? (error as any).status : 500,
         responseTimeMs: responseTime,
         success: false,
+        userId: userId,
         errorMessage: error instanceof Error ? error.message : 'Unknown error'
       });
       
@@ -266,6 +269,15 @@ export class DistanceCalculationService {
     userAgent?: string;
   }): Promise<string> {
     try {
+      console.log('data.userId--->', data.userId);
+
+      const headersList = await headers();
+      const userAgent = headersList.get('user-agent') || '';
+      const ipAddress = headersList.get('x-forwarded-for') || 
+                        headersList.get('x-real-ip') || 
+                        '127.0.0.1';
+      console.log('ipAddress--->', ipAddress);
+      console.log('userAgent--->', userAgent);
       const result = await db
         .insert(kakaoApiUsage)
         .values({
@@ -278,8 +290,8 @@ export class DistanceCalculationService {
           errorMessage: data.errorMessage,
           resultCount: data.resultCount,
           userId: data.userId,
-          ipAddress: data.ipAddress || '127.0.0.1',
-          userAgent: data.userAgent,
+          ipAddress: ipAddress,
+          userAgent: userAgent,
           estimatedCost: data.success ? 8 : 0, // 성공시 8원 비용
         })
         .returning({ id: kakaoApiUsage.id });
