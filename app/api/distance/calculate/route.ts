@@ -3,6 +3,7 @@ import { DistanceCalculationService } from '@/services/distance-calculation-serv
 import { ApiUsageService } from '@/services/api-usage-service';
 import { IDistanceCalculationRequest } from '@/types/distance';
 import { headers } from 'next/headers';
+import { extractUserIdFromAuthHeader, isJwtTokenExpired } from '@/utils/jwt';
 
 /**
  * 거리 계산 API
@@ -23,12 +24,43 @@ export async function POST(req: NextRequest) {
   const startTime = Date.now();
   
   try {
-    // 헤더에서 사용자 정보 추출
+    // 헤더에서 정보 추출
     const headersList = await headers();
     const userAgent = headersList.get('user-agent') || '';
     const ipAddress = headersList.get('x-forwarded-for') || 
                       headersList.get('x-real-ip') || 
                       '127.0.0.1';
+    //const authHeader = headersList.get('authorization');
+    const requestId = headersList.get('request-id');
+
+    
+    
+    // JWT 토큰에서 사용자 ID 추출
+    //const userId = extractUserIdFromAuthHeader(authHeader);
+    
+    // 사용자 인증 확인
+    if (!requestId) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: 'Authentication required',
+          errorCode: 'UNAUTHORIZED'
+        },
+        { status: 401 }
+      );
+    }
+    
+    // 토큰 만료 확인
+    // if (authHeader && isJwtTokenExpired(authHeader)) {
+    //   return NextResponse.json(
+    //     { 
+    //       success: false,
+    //       error: 'Token expired',
+    //       errorCode: 'TOKEN_EXPIRED'
+    //     },
+    //     { status: 401 }
+    //   );
+    // }
     
     // 요청 본문 파싱
     const body = await req.json();
@@ -49,40 +81,38 @@ export async function POST(req: NextRequest) {
     const request: IDistanceCalculationRequest = validation.data;
     
     // Rate Limiting 체크 (사용자별)
-    if (request.pickupAddressId) {
-      const rateLimitInfo = ApiUsageService.checkRateLimit(request.pickupAddressId);
-      if (rateLimitInfo.isLimited) {
-        const responseTime = Date.now() - startTime;
-        
-        // Rate Limit 기록
-        await ApiUsageService.recordUsage({
-          apiType: 'directions',
-          endpoint: '/api/distance/calculate',
-          requestParams: body,
-          responseStatus: 429,
-          responseTimeMs: responseTime,
+    const rateLimitInfo = ApiUsageService.checkRateLimit(requestId);
+    if (rateLimitInfo.isLimited) {
+      const responseTime = Date.now() - startTime;
+      
+      // Rate Limit 기록
+      await ApiUsageService.recordUsage({
+        apiType: 'directions',
+        endpoint: '/api/distance/calculate',
+        requestParams: body,
+        responseStatus: 429,
+        responseTimeMs: responseTime,
+        success: false,
+        errorMessage: 'Rate limit exceeded',
+        ipAddress,
+        userAgent,
+        userId: requestId
+      });
+      
+      return NextResponse.json(
+        { 
           success: false,
-          errorMessage: 'Rate limit exceeded',
-          ipAddress,
-          userAgent,
-          userId: request.pickupAddressId
-        });
-        
-        return NextResponse.json(
-          { 
-            success: false,
-            error: 'Rate limit exceeded. Maximum 10 calls per minute.',
-            errorCode: 'RATE_LIMIT_EXCEEDED',
-            retryAfter: 60
-          },
-          { 
-            status: 429,
-            headers: {
-              'Retry-After': '60'
-            }
+          error: 'Rate limit exceeded. Maximum 10 calls per minute.',
+          errorCode: 'RATE_LIMIT_EXCEEDED',
+          retryAfter: 60
+        },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': '60'
           }
-        );
-      }
+        }
+      );
     }
     
     console.log(`🔍 거리 계산 요청 시작: ${request.pickupAddressId} -> ${request.deliveryAddressId}`);
@@ -102,7 +132,7 @@ export async function POST(req: NextRequest) {
       resultCount: 1,
       ipAddress,
       userAgent,
-      userId: request.pickupAddressId
+      userId: requestId
     });
     
     console.log(`✅ 거리 계산 완료: ${result.distanceKm}km (${result.method})`);
@@ -129,6 +159,8 @@ export async function POST(req: NextRequest) {
       const ipAddress = headersList.get('x-forwarded-for') || 
                         headersList.get('x-real-ip') || 
                         '127.0.0.1';
+      const authHeader = headersList.get('authorization');
+      const userId = extractUserIdFromAuthHeader(authHeader);
       
       await ApiUsageService.recordUsage({
         apiType: 'directions',
@@ -139,7 +171,8 @@ export async function POST(req: NextRequest) {
         success: false,
         errorMessage,
         ipAddress,
-        userAgent
+        userAgent,
+        userId: userId || undefined // userId가 null이면 undefined로 설정
       });
     } catch (recordError) {
       console.error('사용량 기록 실패:', recordError);

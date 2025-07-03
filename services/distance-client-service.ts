@@ -1,4 +1,5 @@
 import { IDistanceCalculationRequest, IDistanceCalculationResult } from '@/types/distance';
+import { useAuthStore } from '@/store/auth-store';
 
 /**
  * 거리 계산 클라이언트 서비스
@@ -16,13 +17,29 @@ export class DistanceClientService {
    */
   static async calculateDistance(request: IDistanceCalculationRequest): Promise<IDistanceCalculationResult> {
     try {
-      console.log('🔍 거리 계산 API 호출 시작:', request);
+      
+      const user = useAuthStore.getState().getUser();
+      console.log('user!!!', user);
+      
+      // JWT 토큰 가져오기
+      console.log('token!!!');
+      const token = useAuthStore.getState().token;
+      
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // 토큰이 있으면 Authorization 헤더에 포함
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      if (user) {
+        headers['request-id'] = user.id;
+      }
       
       const response = await fetch(this.API_BASE_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(request),
       });
       
@@ -158,8 +175,19 @@ export class DistanceClientService {
     stats?: any;
   }> {
     try {
+      // JWT 토큰 가져오기
+      const token = useAuthStore.getState().token;
+      
+      const headers: Record<string, string> = {};
+      
+      // 토큰이 있으면 Authorization 헤더에 포함
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(this.API_BASE_URL, {
         method: 'GET',
+        headers,
       });
       
       const data = await response.json();

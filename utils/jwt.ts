@@ -186,4 +186,101 @@ export async function verifyAccessTokenFromCookies(): Promise<JWTPayload | null>
   if (!token) return null;
   
   return await verifyAccessToken(token);
-} 
+}
+
+/**
+ * 서버 사이드 JWT 토큰 파싱 유틸리티
+ */
+
+export interface IJwtPayload {
+  userId: string;
+  email: string;
+  role?: string;
+  exp: number;
+  iat: number;
+}
+
+/**
+ * JWT 토큰에서 페이로드 추출
+ * @param token JWT 토큰 문자열
+ * @returns 디코딩된 페이로드 또는 null
+ */
+export const parseJwtPayload = (token: string): IJwtPayload | null => {
+  try {
+    // Bearer 접두사 제거
+    const cleanToken = token.replace(/^Bearer\s+/, '');
+    
+    // JWT 토큰 구조 확인 (header.payload.signature)
+    const parts = cleanToken.split('.');
+    if (parts.length !== 3) {
+      console.error('Invalid JWT token structure');
+      return null;
+    }
+    
+    // Base64 URL 디코딩
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    
+    // Base64 디코딩
+    const payload = JSON.parse(Buffer.from(base64, 'base64').toString());
+    
+    // 필수 필드 확인
+    if (!payload.userId || !payload.email) {
+      console.error('JWT payload missing required fields');
+      return null;
+    }
+    
+    return payload as IJwtPayload;
+  } catch (error) {
+    console.error('JWT 토큰 파싱 오류:', error);
+    return null;
+  }
+};
+
+/**
+ * JWT 토큰 만료 확인
+ * @param token JWT 토큰 문자열
+ * @returns 만료 여부
+ */
+export const isJwtTokenExpired = (token: string): boolean => {
+  try {
+    const payload = parseJwtPayload(token);
+    if (!payload || !payload.exp) {
+      return true;
+    }
+    
+    // 현재 시간과 만료 시간 비교 (초 단위)
+    const now = Math.floor(Date.now() / 1000);
+    return payload.exp < now;
+  } catch (error) {
+    console.error('JWT 토큰 만료 확인 오류:', error);
+    return true; // 오류 발생 시 만료된 것으로 간주
+  }
+};
+
+/**
+ * 요청 헤더에서 사용자 ID 추출
+ * @param authHeader Authorization 헤더 값
+ * @returns 사용자 ID 또는 null
+ */
+export const extractUserIdFromAuthHeader = (authHeader: string | null): string | null => {
+  if (!authHeader) {
+    return null;
+  }
+  
+  const payload = parseJwtPayload(authHeader);
+  return payload ? payload.userId : null;
+};
+
+/**
+ * 요청 헤더에서 전체 사용자 정보 추출
+ * @param authHeader Authorization 헤더 값
+ * @returns JWT 페이로드 또는 null
+ */
+export const extractUserFromAuthHeader = (authHeader: string | null): IJwtPayload | null => {
+  if (!authHeader) {
+    return null;
+  }
+  
+  return parseJwtPayload(authHeader);
+}; 

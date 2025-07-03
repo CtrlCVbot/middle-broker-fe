@@ -436,7 +436,7 @@ const { user, isLoggedIn } = useAuthStore();
               distance = result.distanceKm;
               console.log(`✅ 실제 거리 계산 완료: ${distance}km`);
             } else {
-              console.warn('거리 계산 실패, fallback 사용:', result.error);
+              console.log('거리 계산 실패, 직선거리 계산 사용:', result.error);
               // fallback: 직선 거리 계산
               distance = await DistanceClientService.calculateMockDistance(
                 departure.latitude,
@@ -447,10 +447,10 @@ const { user, isLoggedIn } = useAuthStore();
             }
           } else {
             // 좌표가 없는 경우 기존 mock 함수 사용 (임시)
-            console.warn('좌표 정보 없음, mock 거리 계산 사용');
-            distance = Math.floor(Math.random() * 100) + 20; // 20~120km 범위
+            console.log('좌표 정보 없음!!!');
+            distance = 0;
           }
-          
+          console.log('distance', distance);
           // 예상 금액은 "협의"로 설정 (0으로 설정하여 UI에서 "협의" 표시)
           const amount = 0; // 협의 금액으로 설정
 

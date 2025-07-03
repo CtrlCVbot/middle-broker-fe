@@ -11,6 +11,7 @@ import {
 } from '@/types/distance';
 import { KakaoDirectionsService } from './kakao-directions-service';
 import { IKakaoDirectionsParams } from '@/types/kakao-directions';
+import { useAuthStore } from '@/store/auth-store';
 
 /**
  * 거리 계산 서비스
@@ -22,6 +23,7 @@ import { IKakaoDirectionsParams } from '@/types/kakao-directions';
  * 4. 계산 결과를 캐시에 저장
  */
 export class DistanceCalculationService {
+ 
   
   /**
    * 메인 거리 계산 함수
@@ -151,7 +153,8 @@ export class DistanceCalculationService {
       const responseTime = Date.now() - startTime;
       
       console.log(`✅ API 응답 시간: ${responseTime}ms`);
-      
+      const user = useAuthStore.getState().getUser();
+      console.log('useAuthStore!!!', user);
       // API 사용량 기록
       apiUsageId = await this.recordApiUsage({
         apiType: 'directions',
@@ -159,6 +162,7 @@ export class DistanceCalculationService {
         responseStatus: 200,
         responseTimeMs: responseTime,
         success: true,
+        userId: user?.id,
         resultCount: result.routes?.length || 0
       });
       
