@@ -255,8 +255,8 @@ export const data = {
           url: "/test/kakao",
         } , 
         {
-          title: "거리 측정",
-          url: "/test/distance",
+          title: "api 모니터링",
+          url: "/test/api-monitor",
         } ,
       ],
     }
