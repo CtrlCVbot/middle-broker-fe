@@ -253,7 +253,11 @@ export const data = {
         {
           title: "카카오",
           url: "/test/kakao",
-        } ,       
+        } , 
+        {
+          title: "거리 측정",
+          url: "/test/distance",
+        } ,
       ],
     }
   ]

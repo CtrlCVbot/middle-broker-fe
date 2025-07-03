@@ -170,10 +170,10 @@ async function runDistanceSystemMigration() {
       'CREATE INDEX idx_kakao_api_usage_errors ON kakao_api_usage (response_status, created_at DESC) WHERE success = false'
     );
 
-    // orders 테이블 추가 인덱스
+    // orders 테이블 추가 인덱스 (신규 필드만)
     await createIndexIfNotExists(
       'idx_orders_distance_method',
-      'CREATE INDEX idx_orders_distance_method ON orders (distance_calculation_method, created_at DESC)'
+      'CREATE INDEX idx_orders_distance_method ON orders (distance_calculation_method, created_at DESC) WHERE distance_calculation_method IS NOT NULL'
     );
     
     await createIndexIfNotExists(

@@ -93,10 +93,14 @@ export interface IOrderRegisterStore {
   resetForm: () => void;
   addRecentLocation: (type: 'departure' | 'destination', info: ILocationInfo) => void;
   useRecentLocation: (type: 'departure' | 'destination', locationId: string) => void;
+  
+  // 누락된 메서드들 추가
+  registerOrder: (data: IOrderRegisterData) => Promise<void>;
+  setFormData: (data: Partial<IOrderRegisterData>) => void;
 }
 
 // 화물 등록 스토어 생성
-export const useOrderRegisterStore = create<IOrderRegisterStore>()(
+export const useBrokerOrderRegisterStore = create<IOrderRegisterStore>()(
   persist(
     (set) => ({
       // 초기 상태
@@ -200,7 +204,19 @@ export const useOrderRegisterStore = create<IOrderRegisterStore>()(
               [type]: { ...location.info }
             }
           };
-        })
+        }),
+        
+      // 누락된 메서드들 구현
+      registerOrder: async (data) => {
+        // 화물 등록 로직 (실제 API 호출은 여기서 수행)
+        console.log('화물 등록:', data);
+        // TODO: 실제 API 호출 구현
+      },
+      
+      setFormData: (data) => 
+        set((state) => ({
+          registerData: { ...state.registerData, ...data }
+        }))
     }),
     {
       name: 'order-register-storage'
