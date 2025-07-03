@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   
   try {
     // 헤더에서 사용자 정보 추출
-    const headersList = headers();
+    const headersList = await headers();
     const userAgent = headersList.get('user-agent') || '';
     const ipAddress = headersList.get('x-forwarded-for') || 
                       headersList.get('x-real-ip') || 
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     
     // 입력 유효성 검증
     const validation = validateDistanceCalculationRequest(body);
-    if (!validation.isValid) {
+    if (!validation.isValid || !validation.data) {
       return NextResponse.json(
         { 
           success: false,
@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
     
     // API 사용량 기록 (실패)
     try {
-      const headersList = headers();
+      const headersList = await headers();
       const userAgent = headersList.get('user-agent') || '';
       const ipAddress = headersList.get('x-forwarded-for') || 
                         headersList.get('x-real-ip') || 

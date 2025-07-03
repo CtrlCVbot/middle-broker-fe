@@ -247,8 +247,6 @@ export class ApiUsageService {
    */
   static async getUsageRecords(filter: IApiUsageFilter): Promise<IApiUsageRecord[]> {
     try {
-      let query = db.select().from(kakaoApiUsage);
-      
       const conditions = [];
       
       if (filter.apiType) {
@@ -271,21 +269,20 @@ export class ApiUsageService {
         conditions.push(lt(kakaoApiUsage.createdAt, filter.dateTo));
       }
       
-      if (conditions.length > 0) {
-        query = query.where(and(...conditions));
-      }
+      // 조건부 쿼리 구성을 위한 새로운 접근
+      const baseQuery = db.select().from(kakaoApiUsage);
+      const whereQuery = conditions.length > 0 
+        ? baseQuery.where(and(...conditions))
+        : baseQuery;
+      const orderedQuery = whereQuery.orderBy(desc(kakaoApiUsage.createdAt));
+      const limitedQuery = filter.limit 
+        ? orderedQuery.limit(filter.limit)
+        : orderedQuery;
+      const finalQuery = filter.offset 
+        ? limitedQuery.offset(filter.offset)
+        : limitedQuery;
       
-      query = query.orderBy(desc(kakaoApiUsage.createdAt));
-      
-      if (filter.limit) {
-        query = query.limit(filter.limit);
-      }
-      
-      if (filter.offset) {
-        query = query.offset(filter.offset);
-      }
-      
-      const results = await query;
+      const results = await finalQuery;
       
       return results.map(record => ({
         id: record.id,

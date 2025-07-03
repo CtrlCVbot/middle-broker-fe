@@ -1,5 +1,8 @@
 import { IKakaoDirectionsResponse } from './kakao-directions';
 
+// 카카오 API 응답 타입 re-export
+export type { IKakaoDirectionsResponse } from './kakao-directions';
+
 /**
  * 좌표 정보 인터페이스
  */

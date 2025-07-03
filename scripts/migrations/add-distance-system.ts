@@ -1,7 +1,6 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { drizzle } from 'drizzle-orm/postgres-js';
 import { sql } from 'drizzle-orm';
-import { Pool } from 'pg';
+import postgres from 'postgres';
 
 /**
  * 거리 시스템 마이그레이션 실행 함수
@@ -15,11 +14,13 @@ import { Pool } from 'pg';
  * 6. 업데이트 트리거 생성
  */
 async function runDistanceSystemMigration() {
-  const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-  });
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error('DATABASE_URL 환경 변수가 설정되지 않았습니다.');
+  }
 
-  const db = drizzle(pool);
+  const sql_client = postgres(connectionString);
+  const db = drizzle(sql_client);
 
   try {
     console.log('🚀 거리 시스템 마이그레이션 시작...');
@@ -213,7 +214,7 @@ async function runDistanceSystemMigration() {
     console.error('❌ 마이그레이션 실패:', error);
     throw error;
   } finally {
-    await pool.end();
+    await sql_client.end();
   }
 }
 
@@ -221,11 +222,13 @@ async function runDistanceSystemMigration() {
  * 마이그레이션 롤백 함수 (필요시 사용)
  */
 async function rollbackDistanceSystemMigration() {
-  const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-  });
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error('DATABASE_URL 환경 변수가 설정되지 않았습니다.');
+  }
 
-  const db = drizzle(pool);
+  const sql_client = postgres(connectionString);
+  const db = drizzle(sql_client);
 
   try {
     console.log('🔄 거리 시스템 마이그레이션 롤백 시작...');
@@ -260,7 +263,7 @@ async function rollbackDistanceSystemMigration() {
     console.error('❌ 마이그레이션 롤백 실패:', error);
     throw error;
   } finally {
-    await pool.end();
+    await sql_client.end();
   }
 }
 
