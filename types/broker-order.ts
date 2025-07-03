@@ -146,7 +146,7 @@ export const isBrokerStatusAtLeast = (currentStatus: BrokerOrderStatusType, targ
 // 중개 화물 등록 관련 타입 정의
 
 // 차량 종류
-export const BROKER_VEHICLE_TYPES = ['카고', '라보', '윙바디', '탑차', '냉동', '냉장'] as const;
+export const BROKER_VEHICLE_TYPES = ['카고', '윙바디', '탑차', '냉동', '냉장', '트레일러'] as const;
 export type BrokerVehicleType = typeof BROKER_VEHICLE_TYPES[number];
 
 // 차량 중량
@@ -161,13 +161,13 @@ export interface IBrokerTransportOption {
 }
 
 export const BROKER_TRANSPORT_OPTIONS: IBrokerTransportOption[] = [
-  { id: 'direct', label: '이착', description: '상하차 지점 직접 운송' },
-  { id: 'trace', label: '혼적', description: '다른 짐들과 합짐' },
   { id: 'fast', label: '빠른 배차', description: '우선 배차 처리' },
-  { id: 'cod', label: '착불', description: '도착 후 결제' },
-  { id: 'wing', label: '윙바디', description: '윙바디 차량으로 배차' },
-  { id: 'duplicate', label: '중복화물', description: '중복 화물 허용' },
-  { id: 'forklift', label: '지게차 하차', description: '하차 시 지게차 필요' },
+  { id: 'roundTrip', label: '왕복', description: '왕복 운송' },
+  { id: 'direct', label: '이착', description: '상하차 지점 직접 운송' },
+  { id: 'trace', label: '혼적', description: '다른 짐들과 합짐' },      
+  { id: 'forklift', label: '지게차', description: '지게차 필요' },  
+  { id: 'manual', label: '수작업', description: '수작업 필요' },  
+  { id: 'cod', label: '착불', description: '도착 후 결제' },   
   { id: 'special', label: '특수화물', description: '특수 운송 필요' },
 ];
 

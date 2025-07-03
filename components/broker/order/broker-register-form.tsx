@@ -154,7 +154,7 @@ export function BrokerOrderRegisterForm({ onSubmit, editMode = false, orderNumbe
     } else {
       // 신규 등록 모드
       try {
-        registerOrder(values as IBrokerOrderRegisterData);
+        //registerOrder(values as IBrokerOrderRegisterData);
         // 등록 후 이동
         router.push('/broker/order/list');
       } catch (error) {
