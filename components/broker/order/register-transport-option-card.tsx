@@ -11,7 +11,7 @@ export interface IRegisterTransportOptionCardProps {
 export function RegisterTransportOptionCard({ selectedOptions, onToggle, disabled }: IRegisterTransportOptionCardProps) {
   return (
     <div className="space-y-2">
-      <div className="font-semibold">운송 옵션</div>
+      
       <OptionSelector
         options={TRANSPORT_OPTIONS}
         selectedOptions={selectedOptions}
