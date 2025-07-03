@@ -492,14 +492,18 @@ const { user, isLoggedIn } = useAuthStore();
         }
       };
       
-      // 계산 실행
-      calculateDistanceAndAmount();
+      // 300ms 디바운스로 연속 호출 방지
+      const timeoutId = setTimeout(() => {
+        if (departure.address && destination.address) {
+          calculateDistanceAndAmount();
+        }
+      }, 300);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [
-    registerData.departure.address, 
-    registerData.destination.address,
-    registerData.weightType,
-    registerData.selectedOptions
+    registerData.departure.address,
+    registerData.destination.address
   ]);
 
   // 상차지 시간 설정 시 하차지 시간 자동 설정 (상차지 + 1시간)
