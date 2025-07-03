@@ -600,7 +600,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                          onClick={disabled ? handleDisabledClick : undefined}
                        >
                          <CalendarIcon className="mr-2 h-4 w-4" />
-                         {date ? format(date, 'PPP', { locale: ko }) : "날짜 선택"}
+                         {date ? format(date, 'P', { locale: ko }) : "날짜 선택"}
                        </Button>
                      </PopoverTrigger>
                      <PopoverContent className="w-auto p-0">

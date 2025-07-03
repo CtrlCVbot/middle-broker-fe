@@ -47,7 +47,7 @@ export class ApiUsageService {
           userId: record.userId,
           ipAddress: record.ipAddress,
           userAgent: record.userAgent,
-          estimatedCost: record.estimatedCost || (record.success ? 8 : 0), // 기본값: 성공시 8원
+          estimatedCost: record.estimatedCost ||  0
         })
         .returning({ id: kakaoApiUsage.id });
         

@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
     
     const request: IDistanceCalculationRequest = validation.data;
     
-    // Rate Limiting 체크 (사용자별)
+    // Rate Limiting 체크 (사용자별) -> 왜 필요하지?
     const rateLimitInfo = ApiUsageService.checkRateLimit(requestId);
     if (rateLimitInfo.isLimited) {
       const responseTime = Date.now() - startTime;
@@ -82,7 +82,8 @@ export async function POST(req: NextRequest) {
         errorMessage: 'Rate limit exceeded',
         ipAddress,
         userAgent,
-        userId: requestId
+        userId: requestId,
+        estimatedCost: 0
       });
       
       return NextResponse.json(
@@ -119,7 +120,8 @@ export async function POST(req: NextRequest) {
       resultCount: 1,
       ipAddress,
       userAgent,
-      userId: requestId
+      userId: requestId,
+      estimatedCost: 0
     });
     
     console.log(`✅ 거리 계산 완료: ${result.distanceKm}km (${result.method})`);
@@ -159,7 +161,8 @@ export async function POST(req: NextRequest) {
         errorMessage,
         ipAddress,
         userAgent,
-        userId: userId || undefined // userId가 null이면 undefined로 설정
+        userId: userId || undefined, // userId가 null이면 undefined로 설정
+        estimatedCost: 0
       });
     } catch (recordError) {
       console.error('사용량 기록 실패:', recordError);
