@@ -74,9 +74,9 @@ export const distanceCache = pgTable('distance_cache', {
     .on(table.isValid, table.createdAt.desc())
     .where(sql`${table.isValid} = true`),
 
-  // 좌표 기반 조회 (위치 기반 검색 시 사용)
-  index('idx_distance_cache_coordinates')
-    .on(table.pickupCoordinates, table.deliveryCoordinates),
+  // 좌표 기반 조회 (위치 기반 검색 시 사용) => json은 btree 인덱스 불가
+  // index('idx_distance_cache_coordinates')
+  //   .on(table.pickupCoordinates, table.deliveryCoordinates),
 ]);
 
 // TypeScript 타입 추론을 위한 타입 export
