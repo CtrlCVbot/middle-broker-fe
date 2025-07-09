@@ -57,7 +57,7 @@ export class DistanceClientService {
       return responseData.data;
       
     } catch (error) {
-      console.error('❌ 거리 계산 API 호출 실패:에러 너무 길수있어 출력 안함');//, error);
+      console.error('❌ 거리 계산 API 호출 실패:에러 너무 길수있어');//, error);
       throw error;
     }
   }

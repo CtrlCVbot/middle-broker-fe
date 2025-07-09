@@ -362,6 +362,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
   };
   const handleRecentLocationClickVer1 = (location: IAddress) => {
     onChange({
+      id: location.id, // id를 명시적으로 추가
       address: location.roadAddress || location.jibunAddress,
       detailedAddress: location.detailAddress || '',
       name: location.contactName || '',
@@ -718,7 +719,9 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                </div>
              </div>
           </>
-        ) : (
+        ) : 
+        //주소록에서 찾기
+        (
           <div className={cn("flex flex-col items-center justify-center py-8 border-5 border-dashed rounded-md bg-muted/30",
             type === 'departure' ? 'bg-gray-100' : 'bg-gray-100'
           )}>

@@ -415,9 +415,11 @@ const { user, isLoggedIn } = useAuthStore();
         if (departure.latitude && departure.longitude && 
             destination.latitude && destination.longitude) {
           
+          console.log('최근사용주소 확인 departure.id--->', departure.id);
+          console.log('최근사용주소 확인 destination.id--->', destination.id);
           const result = await DistanceClientService.calculateDistanceByAddresses({
-            pickupAddressId: departure.id || `temp_pickup_${Date.now()}`,
-            deliveryAddressId: destination.id || `temp_delivery_${Date.now()}`,
+            pickupAddressId: departure.id || ``,
+            deliveryAddressId: destination.id || ``,
             pickupCoordinates: {
               lat: departure.latitude,
               lng: departure.longitude
