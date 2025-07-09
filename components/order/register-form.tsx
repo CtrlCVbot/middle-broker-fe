@@ -474,13 +474,13 @@ const { user, isLoggedIn } = useAuthStore();
           registerStore.setEstimatedInfo(distance, amount);
         }
         
-        console.log(`�� 거리: ${distance}km, 예상금액: 협의`);
+        console.log(` 거리: ${distance}km, 예상금액: 협의`);
         
       } catch (error) {
         console.error("거리 계산 중 오류 발생:", error);
         
         // 에러 발생 시 기본값 설정
-        const fallbackDistance = 50; // 기본 50km
+        const fallbackDistance = 0; // 기본 0km
         const fallbackAmount = 0; // 협의
         
         if (editMode) {

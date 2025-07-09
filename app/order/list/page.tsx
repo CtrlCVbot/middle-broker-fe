@@ -1,7 +1,29 @@
 "use client";
 
+//react
 import React, { useCallback, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+
+//store
+import { useOrderStore } from "@/store/order-store";
+
+//services
+import { fetchOrders } from "@/services/order-service";
+import { mapApiResponseToOrderList } from "@/utils/data-mapper";
+
+//components
+import { OrderSearch } from "@/components/order/order-search";
+import { OrderTable } from "@/components/order/order-table-ver01";
+import { OrderCard } from "@/components/order/order-card-ver01";
+import { OrderDetailSheet } from "@/components/order/order-detail-sheet";
+
+//ui
+import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Separator } from "@/components/ui/separator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { toast } from "@/components/ui/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Breadcrumb, 
   BreadcrumbItem, 
@@ -11,36 +33,11 @@ import {
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
 import { ListFilter, Grid3x3, ArrowUpRight } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useOrderStore } from "@/store/order-store";
-// 기존 Mock 데이터 관련 임포트 주석 처리
-// import { getOrdersByPage } from "@/utils/mockdata/mock-orders";
-// 실제 API 서비스 임포트
-import { fetchOrders } from "@/services/order-service";
-import { mapApiResponseToOrderList } from "@/utils/data-mapper";
-import { handleApiError } from "@/utils/api-error-handler";
-import { toast } from "@/components/ui/use-toast";
 
-import { OrderSearch } from "@/components/order/order-search";
-//import { OrderTable } from "@/components/order/order-table";
-import { OrderTable } from "@/components/order/order-table-ver01";
-//import { OrderCard } from "@/components/order/order-card";
-import { OrderCard } from "@/components/order/order-card-ver01";
-import { OrderDetailSheet } from "@/components/order/order-detail-sheet";
-import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+//types
 import { OrderFlowStatus, OrderVehicleType, OrderVehicleWeight } from "@/types/order";
 import { IOrderFilter, OrderStatusType } from "@/types/order";
-import { OrderOverview } from "@/components/order/order-overview";
-import { OrderCard as OrderCardOverview } from "@/components/order/overview/order-card";
-import { OverviewTopCard } from "@/components/order/overview/overview-top-card";
-import { RevenueCard } from "@/components/order/overview/revenue-card";
-import { SpendingCard } from "@/components/order/overview/spending-card";
-import { AverageValueCard } from "@/components/order/overview/average-value-card";
-import { WeekReportCard } from "@/components/order/overview/week-report-card";
-import { EarningsCard } from "@/components/order/overview/earning-card";
+
 
 // 프론트 상태와 백엔드 API 파라미터 간 매핑 함수
 const mapFilterToApiParams = (filter: IOrderFilter) => {
@@ -185,7 +182,7 @@ export default function OrderListPage() {
              
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>운송 목록</BreadcrumbPage>
+                <BreadcrumbPage>운송 현황</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -197,7 +194,7 @@ export default function OrderListPage() {
           <CardHeader>            
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
-                <CardTitle>운송 목록</CardTitle>
+                <CardTitle>운송 현황</CardTitle>
                 <CardDescription>배차 요청한 화물의 운송 현황을 확인할 수 있습니다.</CardDescription>
               </div>
               <ToggleGroup type="single" className="flex gap-1" value={viewMode} onValueChange={(value: string) => value && setViewMode(value as 'table' | 'card')}>

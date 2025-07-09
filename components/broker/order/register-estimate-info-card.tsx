@@ -23,7 +23,7 @@ export function RegisterEstimateInfoCard({ estimatedDistance, estimatedAmount, i
 
   return (
     <div className="space-y-2 p-4 border rounded">
-      <div className="font-semibold mb-2">예상 정보</div>
+      
       {isCalculating ? (
         <div className="text-blue-500">계산 중...</div>
       ) : (
