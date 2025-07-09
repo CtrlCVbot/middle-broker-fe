@@ -124,8 +124,6 @@ export interface IOrderRegisterData {
 
 // 검색 필터 인터페이스
 export interface IOrderFilter {
-  departureCity?: string;      // 출발지 도시
-  arrivalCity?: string;        // 도착지 도시
   vehicleType?: string;        // 차량 종류
   weight?: string;             // 중량
   searchTerm?: string;         // 검색어

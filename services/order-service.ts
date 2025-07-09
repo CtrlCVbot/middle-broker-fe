@@ -218,8 +218,6 @@ interface OrderListParams {
   flowStatus?: OrderFlowStatus;
   vehicleType?: OrderVehicleType;
   vehicleWeight?: OrderVehicleWeight;
-  pickupCity?: string;
-  deliveryCity?: string;
   startDate?: string;
   endDate?: string;
   companyId?: string;

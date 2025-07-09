@@ -62,8 +62,6 @@ const mapFilterToApiParams = (filter: IOrderFilter) => {
     flowStatus,
     vehicleType: filter.vehicleType as OrderVehicleType,
     vehicleWeight: filter.weight as OrderVehicleWeight,
-    pickupCity: filter.departureCity,
-    deliveryCity: filter.arrivalCity,
     startDate: filter.startDate,
     endDate: filter.endDate,
   };

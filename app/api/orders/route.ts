@@ -25,8 +25,6 @@ export async function GET(request: NextRequest) {
     const flowStatus = searchParams.get('flowStatus') as OrderFlowStatus | '';
     const vehicleType = searchParams.get('vehicleType') as OrderVehicleType | '';
     const vehicleWeight = searchParams.get('vehicleWeight') as OrderVehicleWeight | '';
-    const pickupCity = searchParams.get('pickupCity') || '';
-    const deliveryCity = searchParams.get('deliveryCity') || '';
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
     const companyId = searchParams.get('companyId');
@@ -59,14 +57,6 @@ export async function GET(request: NextRequest) {
     if (vehicleWeight) {
       conditions.push(eq(orders.requestedVehicleWeight, 
         vehicleWeight as (typeof vehicleWeightEnum.enumValues)[number]));
-    }
-
-    if (pickupCity && orders.pickupAddressSnapshot) {
-      conditions.push(sql`${orders.pickupAddressSnapshot}->>'city' ILIKE ${`%${pickupCity}%`}`);
-    }
-
-    if (deliveryCity && orders.deliveryAddressSnapshot) {
-      conditions.push(sql`${orders.deliveryAddressSnapshot}->>'city' ILIKE ${`%${deliveryCity}%`}`);
     }
 
     if (startDate) {
