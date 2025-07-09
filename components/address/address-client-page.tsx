@@ -276,45 +276,6 @@ export default function AddressClientPage() {
               <div className="flex flex-wrap items-center justify-between gap-2 ">
                 <AddressSearch onSearch={handleSearch} />
 
-                {/* 새로고침 버튼 및 선택 작업 메뉴 - 추후 사용 예정 */}
-                {/* <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleRefresh}
-                    disabled={isLoading || refreshing}
-                  >
-                    <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-                    새로고침
-                  </Button>
-
-                  {selectedAddresses.length > 0 && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          선택 작업 <ChevronDown className="ml-2 h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleToggleSelectedFrequent(true)}>
-                          <Star className="mr-2 h-4 w-4" />
-                          자주 사용하는 주소로 설정
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleToggleSelectedFrequent(false)}>
-                          <StarOff className="mr-2 h-4 w-4" />
-                          자주 사용하는 주소에서 제거
-                        </DropdownMenuItem>
-                        <Separator className="my-1" />
-                        <DropdownMenuItem
-                          onClick={() => handleDeleteSelected(selectedAddresses)}
-                          className="text-destructive"
-                        >
-                          선택 삭제
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </div> */}
               </div>
 
               <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange}>

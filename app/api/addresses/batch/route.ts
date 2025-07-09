@@ -45,13 +45,17 @@ export async function POST(req: NextRequest) {
             failed.push(id);
             errors.push({ id, error: 'Address not found' });
             continue;
-          }
-
-          
+          }          
 
           switch (action) {
             case 'delete':
-              await tx.delete(addresses).where(eq(addresses.id, id));
+              // soft delete로 변경
+              await tx.update(addresses).set({
+                deletedAt: new Date(),
+                updatedAt: new Date(),
+                updatedBy: req.headers.get('x-user-id') || 'system',
+              }).where(eq(addresses.id, id));
+              //await tx.delete(addresses).where(eq(addresses.id, id));
               await tx.insert(addressChangeLogs).values({
                 addressId: id,
                 changedBy: req.headers.get('x-user-id') || 'system',

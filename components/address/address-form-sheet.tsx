@@ -196,7 +196,7 @@ export function AddressFormSheet({
 
   // 주소 검색 결과 선택 시 폼에 반영
   const handleSelectLocation = (result: IKakaoAddressResult) => {
-    form.setValue('name', result.place_name || '');
+    form.setValue('name', result.place_name || form.getValues('name'));
     form.setValue('roadAddress', result.road_address?.address_name || '');
     form.setValue('jibunAddress', result.address?.address_name || '');
     form.setValue('contactPhone', result.phone || '');
