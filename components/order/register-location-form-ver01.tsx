@@ -1,7 +1,9 @@
+//react, next
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+
+//ui
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FormLabel } from "@/components/ui/form";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { 
@@ -21,15 +23,25 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { CalendarIcon, Search as SearchIcon, Map, Phone, Building2, User, Loader2, MapPin, Building, Clock, Pin, LogOut, LogIn } from 'lucide-react';
+
+//types
 import { ILocationInfo } from '@/types/order';
+import { IKakaoAddressResult, IAddress } from '@/types/address';
+
+//store
+import { useOrderRegisterStore } from '@/store/order-register-store';
+
+//hooks
+import { useRecentAddresses } from '@/hooks/useRecentAddresses';
+
+//components
+import { SearchAddressDialog } from '@/components/address/search-address-dialog';
+
+//utils
+import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { CalendarIcon, Search as SearchIcon, Map, Phone, Building2, User, Loader2, MapPin, Building, Clock, Pin, LogOut, LogIn } from 'lucide-react';
-import { useOrderRegisterStore } from '@/store/order-register-store';
-import { cn } from '@/lib/utils';
-import { useRecentAddresses } from '@/hooks/useRecentAddresses';
-import { IKakaoAddressResult, IAddress } from '@/types/address';
-import { SearchAddressDialog } from '@/components/address/search-address-dialog';
 import { findNearestTenMinuteTime, adjustMinutesToHalfHour } from '@/utils/time-utils';
 
 // 시간 옵션 생성 (00~23)

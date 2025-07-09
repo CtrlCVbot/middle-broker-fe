@@ -72,8 +72,10 @@ export class DistanceCalculationService {
       return await this.calculateDistanceFromAPI(request, userId);
       
     } catch (error) {
-      console.error('❌ 거리 계산 실패:', error);
-      throw new Error(`거리 계산 실패: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('❌ 거리 계산 실패:에러 너무 길수있어 출력 안함');//, error);
+      throw new Error(`거리 계산 실패: ${error instanceof Error ? 
+        "에러 너무 길수있어 출력 안함"//error.message 
+        : 'Unknown error'}`);
     }
   }
   
@@ -173,11 +175,13 @@ export class DistanceCalculationService {
       if (!route) {
         throw new Error('경로를 찾을 수 없습니다');
       }
-      console.log('route--->', route);
+      //console.log('route--->', route);
       const distanceKm = Math.round(route.summary.distance / 1000 * 100) / 100; // 소수점 2자리
       const durationMinutes = Math.round(route.summary.duration / 60);
       
       console.log(`📏 계산된 거리: ${distanceKm}km, 소요시간: ${durationMinutes}분`);
+      console.log('request.pickupAddressId--->', request.pickupAddressId);
+      console.log('request.deliveryAddressId--->', request.deliveryAddressId);
       
       // 캐시에 저장
       await this.saveCachedDistance({
@@ -208,7 +212,7 @@ export class DistanceCalculationService {
     } catch (error) {
       const responseTime = Date.now() - startTime;
       
-      console.error('API 호출 실패:', error);
+      console.error('거리 계산 API 호출 실패:');//, error);
       
       // 실패 기록
       await this.recordApiUsage({

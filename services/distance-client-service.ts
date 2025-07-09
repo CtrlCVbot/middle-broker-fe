@@ -57,7 +57,7 @@ export class DistanceClientService {
       return responseData.data;
       
     } catch (error) {
-      console.error('❌ 거리 계산 API 호출 실패:', error);
+      console.error('❌ 거리 계산 API 호출 실패:에러 너무 길수있어 출력 안함');//, error);
       throw error;
     }
   }
@@ -74,10 +74,8 @@ export class DistanceClientService {
     forceRefresh?: boolean;
   }): Promise<{
     success: boolean;
-    distanceKm?: number;
-    durationMinutes?: number;
     error?: string;
-  }> {
+  } & Partial<IDistanceCalculationResult>> {
     try {
       const result = await this.calculateDistance({
         pickupAddressId: params.pickupAddressId,
@@ -90,8 +88,7 @@ export class DistanceClientService {
       
       return {
         success: true,
-        distanceKm: result.distanceKm,
-        durationMinutes: result.durationMinutes
+        ...result
       };
       
     } catch (error) {

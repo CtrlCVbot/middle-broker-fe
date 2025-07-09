@@ -165,7 +165,7 @@ export async function POST(req: NextRequest) {
         estimatedCost: 0
       });
     } catch (recordError) {
-      console.error('사용량 기록 실패:', recordError);
+      console.error('사용량 기록 실패:에러 너무 길수있어 출력 안함');//, recordError);
     }
     
     return NextResponse.json(

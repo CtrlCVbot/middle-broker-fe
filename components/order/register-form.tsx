@@ -433,21 +433,16 @@ const { user, isLoggedIn } = useAuthStore();
             distance = result.distanceKm;
             // 거리 정보 연동: duration, method, cacheId, metadata 등 저장
             const extra = {
-              estimatedDistanceKm: result.distanceKm,
-              estimatedDurationMinutes: result.durationMinutes,
-              distanceCalculationMethod: result.method,
-              distanceCalculatedAt: new Date().toISOString(),
-              distanceCacheId: result.cacheId,
-              distanceMetadata: result.metadata
+              ...result
             };
             if (editMode) {
               editStore.setRegisterData({
                 estimatedDistance: distance,
-                estimatedAmount: amount,
+                estimatedAmount: 0,
                 ...extra
               });
             } else {
-              registerStore.setEstimatedInfo(distance, amount, extra);
+              registerStore.setEstimatedInfo(distance, 0, extra as any);
             }
           } else {
             console.log('거리 계산 실패, 직선거리 계산 사용:', result.error);

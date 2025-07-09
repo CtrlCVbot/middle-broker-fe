@@ -139,7 +139,7 @@ export interface IRouteInfo {
   /** 경로 요약 정보 */
   summary: IRouteSummary;
   /** 구간별 경로 정보 */
-  sections: ISectionInfo[];
+ // sections: ISectionInfo[]; --> 너무 긴 텍스트 때문에 제외
 }
 
 // API 응답 타입

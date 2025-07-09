@@ -55,8 +55,10 @@ export class ApiUsageService {
       console.log(`📊 API 사용량 기록됨: ${usageId} (${record.apiType})`);
       return usageId;
     } catch (error) {
-      console.error('API 사용량 기록 실패:', error);
-      throw new Error(`API 사용량 기록 실패: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('API 사용량 기록 실패:에러 너무 길수있어 출력 안함');//, error);
+      throw new Error(`API 사용량 기록 실패: ${error instanceof Error ? 
+        "에러 너무 길수있어 출력 안함"//error.message 
+        : 'Unknown error'}`);
     }
   }
   
