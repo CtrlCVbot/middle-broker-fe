@@ -7,6 +7,20 @@ export interface IRegisterEstimateInfoCardProps {
 }
 
 export function RegisterEstimateInfoCard({ estimatedDistance, estimatedAmount, isCalculating }: IRegisterEstimateInfoCardProps) {
+  // 예상 거리 표시 텍스트 결정
+  let distanceText = '측정 전';
+  if (typeof estimatedDistance === 'number' && estimatedDistance > 0) {
+    distanceText = `${estimatedDistance} km`;
+  } else if (estimatedDistance === 0) {
+    distanceText = '측정 전';
+  }
+
+  // 예상 금액 표시 텍스트 결정
+  let amountText = '-';
+  if (typeof estimatedAmount === 'number') {
+    amountText = estimatedAmount === 0 ? '협의' : `${estimatedAmount.toLocaleString()} 원`;
+  }
+
   return (
     <div className="space-y-2 p-4 border rounded">
       <div className="font-semibold mb-2">예상 정보</div>
@@ -14,11 +28,8 @@ export function RegisterEstimateInfoCard({ estimatedDistance, estimatedAmount, i
         <div className="text-blue-500">계산 중...</div>
       ) : (
         <>
-          <div>예상 거리: <span className="font-bold">{estimatedDistance ?? '-'} km</span></div>
-          <div>예상 금액: <span className="font-bold">
-            {estimatedAmount === 0 ? '협의' : (estimatedAmount ? `${estimatedAmount.toLocaleString()} 원` : '-')}
-          </span></div>
-          
+          <div>예상 거리: <span className="font-bold">{distanceText}</span></div>
+          <div>예상 금액: <span className="font-bold">{amountText}</span></div>
         </>
       )}
     </div>
