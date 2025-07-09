@@ -108,14 +108,10 @@ export const orders = pgTable('orders', {
   //운송 옵션
   transportOptions: json('transport_options').$type<ITransportOptionsSnapshot>(),
 
-
-  //거리 및 가격 정보
-  estimatedDistance: numeric('estimated_distance', { precision: 8, scale: 2 }), //예상 거리
-  estimatedPriceAmount: numeric('estimated_price_amount', { precision: 12, scale: 2 }), //예상 가격
-
-  // 실제 거리 정보 (카카오 API 기반)
-  actualDistanceKm: numeric('actual_distance_km', { precision: 10, scale: 2 }), // 실제 측정된 거리
-  actualDurationMinutes: integer('actual_duration_minutes'), // 실제 소요 시간
+  //거리 정보 영역  
+  // 예상 거리 정보 (카카오 API 기반)
+  estimatedDistanceKm: numeric('estimated_distance_km', { precision: 10, scale: 2 }), // 예상 측정된 거리
+  estimatedDurationMinutes: integer('estimated_duration_minutes'), // 예상 소요 시간
 
   // 거리 계산 방법 기록
   distanceCalculationMethod: calculationMethodEnum('distance_calculation_method').default('api'),
@@ -128,6 +124,10 @@ export const orders = pgTable('orders', {
   
   // 거리 계산 정확도 메타데이터
   distanceMetadata: json('distance_metadata').$type<IDistanceMetadata>(),
+  //거리 정보 영역 끝
+
+  // 가격 정보
+  estimatedPriceAmount: numeric('estimated_price_amount', { precision: 12, scale: 2 }), //예상 가격
   priceType: priceTypeEnum('price_type').notNull().default('기본'), //가격 타입
   taxType: taxTypeEnum('tax_type').notNull().default('과세'), //세율 타입
   priceSnapshot: json('price_snapshot').$type<IPriceSnapshot>(), //가격 스냅샷
@@ -157,10 +157,10 @@ export const orders = pgTable('orders', {
   index('idx_orders_distance_method')
     .on(table.distanceCalculationMethod, table.createdAt.desc()),
   
-  // 실제 거리 기준 조회 (통계 분석용)
-  index('idx_orders_actual_distance')
-    .on(table.actualDistanceKm, table.createdAt.desc())
-    .where(sql`${table.actualDistanceKm} IS NOT NULL`),
+  // 예상 거리 기준 조회 (통계 분석용)
+  index('idx_orders_estimated_distance')
+    .on(table.estimatedDistanceKm, table.createdAt.desc())
+    .where(sql`${table.estimatedDistanceKm} IS NOT NULL`),
 ]);
 
  

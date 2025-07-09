@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+
 import { 
   Dialog, 
   DialogContent, 
@@ -12,16 +14,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { useOrderRegisterStore } from "@/store/order-register-store";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useMutation } from "@tanstack/react-query";
-import { TRANSPORT_OPTIONS } from "@/types/order";
 import { useToast } from "@/components/ui/use-toast";
 import { CheckCircleIcon, MapPinIcon, PackageIcon, TruckIcon, HandCoins, Phone, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { registerOrder, convertFormDataToApiRequest } from '@/services/order-service';
-import { handleApiError } from '@/utils/order-utils';
+
+//components
 import { RegisterSuccessDialog } from '@/components/order/register-success-dialog';
+
+//store, services
+import { useOrderRegisterStore } from "@/store/order-register-store";
+import { registerOrder, convertFormDataToApiRequest } from '@/services/order-service';
+
+//types
+import { TRANSPORT_OPTIONS } from "@/types/order";
+
+//utils
+import { cn } from "@/lib/utils";
+import { handleApiError } from "@/utils/api-error-handler";
 
 interface OrderRegisterSummaryProps {
   open: boolean;

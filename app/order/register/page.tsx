@@ -1,6 +1,17 @@
 "use client";
 
+//react, next
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+//components
+import { OrderRegisterForm } from "@/components/order/register-form";
+import { OrderRegisterSummary } from "@/components/order/register-summary";
+
+//ui
+import { useToast } from "@/components/ui/use-toast";
+import { Separator } from "@/components/ui/separator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { 
   Breadcrumb, 
   BreadcrumbItem, 
@@ -9,14 +20,6 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
-
-import { OrderRegisterForm } from "@/components/order/register-form";
-import { OrderRegisterSummary } from "@/components/order/register-summary";
-
-import { useToast } from "@/components/ui/use-toast";
-import { useRouter } from "next/navigation";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function OrderRegisterPage() {
   const [openSummary, setOpenSummary] = useState(false);

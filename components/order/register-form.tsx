@@ -1,6 +1,11 @@
 "use client";
 
+//react, next
 import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useRouter } from 'next/navigation';
+
+//ui
 import { 
   Form, 
   FormLabel, 
@@ -12,60 +17,42 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-
-import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "@/components/ui/use-toast";
+import { TruckIcon, MapPinIcon, Settings2 as OptionsIcon, Calculator as CalculatorIcon, ChevronDown, ChevronUp, PencilIcon, Info, Weight, Truck, Container, Loader2 } from "lucide-react";
 
-import { useForm } from "react-hook-form";
+//store, services
 import { useOrderRegisterStore } from "@/store/order-register-store";
 import { useOrderEditStore } from "@/store/order-edit-store";
+import { DistanceClientService } from "@/services/distance-client-service";
+import { useCompanies, useCompanyStore } from "@/store/company-store";
+import { useBrokerCompanyManagerStore } from "@/store/broker-company-manager-store";
+// 추가: 자동 설정을 위한 imports
+import { useAuthStore } from "@/store/auth-store";
+import { getCompanyById } from "@/services/company-service";
+
+//types
 import {  
   ORDER_VEHICLE_TYPES,
   ORDER_VEHICLE_WEIGHTS
 } from "@/types/order";
 
-import { 
-  calculateAmount, 
-  //searchAddress 
-} from "@/utils/mockdata/mock-register";
-import { DistanceClientService } from "@/services/distance-client-service";
-
+//components
 import { LocationFormVer01 } from "@/components/order/register-location-form-ver01";
-
-import { TruckIcon, MapPinIcon, Settings2 as OptionsIcon, Calculator as CalculatorIcon, ChevronDown, ChevronUp, PencilIcon, Info, Weight, Truck, Container, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { toast } from "@/components/ui/use-toast";
-import { useRouter } from 'next/navigation';
-
-import { validateOrderFormData } from '@/utils/order-utils';
 import { RegisterSuccessDialog } from '@/components/order/register-success-dialog';
-
-import { OrderStepProgress } from "./order-step-progress";
-
 import { CompanyManagerInfoSection } from '@/components/broker/order/register-company-manager-info-section';
-
 import { RegisterTransportOptionCard } from '@/components/broker/order/register-transport-option-card';
 import { RegisterEstimateInfoCard } from '@/components/broker/order/register-estimate-info-card';
+import { OrderStepProgress } from "./order-step-progress";
 
-import { useCompanies, useCompanyStore } from "@/store/company-store";
-import { useBrokerCompanyManagerStore } from "@/store/broker-company-manager-store";
-
-// 추가: 자동 설정을 위한 imports
-import { useAuthStore } from "@/store/auth-store";
-import { getCompanyById } from "@/services/company-service";
+//utils
 import { format } from 'date-fns';
+import { cn } from "@/lib/utils";
 import { adjustMinutesToHalfHour } from '@/utils/time-utils';
+import { validateOrderFormData } from '@/utils/order-utils';
 
 interface OrderRegisterFormProps {
   onSubmit: () => void;
@@ -455,8 +442,7 @@ const { user, isLoggedIn } = useAuthStore();
               destination.longitude
             );
           }
-        } else {
-          // 좌표가 없는 경우 기존 mock 함수 사용 (임시)
+        } else {          
           console.log('좌표 정보 없음!!!');
           distance = 0;
         }
