@@ -173,7 +173,7 @@ export class DistanceCalculationService {
       if (!route) {
         throw new Error('경로를 찾을 수 없습니다');
       }
-      
+      console.log('route--->', route);
       const distanceKm = Math.round(route.summary.distance / 1000 * 100) / 100; // 소수점 2자리
       const durationMinutes = Math.round(route.summary.duration / 60);
       

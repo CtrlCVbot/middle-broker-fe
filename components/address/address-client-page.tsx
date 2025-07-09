@@ -247,10 +247,14 @@ export default function AddressClientPage() {
              
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>주소록</BreadcrumbPage>
+                <BreadcrumbPage>주소록 관리</BreadcrumbPage>
+                
               </BreadcrumbItem>
+              
             </BreadcrumbList>
+            
           </Breadcrumb>
+          
         </div>
       </header>
 
