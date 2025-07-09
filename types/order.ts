@@ -120,6 +120,13 @@ export interface IOrderRegisterData {
   estimatedAmount?: number;
   selectedCompanyId?: string;
   selectedManagerId?: string;
+  // 거리 정보 연동 필드 추가
+  estimatedDistanceKm?: number;
+  estimatedDurationMinutes?: number;
+  distanceCalculationMethod?: string;
+  distanceCalculatedAt?: string;
+  distanceCacheId?: string;
+  distanceMetadata?: import("@/types/distance").IDistanceMetadata;
 } 
 
 // 검색 필터 인터페이스

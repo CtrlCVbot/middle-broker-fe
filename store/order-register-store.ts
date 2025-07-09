@@ -65,7 +65,14 @@ const initialOrderRegisterData: IOrderRegisterData = {
   estimatedDistance: undefined,
   estimatedAmount: undefined,
   selectedCompanyId: undefined,
-  selectedManagerId: undefined
+  selectedManagerId: undefined,
+  // 거리 정보 연동 필드 초기화
+  estimatedDistanceKm: undefined,
+  estimatedDurationMinutes: undefined,
+  distanceCalculationMethod: undefined,
+  distanceCalculatedAt: undefined,
+  distanceCacheId: undefined,
+  distanceMetadata: undefined
 };
 
 // 최근 사용 주소 저장 인터페이스
@@ -90,7 +97,7 @@ export interface IOrderRegisterStore {
   setDeparture: (departure: ILocationInfo) => void;
   setDestination: (destination: ILocationInfo) => void;
   toggleOption: (optionId: string) => void;
-  setEstimatedInfo: (distance: number, amount: number) => void;
+  setEstimatedInfo: (distance: number, amount: number, extra?: Partial<IOrderRegisterData>) => void;
   setIsCalculating: (isCalculating: boolean) => void;
   setSelectedCompanyId: (companyId: string | undefined) => void;
   setSelectedManagerId: (managerId: string | undefined) => void;
@@ -155,9 +162,14 @@ export const useOrderRegisterStore = create<IOrderRegisterStore>()(
           };
         }),
         
-      setEstimatedInfo: (distance, amount) => 
+      setEstimatedInfo: (distance, amount, extra = {}) => 
         set((state) => ({
-          registerData: { ...state.registerData, estimatedDistance: distance, estimatedAmount: amount }
+          registerData: { 
+            ...state.registerData, 
+            estimatedDistance: distance, 
+            estimatedAmount: amount,
+            ...extra // 거리 정보 연동 필드 병합 저장
+          }
         })),
         
       setIsCalculating: (isCalculating) => 

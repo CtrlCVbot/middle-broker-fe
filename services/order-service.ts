@@ -54,6 +54,14 @@ export interface ICreateOrderRequest {
   
   // 선택된 담당자 정보
   selectedManagerId?: string;
+
+  // 거리 정보 연동 필드
+  estimatedDistanceKm?: number;
+  estimatedDurationMinutes?: number;
+  distanceCalculationMethod?: string;
+  distanceCalculatedAt?: string;
+  distanceCacheId?: string;
+  distanceMetadata?: any;
 }
 
 // 화물 등록 응답 인터페이스
@@ -195,6 +203,13 @@ export const convertFormDataToApiRequest = (formData: any): ICreateOrderRequest 
     
     estimatedDistance: formData.estimatedDistance || 0,
     estimatedPriceAmount: formData.estimatedAmount || 0,
+    // 거리 정보 연동 필드 추가
+    estimatedDistanceKm: formData.estimatedDistanceKm || formData.estimatedDistance || 0,
+    estimatedDurationMinutes: formData.estimatedDurationMinutes || 0,
+    distanceCalculationMethod: formData.distanceCalculationMethod || 'api',
+    distanceCalculatedAt: formData.distanceCalculatedAt || new Date().toISOString(),
+    distanceCacheId: formData.distanceCacheId,
+    distanceMetadata: formData.distanceMetadata,
     priceType: "기본",
     taxType: "과세",
     

@@ -431,7 +431,24 @@ const { user, isLoggedIn } = useAuthStore();
           
           if (result.success && result.distanceKm) {
             distance = result.distanceKm;
-            console.log(`✅ 실제 거리 계산 완료: ${distance}km`);
+            // 거리 정보 연동: duration, method, cacheId, metadata 등 저장
+            const extra = {
+              estimatedDistanceKm: result.distanceKm,
+              estimatedDurationMinutes: result.durationMinutes,
+              distanceCalculationMethod: result.method,
+              distanceCalculatedAt: new Date().toISOString(),
+              distanceCacheId: result.cacheId,
+              distanceMetadata: result.metadata
+            };
+            if (editMode) {
+              editStore.setRegisterData({
+                estimatedDistance: distance,
+                estimatedAmount: amount,
+                ...extra
+              });
+            } else {
+              registerStore.setEstimatedInfo(distance, amount, extra);
+            }
           } else {
             console.log('거리 계산 실패, 직선거리 계산 사용:', result.error);
             // fallback: 직선 거리 계산
