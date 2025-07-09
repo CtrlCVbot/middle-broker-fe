@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { addresses } from '@/db/schema/addresses';
-import { desc, eq, ilike, and, or, sql } from 'drizzle-orm';
+import { desc, eq, ilike, and, or, sql, isNull } from 'drizzle-orm';
 import { IAddressSearchParams, AddressType, IAddress } from '@/types/address';
 import { logAddressChange } from '@/utils/address-change-logger';
+import { decodeBase64String } from '@/utils/format';
 
 
 // 주소 목록 조회
@@ -48,16 +49,18 @@ export async function GET(req: NextRequest) {
     const totalCount = await db
       .select({ count: sql<number>`count(*)` })
       .from(addresses)
-      .where(and(...whereConditions))
+      .where(and(...whereConditions, isNull(addresses.deletedAt)))
       .execute();
 
     // 데이터 조회
     const items = await db.query.addresses.findMany({
-      where: and(...whereConditions),
+      where: and(...whereConditions, isNull(addresses.deletedAt)),
       orderBy: [desc(addresses.updatedAt)],
       offset,
       limit,
     });
+
+    console.log('items!!!', items);
 
     return NextResponse.json({
       data: items,
@@ -131,7 +134,10 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
-    const encodedName = btoa(unescape(decodeURIComponent(req.headers.get('x-user-name') || '')));
+
+    const requestUserName = req.headers.get('x-user-name');    
+    const encodedName = btoa(unescape(decodeURIComponent(requestUserName || '')));
+    const decodedName = requestUserName ? decodeBase64String(requestUserName) : '';
     const companyId = req.headers.get('x-user-company-id');
 
     // 주소 생성
@@ -156,7 +162,7 @@ export async function POST(req: NextRequest) {
     await logAddressChange({
       addressId: newAddress.id,
       changedBy: requestUserId,
-      changedByName: encodedName || '',
+      changedByName: decodedName || '',
       changedByEmail: req.headers.get('x-user-email') || 'system',
       changedByAccessLevel: req.headers.get('x-user-access-level') || 'system',
       changeType: 'create',

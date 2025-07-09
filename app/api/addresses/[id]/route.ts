@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { addresses } from '@/db/schema/addresses';
-import { eq } from 'drizzle-orm';
+import { desc, eq, ilike, and, or, sql, isNull } from 'drizzle-orm';
 import { logAddressChange } from '@/utils/address-change-logger';
 import { AddressType, IAddress } from '@/types/address';
 import { decodeBase64String } from '@/utils/format';
@@ -30,7 +30,7 @@ export async function GET(
 
     // 주소 조회
     const address = await db.query.addresses.findFirst({
-      where: eq(addresses.id, id),
+      where: and(eq(addresses.id, id), isNull(addresses.deletedAt)),
     });
 
     if (!address) {
@@ -200,14 +200,23 @@ export async function DELETE(
       );
     }
 
-    // 주소 삭제
-    await db.delete(addresses).where(eq(addresses.id, id));
+    const requestUserName = request.headers.get('x-user-name');
+    const decodedName = requestUserName ? decodeBase64String(requestUserName) : '';
+
+    // 주소 삭제 --> soft delete로 변경
+    //await db.delete(addresses).where(eq(addresses.id, id));
+    await db.update(addresses).set({
+      deletedAt: new Date(),
+      updatedAt: new Date(),
+      updatedBy: request.headers.get('x-user-id') || 'system',
+      
+    }).where(eq(addresses.id, id));
 
     // 변경 이력 기록
     await logAddressChange({
       addressId: id,
       changedBy: request.headers.get('x-user-id') || 'system',
-      changedByName: request.headers.get('x-user-name') || 'system',
+      changedByName: decodedName || 'system',
       changedByEmail: request.headers.get('x-user-email') || 'system',
       changedByAccessLevel: request.headers.get('x-user-access-level') || 'system',
       changeType: 'delete',

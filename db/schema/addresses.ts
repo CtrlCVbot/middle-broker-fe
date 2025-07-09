@@ -34,6 +34,7 @@ export const addresses = pgTable('addresses', {
   isFrequent: boolean('is_frequent').default(false).notNull(),// 자주 쓰는 주소
   
   // 감사 로그
+  deletedAt: timestamp('deleted_at'),                         // 삭제일  ->soft delete 추가 (20250709)
   createdAt: timestamp('created_at').defaultNow().notNull(),  // 등록일
   updatedAt: timestamp('updated_at').defaultNow().notNull(),  // 수정일
   createdBy: uuid('created_by'),                              // 등록자

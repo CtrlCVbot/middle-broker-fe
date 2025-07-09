@@ -4,6 +4,7 @@ import { addresses } from '@/db/schema/addresses';
 import { addressChangeLogs } from '@/db/schema/addressChangeLogs';
 import { eq, inArray } from 'drizzle-orm';
 import { IAddressBatchRequest, AddressType, IAddress } from '@/types/address';
+import { decodeBase64String } from '@/utils/format';
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,6 +25,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    
+    const requestUserName = req.headers.get('x-user-name');    
+    const encodedName = btoa(unescape(decodeURIComponent(requestUserName || '')));
+    const decodedName = requestUserName ? decodeBase64String(requestUserName) : '';
+
     const result = await db.transaction(async (tx) => {
       const processed: string[] = [];
       const failed: string[] = [];
@@ -41,13 +47,15 @@ export async function POST(req: NextRequest) {
             continue;
           }
 
+          
+
           switch (action) {
             case 'delete':
               await tx.delete(addresses).where(eq(addresses.id, id));
               await tx.insert(addressChangeLogs).values({
                 addressId: id,
                 changedBy: req.headers.get('x-user-id') || 'system',
-                changedByName: req.headers.get('x-user-name') || 'system',
+                changedByName: decodedName || 'system',
                 changedByEmail: req.headers.get('x-user-email') || 'system',
                 changedByAccessLevel: req.headers.get('x-user-access-level') || 'system',
                 changeType: 'delete',
@@ -56,6 +64,7 @@ export async function POST(req: NextRequest) {
                   type: address.type as AddressType,
                   metadata: address.metadata as IAddress['metadata']
                 }),
+                reason: '주소 삭제',
               });
               break;
 
@@ -67,13 +76,14 @@ export async function POST(req: NextRequest) {
               await tx.insert(addressChangeLogs).values({
                 addressId: id,
                 changedBy: req.headers.get('x-user-id') || 'system',
-                changedByName: req.headers.get('x-user-name') || 'system',
+                changedByName: decodedName || 'system',
                 changedByEmail: req.headers.get('x-user-email') || 'system',
                 changedByAccessLevel: req.headers.get('x-user-access-level') || 'system',
                 changeType: 'update',
                 changes: JSON.stringify({
                   isFrequent: action === 'setFrequent'
                 }),
+                reason: '주소 즐겨찾기 ' + (action === 'setFrequent' ? '설정' : '해제'),
               });
               break;
           }
