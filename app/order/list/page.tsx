@@ -148,6 +148,7 @@ export default function OrderListPage() {
     [setCurrentPage]
   );
 
+  console.log('data-->', data);
   // 총 페이지 수 계산
   const totalPages = data ? Math.ceil(data.pagination.total / pageSize) : 0;
 

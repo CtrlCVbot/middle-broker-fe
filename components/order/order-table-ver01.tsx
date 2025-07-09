@@ -28,7 +28,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-import { IOrder } from "@/types/order";
+import { IOrder, IOrderWithDispatch } from "@/types/order";
 import { formatCurrency } from "@/lib/utils";
 import { useOrderDetailStore } from "@/store/order-detail-store";
 import { ko } from "date-fns/locale";
@@ -137,7 +137,7 @@ function formatTimeOnly(dateStr: string | Date): string {
 }
 
 interface OrderTableProps {
-  orders: IOrder[];
+  orders: (IOrder & Partial<IOrderWithDispatch>)[];
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
@@ -149,8 +149,9 @@ export function OrderTable({
   totalPages,
   onPageChange,
 }: OrderTableProps) {
-  // 상세 정보 모달을 위한 스토어 액세스
+  console.log('orders-->', orders);
   const { openSheet } = useOrderDetailStore();
+  
   
   // 화물 상세 정보 열기
   const handleOrderClick = (orderId: string) => {
@@ -194,9 +195,9 @@ export function OrderTable({
               <TableHead>상차지</TableHead>
               <TableHead>{/* 상차지 하차지 흐름 보여주는 이미지 넣는 컬럼! 지우지 마세요!*/}</TableHead>
               <TableHead>하차지</TableHead>              
-              <TableHead className="w-[100px]">품목</TableHead>              
+              <TableHead >품목</TableHead>              
               <TableHead className="w-[80px] ">차량</TableHead>
-              <TableHead>기사</TableHead>
+              <TableHead className="w-[100px]">기사</TableHead>
               <TableHead className="text-right">운송비</TableHead>
             </TableRow>
           </TableHeader>
@@ -256,12 +257,22 @@ export function OrderTable({
                     </div> 
                   </TableCell>
                   <TableCell>
-                    
-                    <Badge variant="outline"  className="text-xs px-3 py-1 border-dashed text-muted-foreground">                      
-                      <Link2Off className="h-4 w-4 mr-1" />
-                      배차전                      
-                    </Badge>
-                    
+                    {order.assignedDriverId 
+                      ? (
+                        <>
+                        <Badge variant="outline"  className="text-xs px-3 py-1 border text-muted-foreground">    
+                          <Truck className="h-4 w-4 mr-1" />{order.assignedVehicleNumber}
+                        </Badge>
+                        </>
+                        )
+                      : (
+                        <>
+                        <Badge variant="outline"  className="text-xs px-3 py-1 border-dashed text-muted-foreground">    
+                          <Link2Off className="h-4 w-4 mr-1" />배차전
+                        </Badge>
+                        </>
+                        )
+                    }                        
                   </TableCell>
                   <TableCell className="text-right text-primary font-bold text-md text-shadow-xs">
                     {order.estimatedPriceAmount<= 0 ? "협의" : formatCurrency(order.estimatedPriceAmount) + "원"}

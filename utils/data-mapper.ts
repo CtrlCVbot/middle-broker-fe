@@ -1,4 +1,4 @@
-import { ISimpleOrder as IFrontendOrder, OrderStatusType } from "@/types/order";
+import { ISimpleOrder as IFrontendOrder, OrderStatusType, IOrderWithDispatch } from "@/types/order";
 import { IOrder as IBackendOrder, OrderFlowStatus, IOrderListResponse } from "@/types/order";
 import { IBrokerOrder, IBrokerOrderResponse, IBrokerOrderSummary } from "@/types/broker-order";
 import { IOrderWithDispatchItem, IOrderWithDispatchListResponse, IOrderWithDispatchDetailResponse } from "@/types/order-with-dispatch";
@@ -12,7 +12,7 @@ import { IBrokerOrderDetail } from "@/utils/mockdata/mock-broker-orders-detail";
  * @returns 프론트엔드용 화물 목록 데이터
  */
 export function mapApiResponseToOrderList(apiResponse: any): {
-  data: IFrontendOrder[];
+  data: (IFrontendOrder & Partial<IOrderWithDispatch>)[];
   pagination: {
     total: number;
     page: number;
@@ -30,10 +30,20 @@ export function mapApiResponseToOrderList(apiResponse: any): {
   };
 
   // 화물 데이터 매핑
-  const data = Array.isArray(apiResponse.data) 
-    ? apiResponse.data//.map(mapBackendOrderToFrontendOrder)
-    : [];
-    console.log('data-->', data);
+  //apiResponse.data.order 형태로 변환 250710
+  // const data = Array.isArray(apiResponse.data)
+  // ? apiResponse.data.map((item: any) => item.order)
+  // : []; 
+  // type OrderWithMeta = IFrontendOrder & Partial<IOrderWithDispatch>;
+  const data = Array.isArray(apiResponse.data)
+  ? apiResponse.data.map((item: any) => ({
+      ...item.order,
+      ...item, // 배차 정보 추가
+    }))
+  : [];
+
+
+  console.log('data-->', data);
 
   return {
     data,

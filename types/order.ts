@@ -418,6 +418,17 @@ export interface ISimpleOrder {
   settlementId?: string;       // 정산 ID
 }
 
+// order + 배차 정보 인터페이스
+export interface IOrderWithDispatch {
+  dispatchId: string;
+  assignedDriverId: string;
+  assignedDriverName: string;
+  assignedDriverPhone: string;
+  assignedVehicleConnection: string;
+  assignedVehicleNumber: string;
+  assignedDriverSnapshot: IDriverSnapshot;
+}
+
 // order.ts에서 사용되던 목록 조회 응답 인터페이스 (호환성을 위해 유지)
 export interface ISimpleOrderResponse {
   data: ISimpleOrder[];        // 화물 목록 데이터
