@@ -141,7 +141,7 @@ export function OrderSearch() {
             <Button 
               variant="outline" 
               className={cn(
-                "flex items-center gap-2 w-full md:w-auto border-dashed",
+                "flex items-center gap-2 w-full md:w-auto border-dashed hover:cursor-pointer",
                 hasActiveFilters ? "border-primary text-primary" : ""
               )}
             >
