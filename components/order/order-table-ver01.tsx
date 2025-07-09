@@ -187,7 +187,7 @@ export function OrderTable({
         <Table className="min-w-[900px]">
           <TableHeader className="sticky top-0 z-10 bg-muted">
             <TableRow>
-              <TableHead className="w-[80px] text-center">ID</TableHead>
+              {/* <TableHead className="w-[80px] text-center">ID</TableHead> */}
               <TableHead className="w-[80px] text-center">상태</TableHead>
               <TableHead className="w-[80px] ">일정</TableHead>
               <TableHead className="w-[120px] ">시간</TableHead>              
@@ -213,7 +213,7 @@ export function OrderTable({
             ) : (
               orders.map((order) => (
                 <TableRow key={order.id} className="cursor-pointer hover:bg-secondary/80" onClick={() => handleOrderClick(order.id)}>
-                  <TableCell className="font-medium text-primary underline">{order.id.slice(0, 8)}</TableCell>
+                  {/* <TableCell className="font-medium text-primary underline">{order.id.slice(0, 8)}</TableCell> */}
                   <TableCell className="text-center scale-90">{getStatusBadge(order.flowStatus)}</TableCell>
                   <TableCell className="font-medium">
                     {getSchedule(order.pickupDate, order.pickupTime, order.deliveryDate, order.deliveryTime)}
@@ -244,8 +244,7 @@ export function OrderTable({
                     </div>
                   </TableCell>
                   <TableCell className="max-w-[150px] truncate">{order.cargoName}</TableCell>
-                  {/* <TableCell>{getDateTimeformat(order.pickupDate + ' ' + order.pickupTime)}</TableCell>                  
-                  <TableCell>{getDateTimeformat(order.deliveryDate + ' ' + order.deliveryTime)}</TableCell> */}
+                  
                   <TableCell>
                     <div className="flex flex-col">
                       <div className="text-md font-bold text-neutral-800">
@@ -257,20 +256,15 @@ export function OrderTable({
                     </div> 
                   </TableCell>
                   <TableCell>
-                    {/* {order.driver.name || "-"} */}
-                    <Badge variant="outline"  className="text-xs px-3 py-1 border-dashed text-muted-foreground">
+                    
+                    <Badge variant="outline"  className="text-xs px-3 py-1 border-dashed text-muted-foreground">                      
                       <Link2Off className="h-4 w-4 mr-1" />
                       배차전                      
                     </Badge>
-                    {/* <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger>{"-"}</TooltipTrigger>
-                        <TooltipContent>{"-"}</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider> */}
+                    
                   </TableCell>
                   <TableCell className="text-right text-primary font-bold text-md text-shadow-xs">
-                    {formatCurrency(order.estimatedPriceAmount)}원
+                    {order.estimatedPriceAmount<= 0 ? "협의" : formatCurrency(order.estimatedPriceAmount) + "원"}
                   </TableCell>
                 </TableRow>
               ))

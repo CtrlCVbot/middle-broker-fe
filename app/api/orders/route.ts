@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { eq, and, ilike, or, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { orders } from '@/db/schema/orders';
+import { orderDispatches } from '@/db/schema/orderDispatches';
 import { users } from '@/db/schema/users';
 import { IAddressSnapshot, ICompanySnapshot, IOrder, IPriceSnapshot, ITransportOptionsSnapshot, IUserSnapshot, OrderFlowStatus, OrderVehicleType, OrderVehicleWeight } from '@/types/order';
 import { z } from 'zod';
@@ -80,8 +81,21 @@ export async function GET(request: NextRequest) {
 
     const [result, total] = await Promise.all([
       db
-        .select()
+        .select({
+          // 주문 정보
+          order: orders,
+          
+          // 배차 정보 (없을 수도 있음)
+          dispatchId: orderDispatches.id,
+          assignedDriverId: orderDispatches.assignedDriverId,
+          assignedDriverSnapshot: orderDispatches.assignedDriverSnapshot,
+          assignedDriverPhone: orderDispatches.assignedDriverPhone,
+          assignedVehicleNumber: orderDispatches.assignedVehicleNumber,
+          assignedVehicleConnection: orderDispatches.assignedVehicleConnection         
+        
+        })
         .from(orders)
+        .leftJoin(orderDispatches, eq(orders.id, orderDispatches.orderId))
         .where(query)
         .limit(pageSize)
         .offset(offset)
@@ -127,7 +141,7 @@ export async function GET(request: NextRequest) {
     //   createdAt: order.createdAt?.toISOString(),
     //   updatedAt: order.updatedAt?.toISOString()
     // }));
-    
+    console.log('result-->', result);
     return NextResponse.json({
       data: result,
       total,

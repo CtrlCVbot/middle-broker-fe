@@ -115,6 +115,7 @@ export default function OrderListPage() {
         
         // 응답 데이터 매핑
         const mappedData = mapApiResponseToOrderList(response);
+        console.log('mappedData-->', mappedData);
         return mappedData;
       } catch (error) {
         console.error('화물 목록 조회 에러:', error);

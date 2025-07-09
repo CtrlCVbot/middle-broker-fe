@@ -454,11 +454,11 @@ const { user, isLoggedIn } = useAuthStore();
               editStore.setRegisterData({
                 estimatedDistance: distance,
                 estimatedAmount: amount,
-                // estimatedDurationMinutes: result.durationMinutes,
-                // distanceCalculationMethod: result.method,
-                // //distanceCalculatedAt: result.distanceCalculatedAt,
-                // distanceCacheId: result.cacheId,
-                // distanceMetadata: result.metadata as any,                
+                estimatedDurationMinutes: result.durationMinutes,
+                distanceCalculationMethod: result.method,
+                distanceCalculatedAt: new Date().toISOString(),
+                distanceCacheId: result.cacheId,
+                distanceMetadata: result.metadata as any,                
               });
             } else {       
               //등록 
