@@ -67,7 +67,7 @@ const initialOrderRegisterData: IOrderRegisterData = {
   selectedCompanyId: undefined,
   selectedManagerId: undefined,
   // 거리 정보 연동 필드 초기화
-  estimatedDistanceKm: undefined,
+  //estimatedDistanceKm: undefined,
   estimatedDurationMinutes: undefined,
   distanceCalculationMethod: undefined,
   distanceCalculatedAt: undefined,
@@ -168,7 +168,14 @@ export const useOrderRegisterStore = create<IOrderRegisterStore>()(
             ...state.registerData, 
             estimatedDistance: distance, 
             estimatedAmount: amount,
-            ...extra // 거리 정보 연동 필드 병합 저장
+            // 기존 개별 필드 할당
+            estimatedDurationMinutes: extra.estimatedDurationMinutes,
+            distanceCalculationMethod: extra.distanceCalculationMethod,
+            distanceCalculatedAt: extra.distanceCalculatedAt,
+            distanceCacheId: extra.distanceCacheId,
+            distanceMetadata: extra.distanceMetadata,
+            // extra의 모든 필드를 마지막에 병합 (우선순위 부여)
+            ...extra
           }
         })),
         

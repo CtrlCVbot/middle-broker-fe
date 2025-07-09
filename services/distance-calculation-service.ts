@@ -55,6 +55,7 @@ export class DistanceCalculationService {
             durationMinutes: cachedDistance.durationMinutes,
             method: 'cached',
             cacheHit: true,
+            cacheId: cachedDistance.id,
             accuracy: 'high',
             metadata: {
               calculatedAt: cachedDistance.createdAt,
@@ -184,7 +185,7 @@ export class DistanceCalculationService {
       console.log('request.deliveryAddressId--->', request.deliveryAddressId);
       
       // 캐시에 저장
-      await this.saveCachedDistance({
+      const cacheId = await this.saveCachedDistance({
         pickupAddressId: request.pickupAddressId,
         deliveryAddressId: request.deliveryAddressId,
         pickupCoordinates: request.pickupCoordinates,
@@ -200,6 +201,7 @@ export class DistanceCalculationService {
         durationMinutes,
         method: 'api',
         cacheHit: false,
+        cacheId: cacheId,
         apiCallId: apiUsageId,
         accuracy: 'high',
         metadata: {

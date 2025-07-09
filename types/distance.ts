@@ -64,6 +64,7 @@ export interface IDistanceCalculationResult {
   durationMinutes: number;
   method: CalculationMethod;
   cacheHit: boolean;
+  cacheId?: string;
   apiCallId?: string;
   accuracy: DataAccuracy;
   metadata?: {

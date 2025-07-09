@@ -187,7 +187,15 @@ const CreateOrderSchema = z.object({
   companySnapshot: z.any().optional(), // JSON 타입은 any로 처리
   
   // 선택된 담당자 정보
-  selectedManagerId: z.string().uuid().optional()
+  selectedManagerId: z.string().uuid().optional(),
+
+  // 거리 정보
+  //estimatedDistanceKm: z.number().optional(),
+  estimatedDurationMinutes: z.number().optional(),
+  distanceCalculationMethod: z.string().optional(),
+  distanceCalculatedAt: z.string().optional(),
+  distanceCacheId: z.string().optional(),
+  distanceMetadata: z.any().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -258,6 +266,8 @@ export async function POST(request: NextRequest) {
     // 현재 시간
     const now = new Date();
 
+    console.log('orderData-->', orderData);
+
     // 화물 생성
     const [createdOrder] = await db
       .insert(orders)
@@ -304,7 +314,7 @@ export async function POST(request: NextRequest) {
 
         transportOptions: orderData.transportOptions,
 
-        estimatedDistance: orderData.estimatedDistance !== undefined ? Number(orderData.estimatedDistance) : null,
+        estimatedDistanceKm: orderData.estimatedDistance !== undefined ? Number(orderData.estimatedDistance) : null,
         estimatedPriceAmount: orderData.estimatedPriceAmount !== undefined ? Number(orderData.estimatedPriceAmount) : null,
         priceType: orderData.priceType,
         taxType: orderData.taxType,
@@ -316,6 +326,13 @@ export async function POST(request: NextRequest) {
         updatedBy: requestUserId,
         updatedBySnapshot: requestUser,
         updatedAt: now,
+
+        
+        estimatedDurationMinutes: orderData.estimatedDurationMinutes !== undefined ? Number(orderData.estimatedDurationMinutes) : null,
+        distanceCalculationMethod: orderData.distanceCalculationMethod,
+        distanceCalculatedAt: orderData.distanceCalculatedAt ? new Date(orderData.distanceCalculatedAt) : null,
+        distanceCacheId: orderData.distanceCacheId,
+        distanceMetadata: orderData.distanceMetadata,
          
       } as any)
       .returning();
@@ -349,7 +366,7 @@ export async function POST(request: NextRequest) {
       pickupTime: createdOrder.pickupTime || '',
       deliveryTime: createdOrder.deliveryTime || '',
       transportOptions: createdOrder.transportOptions as ITransportOptionsSnapshot,
-      estimatedDistance: createdOrder.estimatedDistance !== undefined ? Number(createdOrder.estimatedDistance) : 0,
+      estimatedDistance: createdOrder.estimatedDistanceKm !== undefined ? Number(createdOrder.estimatedDistanceKm) : 0,
       estimatedPriceAmount: createdOrder.estimatedPriceAmount !== undefined ? Number(createdOrder.estimatedPriceAmount) : 0,
       priceType: createdOrder.priceType || '',
       taxType: createdOrder.taxType as '과세' | '면세',

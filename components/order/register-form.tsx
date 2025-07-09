@@ -410,16 +410,16 @@ const { user, isLoggedIn } = useAuthStore();
       try {
         // 실제 거리 계산 (카카오 API 사용)
         let distance = 0;
+        // 예상 금액은 "협의"로 설정 (0으로 설정하여 UI에서 "협의" 표시)
+        const amount = 0; // 협의 금액으로 설정
         
         // 좌표 정보가 있는 경우 실제 API 호출
         if (departure.latitude && departure.longitude && 
             destination.latitude && destination.longitude) {
           
-          console.log('최근사용주소 확인 departure.id--->', departure.id);
-          console.log('최근사용주소 확인 destination.id--->', destination.id);
           const result = await DistanceClientService.calculateDistanceByAddresses({
-            pickupAddressId: departure.id || ``,
-            deliveryAddressId: destination.id || ``,
+            pickupAddressId: departure.id,
+            deliveryAddressId: destination.id,
             pickupCoordinates: {
               lat: departure.latitude,
               lng: departure.longitude
@@ -433,18 +433,39 @@ const { user, isLoggedIn } = useAuthStore();
           
           if (result.success && result.distanceKm) {
             distance = result.distanceKm;
+            let duration = result.durationMinutes;
+            let method = result.method;
+            let cacheId = result.cacheId;
+            let metadata = result.metadata;
             // 거리 정보 연동: duration, method, cacheId, metadata 등 저장
+            console.log('거리 계산 결과:', result);
             const extra = {
-              ...result
+              distanceCalculationMethod: result.method,
+              distanceCacheId: result.cacheId,
+              distanceMetadata: result.metadata,
+              estimatedDurationMinutes: result.durationMinutes,
+              distanceKm: result.distanceKm,
+              // 필요시 추가 필드 매핑
             };
-            if (editMode) {
+
+            console.log('editMode-->', editMode);
+            if (editMode) {              
+              //수정
               editStore.setRegisterData({
                 estimatedDistance: distance,
-                estimatedAmount: 0,
-                ...extra
+                estimatedAmount: amount,
+                // estimatedDurationMinutes: result.durationMinutes,
+                // distanceCalculationMethod: result.method,
+                // //distanceCalculatedAt: result.distanceCalculatedAt,
+                // distanceCacheId: result.cacheId,
+                // distanceMetadata: result.metadata as any,                
               });
-            } else {
-              registerStore.setEstimatedInfo(distance, 0, extra as any);
+            } else {       
+              //등록 
+              console.log('등록 전 extra-->', extra);
+              registerStore.setEstimatedInfo(distance, amount, extra as any);
+              console.log('등록 registerData-->', registerStore.registerData);
+              
             }
           } else {
             console.log('거리 계산 실패, 직선거리 계산 사용:', result.error);
@@ -458,24 +479,20 @@ const { user, isLoggedIn } = useAuthStore();
           }
         } else {          
           console.log('좌표 정보 없음!!!');
-          distance = 0;
-        }
-        console.log('distance', distance);
-        // 예상 금액은 "협의"로 설정 (0으로 설정하여 UI에서 "협의" 표시)
-        const amount = 0; // 협의 금액으로 설정
-
-        // 계산 결과를 store에 반영
-        if (editMode) {
-          editStore.setRegisterData({
-            estimatedDistance: distance,
-            estimatedAmount: amount,
-          });
-        } else {
-          registerStore.setEstimatedInfo(distance, amount);
+          // 계산 결과를 store에 반영
+          if (editMode) {
+            editStore.setRegisterData({
+              estimatedDistance: distance,
+              estimatedAmount: amount,
+            });
+          } else {
+            console.log('editMode2-->', editMode);
+            registerStore.setEstimatedInfo(distance, amount);
+          }
         }
         
         console.log(` 거리: ${distance}km, 예상금액: 협의`);
-        
+        console.log('registerStore.registerData-->', registerStore.registerData);
       } catch (error) {
         console.error("거리 계산 중 오류 발생:", error);
         
@@ -488,7 +505,7 @@ const { user, isLoggedIn } = useAuthStore();
             estimatedDistance: fallbackDistance,
             estimatedAmount: fallbackAmount,
           });
-        } else {
+        } else {          
           registerStore.setEstimatedInfo(fallbackDistance, fallbackAmount);
         }
         

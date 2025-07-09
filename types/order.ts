@@ -121,7 +121,7 @@ export interface IOrderRegisterData {
   selectedCompanyId?: string;
   selectedManagerId?: string;
   // 거리 정보 연동 필드 추가
-  estimatedDistanceKm?: number;
+  //estimatedDistanceKm?: number;
   estimatedDurationMinutes?: number;
   distanceCalculationMethod?: string;
   distanceCalculatedAt?: string;
