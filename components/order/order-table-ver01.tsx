@@ -197,7 +197,7 @@ export function OrderTable({
               <TableHead>하차지</TableHead>              
               <TableHead >품목</TableHead>              
               <TableHead className="w-[80px] ">차량</TableHead>
-              <TableHead className="w-[100px]">기사</TableHead>
+              <TableHead className="w-[80px]">기사</TableHead>
               <TableHead className="text-right">운송비</TableHead>
             </TableRow>
           </TableHeader>
@@ -260,7 +260,7 @@ export function OrderTable({
                     {order.assignedDriverId 
                       ? (
                         <>
-                        <Badge variant="outline"  className="text-xs px-3 py-1 border text-muted-foreground">    
+                        <Badge variant="outline"  className="text-xs px-3 py-1 border ">    
                           <Truck className="h-4 w-4 mr-1" />{order.assignedVehicleNumber}
                         </Badge>
                         </>
