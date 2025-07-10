@@ -363,7 +363,7 @@ export function OrderDetailSheet() {
                       </div>
                       <CardHeader className="p-3 flex justify-between items-center">            
                         <CardTitle className="text-md font-semibold flex items-center">                                                  
-                          차주:{orderData.vehicle.driver.name}
+                        <span className="text-muted-foreground mr-2 text-xs !text-xs leading-none">차주:</span> {orderData.vehicle.driver.name}
                             <Button
                               type="button"
                               variant="ghost"

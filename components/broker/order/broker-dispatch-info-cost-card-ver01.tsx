@@ -99,6 +99,26 @@ export function FinanceSummaryCard({
   const toggleDetails = () => {
     setIsDetailsOpen(!isDetailsOpen);
   };
+
+  const mergedIncome = income?.reduce((acc: { label: string; amount: number }[], cur) => {
+    const found = acc.find((item) => item.label === cur.label);
+    if (found) {
+      found.amount += cur.amount;
+    } else {
+      acc.push({ ...cur });
+    }
+    return acc;
+  }, []);
+
+  const mergedExpense = expense?.reduce((acc: { label: string; amount: number }[], cur) => {
+    const found = acc.find((item) => item.label === cur.label);
+    if (found) {
+      found.amount += cur.amount;
+    } else {
+      acc.push({ ...cur });
+    }
+    return acc;
+  }, []);
   
   // 총액 계산
   const totalEstimate = estimate?.reduce((sum, item) => sum + item.amount, 0) || 0;
@@ -141,14 +161,25 @@ export function FinanceSummaryCard({
 
       {/* 청구 추가 항목 상세 - 펼쳐진 상태일 때만 표시 */}
       {isDetailsOpen && (
-        <div className="ml-8 space-y-1 mb-2 px-6">
+        <>
+        {/* <div className="ml-8 space-y-1 mb-2 px-6">
           {income?.map((item, index) => (
             <div key={index} className="flex justify-between items-center">
               <p className="text-gray-400">{item.label}</p>
               <p className="text-md">{new Intl.NumberFormat('ko-KR').format(item.amount)}원</p>
             </div>
           ))}
+        </div> */}
+
+        <div className="ml-8 space-y-1 mb-2 px-6">
+        {mergedIncome.map((item, index) => (
+          <div key={index} className="flex justify-between items-center">
+            <p className="text-gray-400">{item.label}</p>
+            <p className="text-md">{new Intl.NumberFormat('ko-KR').format(item.amount)}원</p>
+          </div>
+        ))}
         </div>
+        </>
       )}
 
       {/* 배차 */}
@@ -163,14 +194,24 @@ export function FinanceSummaryCard({
 
       {/* 배차 추가 항목 상세 - 펼쳐진 상태일 때만 표시 */}
       {isDetailsOpen && (
-        <div className="ml-8 space-y-1 mb-2 px-6">
+        <>
+        {/* <div className="ml-8 space-y-1 mb-2 px-6">
           {expense?.map((item, index) => (
             <div key={index} className="flex justify-between items-center">
               <p className="text-gray-400">{item.label}</p>
               <p className="text-md">{new Intl.NumberFormat('ko-KR').format(item.amount)}원</p>
             </div>
           ))}
+        </div> */}
+        <div className="ml-8 space-y-1 mb-2 px-6">
+        {mergedExpense.map((item, index) => (
+          <div key={index} className="flex justify-between items-center">
+            <p className="text-gray-400">{item.label}</p>
+            <p className="text-md">{new Intl.NumberFormat('ko-KR').format(item.amount)}원</p>
+          </div>
+        ))}
         </div>
+        </>
       )}
 
       <Separator className="bg-gray-700 my-5" />

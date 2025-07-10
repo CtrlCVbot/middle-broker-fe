@@ -82,10 +82,10 @@ export async function GET(request: NextRequest) {
 const CreateChargeLineSchema = z.object({
   groupId: z.string().uuid(),
   side: z.enum(chargeSideEnum.enumValues),
-  amount: z.number().nonnegative(),
+  amount: z.number(),
   memo: z.string().optional(),
-  taxRate: z.number().nonnegative().optional(),
-  taxAmount: z.number().nonnegative().optional()
+  taxRate: z.number().optional(),
+  taxAmount: z.number().optional()
 });
 
 // 운임 라인 생성

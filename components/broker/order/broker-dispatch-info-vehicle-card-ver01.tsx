@@ -13,6 +13,7 @@ import {
   DialogTitle 
 } from "@/components/ui/dialog";
 import { BrokerOrderDriverInfoEditForm as VehicleEditForm } from "./broker-dispatch-info-vehicle-form";
+import { formatPhoneNumber } from "@/utils/format";
 
 interface IVehicleCardProps {
   dispatchId: string;
@@ -171,7 +172,7 @@ export function VehicleCard({
             onClick={handleCall}
           >
             <Phone className="h-4 w-4 mr-1" />
-            <span className="text-xs">{driverInfo.contact}</span>
+            <span className="text-xs">{formatPhoneNumber(driverInfo.contact)}</span>
           </Button>
           <Button 
             variant="default" 

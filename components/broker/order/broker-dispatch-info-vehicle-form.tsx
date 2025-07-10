@@ -1,9 +1,14 @@
 "use client";
 
+//react
 import React, { useState, useCallback, useEffect } from "react";
+
+//hook, 유효성 검증
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+
+//ui
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,6 +43,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Search,
   Plus,
@@ -47,26 +53,31 @@ import {
   Factory,
   Loader2
 } from "lucide-react";
+
+//utils
 import { cn } from "@/lib/utils";
-import { BROKER_VEHICLE_TYPES, BROKER_WEIGHT_TYPES } from "@/types/broker-order";
-import { Textarea } from "@/components/ui/textarea";
-import { useBrokerDriverStore } from "@/store/broker-driver-store";
 import { mapDriversForDispatchForm } from "@/utils/driver-mapper";
+
+//store
+import { useBrokerDriverStore } from "@/store/broker-driver-store";
+
+//service
 import { updateDispatchFields } from "@/services/broker-dispatch-service";
 
+//types
+import { BROKER_VEHICLE_TYPES, BROKER_WEIGHT_TYPES } from "@/types/broker-order";
+// 중요도 옵션
+const SEVERITY_OPTIONS = [
+  { value: 'low', label: '낮음', color: 'bg-blue-50 text-blue-700' },
+  { value: 'medium', label: '중간', color: 'bg-amber-50 text-amber-700' },
+  { value: 'high', label: '높음', color: 'bg-red-50 text-red-700' }
+];
 // 콜센터 목록
 const CALL_CENTER_OPTIONS = [
   "화물맨",
   "원콜",
   "24시",  
   "기타"
-];
-
-// 중요도 옵션
-const SEVERITY_OPTIONS = [
-  { value: 'low', label: '낮음', color: 'bg-blue-50 text-blue-700' },
-  { value: 'medium', label: '중간', color: 'bg-amber-50 text-amber-700' },
-  { value: 'high', label: '높음', color: 'bg-red-50 text-red-700' }
 ];
 
 // 폼 유효성 검증 스키마
@@ -330,7 +341,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
       const fields = {    
         // driverId가 있을 때만 assignedDriverId 필드 추가
         ...(driverId ? { assignedDriverId: driverId } : {}),
-        ...(!driverId ? { assignedDriverSnapshot: JSON.stringify(assignedDriverSnapshot) } : {}),
+        assignedDriverSnapshot: JSON.stringify(assignedDriverSnapshot),
         assignedDriverPhone: data.driver.contact,
         assignedVehicleNumber: data.vehicle.licensePlate,
         assignedVehicleType: data.vehicle.type,

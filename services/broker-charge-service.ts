@@ -131,7 +131,7 @@ export async function createChargeLine(data: CreateChargeLineInput): Promise<ICh
     const result: IApiResponse<IChargeLine> = await response.json();
     return result.data;
   } catch (error) {
-    console.error('운임 라인 생성 중 오류 발생:', error);
+    console.error('운임 라인 생성 중 오류 발생 최종:', error);
     throw error;
   }
 }
