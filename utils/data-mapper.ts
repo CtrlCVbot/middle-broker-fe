@@ -482,6 +482,7 @@ export function mapApiResponseToBrokerOrderDetail(
     
     // 화주 정보
     shipper: {
+      id: order.companyId || '',
       name: order.companySnapshot?.name || '화주정보 없음',
       manager: {
         name: order.contactUserSnapshot?.name || '담당자 없음',

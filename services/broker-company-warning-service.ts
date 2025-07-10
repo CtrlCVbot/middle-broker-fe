@@ -14,6 +14,7 @@ import {
 export async function fetchWarnings(companyId: string): Promise<ICompanyWarning[]> {
   try {
     const response = await apiClient.get<ICompanyWarning[]>(`/companies/${companyId}/warnings`);
+    console.log('주의사항 목록 조회 중 오류 발생1:', response);
     return response;
   } catch (error) {
     console.error('주의사항 목록 조회 중 오류 발생1:', error);

@@ -565,6 +565,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                         vehicleType: orderData.vehicle?.type
                       }}
                       shipper={{
+                        id: orderData.shipper.id,
                         name: orderData.shipper.name,
                         contact: orderData.shipper.manager.contact,
                         manager: orderData.shipper.manager.name,

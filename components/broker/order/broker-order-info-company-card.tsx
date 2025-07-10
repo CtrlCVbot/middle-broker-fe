@@ -1,24 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Phone, MessageSquare, Fuel, AlertTriangle, MessageSquareOff, Copy } from "lucide-react";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
+import { fetchWarnings } from '@/services/broker-company-warning-service';
+import { ICompanyWarning } from "@/types/company-warning";
+
+import { safeFormatDate } from "@/utils/format";
 
 // 업체 주의사항 인터페이스
-interface ICompanyWarning {
-  id: string;
-  date: string;
-  content: string;
-  severity: 'low' | 'medium' | 'high';
-}
+// interface ICompanyWarning {
+//   id: string;
+//   date: string;
+//   content: string;
+//   severity: 'low' | 'medium' | 'high';
+// }
 
 interface ICompanyCardProps {
-  orderId: string;
+  orderId: string;  
   companyInfo: {
+    id?: string;
     name: string;    
-    warnings?: ICompanyWarning[];
   };
   managerInfo: {
     name: string;
@@ -33,13 +37,30 @@ interface ICompanyCardProps {
 
 export function CompanyCard({ 
   orderId,
+  //companyId,
   companyInfo, 
   managerInfo, 
   onCall, 
   onMessage 
 }: ICompanyCardProps) {
   const [isWarningsVisible, setIsWarningsVisible] = useState(false);
-  
+  const [companyWarnings, setCompanyWarnings] = useState<ICompanyWarning[]>([]);
+  const [isLoadingWarnings, setIsLoadingWarnings] = useState(false);
+
+  useEffect(() => {
+    console.log('companyInfo.id', companyInfo.id);
+    const companyId = companyInfo.id || "";
+    if (!companyId) {
+      setCompanyWarnings([]);
+      return;
+    }
+    setIsLoadingWarnings(true);
+    fetchWarnings(companyId)
+      .then((data) => setCompanyWarnings(data))
+      .catch(() => setCompanyWarnings([]))
+      .finally(() => setIsLoadingWarnings(false));
+  }, [companyInfo.id]);
+
   const handleCall = () => {
     if (onCall) {
       onCall(managerInfo.name);
@@ -53,10 +74,10 @@ export function CompanyCard({
   };
 
   // 목업 데이터 - 회사 주의사항
-  const companyWarnings = companyInfo.warnings || [
-    { id: '1', date: '2023-05-15', content: '결제 지연 이력 있음', severity: 'medium' },
-    { id: '2', date: '2023-06-20', content: '화물 취소 이력', severity: 'low' },
-  ];
+  // const companyWarnings = companyInfo.warnings || [
+  //   { id: '1', date: '2023-05-15', content: '결제 지연 이력 있음', severity: 'medium' },
+  //   { id: '2', date: '2023-06-20', content: '화물 취소 이력', severity: 'low' },
+  // ];
 
   return (
     <div className="bg-white px-4 py-4 rounded-t-lg ">
@@ -121,21 +142,23 @@ export function CompanyCard({
               업체 주의사항
             </h5>
             
-            {companyWarnings.length > 0 ? (
+            {isLoadingWarnings ? (
+              <p className="text-sm text-muted-foreground">주의사항을 불러오는 중입니다...</p>
+            ) : companyWarnings.length > 0 ? (
               <ul className="space-y-2">
                 {companyWarnings.map((warning) => (
                   <li key={warning.id} className="flex items-start gap-2 text-sm">
                     <Badge 
                       variant="outline" 
                       className={`
-                        ${warning.severity === 'high' ? 'bg-red-50 text-red-700' : 
-                          warning.severity === 'medium' ? 'bg-amber-50 text-amber-700' : 
+                        ${//warning.severity === 'high' ? 'bg-red-50 text-red-700' : 
+                          //warning.severity === 'medium' ? 'bg-amber-50 text-amber-700' : 
                           'bg-blue-50 text-blue-700'}
                       `}
                     >
-                      {warning.date}
+                      {safeFormatDate(warning.createdAt, "yy-MM-dd")}
                     </Badge>
-                    <span>{warning.content}</span>
+                    <span>{warning.text}</span>
                   </li>
                 ))}
               </ul>

@@ -61,6 +61,7 @@ interface CargoInfo {
 }
 
 interface ShipperInfo {
+  id?: string;
   name: string;
   manager: string;
   contact: string;
@@ -184,7 +185,7 @@ export function BrokerOrderInfoCard({
   const companyInfo = {
     name: shipper.name,
     year: "2018",
-    id: "WOS 70757",
+    id: shipper.id,
     isLive: true,
     fuelLevel: 87,
     warnings: companyWarnings
