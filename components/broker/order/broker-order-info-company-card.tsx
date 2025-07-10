@@ -153,7 +153,7 @@ export function CompanyCard({
                       className={`
                         ${//warning.severity === 'high' ? 'bg-red-50 text-red-700' : 
                           //warning.severity === 'medium' ? 'bg-amber-50 text-amber-700' : 
-                          'bg-blue-50 text-blue-700'}
+                          'bg-amber-50 text-amber-700'}
                       `}
                     >
                       {safeFormatDate(warning.createdAt, "yy-MM-dd")}
