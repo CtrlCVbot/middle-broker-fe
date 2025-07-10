@@ -9,6 +9,7 @@ import { authOptions } from '@/app/api/auth/config';
 // 그룹 목록 조회
 export async function GET(request: NextRequest) {
   try {
+    console.log("운임 그룹 목록 조회 요청 GET 시작");
     const searchParams = request.nextUrl.searchParams;
     
     // 페이지네이션 파라미터
@@ -70,6 +71,8 @@ export async function GET(request: NextRequest) {
         .execute()
         .then(res => Number(res[0].count))
     ]);
+
+    console.log("운임 그룹 목록 조회 요청 GET 데이터", result, total);
     
     return NextResponse.json({
       data: result,

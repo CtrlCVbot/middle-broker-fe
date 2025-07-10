@@ -232,7 +232,7 @@ export function FinanceSummaryCard({
       </div>
 
       {/* 운송 마감 버튼 */}
-      <div>
+      {/* <div>
         <Separator className="bg-gray-700 my-5" />
 
         <div className="flex justify-between items-center pb-2 px-4">
@@ -244,7 +244,7 @@ export function FinanceSummaryCard({
             운송 마감하기!
           </Button>
         </div>
-      </div>
+      </div> */}
 
       {/* 추가금 입력 다이얼로그 */}
       <BrokerChargeInfoLineForm 

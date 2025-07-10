@@ -24,7 +24,7 @@ export const getFilterSummaryText = (filter: IBrokerOrderFilter): string => {
   if (!filter.departureCity && !filter.arrivalCity && !filter.vehicleType && 
       !filter.weight && !filter.status && !filter.startDate && !filter.endDate &&
       !filter.callCenter && !filter.manager) {
-    return "모든 중개 화물";
+    return "모든 화물";
   }
   
   const parts = [];
@@ -58,7 +58,7 @@ export const getFilterSummaryText = (filter: IBrokerOrderFilter): string => {
     parts.push(`${filter.endDate.slice(5)}까지`);
   }
   
-  return parts.join(", ") || "모든 중개 화물";
+  return parts.join(", ") || "모든 화물";
 };
 
 interface IBrokerOrderState {

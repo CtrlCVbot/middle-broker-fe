@@ -96,8 +96,8 @@ interface IBrokerChargeState {
   adjustmentsError: string | null;
 
   // 기존 운임 관련 액션
-    fetchChargesByOrderId: (orderId: string) => Promise<IChargeGroupWithLines[]>;  
-    addCharge: (fee: IAdditionalFeeInput, orderId: string, dispatchId?: string) => Promise<boolean>;  
+  fetchChargesByOrderId: (orderId: string) => Promise<IChargeGroupWithLines[]>;  
+  addCharge: (fee: IAdditionalFeeInput, orderId: string, dispatchId?: string) => Promise<boolean>;  
   resetChargeState: () => void;
 
   // 매출 정산 관련 액션
@@ -239,6 +239,10 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       
       const chargeGroups = await getChargeGroupsByOrderId(orderId);
       const financeSummary = mapChargeDataToFinanceSummary(chargeGroups);
+
+      console.log("fetchChargesByOrderId:", chargeGroups, financeSummary);
+      console.log("chargeGroups:", chargeGroups);
+      console.log("financeSummary:", financeSummary);
       
       set({ 
         chargeGroups,
