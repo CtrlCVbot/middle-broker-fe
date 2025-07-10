@@ -268,7 +268,8 @@ export function BrokerOrderSearch() {
                 </Popover>
               </div>
               
-              {/* 배차상태, 콜센터 필터 */}
+              {/* 배차상태 필터: activeTab이 'waiting'이 아닐 때만 노출 */}
+              {activeTab != 'waiting' && (
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
@@ -293,6 +294,7 @@ export function BrokerOrderSearch() {
                   
                 </div>
               </div>
+              )}
 
               {/* 콜센터 필터 */}
               {/* <div>
