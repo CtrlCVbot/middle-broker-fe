@@ -1,7 +1,10 @@
 "use client";
 
+//react
 import React, { useCallback, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+
+//ui
 import { 
   Breadcrumb, 
   BreadcrumbItem, 
@@ -10,34 +13,35 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
-import { ListFilter, Grid3x3, RotateCcw, ThumbsUp, PowerOff, Power, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
-import { useBrokerOrderStore } from "@/store/broker-order-store";
-// import { getBrokerOrdersByPage } from "@/utils/mockdata/mock-broker-orders";
-import { getBrokerDispatchList } from "@/services/order-service";
-
-import { BrokerOrderSearch as BrokerOrderSearchVer01 } from "@/components/broker/order/broker-order-search-ver01";
-import { BrokerOrderTable as BrokerOrderTableVer01 } from "@/components/broker/order/broker-order-table-ver01";
-import { BrokerOrderTabs } from "@/components/broker/order/broker-order-tabs";
-
-import { BrokerOrderCard } from "@/components/broker/order/broker-order-card";
-import { BrokerOrderDetailSheet } from "@/components/broker/order/broker-order-detail-sheet";
-import { BrokerOrderDetailSheet as BrokerOrderDetailSheetVer01 } from "@/components/broker/order/broker-order-detail-sheet-ver01";
-import { BrokerOrderDetailSheet as BrokerOrderDetailSheetVer02 } from "@/components/broker/order/broker-order-detail-sheet-ver02";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { cn, formatCurrency } from "@/lib/utils";
-import { BrokerOrderStatusType } from "@/types/broker-order";
+import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
+import { ListFilter, Grid3x3, RotateCcw, ThumbsUp, PowerOff, Power, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { OverviewTopCard } from "@/components/order/overview/overview-top-card";
-import { AverageValueCard } from "@/components/order/overview/average-value-card";
-import { BrokerOrderAcceptModal } from "@/components/broker/order/broker-order-accept-modal";
+//store
+import { useBrokerOrderStore } from "@/store/broker-order-store";
+
+//service
+import { getBrokerDispatchList } from "@/services/order-service";
 import { acceptOrders } from "@/services/broker-dispatch-service";
+
+//component
+import { BrokerOrderSearch as BrokerOrderSearchVer01 } from "@/components/broker/order/broker-order-search-ver01";
+import { BrokerOrderTable as BrokerOrderTableVer01 } from "@/components/broker/order/broker-order-table-ver01";
+import { BrokerOrderTabs } from "@/components/broker/order/broker-order-tabs";
+import { BrokerOrderCard } from "@/components/broker/order/broker-order-card";
+import { BrokerOrderDetailSheet as BrokerOrderDetailSheetVer02 } from "@/components/broker/order/broker-order-detail-sheet-ver02";
+import { BrokerOrderAcceptModal } from "@/components/broker/order/broker-order-accept-modal";
+
+//utils
+import { cn, formatCurrency } from "@/lib/utils";
 import { getCurrentUser } from '@/utils/auth';
 
+//types
+import { BrokerOrderStatusType } from "@/types/broker-order";
 
 export default function BrokerOrderListPage() {
   // 자동 새로고침 상태
@@ -60,7 +64,7 @@ export default function BrokerOrderListPage() {
     setLastRefreshed
   } = useBrokerOrderStore();
   
-  //const { openSheet } = useBrokerOrderDetailStore();
+  
 
   // 디버깅을 위한 로그 추가
   useEffect(() => {
@@ -318,7 +322,7 @@ export default function BrokerOrderListPage() {
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>중개 화물 현황</BreadcrumbPage>
+              <BreadcrumbPage>실시간 주선 현황</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -330,8 +334,8 @@ export default function BrokerOrderListPage() {
       <Card  className="border-none shadow-none">
         <CardHeader className="flex flex-row items-center justify-between">
           <div> 
-            <CardTitle>중개 화물 현황</CardTitle>
-            <CardDescription className="hidden md:block">중개 화물 목록을 확인할 수 있습니다.
+            <CardTitle>실시간 주선 현황</CardTitle>
+            <CardDescription className="hidden md:block">주선 화물 목록을 확인할 수 있습니다.
               <span className="text-xs text-muted-foreground px-4">
                 마지막 업데이트: {lastRefreshed.toLocaleTimeString()}
               </span>

@@ -35,6 +35,7 @@ import { Button } from "../ui/button";
 import { getStatusBadge, getStatusColor } from "./order-table-ver01";
 import { OrderInfoCardVer01 } from "./order-info-card-ver01";
 import { Timeline } from "./order-timeline";
+import { safeFormatDate } from "@/utils/format";
 
 // UI 표시를 위한 인터페이스 정의 (백엔드 데이터를 UI에 맞게 변환)
 interface OrderDetailForUI {
@@ -115,6 +116,7 @@ export function OrderDetailSheet() {
         
         // API 호출
         const response = await fetchOrderDetail(selectedOrderId);
+        // const order = response.order;
         console.log('상세 정보 API 응답:', response);
         console.log('상세 정보 API 응답1:', response.createdAt);
         // 백엔드 응답을 UI 표시용 객체로 변환
@@ -122,7 +124,7 @@ export function OrderDetailSheet() {
           orderNumber: response.id,
           status: response.flowStatus,
           statusProgress: response.flowStatus,
-          registeredAt: format(new Date(response.createdAt), "yyyy-MM-dd HH:mm", { locale: ko }),
+          registeredAt: safeFormatDate(response.createdAt, "yyyy-MM-dd HH:mm"),
           amount: formatCurrency(response.estimatedPriceAmount) + "원",
           
           departure: {
@@ -132,7 +134,7 @@ export function OrderDetailSheet() {
             company: response.pickupName || "-",
             contact: response.pickupContactPhone || "-",
             time: response.pickupTime,
-            date: format(new Date(response.pickupDate), "yyyy-MM-dd", { locale: ko }),
+            date: safeFormatDate(response.pickupDate, "yyyy-MM-dd"),
           },
           
           destination: {
@@ -142,7 +144,7 @@ export function OrderDetailSheet() {
             company: response.deliveryName || "-",
             contact: response.deliveryContactPhone || "-",
             time: response.deliveryTime,
-            date: format(new Date(response.deliveryDate), "yyyy-MM-dd", { locale: ko }),
+            date: safeFormatDate(response.deliveryDate, "yyyy-MM-dd"),
           },
           
           cargo: {
@@ -158,10 +160,10 @@ export function OrderDetailSheet() {
           vehicle: {
             type: response.requestedVehicleType || "-",
             weight: response.requestedVehicleWeight || "-",
-            licensePlate: "-", // 백엔드 데이터에 없음
+            licensePlate: response.assignedVehicleNumber || "-", // 백엔드 데이터에 없음
             driver: {
-              name: "-",
-              contact: "-",
+              name: response.assignedDriverSnapshot?.name || "-",
+              contact: response.assignedDriverPhone || "-",
             },
           },
           
@@ -176,7 +178,7 @@ export function OrderDetailSheet() {
             } as IOrderLog
           ],
         };
-        
+        console.log('orderDetail-->', orderDetail);
         return orderDetail;
       } catch (error) {
         handleApiError(error, '화물 상세 정보를 불러오는 데 실패했습니다.');
@@ -295,13 +297,14 @@ export function OrderDetailSheet() {
                       <Badge variant="default" className="mr-2 bg-gray-700 text-white">
                         <Package className="h-4 w-4 text-white" />
                       </Badge>
-                      <div className="font-medium text-md text-gray-700 truncate">{orderData.cargo.name}</div>
+                      <div className="font-medium text-md text-gray-700 truncate">품목</div>
                     
                     </div>
                     <CardHeader className="p-3 flex justify-between items-center">          
                       <CardTitle className="text-md font-semibold flex items-center">      
-                        {orderData.cargo.weight} / {orderData.cargo.type}
+                        {orderData.cargo.name}
                         <Button
+                                                    
                           type="button"
                           variant="ghost"
                           size="icon"
@@ -312,9 +315,14 @@ export function OrderDetailSheet() {
                       </CardTitle>
                     </CardHeader>
 
-                    {showCargeDetail && (
-                      <CardContent className="p-3 border-t border-gray-200 space-y-2 pt-0 text-md">
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-y-1 mt-3">   
+                   
+                      <CardContent className="p-3 border-t border-gray-200 space-y-2 pt-0 text-md">                        
+                        <div className="grid grid-cols-1 md:grid-cols-1 gap-y-1 mt-3">   
+                          <div className="flex items-center space-x-1 mt-2">
+                            <Truck className="inline h-4 w-4 text-gray-500" />
+                            <span className="text-md font-medium text-muted-foreground">{orderData.vehicle.weight} / {orderData.vehicle.type}</span>
+                          </div>
+                          
                           {showCargeDetail && (
                             <>
                             {orderData.cargo.options.length > 0 && (
@@ -338,11 +346,11 @@ export function OrderDetailSheet() {
                           )}
                         </div>
                       </CardContent>
-                    )}
+                    
                   </div>
                   
                   {/* 차량 정보 */}
-                  { orderData.vehicle.driver.name.length >= 2 ? (  
+                  { orderData.vehicle.licensePlate.length > 2 ? (  
                     <>
                     <div className="h-full bg-white shadow-md rounded-md hover:ring-2 hover:ring-primary/20 transition-all duration-150">
                       <div className={cn("bg-purple-100" + " text-sm p-2 rounded-t-md flex items-center")}>
@@ -350,12 +358,12 @@ export function OrderDetailSheet() {
                         <Badge variant="default" className="mr-2 bg-purple-700 text-white">
                           <Truck className="h-4 w-4 text-white" />
                         </Badge>
-                        <div className="font-medium text-md text-purple-700 truncate">차량번호</div>
+                        <div className="font-medium text-md text-purple-700 truncate">{orderData.vehicle.licensePlate}</div>
                       
                       </div>
                       <CardHeader className="p-3 flex justify-between items-center">            
                         <CardTitle className="text-md font-semibold flex items-center">                                                  
-                            차주명
+                          차주:{orderData.vehicle.driver.name}
                             <Button
                               type="button"
                               variant="ghost"
@@ -366,26 +374,32 @@ export function OrderDetailSheet() {
                             </Button>                        
                         </CardTitle>
                       </CardHeader>
-                      {showVehicleDetail && (
+                     
                         <CardContent className="p-3 border-t border-gray-200">
-                          <div className="text-md font-medium mt-2">
-                            연락처
-                          </div>
-                          <div className="flex items-center text-sm text-gray-700">
-                            <Phone className="h-4 w-4 mr-1 text-gray-500" />              
-                            {orderData.vehicle.driver.contact && (
-                              <div>{orderData.vehicle.driver.contact}</div>
-                            )}
-                          </div>
-
                           {/* 배차 차량 정보 */}
                           <div className="flex items-center space-x-1 mt-2">
                             <Truck className="inline h-4 w-4 text-gray-500" />
                             <span className="text-md font-medium text-muted-foreground">{orderData.vehicle.weight} / {orderData.vehicle.type}</span>
                           </div>
 
+                          {showVehicleDetail && (
+                            <>
+                            <div className="text-md font-medium mt-2">
+                              연락처
+                            </div>
+                            <div className="flex items-center text-sm text-gray-700">
+                              <Phone className="h-4 w-4 mr-1 text-gray-500" />              
+                              {orderData.vehicle.driver.contact && (
+                                <div>{orderData.vehicle.driver.contact}</div>
+                              )}
+                            </div>
+                            </>
+                          )}
+
+                          
+
                         </CardContent>
-                      )}
+                      
                     </div>
                     </>
                   ) : (

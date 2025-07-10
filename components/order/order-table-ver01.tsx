@@ -113,7 +113,7 @@ export const getSchedule = (pickupDate: string, pickupTime: string, deliveryDate
 }
 
 export const getTime = (pickupDate: string, pickupTime: string, deliveryDate: string, deliveryTime: string) => {
-  console.log("pickupDate, pickupTime, deliveryDate, deliveryTime", pickupDate, pickupTime, deliveryDate, deliveryTime);
+  //console.log("pickupDate, pickupTime, deliveryDate, deliveryTime", pickupDate, pickupTime, deliveryDate, deliveryTime);
   const pickupTimeObj = format(parseISO('1970-01-01T' + pickupTime), 'HH:mm', {locale: ko});
   let deliveryTimeObj = format(parseISO('1970-01-01T' + deliveryTime), 'HH:mm', {locale: ko});
   const deliveryDateObj = format(deliveryDate, "dd", { locale: ko });
@@ -149,7 +149,7 @@ export function OrderTable({
   totalPages,
   onPageChange,
 }: OrderTableProps) {
-  console.log('orders-->', orders);
+  
   const { openSheet } = useOrderDetailStore();
   
   

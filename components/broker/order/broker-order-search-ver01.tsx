@@ -38,6 +38,9 @@ export function BrokerOrderSearch() {
   } = useBrokerOrderStore();
   const { activeTab } = useBrokerOrderStore();
 
+  // 검색 입력값을 위한 로컬 상태 추가
+  const [searchInput, setSearchInput] = useState(filter.searchTerm || "");
+
   // Popover 상태 관리
   const [open, setOpen] = useState(false);
   
@@ -51,7 +54,20 @@ export function BrokerOrderSearch() {
 
   // 검색어 입력 시 필터 업데이트
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilter({ searchTerm: e.target.value });
+    setSearchInput(e.target.value);
+  };
+
+  // 엔터 입력 시 검색 실행
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      setFilter({ searchTerm: searchInput });
+    }
+  };
+
+  // 검색어 초기화 버튼 클릭 시
+  const handleClearSearch = () => {
+    setSearchInput("");
+    setFilter({ searchTerm: "" });
   };
 
   // 출발지 도시 변경 시 임시 필터 업데이트
@@ -445,15 +461,16 @@ export function BrokerOrderSearch() {
           type="search"
           placeholder="화물번호, 출발지, 도착지, 차주명 검색"
           className="w-full pl-8"
-          value={filter.searchTerm || ""}
+          value={searchInput}
           onChange={handleSearchChange}
+          onKeyDown={handleSearchKeyDown}
         />
         {filter.searchTerm && (
           <Button
             variant="ghost"
             size="sm"
             className="absolute right-0 top-0 h-9 px-2"
-            onClick={() => setFilter({ searchTerm: "" })}
+            onClick={handleClearSearch}
           >
             <X className="h-4 w-4" />
           </Button>

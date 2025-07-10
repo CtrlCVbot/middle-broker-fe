@@ -1,4 +1,5 @@
 import { encodeBase64, decodeBase64 } from 'bcryptjs';
+import { isValid, parseISO, format } from 'date-fns';
 
 /**
  * 숫자를 세 자리마다 콤마가 포함된 문자열로 변환합니다.
@@ -102,4 +103,19 @@ export function encodeBase64String(str: string): string {
  */
 export function decodeBase64String(str: string): string {
   return Buffer.from(str, 'base64').toString('utf-8');
+}
+
+/**
+ * 날짜 문자열을 포맷팅합니다.
+ * @param input 포맷팅할 날짜 문자열
+ * @param pattern 포맷팅 패턴
+ * @returns 포맷팅된 날짜 문자열
+ */
+export function safeFormatDate(input: string | Date | undefined | null, pattern = 'yyyy-MM-dd') {
+  try {
+    const parsed = typeof input === 'string' ? parseISO(input) : new Date(input ?? '');
+    return isValid(parsed) ? format(parsed, pattern) : '-';
+  } catch {
+    return '-';
+  }
 }

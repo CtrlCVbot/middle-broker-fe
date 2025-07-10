@@ -1,7 +1,9 @@
 "use client";
 
+//react
 import React from "react";
-import { format, isValid, parseISO } from "date-fns";
+
+//ui
 import {
   Table,
   TableBody,
@@ -11,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   ChevronLeft,
   ChevronRight,
@@ -21,14 +24,22 @@ import {
   Truck,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+
+//types
 import { IBrokerOrder, BrokerOrderStatusType } from "@/types/broker-order";
-import { formatCurrency } from "@/lib/utils";
+
+//store
 import { useBrokerOrderDetailStore } from "@/store/broker-order-detail-store";
+
+//component
 import { BrokerStatusBadge } from "./broker-status-badge";
 import { BrokerOrderContextMenu } from "./broker-order-context-menu";
 import { getStatusBadge } from "@/components/order/order-table-ver01";
+
+//utils
+import { format} from "date-fns";
 import { ko } from "date-fns/locale";
-import { Checkbox } from "@/components/ui/checkbox";
+import { formatCurrency } from "@/lib/utils";
 import { useBrokerOrderStore } from "@/store/broker-order-store";
 import { cn } from "@/lib/utils";
 
@@ -181,17 +192,21 @@ export function BrokerOrderTable({
                   />
                 </TableHead>
               )}
-              <TableHead className="w-[80px] text-center">ID</TableHead>
+              {/* <TableHead className="w-[80px] text-center">ID</TableHead> */}
               <TableHead className="w-[80px] text-center">상태</TableHead>
               <TableHead className="w-[80px]">일정</TableHead>
               <TableHead className="w-[120px]">시간</TableHead>              
               <TableHead>상차지</TableHead>
-              <TableHead>{/* 상차지 하차지 흐름 표시 */}</TableHead>
+              <TableHead className="w-[10px]">{/* 상차지 하차지 흐름 표시 */}</TableHead>
               <TableHead>하차지</TableHead>              
-              <TableHead className="w-[100px]">품목</TableHead>              
+              <TableHead>품목</TableHead>              
               <TableHead className="w-[80px]">차량</TableHead>
-              <TableHead>기사</TableHead>
-              <TableHead className="text-right">운송비</TableHead>
+              {activeTab != 'waiting' && (
+                <>
+                  <TableHead>기사</TableHead>
+                  <TableHead className="text-right">운송비</TableHead>
+                </>
+              )}
             </TableRow>
           </TableHeader> 
           <TableBody>
@@ -249,9 +264,9 @@ export function BrokerOrderTable({
                         />
                       </TableCell>
                     )}
-                    <TableCell className="text-center font-medium">
+                    {/* <TableCell className="text-center font-medium">
                       #{order.orderId.slice(0, 8)}
-                    </TableCell>
+                    </TableCell> */}
                     <TableCell className="text-center">
                       {order.isClosed ? (
                         <Badge variant="default" className="text-xs px-3 py-1 border-dashed text-muted-foreground">
@@ -304,37 +319,41 @@ export function BrokerOrderTable({
                         </div>                      
                       </div> 
                     </TableCell>
-                    <TableCell>
-                      {order.assignedVehicleNumber ? (
-                        <div className="flex flex-col">
-                          <div className="text-md font-medium">
-                            {order.driverName}
+                    {activeTab != 'waiting' && (
+                      <>
+                      <TableCell>
+                        {order.assignedVehicleNumber ? (
+                          <div className="flex flex-col">
+                            <div className="text-md font-medium">
+                              {order.driverName}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {order.driverPhone || "-"}
+                            </div>
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            {order.driverPhone || "-"}
+                        ) : (
+                          <Badge variant="outline" className="text-xs px-3 py-1 border-dashed text-muted-foreground">
+                            <Link2Off className="h-4 w-4 mr-1" />
+                            배차전                      
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {order.freightCost ? (
+                          <div className="flex flex-col">
+                            <span>{formatCurrency(order.freightCost)}원</span>
+                            {order.estimatedAmount && order.freightCost !== order.estimatedAmount && (
+                              <span className="text-xs text-muted-foreground line-through">
+                                {formatCurrency(order.estimatedAmount)}원
+                              </span>
+                            )}                          
                           </div>
-                        </div>
-                      ) : (
-                        <Badge variant="outline" className="text-xs px-3 py-1 border-dashed text-muted-foreground">
-                          <Link2Off className="h-4 w-4 mr-1" />
-                          배차전                      
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {order.freightCost ? (
-                        <div className="flex flex-col">
-                          <span>{formatCurrency(order.freightCost)}원</span>
-                          {order.estimatedAmount && order.freightCost !== order.estimatedAmount && (
-                            <span className="text-xs text-muted-foreground line-through">
-                              {formatCurrency(order.estimatedAmount)}원
-                            </span>
-                          )}                          
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">정보 없음</span>
-                      )}
-                    </TableCell>
+                        ) : (
+                          <span className="text-muted-foreground">정보 없음</span>
+                        )}
+                      </TableCell>
+                      </>
+                    )}
                   </TableRow>
                 </BrokerOrderContextMenu>
               ))

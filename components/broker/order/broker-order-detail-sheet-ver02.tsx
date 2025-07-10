@@ -1,41 +1,18 @@
 "use client";
 
+//react
 import React, { useEffect, useState } from "react";
+
+//ui
 import { 
   Sheet, 
   SheetContent, 
   SheetHeader, 
   SheetTitle
 } from "@/components/ui/sheet";
-import { useBrokerOrderDetailStore } from "@/store/broker-order-detail-store";
-
-import { BrokerOrderStatusLog } from "./broker-order-status-log";
-import { BrokerOrderActionButtons } from "./broker-order-action-buttons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { 
-  Truck, 
-  CreditCard, 
-  Package, 
-  History, 
-  AlertCircle,
-  Copy
-} from "lucide-react";
 import { CardContent } from "@/components/ui/card";
-
-// 화물 상세 정보 카드
-
-import { BrokerOrderInfoEditForm } from "./broker-order-info-edit-form";
-import { BrokerOrderInfoCard as BrokerOrderInfoCardVer02 } from "./broker-order-info-card-ver02";
-
-// 배차 정보 카드
-import { BrokerOrderDriverInfoCard as BrokerOrderDriverInfoCardVer01 } from "./broker-dispatch-info-card";
-
-
-// 운임/정산 정보 카드
-import { FinanceSummaryCard } from "./broker-dispatch-info-cost-card-ver01";
-
 import { toast } from "@/components/ui/use-toast";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // Dialog import 추가
@@ -44,25 +21,45 @@ import {
   DialogContent,   
   DialogHeader,   
   DialogTitle } from "@/components/ui/dialog";
+import { 
+  Truck, 
+  CreditCard, 
+  Package, 
+  History, 
+  AlertCircle,
+  Copy
+} from "lucide-react";
+
+//store
+import { useBrokerOrderDetailStore } from "@/store/broker-order-detail-store";
+// 운임 관련 스토어 및 타입 import 추가
+import { useBrokerChargeStore } from "@/store/broker-charge-store";
+// 새로고침 상태 관리를 위한 스토어 import
+import { useBrokerOrderStore } from "@/store/broker-order-store";
+// 정산 관련 스토어 import
+import { useBrokerSettlementStore } from "@/store/broker-settlement-store";
+
+//utils
+import { cn } from "@/lib/utils";
+
+//component
+import { BrokerOrderStatusLog } from "./broker-order-status-log";
+// 화물 상세 정보 카드
+import { BrokerOrderInfoEditForm } from "./broker-order-info-edit-form";
+import { BrokerOrderInfoCard as BrokerOrderInfoCardVer02 } from "./broker-order-info-card-ver02";
+// 배차 정보 카드
+import { BrokerOrderDriverInfoCard as BrokerOrderDriverInfoCardVer01 } from "./broker-dispatch-info-card";
+// 운임/정산 정보 카드
+import { FinanceSummaryCard } from "./broker-dispatch-info-cost-card-ver01";
 import { BrokerOrderDriverInfoEditForm as VehicleEditForm } from "./broker-dispatch-info-vehicle-form";
 import BrokerChargeInfoLineForm, { IAdditionalFee } from "./broker-charge-info-line-form";
 
-// 운임 관련 스토어 및 타입 import 추가
-import { useBrokerChargeStore } from "@/store/broker-charge-store";
-import { IAdditionalFeeInput } from "@/types/broker-charge";
-
-
-// 새로고침 상태 관리를 위한 스토어 import
-import { useBrokerOrderStore } from "@/store/broker-order-store";
-
+//types
 // 추가금 관련 중복 로직 제거하고 useChargeForm 훅 import 추가
 import { useChargeForm } from '@/hooks/useChargeForm';
-import { Separator } from "@/components/ui/separator";
-
 // 전체적인 상태 관리를 위한 타입 정의
 type EditMode = "cargo" | "driver" | "settlement" | null;
 
-import { useBrokerSettlementStore } from "@/store/broker-settlement-store";
 
 export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalFeeAdded?: (fee: IAdditionalFee) => void }) {
   const {     

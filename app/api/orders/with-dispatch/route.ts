@@ -167,7 +167,7 @@ export async function GET(request: NextRequest) {
         deliveryAddressSnapshot: orders.deliveryAddressSnapshot,
         deliveryDate: orders.deliveryDate,
         deliveryTime: orders.deliveryTime,
-        estimatedDistance: orders.estimatedDistance,
+        estimatedDistance: orders.estimatedDistanceKm,
         estimatedPriceAmount: orders.estimatedPriceAmount,
         priceType: orders.priceType,
         taxType: orders.taxType,

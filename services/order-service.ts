@@ -1,5 +1,5 @@
 import { ApiClient, IApiError } from '@/utils/api-client';
-import { IAddressSnapshot, ICompanySnapshot, IPriceSnapshot, ITransportOptionsSnapshot } from '@/types/order';
+import { IAddressSnapshot, ICompanySnapshot, IOrderWithDispatch, IPriceSnapshot, ITransportOptionsSnapshot } from '@/types/order';
 import { getCurrentUser } from '@/utils/auth';
 import { validateOrderData, validateOrderDataWithErrors } from '@/utils/order-validation';
 import { showValidationError } from '@/utils/order-utils';
@@ -273,7 +273,7 @@ export async function fetchOrders(params: OrderListParams): Promise<IOrderListRe
  * @param orderId 화물 ID
  * @returns Promise<IOrder> 화물 상세 정보
  */
-export async function fetchOrderDetail(orderId: string): Promise<IOrder> {
+export async function fetchOrderDetail(orderId: string): Promise<IOrder&IOrderWithDispatch> {
   const response = await fetch(`/api/orders/${orderId}`, {
     method: 'GET',
     headers: {
@@ -281,12 +281,28 @@ export async function fetchOrderDetail(orderId: string): Promise<IOrder> {
     }
   });
 
-  if (!response.ok) {
+  if (!response.ok) {    
     const error = await response.json();
     throw new Error(error.message || '화물 상세 정보를 불러오는 데 실패했습니다.');
   }
 
-  return response.json();
+  const rawData = await response.json();
+
+  console.log('rawData-->', rawData);
+
+  // const data = rawData.map((item: any) => ({
+  //   ...item.order,   // order 내부 펼침
+  //   ...item,         // 배차 정보 포함 (단 order는 이미 풀렸으므로 덮어씌워질 수 있음)
+  // }));
+  const data = rawData.map(({ order, ...dispatch }: { order: any, dispatch: any }) => ({
+    ...order,  // order 내부 펼침
+    ...dispatch,  // 배차 정보 포함
+  }));
+
+  const result = Array.isArray(data) ? data[0] : data;
+ 
+
+  return result;
 }
 
 /**
