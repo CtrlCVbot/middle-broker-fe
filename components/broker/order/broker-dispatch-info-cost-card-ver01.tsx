@@ -1,18 +1,30 @@
 "use client";
 
+//react
 import React, { useState } from "react";
-import { ChevronRight, ChevronDown, ChevronUp, Pencil } from "lucide-react";
-import { cn } from "@/lib/utils";
+
+//ui
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { ChevronRight, ChevronDown, ChevronUp, Pencil } from "lucide-react";
+
+//components
 import BrokerChargeInfoLineForm, { IAdditionalFee } from "./broker-charge-info-line-form";
-import { toast } from "@/components/ui/use-toast";
+
+//hooks
 import { useChargeForm } from '@/hooks/useChargeForm';
 
+//store
 // 운임 관련 스토어 및 타입 import 추가
 import { useBrokerChargeStore } from "@/store/broker-charge-store"
 import { useBrokerOrderStore } from "@/store/broker-order-store";
 import { useBrokerOrderDetailStore } from "@/store/broker-order-detail-store";
+
+//types
+import { AmountType, AMOUNT_TYPES,  } from "@/types/settlement";
+
+//utils
+import { cn } from "@/lib/utils";
 
 interface IFinanceItem {
   label: string;
@@ -100,6 +112,7 @@ export function FinanceSummaryCard({
     setIsDetailsOpen(!isDetailsOpen);
   };
 
+  //청구 금액 항목 아이템별로 합치기
   const mergedIncome = income?.reduce((acc: { label: string; amount: number }[], cur) => {
     const found = acc.find((item) => item.label === cur.label);
     if (found) {
@@ -110,6 +123,13 @@ export function FinanceSummaryCard({
     return acc;
   }, []);
 
+  //청구 금액 항목 정렬
+  const sortedIncome = [...mergedIncome].sort((a, b) => {
+    return AMOUNT_TYPES.indexOf(a.label as AmountType) - AMOUNT_TYPES.indexOf(b.label as AmountType);
+  });
+  
+
+  //배차 금액 항목 아이템별로 합치기
   const mergedExpense = expense?.reduce((acc: { label: string; amount: number }[], cur) => {
     const found = acc.find((item) => item.label === cur.label);
     if (found) {
@@ -119,6 +139,11 @@ export function FinanceSummaryCard({
     }
     return acc;
   }, []);
+
+  //배차 금액 항목 정렬
+  const sortedExpense = [...mergedExpense].sort((a, b) => {
+    return AMOUNT_TYPES.indexOf(a.label as AmountType) - AMOUNT_TYPES.indexOf(b.label as AmountType);
+  });
   
   // 총액 계산
   const totalEstimate = estimate?.reduce((sum, item) => sum + item.amount, 0) || 0;
@@ -162,22 +187,14 @@ export function FinanceSummaryCard({
       {/* 청구 추가 항목 상세 - 펼쳐진 상태일 때만 표시 */}
       {isDetailsOpen && (
         <>
-        {/* <div className="ml-8 space-y-1 mb-2 px-6">
-          {income?.map((item, index) => (
+        
+        <div className="ml-8 space-y-1 mb-2 px-6">
+          {sortedIncome.map((item, index) => (
             <div key={index} className="flex justify-between items-center">
               <p className="text-gray-400">{item.label}</p>
               <p className="text-md">{new Intl.NumberFormat('ko-KR').format(item.amount)}원</p>
             </div>
           ))}
-        </div> */}
-
-        <div className="ml-8 space-y-1 mb-2 px-6">
-        {mergedIncome.map((item, index) => (
-          <div key={index} className="flex justify-between items-center">
-            <p className="text-gray-400">{item.label}</p>
-            <p className="text-md">{new Intl.NumberFormat('ko-KR').format(item.amount)}원</p>
-          </div>
-        ))}
         </div>
         </>
       )}
@@ -194,22 +211,14 @@ export function FinanceSummaryCard({
 
       {/* 배차 추가 항목 상세 - 펼쳐진 상태일 때만 표시 */}
       {isDetailsOpen && (
-        <>
-        {/* <div className="ml-8 space-y-1 mb-2 px-6">
-          {expense?.map((item, index) => (
+        <>        
+        <div className="ml-8 space-y-1 mb-2 px-6">
+          {sortedExpense.map((item, index) => (
             <div key={index} className="flex justify-between items-center">
               <p className="text-gray-400">{item.label}</p>
               <p className="text-md">{new Intl.NumberFormat('ko-KR').format(item.amount)}원</p>
             </div>
           ))}
-        </div> */}
-        <div className="ml-8 space-y-1 mb-2 px-6">
-        {mergedExpense.map((item, index) => (
-          <div key={index} className="flex justify-between items-center">
-            <p className="text-gray-400">{item.label}</p>
-            <p className="text-md">{new Intl.NumberFormat('ko-KR').format(item.amount)}원</p>
-          </div>
-        ))}
         </div>
         </>
       )}

@@ -1,7 +1,9 @@
 "use client";
 
+//react
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
+//ui
 import {
   Dialog,
   DialogContent,
@@ -20,30 +22,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SeparatorVertical } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
 
 import { MoreHorizontal } from "lucide-react";
+
+
+//utils
+import { cn } from "@/lib/utils";
+
+
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-type AdditionalFeeType = "기본" | "대기" | "수작업" | "왕복" | "톨비" | "수수료" | "현장착불" | "기타";
-
-export const ADDITIONAL_FEE_TYPES = [
-  "기본",
-  "대기",
-  "수작업",
-  "왕복",
-  "톨비",
-  "수수료",
-  "현장착불",
-  "기타"
-] as const;
+import type { AmountType } from "@/types/settlement";
+import { AMOUNT_TYPES } from "@/types/settlement";
 
 // 기존 인터페이스에 추가
 export interface IAdditionalFee {
   id?: string;
-  type: AdditionalFeeType;
+  type: AmountType;
   memo: string;
   target: {
     charge: boolean;
@@ -87,24 +82,24 @@ const BrokerChargeInfoLineForm: React.FC<IBrokerChargeInfoLineFormProps> = ({
   handleCancelEdit,
 }) => {
 
-  const [selectedType, setSelectedType] = useState<AdditionalFeeType>("기본");
+  const [selectedType, setSelectedType] = useState<AmountType>("기본");
   const [maxCount, setMaxCount] = useState(4); // 기본값
 
-  const FAVORITE_TYPES = ["기본", "수작업", "왕복", "톨비", "수수료", "현장착불", "기타"]; // 유저 저장값 or 기본값
+  const FAVORITE_TYPES = AMOUNT_TYPES;
 
   // const visibleTypes = [...FAVORITE_TYPES];
   // const hiddenTypes = ADDITIONAL_FEE_TYPES.filter((type) => !visibleTypes.includes(type));
 
   //const MAX_VISIBLE_COUNT = 4;
 
-  const allTypes = [...ADDITIONAL_FEE_TYPES];
+  const allTypes = [...AMOUNT_TYPES];
   //const visibleTypes = allTypes.slice(0, MAX_VISIBLE_COUNT);
   //const hiddenTypes = allTypes.slice(MAX_VISIBLE_COUNT);
   //const visibleTypes = ADDITIONAL_FEE_TYPES.slice(0, maxCount);
   //const hiddenTypes = ADDITIONAL_FEE_TYPES.slice(maxCount);
 
   const { visibleTypes, hiddenTypes } = useMemo(() => {
-    const baseTypes = [...ADDITIONAL_FEE_TYPES];
+    const baseTypes = [...AMOUNT_TYPES];
   
     // 선택된 타입이 없으면 앞에 표시
     const ordered = [selectedType, ...baseTypes.filter(t => t !== selectedType)];
@@ -148,7 +143,7 @@ const BrokerChargeInfoLineForm: React.FC<IBrokerChargeInfoLineFormProps> = ({
   //     target: autoTarget,
   //   });
   // };
-  const handleTypeSelect = (type: AdditionalFeeType) => {
+  const handleTypeSelect = (type: AmountType) => {
     setSelectedType(type);
   
     const autoTarget = type === "수작업"

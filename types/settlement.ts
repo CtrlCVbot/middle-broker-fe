@@ -145,3 +145,34 @@ export interface IBrokerSettlementState {
   currentSale: IOrderSale | null;
   isSaleClosed: boolean;
 } 
+
+// =============================
+// 금액(운임/추가비용/정산) 타입 통합 정의
+// =============================
+
+/**
+ * 금액 항목 타입 (운임, 추가비용, 정산 등에서 공통 사용)
+ */
+export type AmountType =
+  | "기본"
+  | "대기"
+  | "수작업"
+  | "왕복"
+  | "톨비"
+  | "수수료"
+  | "현장착불"
+  | "기타";
+
+/**
+ * 금액 항목 타입 배열 (UI 선택 등에서 사용)
+ */
+export const AMOUNT_TYPES: AmountType[] = [
+  "기본",
+  "대기",
+  "수작업",
+  "왕복",
+  "톨비",
+  "수수료",
+  "현장착불",
+  "기타"
+]; 
