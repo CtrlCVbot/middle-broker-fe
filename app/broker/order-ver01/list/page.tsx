@@ -297,6 +297,8 @@ export default function BrokerOrderListPage() {
     </div>
   );
 
+  console.log('orders', orders);
+
   return (
 
     <>

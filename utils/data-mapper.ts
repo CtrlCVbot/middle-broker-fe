@@ -122,7 +122,7 @@ function mapFlowStatusToUiStatus(flowStatus: OrderFlowStatus): string {
     '운송요청': '배차대기',
     '배차대기': '배차대기',
     '배차완료': '배차완료',
-    '상차대기': '배차완료',
+    '상차대기': '상차대기',
     '상차완료': '상차완료',
     '운송중': '운송중',
     '하차완료': '하차완료',

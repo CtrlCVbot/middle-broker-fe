@@ -31,7 +31,7 @@ export function CargoCard({
   cargoInfo 
 }: ICargoCardProps) {
   const [isWarningsVisible, setIsWarningsVisible] = useState(false);
-
+  
   return (
     <div className="bg-white rounded-b-lg p-4">
 

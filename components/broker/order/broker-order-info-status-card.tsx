@@ -1,10 +1,16 @@
+//react
 import React, { useState, useEffect } from "react";
+
+//ui
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, MessageSquare, AlertCircle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { BrokerStatusDropdown } from "./broker-status-dropdown";
-import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+
+//components
+import { BrokerStatusDropdown } from "./broker-status-dropdown";
+
+//utils
 import { validate as isValidUUID, version as getUUIDVersion } from 'uuid';
 
 interface IBrokerOrderStatusCardProps {
@@ -45,11 +51,10 @@ export function BrokerOrderStatusCard({
   to,
   onStatusChange 
 }: IBrokerOrderStatusCardProps) {
-  const [currentStatus, setCurrentStatus] = useState(status);
-  const { toast } = useToast();
+  const [currentStatus, setCurrentStatus] = useState(status);  
   const [isDispatchIdValid, setIsDispatchIdValid] = useState(false);
   
-  
+  console.log('status', status);
   // dispatchId 검증
   useEffect(() => {
     console.log("StatusCard dispatchId : ", dispatchId);

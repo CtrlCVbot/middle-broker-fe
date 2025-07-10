@@ -82,6 +82,7 @@ export const useBrokerOrderDetailStore = create<IBrokerOrderDetailState>((set, g
       // 응답 데이터 매핑
       const orderDetail = mapApiResponseToBrokerOrderDetail(response);
       
+      console.log('orderDetail-1: ', orderDetail);
       set({ orderDetail, isLoading: false });
     } catch (error) {
       console.error('중개 화물 상세 정보 조회 실패:', error);

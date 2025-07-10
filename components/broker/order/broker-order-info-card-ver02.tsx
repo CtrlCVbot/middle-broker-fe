@@ -253,6 +253,8 @@ export function BrokerOrderInfoCard({
     }
   ];
 
+  console.log('status1', status);
+
   return (
     <div className="space-y-4">
 

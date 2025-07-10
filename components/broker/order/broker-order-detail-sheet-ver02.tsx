@@ -70,7 +70,8 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     isLoading,     
     error,    
     fetchOrderDetail,       
-  } = useBrokerOrderDetailStore();    
+  } = useBrokerOrderDetailStore();     
+  console.log('orderDetail', orderDetail);
   
   // 브로커 주문 스토어 추가 - 새로고침을 위한 상태 관리  
   const { setLastRefreshed } = useBrokerOrderStore();    
@@ -140,26 +141,23 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     createSale,
     checkOrderClosed
   } = useBrokerSettlementStore();
-  
-  // 가능한 배차 상태 목록
-  const availableStatuses = [
-    "배차대기", "배차진행중", "배차완료", "상차완료", "하차완료", "운송중", "운송완료"
-  ];
+    
 
   // 주문 데이터 저장
   const orderData = orderDetail;
+  console.log('orderData0', orderData);
   
-    // 선택된 ID가 변경될 때마다 데이터 가져오기  
-    useEffect(() => {    
-      if (selectedOrderId && isSheetOpen) {      
-        fetchOrderDetail(selectedOrderId);            
-        // 운임 정보도 함께 조회      
-        fetchChargesByOrderId(selectedOrderId).catch(err => {        
-          console.error('운임 정보 조회 중 오류 발생:', err);        
-          // 오류가 발생해도 UI 흐름에 영향을 주지 않도록 함      
-        });    
-      }  
-    }, [selectedOrderId, isSheetOpen, fetchOrderDetail, fetchChargesByOrderId]);
+  // 선택된 ID가 변경될 때마다 데이터 가져오기  
+  useEffect(() => {    
+    if (selectedOrderId && isSheetOpen) {      
+      fetchOrderDetail(selectedOrderId);            
+      // 운임 정보도 함께 조회      
+      fetchChargesByOrderId(selectedOrderId).catch(err => {        
+        console.error('운임 정보 조회 중 오류 발생:', err);        
+        // 오류가 발생해도 UI 흐름에 영향을 주지 않도록 함      
+      });    
+    }  
+  }, [selectedOrderId, isSheetOpen, fetchOrderDetail, fetchChargesByOrderId]);
 
   
   // 시트가 닫힐 때 상태 변경 여부에 따라 목록 새로고침
@@ -184,14 +182,16 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
       );            
       setHasDriverInfo(driverExists);      
       console.log("차주 정보 존재 여부:", driverExists, orderData.vehicle?.driver);    
-    }  }, [orderData]);    
-    // 운임 데이터가 변경될 때마다 hasChargeInfo 업데이트  
-    useEffect(() => {    
-      // 운임 데이터가 있는지 확인하여 hasChargeInfo 상태 업데이트    
-      const hasCharge = chargeGroups.length > 0;    
-      setHasChargeInfo(hasCharge);    
-      console.log("운임 정보 존재 여부:", hasCharge, chargeGroups);  
-    }, [chargeGroups]);
+    }  
+  }, [orderData]);    
+
+  // 운임 데이터가 변경될 때마다 hasChargeInfo 업데이트  
+  useEffect(() => {    
+    // 운임 데이터가 있는지 확인하여 hasChargeInfo 상태 업데이트    
+    const hasCharge = chargeGroups.length > 0;    
+    setHasChargeInfo(hasCharge);    
+    console.log("운임 정보 존재 여부:", hasCharge, chargeGroups);  
+  }, [chargeGroups]);
 
 
   // 업체 정보 데이터
@@ -431,6 +431,8 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
       });
     }
   }, [selectedOrderId, isSheetOpen, checkOrderClosed]);
+  
+  console.log('orderData1', orderData);
 
   return (
     <Sheet 
@@ -618,7 +620,12 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                     </div>
 
                     <div className="mb-4 mt-4">
-                      {hasChargeInfo ? (
+                      {isSettlementLoading ? (  
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                          <p className="text-muted-foreground">운임/정산 정보를 불러오는 중...</p>
+                        </div>
+                      ) : hasChargeInfo ? (
                         <>
                           {/* 금융 요약 카드 추가 */}
                           <div className="mb-4 mt-4">

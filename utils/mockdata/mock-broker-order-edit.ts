@@ -27,7 +27,7 @@ export const updateBrokerOrder = (
         }
 
         // 상태에 따라 수정 가능한 필드 제한
-        if (["배차완료", "상차완료", "운송중", "하차완료"].includes(existingOrder.status)) {
+        if (["배차완료","상차대기", "상차완료", "운송중", "하차완료"].includes(existingOrder.status)) {
           // 배차완료 이후 상태에서는 비고만 수정 가능
           existingOrder.cargo.remark = data.remark || existingOrder.cargo.remark;
         } else if (existingOrder.status === "배차대기") {

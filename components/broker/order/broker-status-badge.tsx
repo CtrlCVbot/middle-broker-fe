@@ -13,6 +13,7 @@ export const getBrokerStatusColor = (status: BrokerOrderStatusType): string => {
     case "배차완료":
       return "bg-blue-100 text-blue-800 hover:bg-blue-200";
     case "상차완료":
+    case "상차대기":
       return "bg-indigo-100 text-indigo-800 hover:bg-indigo-200";
     case "운송중":
       return "bg-amber-100 text-amber-800 hover:bg-amber-200";
