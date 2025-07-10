@@ -1,10 +1,15 @@
 "use client";
 
+//react
 import React, { useState, useEffect, useRef } from 'react';
+
+//ui
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2, Pencil, Save, X, GripVertical } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import { Trash2, Pencil, Save, X, GripVertical } from 'lucide-react';
+
+//services
 import {
   fetchWarnings,
   addWarning,
@@ -12,7 +17,11 @@ import {
   deleteWarning,
   updateWarningSort
 } from '@/services/broker-company-warning-service';
+
+//types
 import { ICompanyWarning, ICompanyWarningSortRequest } from '@/types/company-warning';
+
+//dnd-kit
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
