@@ -176,7 +176,7 @@ export function FinanceSummaryCard({
 
       {/* 청구 */}
       <div className="flex justify-between items-center hover:cursor-pointer hover:bg-gray-700 pt-1 pb-1 px-4 rounded-md" 
-          onClick={handleOpenDialog}>
+          onClick={() => handleOpenDialog('charge')}>
         <p className="text-md">청구{income.length-1 > 0 ? "(" + (income.length-1) + ")" : ""}</p>
         <div className="flex items-center">
           <span className="text-xl font-bold mr-1">{new Intl.NumberFormat('ko-KR').format(totalIncome)}원</span>
@@ -186,8 +186,7 @@ export function FinanceSummaryCard({
 
       {/* 청구 추가 항목 상세 - 펼쳐진 상태일 때만 표시 */}
       {isDetailsOpen && (
-        <>
-        
+        <>        
         <div className="ml-8 space-y-1 mb-2 px-6">
           {sortedIncome.map((item, index) => (
             <div key={index} className="flex justify-between items-center">
@@ -201,7 +200,7 @@ export function FinanceSummaryCard({
 
       {/* 배차 */}
       <div className="flex justify-between items-center hover:cursor-pointer hover:bg-gray-700 pt-1 pb-1 px-4 rounded-md" 
-          onClick={handleOpenDialog}>
+          onClick={() => handleOpenDialog('dispatch')}>
         <p className="text-md">배차{expense.length-1 > 0 ? "(" + (expense.length-1) + ")" : ""}</p>
         <div className="flex items-center">
           <span className="text-xl font-bold mr-1">{new Intl.NumberFormat('ko-KR').format(totalExpense)}원</span>

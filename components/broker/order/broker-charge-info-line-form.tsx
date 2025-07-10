@@ -15,23 +15,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { MoreHorizontal } from "lucide-react";
-
 
 //utils
 import { cn } from "@/lib/utils";
 
-
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
+//types
 import type { AmountType } from "@/types/settlement";
 import { AMOUNT_TYPES } from "@/types/settlement";
 
@@ -183,7 +173,7 @@ const BrokerChargeInfoLineForm: React.FC<IBrokerChargeInfoLineFormProps> = ({
                    size="sm"
                    variant="ghost"
                    className={cn(
-                     "whitespace-nowrap px-2",
+                     "whitespace-nowrap px-2 hover:cursor-pointer",
                      newFee.type === type && "bg-black text-white"
                    )}
                    onClick={() => {
@@ -199,7 +189,7 @@ const BrokerChargeInfoLineForm: React.FC<IBrokerChargeInfoLineFormProps> = ({
               {hiddenTypes.length > 0 && (
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" size="icon" className="w-8 h-8 min-w-8">
+                    <Button variant="outline" size="icon" className="w-8 h-8 min-w-8 hover:cursor-pointer">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </PopoverTrigger>
@@ -211,7 +201,7 @@ const BrokerChargeInfoLineForm: React.FC<IBrokerChargeInfoLineFormProps> = ({
                         size="sm"
                         variant="ghost"
                         className={cn(
-                          "whitespace-nowrap px-2",
+                          "whitespace-nowrap px-2 hover:cursor-pointer",
                           newFee.type === type && "bg-black text-white"
                         )}
                         onClick={() => {
@@ -305,6 +295,10 @@ const BrokerChargeInfoLineForm: React.FC<IBrokerChargeInfoLineFormProps> = ({
                   type="button"
                   size="sm"
                   variant={newFee.target.charge ? "default" : "outline"}
+                  className={cn(
+                    "hover:cursor-pointer",
+                    newFee.target.charge ? "bg-blue-500 text-white" : ""
+                  )}
                   onClick={() => handleToggleTarget('charge')}
                   disabled={isCompleted}
                 >
@@ -314,6 +308,10 @@ const BrokerChargeInfoLineForm: React.FC<IBrokerChargeInfoLineFormProps> = ({
                   type="button"
                   size="sm"
                   variant={newFee.target.dispatch ? "default" : "outline"}
+                  className={cn(
+                    "hover:cursor-pointer",
+                    newFee.target.dispatch ? "bg-pink-500 text-white" : ""
+                  )}
                   onClick={() => handleToggleTarget('dispatch')}
                   disabled={isCompleted}
                 >

@@ -219,7 +219,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
   // 견적 정보 입력 버튼 클릭 시 호출되는 함수
   const handleOpenQuoteDialog = () => {
     setBasicFee(); // 기본 운임으로 설정
-    handleOpenDialog();
+    handleOpenDialog('charge');
   };
   
   // 문자 전송 핸들러

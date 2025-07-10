@@ -31,8 +31,16 @@ export function useChargeForm(options: UseChargeFormOptions = {}) {
     target: { charge: true, dispatch: true }
   });
 
-  // 다이얼로그 열기
-  const handleOpenDialog = () => {
+  // 다이얼로그 열기 (청구/배차 구분)
+  const handleOpenDialog = (type: 'charge' | 'dispatch') => {
+    // target을 해당 타입만 true로 초기화
+    setNewFee({
+      ...newFee,
+      target: {
+        charge: type === 'charge',
+        dispatch: type === 'dispatch'
+      }
+    });
     setDialogOpen(true);
   };
 
