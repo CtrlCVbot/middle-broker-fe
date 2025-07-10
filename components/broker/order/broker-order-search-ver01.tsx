@@ -290,7 +290,12 @@ export function BrokerOrderSearch() {
                     </SelectContent>
                   </Select>
                   </div>
-                  {/* <div>
+                  
+                </div>
+              </div>
+
+              {/* 콜센터 필터 */}
+              {/* <div>
                     <Label htmlFor="callCenter" className="mb-2">콜센터</Label>
                     <Select
                       value={tempFilter.callCenter || "all"}
@@ -309,8 +314,6 @@ export function BrokerOrderSearch() {
                       </SelectContent>
                     </Select>
                   </div> */}
-                </div>
-              </div>
               
               {/* 출발지, 도착지 필터 */}
               {/* <div className="space-y-2">
