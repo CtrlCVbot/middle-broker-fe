@@ -40,6 +40,7 @@ interface IFinanceSummaryCardProps {
   balance?: number;
   className?: string;
   onAdditionalFeeAdded?: (fee: IAdditionalFee) => void;
+  isSaleClosed?: boolean; // 추가
 }
 
 export function FinanceSummaryCard({
@@ -57,6 +58,7 @@ export function FinanceSummaryCard({
   balance = 0,
   className,
   onAdditionalFeeAdded,
+  isSaleClosed = false // 기본값 false
 }: IFinanceSummaryCardProps) {
   // 상세 항목 표시 여부 상태
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -151,6 +153,36 @@ export function FinanceSummaryCard({
   const totalExpense = expense?.reduce((sum, item) => sum + item.amount, 0) || 0;
   const totalBalance = totalIncome - totalExpense;
 
+  // 청구 클릭 핸들러
+  const handleChargeClick = () => {
+    if (isSaleClosed) {
+      import("@/components/ui/use-toast").then(({ toast }) => {
+        toast({
+          title: "추가금 입력 불가",
+          description: "운송 마감된 건은 견적/추가금 정보를 수정할 수 없습니다.",
+          variant: "destructive"
+        });
+      });
+      return;
+    }
+    handleOpenDialog('charge');
+  };
+
+  // 배차 클릭 핸들러 (필요시 동일하게 적용)
+  const handleDispatchClick = () => {
+    if (isSaleClosed) {
+      import("@/components/ui/use-toast").then(({ toast }) => {
+        toast({
+          title: "배차 정보 입력 불가",
+          description: "운송 마감된 건은 배차 정보를 수정할 수 없습니다.",
+          variant: "destructive"
+        });
+      });
+      return;
+    }
+    handleOpenDialog('dispatch');
+  };
+
   return (
     <div className={cn("flex flex-col gap-1 bg-gray-800 text-white p-2 rounded-lg", className)}>
       {/* 카드 헤더 */}
@@ -176,7 +208,7 @@ export function FinanceSummaryCard({
 
       {/* 청구 */}
       <div className="flex justify-between items-center hover:cursor-pointer hover:bg-gray-700 pt-1 pb-1 px-4 rounded-md" 
-          onClick={() => handleOpenDialog('charge')}>
+          onClick={handleChargeClick}>
         <p className="text-md">청구{income.length-1 > 0 ? "(" + (income.length-1) + ")" : ""}</p>
         <div className="flex items-center">
           <span className="text-xl font-bold mr-1">{new Intl.NumberFormat('ko-KR').format(totalIncome)}원</span>
@@ -200,7 +232,7 @@ export function FinanceSummaryCard({
 
       {/* 배차 */}
       <div className="flex justify-between items-center hover:cursor-pointer hover:bg-gray-700 pt-1 pb-1 px-4 rounded-md" 
-          onClick={() => handleOpenDialog('dispatch')}>
+          onClick={handleDispatchClick}>
         <p className="text-md">배차{expense.length-1 > 0 ? "(" + (expense.length-1) + ")" : ""}</p>
         <div className="flex items-center">
           <span className="text-xl font-bold mr-1">{new Intl.NumberFormat('ko-KR').format(totalExpense)}원</span>

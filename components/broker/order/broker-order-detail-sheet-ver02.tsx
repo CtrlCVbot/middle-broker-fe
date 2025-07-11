@@ -719,6 +719,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                               income={financeSummary?.income}
                               expense={financeSummary?.expense}
                               balance={financeSummary?.balance}
+                              isSaleClosed={isSaleClosed}
                             />
                           </div>
                         </>

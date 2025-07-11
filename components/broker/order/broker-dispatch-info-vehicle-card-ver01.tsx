@@ -67,11 +67,11 @@ export function VehicleCard({
 
   const toggleEditMode = () => {
     if (isSaleClosed) {
-      // 매출 정산 마감 시 다이얼로그 열지 않고 토스트 메시지
+      // 운송 마감 시 다이얼로그 열지 않고 토스트 메시지
       import("@/components/ui/use-toast").then(({ toast }) => {
         toast({
-          title: "수정 불가",
-          description: "매출 정산이 마감된 건은 배차 정보를 수정할 수 없습니다.",
+          title: "배차 정보 수정 불가",
+          description: "운송 마감된 건은 배차 정보를 수정할 수 없습니다.",
           variant: "destructive"
         });
       });
