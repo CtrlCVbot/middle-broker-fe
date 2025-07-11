@@ -218,12 +218,10 @@ export async function GET(request: NextRequest) {
 
     //console.log("result-->", result);
 
-    /*
-    청구, 배차금 조회 쿼리 추가
-    */
-    // 1. orderIds만 추출
+    // 1. 주문별 orderId 추출
     const orderIds = result.map(o => o.orderId);
 
+    // 2. 운임 요약 SQL 생성 함수
     const buildChargeSummarySQL = () => sql<string>`COALESCE(
       json_agg(
         DISTINCT jsonb_build_object(
@@ -236,31 +234,48 @@ export async function GET(request: NextRequest) {
           'salesAmount', (SELECT COALESCE(SUM(cl.amount), 0) FROM charge_lines cl WHERE cl.group_id = ${chargeGroups.id} AND cl.side = 'sales'),
           'purchaseAmount', (SELECT COALESCE(SUM(cl.amount), 0) FROM charge_lines cl WHERE cl.group_id = ${chargeGroups.id} AND cl.side = 'purchase'),
           'lines', (
-            SELECT json_agg(
-              jsonb_build_object(
-                'id', cl.id,
-                'side', cl.side,
-                'amount', cl.amount,
-                'memo', cl.memo,
-                'taxRate', cl.tax_rate,
-                'taxAmount', cl.tax_amount
-              )
+            SELECT COALESCE(
+              json_agg(
+                jsonb_build_object(
+                  'id', cl.id,
+                  'side', cl.side,
+                  'amount', cl.amount,
+                  'memo', cl.memo,
+                  'taxRate', cl.tax_rate,
+                  'taxAmount', cl.tax_amount
+                )
+              ), '[]'::json
             )
             FROM charge_lines cl
-            WHERE cl.group_id = ${chargeGroups.id}
+            WHERE cl.group_id::text = ${chargeGroups.id}::text
           )
         )
       ) FILTER (WHERE ${chargeGroups.id} IS NOT NULL),
       '[]'::json
     )`;
 
-    const parseChargeSummary = (raw: any) => {
-      // raw가 이미 객체이므로 JSON.parse 불필요
+    // 3. 운임 요약 파싱 함수
+    function parseChargeSummary(raw: any) {
       const chargeGroups = Array.isArray(raw) ? raw : [];
-      const totalAmount = chargeGroups.reduce((sum: number, g: any) => sum + (g.totalAmount || 0), 0);
-      const salesAmount = chargeGroups.reduce((sum: number, g: any) => sum + (g.salesAmount || 0), 0);
-      const purchaseAmount = chargeGroups.reduce((sum: number, g: any) => sum + (g.purchaseAmount || 0), 0);
-    
+      let totalAmount = 0;
+      let salesAmount = 0;
+      let purchaseAmount = 0;
+
+      chargeGroups.forEach((g: any) => {
+        if (Array.isArray(g.lines)) {
+          g.totalAmount = g.lines.reduce((sum: number, l: any) => sum + (Number(l.amount) || 0), 0);
+          g.salesAmount = g.lines.filter((l: any) => l.side === 'sales').reduce((sum: number, l: any) => sum + (Number(l.amount) || 0), 0);
+          g.purchaseAmount = g.lines.filter((l: any) => l.side === 'purchase').reduce((sum: number, l: any) => sum + (Number(l.amount) || 0), 0);
+          totalAmount += g.totalAmount;
+          salesAmount += g.salesAmount;
+          purchaseAmount += g.purchaseAmount;
+        } else {
+          g.totalAmount = 0;
+          g.salesAmount = 0;
+          g.purchaseAmount = 0;
+        }
+      });
+
       return {
         groups: chargeGroups,
         summary: {
@@ -270,9 +285,9 @@ export async function GET(request: NextRequest) {
           profit: salesAmount - purchaseAmount
         }
       };
-    };
+    }
 
-    // 2. charge summary 조회
+    // 4. 운임 요약 데이터 DB 조회
     const chargeGroupsResult = await db
       .select({
         orderId: chargeGroups.orderId,
@@ -282,15 +297,33 @@ export async function GET(request: NextRequest) {
       .where(inArray(chargeGroups.orderId, orderIds))
       .groupBy(chargeGroups.orderId);
 
-    console.log("chargeGroupsResult-->", chargeGroupsResult);
-    console.log("chargeGroupsResult-->", chargeGroupsResult[0]?.summary);
-    console.log("chargeGroupsResult-->", chargeGroupsResult[1]);
-    // 4. orders + chargeGroups 매핑
-    const chargeMap = new Map(chargeGroupsResult.map(cg => [cg.orderId, parseChargeSummary(cg.summary)]));
+      
+
+    // 5. orderId별로 운임 요약 매핑 (lines를 직접 DB에서 조회하여 삽입)
+    for (const cg of chargeGroupsResult) {
+      if (Array.isArray(cg.summary)) {
+        for (const group of cg.summary) {
+          const groupId = group.groupId;
+          // charge_lines에서 해당 groupId로 직접 조회
+          const lines = await db.select().from(chargeLines).where(eq(chargeLines.groupId, groupId));
+          group.lines = lines;
+        }
+      }
+    }
+    
+    const chargeMap = new Map(
+      chargeGroupsResult.map(cg => [cg.orderId, parseChargeSummary(cg.summary)])
+    );
+
+   
+    // 6. 주문+배차+운임 데이터 병합
     const final = result.map(o => ({
       ...o,
       charge: chargeMap.get(o.orderId) ?? { groups: [], summary: { totalAmount: 0, salesAmount: 0, purchaseAmount: 0, profit: 0 } }
     }));
+
+    // (디버깅용 로그)
+    
 
     // IOrderWithDispatchItem 타입에 맞게 order, dispatch, charge를 포함하는 객체로 변환
     const formattedResult: IOrderWithDispatchItem[] = final.map(item => {
