@@ -680,6 +680,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                             amount={orderData?.amount || "0"}
                             onSendMessage={() => handleSendMessage("기사님")}
                             onSaveDriverInfo={handleSaveDriverInfo}
+                            isSaleClosed={isSaleClosed}
                           />                      
                         </>
                       ) : (

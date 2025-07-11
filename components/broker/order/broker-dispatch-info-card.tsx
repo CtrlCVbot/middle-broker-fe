@@ -51,6 +51,7 @@ interface BrokerOrderDriverInfoCardProps {
   driver: DriverInfo;
   onSendMessage: () => void;
   onSaveDriverInfo?: (data: any) => void;
+  isSaleClosed?: boolean; // 추가
 }
 
 // 목업 데이터 - 위치 정보
@@ -67,7 +68,8 @@ export function BrokerOrderDriverInfoCard({
   amount, 
   driver, 
   onSendMessage,
-  onSaveDriverInfo 
+  onSaveDriverInfo,
+  isSaleClosed = false // 기본값 false
 }: BrokerOrderDriverInfoCardProps) {
   const [isMapVisible, setIsMapVisible] = useState(false);
 
@@ -177,6 +179,7 @@ export function BrokerOrderDriverInfoCard({
               driverInfo={dispatchVehicleInfo.driverInfo}
               onMessage={onSendMessage}
               onSaveDriverInfo={handleSaveDriverInfo}
+              isSaleClosed={isSaleClosed} // 전달
             />
           </div>
     </div>
