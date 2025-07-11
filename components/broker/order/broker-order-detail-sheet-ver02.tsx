@@ -29,6 +29,16 @@ import {
   AlertCircle,
   Copy
 } from "lucide-react";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 //store
 import { useBrokerOrderDetailStore } from "@/store/broker-order-detail-store";
@@ -142,6 +152,8 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     checkOrderClosed
   } = useBrokerSettlementStore();
     
+  // AlertDialog 상태 추가
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
   // 주문 데이터 저장
   const orderData = orderDetail;
@@ -192,6 +204,8 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     setHasChargeInfo(hasCharge);    
     console.log("운임 정보 존재 여부:", hasCharge, chargeGroups);  
   }, [chargeGroups]);
+
+  
 
 
   // 업체 정보 데이터
@@ -359,6 +373,11 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     console.log(`상태 업데이트: ${newStatus}`);
     // 상태 변경 플래그 설정
     setHasStatusChanged(true);
+
+    // 상태 변경 후 상세 정보 즉시 갱신 (실시간 반영)
+    if (selectedOrderId) {
+      fetchOrderDetail(selectedOrderId);
+    }
   };
   
   // 배차 상태 변경 시작
@@ -380,7 +399,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     setEditMode(null);
   };
 
-  // 운송 마감하기 버튼 핸들러 추가
+  // 운송 마감하기 버튼 핸들러 추가(기존 handleConfirmCreateSales로 변경됨)
   const handleCreateSales = async () => {
     if (!orderData || !selectedOrderId || !orderData.dispatchId) {
       toast({
@@ -434,6 +453,52 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
   
   console.log('orderData1', orderData);
 
+  // 매출 정산 생성 확인 다이얼로그 열기
+  const handleOpenConfirmDialog = () => {
+    setIsConfirmDialogOpen(true);
+  };
+  
+  // 매출 정산 생성 실행
+  const handleConfirmCreateSales = async () => {
+    if (!orderData || !selectedOrderId || !orderData.dispatchId) {
+      toast({
+        title: "오류",
+        description: "주문 정보가 없습니다.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      const result = await createSale(selectedOrderId, orderData.dispatchId);
+      
+      if (result) {
+        toast({
+          title: "매출 정산 생성 완료",
+          description: "매출 정산이 성공적으로 생성되었습니다.",
+          variant: "default"
+        });
+        
+        // 상태 변경 플래그 설정 (목록 새로고침을 위해)
+        setHasStatusChanged(true);
+        
+        // 주문 정보 다시 조회
+        fetchOrderDetail(selectedOrderId);
+      }
+    } catch (error) {
+      console.error("매출 정산 생성 오류:", error);
+      
+      toast({
+        title: "매출 정산 생성 실패",
+        description: error instanceof Error ? error.message : "매출 정산 생성 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    } finally {
+      // 다이얼로그 닫기
+      setIsConfirmDialogOpen(false);
+    }
+  };
+
   return (
     <Sheet 
       open={isSheetOpen} 
@@ -476,6 +541,23 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                   </Button> </p>    
                                       
                 </div>
+
+                {selectedStatus === "운송완료" && !isSaleClosed && (
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    className={cn("bg-purple-700 hover:bg-purple-500", "cursor-pointer")}
+                    onClick={handleOpenConfirmDialog}
+                    disabled={isSettlementLoading}
+                  >
+                    {isSettlementLoading ? "처리 중..." : "운송 마감하기"}
+                  </Button>
+                )}
+                {isSaleClosed && (
+                  <Badge variant="outline" className="bg-gray-200 font-bold text-lg">
+                    운송 마감됨
+                  </Badge>
+                )}
               </div>              
               
             </SheetHeader>
@@ -660,9 +742,9 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
 
                     
 
-                    <div className="flex justify-between items-center pb-2 px-4">
-                      <p className="text-xl"></p>
-                      {orderData?.status === "운송완료" && !isSaleClosed && (
+                    {/* <div className="flex justify-between items-center pb-2 px-4">
+                      
+                      {selectedStatus === "운송완료" && !isSaleClosed && (
                         <Button 
                           variant="default" 
                           size="sm" 
@@ -678,7 +760,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                           매출 정산 마감됨
                         </Badge>
                       )}
-                    </div>
+                    </div> */}
                   </CardContent>
                 </div>
                 
@@ -751,6 +833,27 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
         handleUpdateFee={handleUpdateFee}
         handleCancelEdit={handleCancelEdit}
       />
+
+      {/* AlertDialog 추가 */}
+      <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>매출 정산 생성 확인</AlertDialogTitle>
+            <AlertDialogDescription>
+              매출 정산을 생성하시겠습니까? 이 작업은 되돌릴 수 없으며, 이후 주문 정보와 운임 정보를 수정할 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmCreateSales}
+              className="bg-purple-700 hover:bg-purple-600"
+            >
+              매출 정산 생성
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sheet>
   );
 } 

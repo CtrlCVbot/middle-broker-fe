@@ -72,7 +72,7 @@ export function BrokerStatusDropdown({
 }: BrokerStatusDropdownProps) {
   const { toast } = useToast();
 
-  console.log("StatusDropdown dispatchId : ", dispatchId);
+  //console.log("StatusDropdown dispatchId : ", dispatchId);
   
   const getStatusText = (status: string) => {
     return status;
