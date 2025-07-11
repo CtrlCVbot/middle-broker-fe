@@ -291,11 +291,8 @@ export async function GET(request: NextRequest) {
       charge: chargeMap.get(o.orderId) ?? { groups: [], summary: { totalAmount: 0, salesAmount: 0, purchaseAmount: 0, profit: 0 } }
     }));
 
-    //console.log("final-->", final);
-
-
-    // 응답 데이터 가공
-    const formattedResult: IOrderWithDispatchItem[] = result.map(item => {
+    // IOrderWithDispatchItem 타입에 맞게 order, dispatch, charge를 포함하는 객체로 변환
+    const formattedResult: IOrderWithDispatchItem[] = final.map(item => {
       // 주문 정보
       const orderInfo = {
         id: item.orderId,
@@ -330,7 +327,6 @@ export async function GET(request: NextRequest) {
         createdAt: item.createdAt?.toISOString() || '',
         updatedAt: item.updatedAt?.toISOString() || '',
       } as any;
-      
       // 배차 정보 (없을 수도 있음)
       const dispatchInfo = item.dispatchId ? {
         id: item.dispatchId,
@@ -377,12 +373,15 @@ export async function GET(request: NextRequest) {
         updatedAt: '',
         isClosed: false,
       };
-      
+      // charge 필드 추가
       return {
         order: orderInfo,
         dispatch: dispatchInfo,
+        charge: item.charge
       };
     });
+
+    //console.log("formattedResult-->", formattedResult);
     
     // 응답 반환
     const response: IOrderWithDispatchListResponse = {

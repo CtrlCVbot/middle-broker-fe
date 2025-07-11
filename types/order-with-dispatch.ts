@@ -73,6 +73,7 @@ export interface IOrderWithDispatchDispatchDetail {
 export interface IOrderWithDispatchItem {
   order: IOrderWithDispatchOrderDetail;
   dispatch: IOrderWithDispatchDispatchDetail | null;
+  charge: any;
 }
 
 // 주문+배차 목록 응답 인터페이스

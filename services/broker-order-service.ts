@@ -356,9 +356,9 @@ export async function getBrokerDispatchList(
     // API 호출
     const response = await fetch(apiUrl);
     
+    console.log("response-->", response);
     console.log('API 응답 상태:', response.status, response.statusText);
-    console.log('!!!API 응답 데이터:', response);
-    console.log('!!!API 응답 데이터:', response);
+       
 
     if (!response.ok) {
       const errorText = await response.text();
