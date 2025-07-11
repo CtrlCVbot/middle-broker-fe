@@ -208,7 +208,7 @@ export function BrokerOrderTable({
               {activeTab != 'waiting' && (
                 <>
                   <TableHead>기사</TableHead>
-                  <TableHead className="text-right">운송비</TableHead>
+                  <TableHead className="text-center">운송비</TableHead>
                 </>
               )}
             </TableRow>
@@ -345,13 +345,21 @@ export function BrokerOrderTable({
                       <TableCell className="text-right font-medium">
                         {order.charge?.summary?.salesAmount ? (
                           <div className="flex flex-col">
-                            <span>청구: {formatCurrency(order.charge?.summary?.salesAmount)}원</span>
-                            {order.charge?.summary?.purchaseAmount && (
-                              <span className="text-xs text-muted-foreground ">
-                                배차: {formatCurrency(order.charge?.summary?.purchaseAmount)}원
+                            <div className="flex flex-row items-baseline gap-x-1">
+                              <span className="text-muted-foreground text-xs">청구:</span>
+                              <span className="text-blue-500 text-base">
+                                {formatCurrency(order.charge?.summary?.salesAmount)}원
                               </span>
-                            )}                          
-                          </div>
+                            </div>
+                            {order.charge?.summary?.purchaseAmount && (
+                              <div className="flex flex-row items-baseline gap-x-1">
+                                <span className="text-muted-foreground text-xs">배차:</span>
+                                <span className="text-pink-500 text-md">
+                                  {formatCurrency(order.charge?.summary?.purchaseAmount)}원
+                                </span>
+                              </div>
+                            )}                                                      
+                          </div>                          
                         ) : (
                           <span className="text-muted-foreground">협의중...</span>
                         )}
