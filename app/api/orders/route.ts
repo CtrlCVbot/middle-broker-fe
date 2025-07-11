@@ -91,7 +91,8 @@ export async function GET(request: NextRequest) {
           assignedDriverSnapshot: orderDispatches.assignedDriverSnapshot,
           assignedDriverPhone: orderDispatches.assignedDriverPhone,
           assignedVehicleNumber: orderDispatches.assignedVehicleNumber,
-          assignedVehicleConnection: orderDispatches.assignedVehicleConnection         
+          assignedVehicleConnection: orderDispatches.assignedVehicleConnection,
+          
         
         })
         .from(orders)

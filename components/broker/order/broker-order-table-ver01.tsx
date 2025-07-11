@@ -22,6 +22,7 @@ import {
   ChevronsRight as ArrowRight,
   Link2Off,
   Truck,
+  PackageCheck,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -171,7 +172,7 @@ export function BrokerOrderTable({
   const handleLastPage = () => {
     onPageChange(totalPages);
   };
-
+  
   return (
     <div className="space-y-4">
       <div className="rounded-md border overflow-x-auto">
@@ -269,8 +270,8 @@ export function BrokerOrderTable({
                     </TableCell> */}
                     <TableCell className="text-center">
                       {order.isClosed ? (
-                        <Badge variant="default" className="text-xs px-3 py-1 border-dashed text-muted-foreground">
-                          <Link2Off className="h-4 w-4 mr-1" />
+                        <Badge variant="default" className="text-xs px-3 py-1 border-dashed text-muted-foreground bg-gray-200">
+                          <PackageCheck className="h-4 w-4 mr-1" />
                           마감
                         </Badge>
                       ) : (

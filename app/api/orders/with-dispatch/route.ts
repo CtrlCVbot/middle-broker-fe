@@ -199,6 +199,7 @@ export async function GET(request: NextRequest) {
         dispatchUpdatedBySnapshot: orderDispatches.updatedBySnapshot || undefined,
         dispatchCreatedAt: orderDispatches.createdAt,
         dispatchUpdatedAt: orderDispatches.updatedAt,
+        isClosed: orderDispatches.isClosed,
       })
       .from(orders)
       .leftJoin(orderDispatches, eq(orders.id, orderDispatches.orderId))
@@ -266,6 +267,7 @@ export async function GET(request: NextRequest) {
         updatedBySnapshot: item.dispatchUpdatedBySnapshot || undefined,
         createdAt: item.dispatchCreatedAt?.toISOString() || '',
         updatedAt: item.dispatchUpdatedAt?.toISOString() || '',
+        isClosed: item.isClosed || false,
       } : {
         id: '',
         brokerCompanyId: '',
@@ -287,6 +289,7 @@ export async function GET(request: NextRequest) {
         updatedBySnapshot: undefined,
         createdAt: '',
         updatedAt: '',
+        isClosed: false,
       };
       
       return {
