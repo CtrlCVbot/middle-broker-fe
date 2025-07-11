@@ -255,7 +255,7 @@ export function mapApiResponseToBrokerDispatchList(
 
   // 주선사 배차 관리용 데이터 구조로 변환
   const data = dispatchItems.map(item => {
-    const { order, dispatch } = item;
+    const { order, dispatch, charge } = item;
     
     if (!order) {
       console.error('주문 정보가 없는 아이템:', item);
@@ -266,7 +266,7 @@ export function mapApiResponseToBrokerDispatchList(
       console.error('배차 정보가 없는 아이템:', item);
       return null;
     }
-    
+
     try {
       // 데이터 매핑
       const mappedItem = {
@@ -301,6 +301,8 @@ export function mapApiResponseToBrokerDispatchList(
         brokerMemo: dispatch?.brokerMemo,
 
         isClosed: dispatch?.isClosed || false,
+
+        charge: charge || {},
       };
       
       // 반환 전 매핑된 데이터 필드 검증

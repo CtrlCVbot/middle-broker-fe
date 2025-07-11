@@ -73,7 +73,7 @@ export interface IOrderWithDispatchDispatchDetail {
 export interface IOrderWithDispatchItem {
   order: IOrderWithDispatchOrderDetail;
   dispatch: IOrderWithDispatchDispatchDetail | null;
-  charge: any;
+  charge: IOrderCharge;
 }
 
 // 주문+배차 목록 응답 인터페이스
@@ -111,3 +111,40 @@ export const orderWithDispatchQuerySchema = z.object({
 });
 
 export type IOrderWithDispatchQuery = z.infer<typeof orderWithDispatchQuerySchema>; 
+
+// 운임 라인 타입
+export interface IOrderChargeLine {
+  id: string;
+  side: 'sales' | 'purchase';
+  amount: number;
+  memo?: string;
+  taxRate?: number;
+  taxAmount?: number;
+}
+
+// 운임 그룹 타입
+export interface IOrderChargeGroup {
+  groupId: string;
+  stage: string;
+  reason: string;
+  description?: string;
+  isLocked: boolean;
+  totalAmount: number;
+  salesAmount: number;
+  purchaseAmount: number;
+  lines: IOrderChargeLine[];
+}
+
+// 운임 요약 타입
+export interface IOrderChargeSummary {
+  totalAmount: number;
+  salesAmount: number;
+  purchaseAmount: number;
+  profit: number;
+}
+
+// 주문별 운임 정보 타입
+export interface IOrderCharge {
+  groups: IOrderChargeGroup[];
+  summary: IOrderChargeSummary;
+} 

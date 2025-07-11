@@ -284,6 +284,7 @@ export async function GET(request: NextRequest) {
 
     console.log("chargeGroupsResult-->", chargeGroupsResult);
     console.log("chargeGroupsResult-->", chargeGroupsResult[0]?.summary);
+    console.log("chargeGroupsResult-->", chargeGroupsResult[1]);
     // 4. orders + chargeGroups 매핑
     const chargeMap = new Map(chargeGroupsResult.map(cg => [cg.orderId, parseChargeSummary(cg.summary)]));
     const final = result.map(o => ({
@@ -373,11 +374,16 @@ export async function GET(request: NextRequest) {
         updatedAt: '',
         isClosed: false,
       };
+
+      const chargeInfo = item.charge || {};
+      
+
+
       // charge 필드 추가
       return {
         order: orderInfo,
         dispatch: dispatchInfo,
-        charge: item.charge
+        charge: chargeInfo,
       };
     });
 

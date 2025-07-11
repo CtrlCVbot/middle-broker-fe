@@ -270,8 +270,11 @@ export default function BrokerOrderListPage() {
  
   
   // 데이터 가져오기
+  
   const orders = data?.data || [];
   const totalPages = data?.pagination?.totalPages || 1;
+
+  console.log('orders!!!-->', orders);
   
   // 탭에 따른 메시지 정의
   const getTabMessage = () => {
