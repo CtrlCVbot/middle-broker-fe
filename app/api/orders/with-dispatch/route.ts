@@ -3,10 +3,13 @@ import { db } from '@/db';
 import { orderFlowStatusEnum, orders, vehicleTypeEnum, vehicleWeightEnum } from '@/db/schema/orders';
 import { orderDispatches } from '@/db/schema/orderDispatches';
 import { users } from '@/db/schema/users';
-import { eq, and, ilike, or, sql, desc, asc, gte, lte } from 'drizzle-orm';
+import { eq, and, ilike, or, sql, desc, asc, gte, lte, inArray } from 'drizzle-orm';
 import { orderWithDispatchQuerySchema, IOrderWithDispatchListResponse, IOrderWithDispatchItem } from '@/types/order-with-dispatch';
 import { z } from 'zod';
 import { generateMockDispatchData } from './mock';
+
+import { chargeGroups } from '@/db/schema/chargeGroups';
+import { chargeLines } from '@/db/schema/chargeLines';
 
 /**
  * 주문 목록을 배차 정보와 함께 조회합니다.
@@ -114,8 +117,10 @@ export async function GET(request: NextRequest) {
     // 배차 여부로 필터링
     if (hasDispatch === 'true') {
       conditions.push(sql`${orderDispatches.id} IS NOT NULL`);
+      //250711 운송 마감된 화물 진행중 탭에서 안보이게 하기 위해서.
+      conditions.push(eq(orderDispatches.isClosed, false));
     } else if (hasDispatch === 'false') {
-      conditions.push(sql`${orderDispatches.id} IS NULL`);
+      conditions.push(sql`${orderDispatches.id} IS NULL`);      
     }
     
     // 최종 WHERE 조건 구성
@@ -129,7 +134,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 정렬 조건 설정
-    const orderByClause = sortOrder === 'asc'
+    const orderByClause = sortOrder === 'desc'
       ? (sortBy.startsWith('dispatch.') 
           ? asc(getSafeOrderColumn(orderDispatches, sortBy.replace('dispatch.', '')))
           : asc(getSafeOrderColumn(orders, sortBy)))
@@ -200,6 +205,8 @@ export async function GET(request: NextRequest) {
         dispatchCreatedAt: orderDispatches.createdAt,
         dispatchUpdatedAt: orderDispatches.updatedAt,
         isClosed: orderDispatches.isClosed,
+
+       
       })
       .from(orders)
       .leftJoin(orderDispatches, eq(orders.id, orderDispatches.orderId))
@@ -208,6 +215,85 @@ export async function GET(request: NextRequest) {
       .limit(pageSize)
       .offset(offset);
     
+
+    //console.log("result-->", result);
+
+    /*
+    청구, 배차금 조회 쿼리 추가
+    */
+    // 1. orderIds만 추출
+    const orderIds = result.map(o => o.orderId);
+
+    const buildChargeSummarySQL = () => sql<string>`COALESCE(
+      json_agg(
+        DISTINCT jsonb_build_object(
+          'groupId', ${chargeGroups.id},
+          'stage', ${chargeGroups.stage},
+          'reason', ${chargeGroups.reason},
+          'description', ${chargeGroups.description},
+          'isLocked', ${chargeGroups.isLocked},
+          'totalAmount', (SELECT COALESCE(SUM(cl.amount), 0) FROM charge_lines cl WHERE cl.group_id = ${chargeGroups.id}),
+          'salesAmount', (SELECT COALESCE(SUM(cl.amount), 0) FROM charge_lines cl WHERE cl.group_id = ${chargeGroups.id} AND cl.side = 'sales'),
+          'purchaseAmount', (SELECT COALESCE(SUM(cl.amount), 0) FROM charge_lines cl WHERE cl.group_id = ${chargeGroups.id} AND cl.side = 'purchase'),
+          'lines', (
+            SELECT json_agg(
+              jsonb_build_object(
+                'id', cl.id,
+                'side', cl.side,
+                'amount', cl.amount,
+                'memo', cl.memo,
+                'taxRate', cl.tax_rate,
+                'taxAmount', cl.tax_amount
+              )
+            )
+            FROM charge_lines cl
+            WHERE cl.group_id = ${chargeGroups.id}
+          )
+        )
+      ) FILTER (WHERE ${chargeGroups.id} IS NOT NULL),
+      '[]'::json
+    )`;
+
+    const parseChargeSummary = (raw: any) => {
+      // raw가 이미 객체이므로 JSON.parse 불필요
+      const chargeGroups = Array.isArray(raw) ? raw : [];
+      const totalAmount = chargeGroups.reduce((sum: number, g: any) => sum + (g.totalAmount || 0), 0);
+      const salesAmount = chargeGroups.reduce((sum: number, g: any) => sum + (g.salesAmount || 0), 0);
+      const purchaseAmount = chargeGroups.reduce((sum: number, g: any) => sum + (g.purchaseAmount || 0), 0);
+    
+      return {
+        groups: chargeGroups,
+        summary: {
+          totalAmount,
+          salesAmount,
+          purchaseAmount,
+          profit: salesAmount - purchaseAmount
+        }
+      };
+    };
+
+    // 2. charge summary 조회
+    const chargeGroupsResult = await db
+      .select({
+        orderId: chargeGroups.orderId,
+        summary: buildChargeSummarySQL()
+      })
+      .from(chargeGroups)
+      .where(inArray(chargeGroups.orderId, orderIds))
+      .groupBy(chargeGroups.orderId);
+
+    console.log("chargeGroupsResult-->", chargeGroupsResult);
+    console.log("chargeGroupsResult-->", chargeGroupsResult[0]?.summary);
+    // 4. orders + chargeGroups 매핑
+    const chargeMap = new Map(chargeGroupsResult.map(cg => [cg.orderId, parseChargeSummary(cg.summary)]));
+    const final = result.map(o => ({
+      ...o,
+      charge: chargeMap.get(o.orderId) ?? { groups: [], summary: { totalAmount: 0, salesAmount: 0, purchaseAmount: 0, profit: 0 } }
+    }));
+
+    //console.log("final-->", final);
+
+
     // 응답 데이터 가공
     const formattedResult: IOrderWithDispatchItem[] = result.map(item => {
       // 주문 정보

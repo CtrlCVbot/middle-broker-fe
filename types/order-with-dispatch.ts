@@ -82,7 +82,7 @@ export interface IOrderWithDispatchListResponse {
   total: number;
   page: number;
   pageSize: number;
-  totalPages: number;
+  totalPages: number;  
 }
 
 // 주문+배차 상세 응답 인터페이스
