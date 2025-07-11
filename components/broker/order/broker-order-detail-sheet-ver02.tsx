@@ -656,6 +656,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                         email: orderData.shipper.manager.email
                       }}
                       onStatusChange={handleStatusUpdate}
+                      isSaleClosed={isSaleClosed}
                     />
                   )}
                 </div>

@@ -94,6 +94,7 @@ interface BrokerOrderInfoCardProps {
   orderId: string;
   dispatchId?: string;
   onStatusChange?: (newStatus: string) => void;
+  isSaleClosed?: boolean; // 매출 정산 마감 여부 추가
 }
 
 export function BrokerOrderInfoCard({ 
@@ -104,7 +105,8 @@ export function BrokerOrderInfoCard({
   status, 
   orderId, 
   dispatchId,
-  onStatusChange 
+  onStatusChange,
+  isSaleClosed = false // 기본값 false
 }: BrokerOrderInfoCardProps) {
   const [isShipperInfoOpen, setIsShipperInfoOpen] = useState(true);
   const [isWarningsVisible, setIsWarningsVisible] = useState(false);
@@ -288,6 +290,7 @@ export function BrokerOrderInfoCard({
             from={fromAddressData}
             to={toAddressData}
             onStatusChange={handleStatusChange}
+            isSaleClosed={isSaleClosed} // 전달
           />
         </div>
 

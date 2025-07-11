@@ -35,6 +35,7 @@ interface IBrokerOrderStatusCardProps {
     contactPhone: string;
   };
   onStatusChange?: (newStatus: string) => void;
+  isSaleClosed?: boolean; // 매출 정산 마감 여부 추가
 }
 
 // UUID 검증을 위한 유틸리티 함수
@@ -49,7 +50,8 @@ export function BrokerOrderStatusCard({
   dispatchId, 
   from, 
   to,
-  onStatusChange 
+  onStatusChange,
+  isSaleClosed = false // 기본값 false
 }: IBrokerOrderStatusCardProps) {
   const [currentStatus, setCurrentStatus] = useState(status);  
   const [isDispatchIdValid, setIsDispatchIdValid] = useState(false);
@@ -80,7 +82,7 @@ export function BrokerOrderStatusCard({
     <div className="bg-white px-4 py-4 rounded-t-lg ">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-base font-medium text-gray-700">배송 상태</h3>
-        {isDispatchIdValid ? (
+        {isDispatchIdValid && !isSaleClosed ? (
           <BrokerStatusDropdown 
             currentStatus={currentStatus}
             dispatchId={dispatchId as string}
