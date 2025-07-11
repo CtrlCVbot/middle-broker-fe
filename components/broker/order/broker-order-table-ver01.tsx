@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 
 //types
 import { IBrokerOrder, BrokerOrderStatusType } from "@/types/broker-order";
+import { IOrderCharge } from "@/types/order-with-dispatch";
 
 //store
 import { useBrokerOrderDetailStore } from "@/store/broker-order-detail-store";
@@ -107,6 +108,7 @@ interface IDispatchItem {
   brokerMemo?: string;
   isClosed?: boolean;
   // 추가 필드가 있을 수 있음
+  charge?: IOrderCharge;
 }
 
 interface BrokerOrderTableProps {
@@ -173,6 +175,7 @@ export function BrokerOrderTable({
     onPageChange(totalPages);
   };
   
+  console.log("orders 최종-->", orders);
   return (
     <div className="space-y-4">
       <div className="rounded-md border overflow-x-auto">
@@ -340,17 +343,17 @@ export function BrokerOrderTable({
                         )}
                       </TableCell>
                       <TableCell className="text-right font-medium">
-                        {order.freightCost ? (
+                        {order.charge?.summary?.salesAmount ? (
                           <div className="flex flex-col">
-                            <span>{formatCurrency(order.freightCost)}원</span>
-                            {order.estimatedAmount && order.freightCost !== order.estimatedAmount && (
-                              <span className="text-xs text-muted-foreground line-through">
-                                {formatCurrency(order.estimatedAmount)}원
+                            <span>청구: {formatCurrency(order.charge?.summary?.salesAmount)}원</span>
+                            {order.charge?.summary?.purchaseAmount && (
+                              <span className="text-xs text-muted-foreground ">
+                                배차: {formatCurrency(order.charge?.summary?.purchaseAmount)}원
                               </span>
                             )}                          
                           </div>
                         ) : (
-                          <span className="text-muted-foreground">정보 없음</span>
+                          <span className="text-muted-foreground">협의중...</span>
                         )}
                       </TableCell>
                       </>
