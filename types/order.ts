@@ -2,6 +2,7 @@
 import { IAddress } from './address';
 // Settlement 관련 타입 임포트
 import { SettlementStatus } from "./settlement";
+import { IOrderCharge } from './order-with-dispatch';
 
 // 화물 상태 타입 정의
 export const ORDER_FLOW_STATUSES = [
@@ -220,6 +221,7 @@ export interface IOrder {
   requestedVehicleType: string;
   requestedVehicleWeight: string;
   memo: string;
+  charge?: IOrderCharge;
 
   // 주소 정보
   pickupAddressId: string;

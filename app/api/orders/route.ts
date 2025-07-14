@@ -10,6 +10,11 @@ import { logOrderChange } from '@/utils/order-change-logger';
 import { orderFlowStatusEnum, vehicleTypeEnum, vehicleWeightEnum } from '@/db/schema/orders';
 import { format } from 'date-fns';
 import { companies } from '@/db/schema/companies';
+import { chargeGroups } from '@/db/schema/chargeGroups';
+import { chargeLines } from '@/db/schema/chargeLines';
+import { inArray } from 'drizzle-orm';
+import { IOrderCharge } from '@/types/order-with-dispatch';
+import { ChargeService } from '@/services/charge-service';
 
 export async function GET(request: NextRequest) {
   try {    
@@ -109,42 +114,24 @@ export async function GET(request: NextRequest) {
         .then(res => Number(res[0].count))
     ]);
 
-    // 응답 데이터 변환
-    // const formattedResult = result.map(order => ({
-    //   id: order.id,
-    //   flowStatus: order.flowStatus,
-    //   cargoName: order.cargoName,
-    //   requestedVehicleType: order.requestedVehicleType,
-    //   requestedVehicleWeight: order.requestedVehicleWeight,
-    //   pickupSnapshot: {
-    //     name: order.pickupName,
-    //     contactName: order.pickupContactName,
-    //     contactPhone: order.pickupContactPhone,
-    //     date: order.pickupDate,
-    //     time: order.pickupTime,
-    //     addressSnapshot: order.pickupAddressSnapshot
-    //   },
-    //   delivery: {
-    //     name: order.deliveryName,
-    //     contactName: order.deliveryContactName,
-    //     contactPhone: order.deliveryContactPhone,
-    //     date: order.deliveryDate,
-    //     time: order.deliveryTime,
-    //     addressSnapshot: order.deliveryAddressSnapshot
-    //   },
-    //   estimatedDistance: order.estimatedDistance,
-    //   estimatedPriceAmount: order.estimatedPriceAmount,
-    //   priceType: order.priceType,
-    //   taxType: order.taxType,
-    //   isCanceled: order.isCanceled,
-    //   companyId: order.companyId,
-    //   companySnapshot: order.companySnapshot,
-    //   createdAt: order.createdAt?.toISOString(),
-    //   updatedAt: order.updatedAt?.toISOString()
-    // }));
-    console.log('result-->', result);
+    // 운임 정보 병합
+    const orderIds = result.map((o: any) => o.order.id || o.order?.id || o.id);
+    const chargeService = new ChargeService();
+    const chargeMap = await chargeService.getChargeMap(orderIds);
+    const final = result.map((o: any) => ({
+      ...o,
+      charge: chargeMap.get(o.order?.id || o.id) ?? {
+        groups: [],
+        summary: {
+          totalAmount: 0,
+          salesAmount: 0,
+          purchaseAmount: 0,
+          profit: 0
+        }
+      }
+    }));
     return NextResponse.json({
-      data: result,
+      data: final,
       total,
       page,
       pageSize,

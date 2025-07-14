@@ -8,6 +8,7 @@ import { logOrderChange } from '@/utils/order-change-logger';
 import { IUserSnapshot } from '@/types/order';
 import { validate as isValidUUID, version as getUUIDVersion } from 'uuid';
 import { orderDispatches } from '@/db/schema/orderDispatches';
+import { ChargeService } from '@/services/charge-service';
 
 
 // 화물 수정 요청 스키마
@@ -100,8 +101,8 @@ export async function GET(
     //   .limit(1)
     //   .execute();
 
-    const [result] = await Promise.all([
-      db
+    //const result = await Promise.all([
+    const result = await db
         .select({
           // 주문 정보
           order: orders,
@@ -118,8 +119,8 @@ export async function GET(
         .leftJoin(orderDispatches, eq(orders.id, orderDispatches.orderId))
         .where(eq(orders.id, orderId))
       .limit(1)
-      .execute()
-    ]);
+      .execute();
+    //]);
 
     if (!result) {
       return NextResponse.json(
@@ -127,11 +128,19 @@ export async function GET(
         { status: 404 }
       );
     }
+    console.log('result-->', result[0]);
 
+    const orderData = result?.[0];
+    console.log('orderData-->', orderData);
 
-    return NextResponse.json(
-      result
-    );
+    // 운임 정보 추가
+    const chargeService = new ChargeService();
+    const charge = await chargeService.getOrderCharge(orderId);
+
+    return NextResponse.json({
+      ...orderData,
+      charge
+    });
   } catch (error) {
     console.error('화물 상세 조회 중 오류 발생:', error);
     return NextResponse.json(

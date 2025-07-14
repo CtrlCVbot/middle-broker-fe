@@ -275,7 +275,17 @@ export function OrderTable({
                     }                        
                   </TableCell>
                   <TableCell className="text-right text-primary font-bold text-md text-shadow-xs">
-                    {order.estimatedPriceAmount<= 0 ? "협의" : formatCurrency(order.estimatedPriceAmount) + "원"}
+                    {(() => {
+                      const chargeAmount = order.charge?.summary?.salesAmount;
+                      const estimatedAmount = order.estimatedPriceAmount;
+                      if (chargeAmount && chargeAmount > 0) {
+                        return formatCurrency(chargeAmount) + "원";
+                      } else if (estimatedAmount && estimatedAmount > 0) {
+                        return formatCurrency(estimatedAmount) + "원";
+                      } else {
+                        return "협의";
+                      }
+                    })()}
                   </TableCell>
                 </TableRow>
               ))

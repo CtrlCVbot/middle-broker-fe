@@ -36,11 +36,12 @@ export function mapApiResponseToOrderList(apiResponse: any): {
   // : []; 
   // type OrderWithMeta = IFrontendOrder & Partial<IOrderWithDispatch>;
   const data = Array.isArray(apiResponse.data)
-  ? apiResponse.data.map((item: any) => ({
-      ...item.order,
-      ...item, // 배차 정보 추가
-    }))
-  : [];
+    ? apiResponse.data.map((item: any) => ({
+        ...item.order,
+        ...item, // 배차 정보 추가
+        charge: item.charge // 청구 정보 추가
+      }))
+    : [];
 
 
   console.log('data-->', data);

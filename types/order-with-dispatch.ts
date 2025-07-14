@@ -73,6 +73,7 @@ export interface IOrderWithDispatchDispatchDetail {
 export interface IOrderWithDispatchItem {
   order: IOrderWithDispatchOrderDetail;
   dispatch: IOrderWithDispatchDispatchDetail | null;
+  // 운임 정보
   charge: IOrderCharge;
 }
 

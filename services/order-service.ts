@@ -286,23 +286,33 @@ export async function fetchOrderDetail(orderId: string): Promise<IOrder&IOrderWi
     throw new Error(error.message || '화물 상세 정보를 불러오는 데 실패했습니다.');
   }
 
+  console.log('fetchOrderDetail response-->', response);
   const rawData = await response.json();
 
   console.log('rawData-->', rawData);
 
-  // const data = rawData.map((item: any) => ({
-  //   ...item.order,   // order 내부 펼침
-  //   ...item,         // 배차 정보 포함 (단 order는 이미 풀렸으므로 덮어씌워질 수 있음)
-  // }));
-  const data = rawData.map(({ order, ...dispatch }: { order: any, dispatch: any }) => ({
-    ...order,  // order 내부 펼침
-    ...dispatch,  // 배차 정보 포함
-  }));
+  // rawData는 단일 객체 { result: { order, dispatchId, ... } }
+  const result = rawData;
+  console.log('result-->', result);
+  const charge = rawData.charge;
+  console.log('charge-->', charge);
+  
+  if (!result) {
+    throw new Error('화물 정보를 찾을 수 없습니다.');
+  }
 
-  const result = Array.isArray(data) ? data[0] : data;
+  // order와 dispatch 정보를 병합
+  const data = {
+    ...result.order,  // order 내부 펼침
+    ...result,        // 배차 정보 포함 (단 order는 이미 풀렸으므로 덮어씌워질 수 있음)
+    charge,
+  };
+
+  console.log('data-->', data);
+  //const result = Array.isArray(data) ? data[0] : data;
  
 
-  return result;
+  return data;
 }
 
 /**

@@ -1,6 +1,10 @@
 "use client";
 
+//react
 import React, { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+
+//ui
 import { 
   Sheet, 
   SheetContent, 
@@ -8,33 +12,34 @@ import {
   SheetTitle, 
   SheetFooter 
 } from "@/components/ui/sheet";
+import { Button } from "../ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useQuery } from "@tanstack/react-query";
-import { useOrderDetailStore } from "@/store/order-detail-store";
-// 기존 모크 데이터 임포트 주석 처리
-// import { getOrderDetailById } from "@/utils/mockdata/mock-orders-detail";
-// 실제 API 서비스 임포트
-import { fetchOrderDetail } from "@/services/order-service";
-import { mapBackendOrderToFrontendOrder } from "@/utils/data-mapper";
-import { handleApiError } from "@/utils/api-error-handler";
-// IOrder 타입 임포트 추가
-import { IOrder, OrderFlowStatus, IOrderLog } from "@/types/order";
-import { OrderProgress } from "./order-progress";
-import { OrderStepProgress } from "./order-step-progress";
-import { OrderInfoCard } from "./order-info-card";
-import { OrderStatusLog } from "./order-status-log";
-import { OrderActionButtons } from "./order-action-buttons";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { cn, formatCurrency } from "@/lib/utils";
-import { CalendarClock, AlertTriangle, Package, Truck, Link2Off, ChevronUp, ChevronDown, Phone, Logs, ChevronsDown, ChevronsUp, Circle } from "lucide-react";
-import { format, parseISO } from "date-fns";
-import { ko } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Button } from "../ui/button";
+import { CalendarClock, AlertTriangle, Package, Truck, Link2Off, ChevronUp, ChevronDown, Phone, Logs, ChevronsDown, ChevronsUp, Circle } from "lucide-react";
+
+//store, service
+import { useOrderDetailStore } from "@/store/order-detail-store";
+// 실제 API 서비스 임포트
+import { fetchOrderDetail } from "@/services/order-service";
+
+//types
+// IOrder 타입 임포트 추가
+import { IOrder, OrderFlowStatus, IOrderLog } from "@/types/order";
+
+//components
+import { OrderStepProgress } from "./order-step-progress";
+import { OrderActionButtons } from "./order-action-buttons";
 import { getStatusBadge, getStatusColor } from "./order-table-ver01";
 import { OrderInfoCardVer01 } from "./order-info-card-ver01";
 import { Timeline } from "./order-timeline";
+
+//utils
+import { handleApiError } from "@/utils/api-error-handler";
+import { cn, formatCurrency } from "@/lib/utils";
+import { format, parseISO } from "date-fns";
+import { ko } from "date-fns/locale";
 import { safeFormatDate } from "@/utils/format";
 
 // UI 표시를 위한 인터페이스 정의 (백엔드 데이터를 UI에 맞게 변환)
@@ -81,7 +86,7 @@ interface OrderDetailForUI {
       name: string;
       contact: string;
     };
-  };
+  };  
   
   logs: IOrderLog[];
 }
@@ -115,17 +120,20 @@ export function OrderDetailSheet() {
         }
         
         // API 호출
-        const response = await fetchOrderDetail(selectedOrderId);
-        // const order = response.order;
-        console.log('상세 정보 API 응답:', response);
-        console.log('상세 정보 API 응답1:', response.createdAt);
+        const response = await fetchOrderDetail(selectedOrderId);        
+        //console.log('👉 타입 확인:', Array.isArray(response));
+        console.log('응답 구조 확인:', JSON.stringify(response, null, 2));
+        console.log('response.charge-->', response);
+        const chargeData = response?.charge?.summary.salesAmount?? 0;
+        console.log('chargeData-->', chargeData);
+        
         // 백엔드 응답을 UI 표시용 객체로 변환
         const orderDetail: OrderDetailForUI = {
           orderNumber: response.id,
           status: response.flowStatus,
           statusProgress: response.flowStatus,
           registeredAt: safeFormatDate(response.createdAt, "yyyy-MM-dd HH:mm"),
-          amount: formatCurrency(response.estimatedPriceAmount) + "원",
+          amount: formatCurrency(chargeData) + "원",
           
           departure: {
             address: response.pickupAddressSnapshot?.roadAddress || "-",
