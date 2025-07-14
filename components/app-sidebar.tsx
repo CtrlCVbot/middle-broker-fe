@@ -115,29 +115,29 @@ export const data = {
       ],
     },
     
-    {
-      title: "설정",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "일반",
-          url: "#",
-        },
-        {
-          title: "팀",
-          url: "#",
-        },
-        {
-          title: "결제",
-          url: "#",
-        },
-        {
-          title: "제한",
-          url: "#",
-        },
-      ],
-    },
+    // {
+    //   title: "설정",
+    //   url: "#",
+    //   icon: Settings2,
+    //   items: [
+    //     {
+    //       title: "일반",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "팀",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "결제",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "제한",
+    //       url: "#",
+    //     },
+    //   ],
+    // },
     {
       title: "프로필",
       url: "/profile",
@@ -146,11 +146,11 @@ export const data = {
   ],
 
   navBroker: [
-    {
-      title: "실시간 화물 현황",
-      url: "/broker/order/list",
-      icon: LifeBuoy,
-    },
+    // {
+    //   title: "실시간 화물 현황",
+    //   url: "/broker/order/list",
+    //   icon: LifeBuoy,
+    // },
     {
       title: "실시간 화물 현황 ver01",
       url: "/broker/order-ver01/list",
@@ -171,21 +171,21 @@ export const data = {
       url: "/broker/driver/list",
       icon: Truck,
     },
-    {
-      title: "매출 정산",
-      url: "/broker/income",
-      icon: DollarSign,
-      items: [
-        {
-          title: "정산 목록",
-          url: "/broker/income",
-        },
-        {
-          title: "정산 대기 화물",
-          url: "/broker/income/first-settlement",
-        }
-      ],
-    },
+    // {
+    //   title: "매출 정산",
+    //   url: "/broker/income",
+    //   icon: DollarSign,
+    //   items: [
+    //     {
+    //       title: "정산 목록",
+    //       url: "/broker/income",
+    //     },
+    //     {
+    //       title: "정산 대기 화물",
+    //       url: "/broker/income/first-settlement",
+    //     }
+    //   ],
+    // },
     {
       title: "매출 정산-ver01",
       url: "/broker/sale",
@@ -201,28 +201,28 @@ export const data = {
         }
       ],
     },
-    {
-      title: "매입 정산",
-      url: "/broker/expenditure",
-      icon: DollarSign,
-      items: [
-        {
-          title: "정산 목록",
-          url: "/broker/expenditure",
-        },
-      ],
-    },
-    {
-      title: "매입 정산2",
-      url: "/broker/expenditure2",
-      icon: DollarSign,
-      items: [
-        {
-          title: "정산 목록",
-          url: "/broker/expenditure2",
-        },
-      ],
-    },
+    // {
+    //   title: "매입 정산",
+    //   url: "/broker/expenditure",
+    //   icon: DollarSign,
+    //   items: [
+    //     {
+    //       title: "정산 목록",
+    //       url: "/broker/expenditure",
+    //     },
+    //   ],
+    // },
+    // {
+    //   title: "매입 정산2",
+    //   url: "/broker/expenditure2",
+    //   icon: DollarSign,
+    //   items: [
+    //     {
+    //       title: "정산 목록",
+    //       url: "/broker/expenditure2",
+    //     },
+    //   ],
+    // },
   ], 
 
 

@@ -276,6 +276,8 @@ export function mapApiResponseToBrokerDispatchList(
         flowStatus: order.flowStatus,
         cargoName: order.cargoName,
         dispatchDate: dispatch?.createdAt,
+        companyId: order.companyId,
+        companySnapshot: order.companySnapshot,
         
         // 출발지/도착지 정보
         pickupLocation: order.pickup?.name || '',

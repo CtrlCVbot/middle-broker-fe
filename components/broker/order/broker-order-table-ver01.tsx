@@ -44,6 +44,7 @@ import { ko } from "date-fns/locale";
 import { formatCurrency } from "@/lib/utils";
 import { useBrokerOrderStore } from "@/store/broker-order-store";
 import { cn } from "@/lib/utils";
+import { ICompanySnapshot } from "@/types/order";
 
 // 날짜 포맷팅 유틸리티 함수
 const getSchedule = (pickupDateTime: string, deliveryDateTime: string) => {
@@ -109,6 +110,8 @@ interface IDispatchItem {
   isClosed?: boolean;
   // 추가 필드가 있을 수 있음
   charge?: IOrderCharge;
+  companySnapshot?: ICompanySnapshot;
+  companyId?: string;
 }
 
 interface BrokerOrderTableProps {
@@ -197,7 +200,9 @@ export function BrokerOrderTable({
                 </TableHead>
               )}
               {/* <TableHead className="w-[80px] text-center">ID</TableHead> */}
+              
               <TableHead className="w-[80px] text-center">상태</TableHead>
+              <TableHead className="w-[80px] text-center">화주</TableHead>
               <TableHead className="w-[80px]">일정</TableHead>
               <TableHead className="w-[120px]">시간</TableHead>              
               <TableHead>상차지</TableHead>
@@ -254,8 +259,9 @@ export function BrokerOrderTable({
                 >
                   <TableRow 
                     className={cn(
-                      "cursor-pointer hover:bg-muted/50",
-                      activeTab === 'waiting' && selectedOrders.includes(order.orderId) && "bg-primary/10"
+                      "cursor-pointer hover:bg-primary/10",
+                      activeTab === 'waiting' && selectedOrders.includes(order.orderId) && "bg-primary/10",
+                      order.isClosed && "bg-muted-foreground/5 text-muted-foreground"
                     )}
                     onClick={() => activeTab === 'waiting' ? toggleOrderSelection(order.orderId) : handleOrderClick(order.orderId)}
                   >
@@ -280,7 +286,10 @@ export function BrokerOrderTable({
                       ) : (
                         getStatusBadge(order.flowStatus as BrokerOrderStatusType) 
                       )}
-                    </TableCell>                    
+                    </TableCell>     
+                    <TableCell className="text-left font-medium">
+                      {order.companySnapshot?.name || "-"}
+                    </TableCell>
                     <TableCell className="font-medium">
                       {getSchedule(order.pickupDateTime, order.deliveryDateTime)}
                     </TableCell>
@@ -315,7 +324,7 @@ export function BrokerOrderTable({
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col">
-                        <div className="text-md font-bold text-neutral-800">
+                        <div className="text-md font-bold">
                           {order.vehicleWeight}
                         </div>
                         <div className="text-md font-medium text-shadow-xs">

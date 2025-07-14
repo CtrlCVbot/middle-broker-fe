@@ -386,7 +386,7 @@ export async function getBrokerDispatchList(
     }
 
     // 필터 추가 (주선사 관련 필터)
-    if (filter.brokerCompanyId) params.append('brokerCompanyId', filter.brokerCompanyId);
+    if (filter.brokerCompanyId) params.append('brokerCompanyId', filter.brokerCompanyId);    
     if (filter.vehicleType) params.append('vehicleType', filter.vehicleType);
     if (filter.vehicleWeight) params.append('vehicleWeight', filter.vehicleWeight);
     if (filter.status) params.append('flowStatus', filter.status);
@@ -395,12 +395,12 @@ export async function getBrokerDispatchList(
     if (filter.keyword) params.append('keyword', filter.keyword);
     
     const apiUrl = `/api/orders/with-dispatch?${params.toString()}`;
-    console.log('API 요청 URL:', apiUrl);
+    //console.log('API 요청 URL:', apiUrl);
 
     // API 호출
     const response = await fetch(apiUrl);
     
-    console.log('API 응답 상태:', response.status, response.statusText);
+    //console.log('API 응답 상태:', response.status, response.statusText);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -431,7 +431,9 @@ export async function getBrokerDispatchList(
     }
     
     // 데이터 매핑
+    console.log('responseData-->', responseData);
     const mappedData = mapApiResponseToBrokerDispatchList(responseData);
+    console.log('mappedData-->', mappedData);
     return mappedData;
   } catch (error) {
     console.error('배차 목록 조회 중 오류:', error);

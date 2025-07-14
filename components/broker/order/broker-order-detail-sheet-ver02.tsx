@@ -143,7 +143,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
   // 운임 정보 저장 성공 여부 추적을 위한 상태 추가
   const [hasChargeInfo, setHasChargeInfo] = useState(false);
 
-  // 매출 정산 관련 스토어 추가
+  // 정산 관련 스토어 추가
   const {
     isLoading: isSettlementLoading,
     error: settlementError,
@@ -161,7 +161,8 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
   
   // 선택된 ID가 변경될 때마다 데이터 가져오기  
   useEffect(() => {    
-    if (selectedOrderId && isSheetOpen) {      
+    if (selectedOrderId && isSheetOpen) {     
+      
       fetchOrderDetail(selectedOrderId);            
       // 운임 정보도 함께 조회      
       fetchChargesByOrderId(selectedOrderId).catch(err => {        
@@ -704,7 +705,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                     </div>
 
                     <div className="mb-4 mt-4">
-                      {isSettlementLoading ? (  
+                      {isChargeLoading ? (  
                         <div className="flex items-center justify-center">
                           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
                           <p className="text-muted-foreground">운임/정산 정보를 불러오는 중...</p>

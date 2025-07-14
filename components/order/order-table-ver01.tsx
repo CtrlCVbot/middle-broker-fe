@@ -32,6 +32,7 @@ import { IOrder, IOrderWithDispatch } from "@/types/order";
 import { formatCurrency } from "@/lib/utils";
 import { useOrderDetailStore } from "@/store/order-detail-store";
 import { ko } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 
 // 화물 상태에 따른 배지 색상 설정
@@ -213,7 +214,11 @@ export function OrderTable({
               </TableRow>
             ) : (
               orders.map((order) => (
-                <TableRow key={order.id} className="cursor-pointer hover:bg-secondary/80" onClick={() => handleOrderClick(order.id)}>
+                <TableRow key={order.id} 
+                className={cn("cursor-pointer hover:bg-primary/10", 
+                  order.isCanceled || order.flowStatus === "운송완료" && "bg-muted-foreground/5 text-muted-foreground")
+                } 
+                onClick={() => handleOrderClick(order.id)}>
                   {/* <TableCell className="font-medium text-primary underline">{order.id.slice(0, 8)}</TableCell> */}
                   <TableCell className="text-center scale-90">{getStatusBadge(order.flowStatus)}</TableCell>
                   <TableCell className="font-medium">
