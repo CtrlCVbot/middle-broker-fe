@@ -41,6 +41,7 @@ import {
   Save
 } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // 타입
 import { 
@@ -177,21 +178,28 @@ export function BundleAdjustmentManager({
     }
   };
 
-  const handleDelete = async (adjustmentId: string) => {
-    if (!bundleId) return;
-    
-    if (confirm('정말로 이 추가금을 삭제하시겠습니까?')) {
-      try {
-        const success = await removeBundleAdjustment(bundleId, adjustmentId);
-        if (success) {
-          toast.success('통합 추가금이 삭제되었습니다.');
-        } else {
-          toast.error('통합 추가금 삭제에 실패했습니다.');
-        }
-      } catch (error) {
-        console.error('통합 추가금 삭제 중 오류:', error);
-        toast.error('삭제 중 오류가 발생했습니다.');
+  // 통합 추가금 삭제 다이얼로그 상태
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; adjustmentId?: string }>({ open: false });
+
+  // 삭제 버튼 클릭 시 다이얼로그 오픈
+  const handleOpenDeleteDialog = (adjustmentId: string) => {
+    setDeleteDialog({ open: true, adjustmentId });
+  };
+
+  // 삭제 확정 시 실제 삭제 실행
+  const handleConfirmDelete = async () => {
+    if (!bundleId || !deleteDialog.adjustmentId) return;
+    setDeleteDialog({ open: false });
+    try {
+      const success = await removeBundleAdjustment(bundleId, deleteDialog.adjustmentId);
+      if (success) {
+        toast.success('통합 추가금이 삭제되었습니다.');
+      } else {
+        toast.error('통합 추가금 삭제에 실패했습니다.');
       }
+    } catch (error) {
+      console.error('통합 추가금 삭제 중 오류:', error);
+      toast.error('삭제 중 오류가 발생했습니다.');
     }
   };
 
@@ -283,7 +291,7 @@ export function BundleAdjustmentManager({
                               e.preventDefault();
                               e.stopPropagation();
                               console.log('통합 추가금 삭제 버튼 클릭:', adjustment.id);
-                              handleDelete(adjustment.id);
+                              handleOpenDeleteDialog(adjustment.id);
                             }}
                           >
                             <Trash2 className="h-3 w-3" />
@@ -408,6 +416,17 @@ export function BundleAdjustmentManager({
           </Dialog>
         </CollapsibleContent>
       </Collapsible>
+      {/* 통합 추가금 삭제 확인 ConfirmDialog */}
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog(prev => ({ ...prev, open }))}
+        title="통합 추가금 삭제 확인"
+        description="정말로 이 추가금을 삭제하시겠습니까?"
+        confirmText="삭제"
+        cancelText="취소"
+        onConfirm={handleConfirmDelete}
+        variant="destructive"
+      />
     </>
   );
 } 

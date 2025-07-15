@@ -39,9 +39,10 @@ import {
 } from "@/components/ui/form";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+
 import { 
   CalendarIcon,
   Loader2,
@@ -192,6 +193,30 @@ export function SettlementEditFormSheet() {
   }>({
     open: false
   });
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  // 개별 추가금 삭제 다이얼로그 상태
+  const [itemDeleteDialog, setItemDeleteDialog] = useState<{
+    open: boolean;
+    itemId?: string;
+    adjustmentId?: string;
+  }>({ open: false });
+
+  // 개별 추가금 삭제 핸들러
+  const handleItemAdjustmentDelete = (itemId: string, adjustmentId: string) => {
+    setItemDeleteDialog({ open: true, itemId, adjustmentId });
+  };
+
+  const handleConfirmItemDelete = () => {
+    const { itemId, adjustmentId } = itemDeleteDialog;
+    if (itemId && adjustmentId) {
+      const { removeItemAdjustment } = useBrokerChargeStore.getState();
+      removeItemAdjustment(itemId, adjustmentId);
+      toast.success("추가금이 삭제되었습니다.");
+    }
+    setItemDeleteDialog({ open: false });
+  };
 
   
 
@@ -515,19 +540,17 @@ export function SettlementEditFormSheet() {
   // 정산 삭제 (취소)
   const handleDelete = async () => {
     if (!selectedSalesBundleId) return;
-    
-    if (confirm('정말로 이 정산을 삭제하시겠습니까?')) {
-      try {
-        const success = await deleteSalesBundleData(selectedSalesBundleId);
-        if (success) {
-          toast.success("정산이 성공적으로 삭제되었습니다.");
-          closeSettlementForm();
-        } else {
-          toast.error("정산 삭제에 실패했습니다.");
-        }
-      } catch (error) {
-        toast.error("정산 삭제 중 오류가 발생했습니다.");
+    setIsDeleteDialogOpen(false);
+    try {
+      const success = await deleteSalesBundleData(selectedSalesBundleId);
+      if (success) {
+        toast.success("정산이 성공적으로 삭제되었습니다.");
+        closeSettlementForm();
+      } else {
+        toast.error("정산 삭제에 실패했습니다.");
       }
+    } catch (error) {
+      toast.error("정산 삭제 중 오류가 발생했습니다.");
     }
   };
 
@@ -1259,13 +1282,7 @@ export function SettlementEditFormSheet() {
                         adjustmentId
                       });
                     }}
-                    onDeleteItemAdjustment={(itemId, adjustmentId) => {
-                      console.log('개별 추가금 삭제 클릭:', itemId, adjustmentId);
-                      if (confirm('정말로 이 추가금을 삭제하시겠습니까?')) {
-                        const { removeItemAdjustment } = useBrokerChargeStore.getState();
-                        removeItemAdjustment(itemId, adjustmentId);
-                      }
-                    }}
+                    onDeleteItemAdjustment={handleItemAdjustmentDelete}
                   />
 
                   {/* 통합 추가금 관리 컴포넌트 */}
@@ -1322,7 +1339,7 @@ export function SettlementEditFormSheet() {
                 <Button 
                   type="button" 
                   variant="destructive"
-                  onClick={handleDelete}
+                  onClick={() => setIsDeleteDialogOpen(true)}
                   disabled={loading}
                   size="sm"
                 >
@@ -1391,6 +1408,29 @@ export function SettlementEditFormSheet() {
       onOpenChange={(open) => setItemAdjustmentDialog(prev => ({ ...prev, open }))}
       itemId={itemAdjustmentDialog.itemId}
       adjustmentId={itemAdjustmentDialog.adjustmentId}
+    />
+    {/* 정산 삭제 확인 ConfirmDialog */}
+    <ConfirmDialog
+      open={isDeleteDialogOpen}
+      onOpenChange={setIsDeleteDialogOpen}
+      title="정산 삭제 확인"
+      description="정말로 이 정산을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+      confirmText="정산 삭제"
+      cancelText="취소"
+      onConfirm={handleDelete}
+      variant="destructive"
+    />
+
+    {/* 개별 추가금 삭제 확인 ConfirmDialog */}
+    <ConfirmDialog
+      open={itemDeleteDialog.open}
+      onOpenChange={(open) => setItemDeleteDialog(prev => ({ ...prev, open }))}
+      title="추가금 삭제 확인"
+      description="정말로 이 추가금을 삭제하시겠습니까?"
+      confirmText="삭제"
+      cancelText="취소"
+      onConfirm={handleConfirmItemDelete}
+      variant="destructive"
     />
     </>
   );
