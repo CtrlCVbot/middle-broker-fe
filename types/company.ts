@@ -135,6 +135,9 @@ export interface CompanyRequest {
     mobile?: string;
     email?: string;
   };
+  bankCode?: string;
+  bankAccount?: string;
+  bankAccountHolder?: string;
 }
 
 // 회사 상태 변경 요청 인터페이스
@@ -176,6 +179,9 @@ export interface ILegacyCompany {
   warnings?: { id: string; text: string }[];
   files?: { id: string; name: string; url: string; type: string }[];
   managers?: any[];
+  bankCode?: string;
+  bankAccount?: string;
+  bankAccountHolder?: string;
 }
 
 // API 응답 데이터를 레거시 형식으로 변환하는 유틸리티 함수
@@ -255,6 +261,8 @@ export const convertLegacyToApiCompany = (company: ILegacyCompany): CompanyReque
       mobile: mobile,
       email: email,
     },
-    
+    bankCode: company.bankCode,
+    bankAccount: company.bankAccount,
+    bankAccountHolder: company.bankAccountHolder,
   };
 };

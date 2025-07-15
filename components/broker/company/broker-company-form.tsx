@@ -1,6 +1,9 @@
 "use client";
 
+// React
 import React, { useState, useEffect } from 'react';
+
+// UI
 import { 
   Card, 
   CardContent, 
@@ -11,7 +14,6 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Form } from '@/components/ui/form';
@@ -22,19 +24,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
+
+// Types
 import { 
   IBrokerCompany, 
   CompanyStatus,
   StatementType
 } from '@/types/broker-company';
 
+// utils
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { BrokerCompanyManagerList } from './broker-company-manager-list';
 import { getCurrentUser } from '@/utils/auth';
+
+// components
+import { BrokerCompanyManagerList } from './broker-company-manager-list';
 import { BrokerCompanyWarning } from './broker-company-warning';
-import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
+
 
 // 상수 배열 추가
 const COMPANY_TYPE_OPTIONS = ['화주', '운송사', '주선사'] as const;
@@ -167,6 +175,11 @@ function normalizeCompanyData(data: any): Partial<IBrokerCompany> {
     // 추가 데이터
     files: data.files || [],
     managers: data.managers || [],
+
+    // 은행 정보
+    bankCode: data.bankCode || null,
+    bankAccount: data.bankAccount || null,
+    bankAccountHolder: data.bankAccountHolder || null,
   };
   
   console.log('정규화된 회사 데이터:', normalized);
@@ -179,10 +192,13 @@ export function BrokerCompanyForm({
   initialData = {},
   mode = 'register'
 }: BrokerCompanyFormProps) {
+
   // 파일 업로드 상태
   const [files, setFiles] = useState<{ id: string; name: string; url: string; type: string }[]>(
     initialData.files || []
   );
+
+  console.log("initialData:", initialData);
 
   // 폼 설정
   const form = useForm<CompanyFormValues>({
@@ -214,6 +230,9 @@ export function BrokerCompanyForm({
       //managerPhoneNumber: initialData.managerPhoneNumber || '',
       representative: initialData.representative || '',
       files: [],
+      bankCode: initialData.bankCode || '',
+      bankAccount: initialData.bankAccount || '',
+      bankAccountHolder: initialData.bankAccountHolder || '',
     },
   });
   
@@ -246,6 +265,9 @@ export function BrokerCompanyForm({
         //managerPhoneNumber: normalizedData.managerPhoneNumber,
         representative: normalizedData.representative,
         files: [],
+        bankCode: normalizedData.bankCode,
+        bankAccount: normalizedData.bankAccount,
+        bankAccountHolder: normalizedData.bankAccountHolder,
       }, {
         keepDirtyValues: false, // 이 옵션을 false로 설정해 모든 값을 새로 설정
         keepErrors: false, // 모든 에러 초기화

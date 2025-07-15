@@ -30,7 +30,10 @@ const UpdateCompanySchema = z.object({
     mobile: z.string().optional(),
     email: z.string().email('올바른 이메일 형식이 아닙니다.').optional()
   }).optional(),
-  requestUserId: z.string().uuid('잘못된 요청 사용자 ID 형식입니다.')
+  requestUserId: z.string().uuid('잘못된 요청 사용자 ID 형식입니다.'),
+  bankCode: z.string().optional(),
+  bankAccount: z.string().optional(),
+  bankAccountHolder: z.string().optional()
 });
 
 // 업체 상태 변경 요청 스키마
@@ -93,7 +96,10 @@ export async function GET(
         email: company.contactEmail || ''
       },
       registeredAt: company.createdAt?.toISOString() || '',
-      updatedAt: company.updatedAt?.toISOString() || ''
+      updatedAt: company.updatedAt?.toISOString() || '',
+      bankCode: company.bankCode || null,
+      bankAccount: company.bankAccountNumber || null,
+      bankAccountHolder: company.bankAccountHolder || null
     };
 
     return NextResponse.json(responseData);
@@ -215,6 +221,10 @@ export async function PUT(
       if (updateData.contact.email !== undefined) updateValues.contactEmail = updateData.contact.email;
     }
 
+    if (updateData.bankCode !== undefined) updateValues.bankCode = updateData.bankCode;
+    if (updateData.bankAccount !== undefined) updateValues.bankAccountNumber = updateData.bankAccount;
+    if (updateData.bankAccountHolder !== undefined) updateValues.bankAccountHolder = updateData.bankAccountHolder;
+
     // 업체 정보 업데이트
     const [updatedCompany] = await db
       .update(companies)
@@ -246,7 +256,10 @@ export async function PUT(
           tel: existingCompany.contactTel || '',
           mobile: existingCompany.contactMobile || '',
           email: existingCompany.contactEmail || ''
-        }
+        },
+        bankCode: existingCompany.bankCode || null,
+        bankAccount: existingCompany.bankAccountNumber || null,
+        bankAccountHolder: existingCompany.bankAccountHolder || null
       },
       newData: {
         id: updatedCompany.id,
@@ -264,7 +277,10 @@ export async function PUT(
           tel: updatedCompany.contactTel || '',
           mobile: updatedCompany.contactMobile || '',
           email: updatedCompany.contactEmail || ''
-        }
+        },
+        bankCode: updatedCompany.bankCode || null,
+        bankAccount: updatedCompany.bankAccountNumber || null,
+        bankAccountHolder: updatedCompany.bankAccountHolder || null
       },
       reason: '업체 정보 수정'
     });

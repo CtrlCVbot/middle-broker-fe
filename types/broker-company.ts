@@ -33,6 +33,9 @@ export interface IBrokerCompany {
   warnings?: { id: string; text: string }[];
   files?: { id: string; name: string; url: string; type: string }[];
   managers?: IBrokerCompanyManager[]; // 담당자 목록 추가
+  bankCode?: string;
+  bankAccount?: string;
+  bankAccountHolder?: string;
 }
 
 // 담당자 정보 인터페이스

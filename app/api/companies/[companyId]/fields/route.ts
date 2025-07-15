@@ -72,6 +72,9 @@ export async function PATCH(
       'contactTel',
       'contactMobile',
       'contactEmail',
+      'bankCode',
+      'bankAccount',
+      'bankAccountHolder',
     ];
 
     // 업데이트할 필드 검증
@@ -90,6 +93,7 @@ export async function PATCH(
     const updateData = {
       ...fields,
       updatedAt: new Date(),
+      bankAccountNumber: fields.bankAccount,
     };
 
     // 업체 정보 업데이트

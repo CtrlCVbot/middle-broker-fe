@@ -109,6 +109,9 @@ export const updateCompany = async (id: string, data: CompanyRequest): Promise<I
       contactTel: data.contact?.tel || '',
       contactMobile: data.contact?.mobile || '',
       contactEmail: data.contact?.email || '',
+      bankCode: data.bankCode || '',
+      bankAccount: data.bankAccount || '',
+      bankAccountHolder: data.bankAccountHolder || '',
     },
     reason: `관리자에 의해 수정됨 (사용자 ID: ${userId})`,
   };

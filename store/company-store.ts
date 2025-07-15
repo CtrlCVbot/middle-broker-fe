@@ -198,6 +198,7 @@ export const useCompanyStore = create<ICompanyState>()(
         
         try {
           const company = await companyService.getCompanyById(id);
+          console.log("company:", company);
           set({ isLoading: false });
           
           // API 응답을 레거시 형식으로 변환

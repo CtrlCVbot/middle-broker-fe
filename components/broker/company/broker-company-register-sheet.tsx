@@ -62,6 +62,7 @@ export function BrokerCompanyRegisterSheet({
   // const companyQuery = useBrokerCompanyById(mode === 'edit' && company ? company.id : ''); // 기존 스토어 사용 코드 주석 처리
   // 새로운 스토어 훅 사용
   const companyQuery = useCompany(mode === 'edit' && company ? company.id : '');
+  console.log("companyQuery:", companyQuery);
   
   // 로딩 상태 관리
   const isLoading = createCompanyMutation.isPending || 
@@ -70,6 +71,7 @@ export function BrokerCompanyRegisterSheet({
   
   // 회사 데이터 (최신 데이터 사용)
   const companyData = mode === 'edit' && companyQuery.data ? companyQuery.data : company;
+  console.log("companyData:", companyData);
   
   // 외부에서 제어되는 경우 내부 상태 동기화
   useEffect(() => {
@@ -128,21 +130,13 @@ export function BrokerCompanyRegisterSheet({
       } else if (mode === 'edit' && formData.id) {
         
         // 디버깅용 로그 추가
-        console.log('✏️ 수정 시작 - 원본 폼 데이터:', {
-          id: formData.id,
-          name: formData.name,
-          type: formData.type
-        });
+        console.log('✏️ 수정 시작 - 원본 폼 데이터:', formData);
         
         // 레거시 타입을 API 요청 포맷으로 변환
         const apiData = convertLegacyToApiCompany(formData);
         
         // 변환된 API 데이터 요약 로깅
-        console.log('📝 수정 - 변환된 API 데이터 요약:', {
-          id: formData.id,
-          name: apiData.name,
-          type: apiData.type
-        });
+        console.log('📝 수정 - 변환된 API 데이터 요약:', apiData);
         
         try {
           // 직접 서비스 함수 호출 (뮤테이션 대신)
