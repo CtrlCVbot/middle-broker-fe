@@ -106,9 +106,11 @@ export default function BrokerCompanyPage() {
 
   // 업체 클릭 핸들러 (타입 확장)
   const handleCompanyClick = (company: IBrokerCompany | ILegacyCompany) => {
+    console.log("handleCompanyClick:", company);
     console.log('업체 클릭:', company.name);
     setSelectedCompany(company);
     setIsEditSheetOpen(true); // 바로 시트만 열기
+    
   };
 
   // 회사가 수정된 후 호출할 함수

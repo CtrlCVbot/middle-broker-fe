@@ -44,7 +44,7 @@ export function BrokerCompanyRegisterSheet({
   onUpdateSuccess,
   company,
   trigger,
-  mode = 'register',
+  mode,
   open,
   onOpenChange
 }: BrokerCompanyRegisterSheetProps) {
@@ -61,6 +61,8 @@ export function BrokerCompanyRegisterSheet({
   // 편집 모드에서 최신 데이터 조회 (ID가 있는 경우)
   // const companyQuery = useBrokerCompanyById(mode === 'edit' && company ? company.id : ''); // 기존 스토어 사용 코드 주석 처리
   // 새로운 스토어 훅 사용
+  console.log("company:", company);
+  console.log("mode:", mode);
   const companyQuery = useCompany(mode === 'edit' && company ? company.id : '');
   console.log("companyQuery:", companyQuery);
   
@@ -276,7 +278,7 @@ export function BrokerCompanyRegisterSheet({
         {(mode === 'register' || (mode === 'edit' && companyData && !companyQuery.isLoading)) && (
           <BrokerCompanyForm 
             isSubmitting={isLoading}
-            initialData={companyData as IBrokerCompany}
+            initialData={companyData as any}
             mode={mode}
             onSubmit={handleSubmit}
           />

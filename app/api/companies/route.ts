@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, and, ilike, or, sql } from 'drizzle-orm';
+import { eq, and, ilike, or, sql, desc } from 'drizzle-orm';
 import { db } from '@/db';
 import { companies } from '@/db/schema/companies';
 import { users } from '@/db/schema/users';
@@ -67,6 +67,7 @@ export async function GET(request: NextRequest) {
         .where(query)
         .limit(pageSize)
         .offset(offset)
+        .orderBy(desc(companies.updatedAt))
         .execute(),
       db
         .select({ count: sql<number>`count(*)` })

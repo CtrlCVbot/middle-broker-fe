@@ -68,8 +68,8 @@ export const getCompanies = async (
 export const getCompanyById = async (id: string): Promise<ICompany> => {
   return apiClient.get<ICompany>(`/companies/${id}`, {
     // 상세 조회는 캐싱 활성화, 1분 캐시 유지
-    useCache: true,
-    cacheLifetime: 60 * 1000
+    useCache: false,
+    //cacheLifetime: 1 * 1000
   });
 };
 

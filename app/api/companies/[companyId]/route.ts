@@ -101,6 +101,7 @@ export async function GET(
       bankAccount: company.bankAccountNumber || null,
       bankAccountHolder: company.bankAccountHolder || null
     };
+    console.log("responseData:", responseData);
 
     return NextResponse.json(responseData);
   } catch (error) {

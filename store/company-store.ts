@@ -392,11 +392,12 @@ export const useCompanies = () => {
 
 // 특정 업체 조회
 export const useCompany = (id: string) => {
+  console.log("useCompany:", id);
   return useQuery<ICompany, Error, ICompany, [string, string]>({
     queryKey: ['company', id],
     queryFn: () => companyService.getCompanyById(id),
-    staleTime: 60 * 1000, // 1분 동안 데이터 캐싱
-    enabled: !!id, // id가 있을 때만 쿼리 실행
+    //staleTime: 60 * 1000, // 1분 동안 데이터 캐싱
+    //enabled: !!id, // id가 있을 때만 쿼리 실행
   });
 };
 

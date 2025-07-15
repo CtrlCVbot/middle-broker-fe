@@ -193,90 +193,103 @@ export function BrokerCompanyForm({
   mode = 'register'
 }: BrokerCompanyFormProps) {
 
+  console.log("initialData:", initialData);
+
+  // 초기 데이터 정규화
+  const normalizedInitialData = normalizeCompanyData(initialData);
+
   // 파일 업로드 상태
   const [files, setFiles] = useState<{ id: string; name: string; url: string; type: string }[]>(
-    initialData.files || []
+    normalizedInitialData.files || []
   );
-
-  console.log("initialData:", initialData);
 
   // 폼 설정
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companyFormSchema),
     defaultValues: {
-      name: initialData.name || '',
-      businessNumber: initialData.businessNumber || '',
-      type: (() => {
-        if (!initialData.type) return '운송사';
-        const t = (initialData.type as string).toLowerCase();
-        if (t === 'broker' || t === '주선사') return '주선사';
-        if (t === 'shipper' || t === '화주') return '화주';
-        if (t === 'carrier' || t === '운송사') return '운송사';
-        return '운송사';
-      })() as CompanyTypeOption,
-      statementType: (() => {
-        if (!initialData.statementType) return '매입처';
-        const t = (initialData.statementType as string).toLowerCase();
-        if (t === 'purchase' || t === '매입처') return '매입처';
-        if (t === 'sales' || t === '매출처') return '매출처';
-        return '매입처';
-      })() as StatementType,
-      email: initialData.email || '',
-      phoneNumber: initialData.phoneNumber || '',
-      //faxNumber: initialData.faxNumber || '',
-      mobileNumber: initialData.mobileNumber || '',
-      status: (initialData.status as CompanyStatus) || '활성',
-      //managerName: initialData.managerName || '',
-      //managerPhoneNumber: initialData.managerPhoneNumber || '',
-      representative: initialData.representative || '',
+      name: normalizedInitialData.name || '',
+      businessNumber: normalizedInitialData.businessNumber || '',
+      type: normalizedInitialData.type as CompanyTypeOption || '운송사',
+      statementType: normalizedInitialData.statementType as StatementType || '매입처',
+      email: normalizedInitialData.email || '',
+      phoneNumber: normalizedInitialData.phoneNumber || '',
+      mobileNumber: normalizedInitialData.mobileNumber || '',
+      status: normalizedInitialData.status as CompanyStatus || '활성',
+      representative: normalizedInitialData.representative || '',
       files: [],
-      bankCode: initialData.bankCode || '',
-      bankAccount: initialData.bankAccount || '',
-      bankAccountHolder: initialData.bankAccountHolder || '',
+      bankCode: normalizedInitialData.bankCode || '',
+      bankAccount: normalizedInitialData.bankAccount || '',
+      bankAccountHolder: normalizedInitialData.bankAccountHolder || '',
     },
   });
   
-  // initialData가 변경될 때 폼 값을 업데이트하기 위한 useEffect 추가
+  // initialData가 변경될 때 폼 값을 업데이트하기 위한 useEffect
   useEffect(() => {
+    console.log('useEffect 실행 - initialData 변경 감지:', initialData);
+    
     // 회사 데이터가 있을 때만 폼을 재설정
     if (initialData && Object.keys(initialData).length > 0) {
       console.log('초기 데이터 로드:', initialData);
       
       // 데이터 정규화 - 다양한 형식의 데이터를 폼에 맞게 변환
       const normalizedData = normalizeCompanyData(initialData);
+      console.log('정규화된 데이터:', normalizedData);
       
       // 파일 상태 업데이트
       if (normalizedData.files && normalizedData.files.length > 0) {
+        console.log('파일 상태 업데이트:', normalizedData.files);
         setFiles(normalizedData.files);
+      } else {
+        setFiles([]);
       }
       
       // 폼 값 재설정 - 정규화된 데이터 사용
-      form.reset({
-        name: normalizedData.name,
-        businessNumber: normalizedData.businessNumber,
-        type: normalizedData.type as CompanyTypeOption,
-        statementType: normalizedData.statementType as StatementType,
-        email: normalizedData.email,
-        phoneNumber: normalizedData.phoneNumber,
-        //faxNumber: normalizedData.faxNumber,
-        mobileNumber: normalizedData.mobileNumber,
-        status: normalizedData.status as CompanyStatus,
-        //managerName: normalizedData.managerName,
-        //managerPhoneNumber: normalizedData.managerPhoneNumber,
-        representative: normalizedData.representative,
+      const resetValues = {
+        name: normalizedData.name || '',
+        businessNumber: normalizedData.businessNumber || '',
+        type: normalizedData.type as CompanyTypeOption || '운송사',
+        statementType: normalizedData.statementType as StatementType || '매입처',
+        email: normalizedData.email || '',
+        phoneNumber: normalizedData.phoneNumber || '',
+        mobileNumber: normalizedData.mobileNumber || '',
+        status: normalizedData.status as CompanyStatus || '활성',
+        representative: normalizedData.representative || '',
         files: [],
-        bankCode: normalizedData.bankCode,
-        bankAccount: normalizedData.bankAccount,
-        bankAccountHolder: normalizedData.bankAccountHolder,
-      }, {
-        keepDirtyValues: false, // 이 옵션을 false로 설정해 모든 값을 새로 설정
+        bankCode: normalizedData.bankCode || '',
+        bankAccount: normalizedData.bankAccount || '',
+        bankAccountHolder: normalizedData.bankAccountHolder || '',
+      };
+      
+      console.log('폼 리셋 값:', resetValues);
+      
+      form.reset(resetValues, {
+        keepDirtyValues: false, // 모든 값을 새로 설정
         keepErrors: false, // 모든 에러 초기화
       });
       
       // 디버깅용 로그 - 폼 값 확인
       console.log('폼 값 설정 완료:', form.getValues());
+    } else {
+      console.log('초기 데이터가 없음 - 폼 초기화');
+      // 빈 데이터로 폼 초기화
+      setFiles([]);
+      form.reset({
+        name: '',
+        businessNumber: '',
+        type: '운송사',
+        statementType: '매입처',
+        email: '',
+        phoneNumber: '',
+        mobileNumber: '',
+        status: '활성',
+        representative: '',
+        files: [],
+        bankCode: '',
+        bankAccount: '',
+        bankAccountHolder: '',
+      });
     }
-  }, [initialData, form]);
+  }, [initialData]); // form을 의존성에서 제외하여 무한 루프 방지
 
   // 전화번호 자동 하이픈 추가 함수
   const formatPhoneNumber = (value: string) => {
