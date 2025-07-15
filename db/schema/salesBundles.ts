@@ -77,7 +77,7 @@ export const salesBundles = pgTable('sales_bundles', {
 
   settlementConfirmedAt: date('settlement_confirmed_at'), // 정산 승인일 (회계팀 승인 등)
   settlementBatchId: varchar('settlement_batch_id', { length: 50 }), // 정산 회차 ID
-  settledAt: date('settled_at'), // 정산 완료일
+  settledAt: date('settled_at'), // 정산 완료일(만기일)
   
   // 인보이스 정보
   invoiceNo: varchar('invoice_no', { length: 50 }), //세금계산서 번호

@@ -134,9 +134,17 @@ const CreateSalesBundleSchema = z.object({
   periodTo: z.string().optional(),
   invoiceNo: z.string().optional(),
   totalAmount: z.number().nonnegative(),
+  totalTaxAmount: z.number().nonnegative(),
+  totalAmountWithTax: z.number().nonnegative(),
   status: z.enum(salesBundleStatusEnum.enumValues).default('draft'),
   items: z.array(SalesBundleItemSchema).min(1, '최소 1개 이상의 항목이 필요합니다.'),
-  adjustments: z.array(SalesBundleAdjustmentSchema).optional()
+  adjustments: z.array(SalesBundleAdjustmentSchema).optional(),
+  memo: z.string().optional(),
+  settledAt: z.string().optional(),
+  bankName: z.string().optional(),
+  bankAccount: z.string().optional(),
+  bankAccountHolder: z.string().optional(),  
+  //periodType: z.enum(periodTypeEnum.enumValues).default('departure'),
 });
 
 // 매출 번들 생성
@@ -205,7 +213,8 @@ export async function POST(request: NextRequest) {
     //     { status: 400 }
     //   );
     // }
-    
+    console.log("bundleData!!!:", bundleData);
+
     // 트랜잭션으로 번들 및 항목 생성
     const result = await db.transaction(async (tx) => {
       // 매출 번들 생성

@@ -1,32 +1,13 @@
 import { create } from 'zustand';
-import { 
-  IChargeGroupWithLines,
-  IFinanceSummary,
-  IAdditionalFeeInput,
-  IOrderSale,
-  ISettlementWaitingItem,
-  ISettlementSummary,
-  ISettlementWaitingResponse,
-  ISettlementFormState,
-  ISettlementFormData,
-  ISalesBundleAdjustment,
-  ISalesItemAdjustment,
-  ISalesBundleItemWithDetails,
-  ICreateBundleAdjustmentInput,
-  IUpdateBundleAdjustmentInput,
-  ICreateItemAdjustmentInput,
-  IUpdateItemAdjustmentInput
-} from '@/types/broker-charge';
+
+//service
 import { 
   getChargeGroupsByOrderId,
-  createChargeFromAdditionalFee,
-  getOrderSales,
-  getSettlementWaitingItems,
-  calculateSettlementSummary,
+  createChargeFromAdditionalFee,  
+  getSettlementWaitingItems,  
   createOrderSale,
   createSalesBundle,
-  getSalesBundles,
-  getSalesBundleItems,
+  getSalesBundles,  
   getSalesBundleById,
   updateSalesBundle,
   deleteSalesBundle,
@@ -40,10 +21,35 @@ import {
   deleteItemAdjustment,
   getSalesBundleFreightList
 } from '@/services/broker-charge-service';
-import { mapChargeDataToFinanceSummary,  calculateSalesSummary, mapWaitingItemsToBrokerOrders, mapSettlementFormToSalesBundleInput, mapSalesBundlesToIncomes } from '@/utils/charge-mapper';
-import { IBrokerOrder } from '@/types/broker-order';
+
+//utils
+import { 
+  mapChargeDataToFinanceSummary,    
+  mapWaitingItemsToBrokerOrders, 
+  mapSettlementFormToSalesBundleInput, 
+  mapSalesBundlesToIncomes  
+} from '@/utils/charge-mapper';
+
+//types
 import { ISalesBundleFilter, ISalesBundleListItem } from '@/types/broker-charge';
-import { IIncome, IIncomeFilter } from '@/types/income';
+import { IIncome } from '@/types/income';
+import { 
+  IChargeGroupWithLines,
+  IFinanceSummary,
+  IAdditionalFeeInput,  
+  ISettlementWaitingItem,
+  ISettlementSummary,  
+  ISettlementFormState,
+  ISettlementFormData,
+  ISalesBundleAdjustment,
+  ISalesItemAdjustment,
+  ISalesBundleItemWithDetails,
+  ICreateBundleAdjustmentInput,
+  IUpdateBundleAdjustmentInput,
+  ICreateItemAdjustmentInput,
+  IUpdateItemAdjustmentInput
+} from '@/types/broker-charge';
+
 
 interface IBrokerChargeState {  
   // 기존 운임 관련 상태
@@ -593,6 +599,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       // 추가금 등은 추후 확장, 현재는 adjustments 없음
       const bundleInput = mapSettlementFormToSalesBundleInput(actualFormData, selectedItems, []);
       
+      console.log("bundleInput:", bundleInput);
       set({ isLoading: true, error: null });
       await createSalesBundle(bundleInput);
       
