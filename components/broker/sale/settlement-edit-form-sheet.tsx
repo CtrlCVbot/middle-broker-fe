@@ -434,7 +434,8 @@ export function SettlementEditFormSheet() {
         const updateFields = {
           companySnapshot: {
             name: formValues.shipperName,
-            businessNumber: formValues.businessNumber
+            businessNumber: formValues.businessNumber,
+            ceoName: formValues.shipperCeo || ''
           },
           managerSnapshot: {
             name: formValues.manager,
@@ -449,7 +450,12 @@ export function SettlementEditFormSheet() {
           bankCode: formValues.bankName || null,
           bankAccountHolder: formValues.accountHolder || null,
           bankAccount: formValues.accountNumber || null,
-          depositRequestedAt: formValues.dueDate ? format(formValues.dueDate, 'yyyy-MM-dd') : null
+          settledAt: formValues.dueDate ? format(formValues.dueDate, 'yyyy-MM-dd') : null,
+          // itemExtraAmount: 0,
+          // itemExtraAmountTax: 0,
+          // bundleExtraAmount: 0,
+          // bundleExtraAmountTax: 0,
+          
         };
         console.log('updateFields:', updateFields);
 
@@ -466,7 +472,7 @@ export function SettlementEditFormSheet() {
           shipperId: selectedCompanyId || '',
           managerId: selectedManagerId || '',
           shipperName: formValues.shipperName,
-          shipperCeo: '', // FormValues에는 없지만 ISettlementFormData에는 있음
+          shipperCeo: formValues.shipperCeo || '', // FormValues에는 없지만 ISettlementFormData에는 있음
           businessNumber: formValues.businessNumber,
           billingCompany: formValues.shipperName, // shipperName을 billingCompany로 사용
           manager: formValues.manager,
@@ -665,8 +671,8 @@ export function SettlementEditFormSheet() {
       tax, 
       totalAmount 
     };
-  }, [orders, isEditMode, editingSalesBundle, hasTax]);
-
+  //}, [orders, isEditMode, editingSalesBundle, hasTax]);
+}, [orders, isEditMode, editingSalesBundle, hasTax, bundleAdjustments, bundleFreightList]);
   // 회사 검색 함수
   const handleCompanySearch = () => {
     setFilter({ keyword: companySearchTerm });
