@@ -596,7 +596,9 @@ export function SettlementEditFormSheet() {
       console.log("편집 모드 통합 추가금 계산 bundleAdjustments", bundleAdjustments);
       // 편집 모드: 기존 sales bundle 데이터 + 추가금 계산
       let bundleAdjustmentTotal = 0;
+      let bundleAdjustmentTax = 0;
       let itemAdjustmentTotal = 0;
+      let itemAdjustmentTax = 0;
 
       console.log("편집 모드 통합 추가금 계산 bundleAdjustments", bundleAdjustments);
       console.log("편집 모드 개별 화물 추가금 계산 bundleFreightList", bundleFreightList);
@@ -605,30 +607,40 @@ export function SettlementEditFormSheet() {
       bundleAdjustments.forEach(adj => {
         if (adj.type === 'surcharge') {
           bundleAdjustmentTotal += adj.amount;
+          bundleAdjustmentTax += adj.taxAmount;
         } else {
           bundleAdjustmentTotal -= adj.amount;
+          bundleAdjustmentTax -= adj.taxAmount;
         }
       });
+      console.log("편집 모드 통합 추가금 계산 bundleAdjustmentTotal", bundleAdjustmentTotal);
+      console.log("편집 모드 통합 추가금 계산 bundleAdjustmentTax", bundleAdjustmentTax);
 
       // 개별 화물 추가금 계산
       bundleFreightList.forEach(item => {
         item.adjustments?.forEach(adj => {
           if (adj.type === 'surcharge') {
             itemAdjustmentTotal += adj.amount;
+            itemAdjustmentTax += adj.taxAmount;
           } else {
             itemAdjustmentTotal -= adj.amount;
+            itemAdjustmentTax -= adj.taxAmount;
           }
         });
       });
 
       const baseAmount = editingSalesBundle.totalAmount || 0;
-      const totalAdjustments = bundleAdjustmentTotal + itemAdjustmentTotal;
-      const netAmount = baseAmount + totalAdjustments;
-      const tax = Math.round(netAmount * 0.1);
-      const totalAmount = netAmount + tax;
+      const totalAdjustments = Number(bundleAdjustmentTotal) + Number(itemAdjustmentTotal) + Number(bundleAdjustmentTax);
+      const netAmount = Number(baseAmount) + Number(totalAdjustments);
+      const tax = Math.round(Number(baseAmount) * 0.1) + Number(bundleAdjustmentTax);
+      const totalAmount = Number(netAmount) + Number(tax);
 
       console.log("편집 모드 통합 추가금 계산 editingSalesBundle last", editingSalesBundle);
       console.log("편집 모드 통합 추가금 계산 baseAmount", baseAmount);
+      console.log("편집 모드 통합 추가금 계산 totalAdjustments", totalAdjustments);
+      console.log("편집 모드 통합 추가금 계산 netAmount", netAmount);
+      console.log("편집 모드 통합 추가금 계산 tax", tax);
+      console.log("편집 모드 통합 추가금 계산 totalAmount", totalAmount);
 
       return {
         totalFreight: baseAmount,
