@@ -743,8 +743,8 @@ export function SettlementEditFormSheet() {
                       onSelectCompany={(company) => {
                         form.setValue("shipperName", company.name);
                         form.setValue("businessNumber", company.businessNumber || "-");
-                        if (company.ceoName) {
-                          form.setValue("shipperCeo", company.ceoName);
+                        if (company.ceoName || company.ceo || company.companyCeo) {
+                          form.setValue("shipperCeo", company.ceoName || company.ceo || company.companyCeo);
                         }
                         setSelectedCompanyId(company.id);
                         // 회사 선택 시 담당자 목록 로드
