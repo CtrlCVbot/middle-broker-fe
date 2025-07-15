@@ -123,7 +123,7 @@ const formSchema = z.object({
   memo: z.string().optional(),
   taxFree: z.boolean().default(false),
   hasTax: z.boolean().default(true),
-  issueInvoice: z.boolean().default(true),
+  issueInvoice: z.boolean().default(false),
   paymentMethod: z.string().default("BANK_TRANSFER"),
   bankName: z.string().optional(),
   accountHolder: z.string().optional(),
@@ -149,7 +149,7 @@ export function SettlementEditFormSheet() {
       memo: "",
       taxFree: false,
       hasTax: true,
-      issueInvoice: true,
+      issueInvoice: false,
       paymentMethod: "BANK_TRANSFER",
       bankName: "",
       accountHolder: "",
@@ -386,8 +386,8 @@ export function SettlementEditFormSheet() {
         mainShipperCeo = shipperCounts[shipper].ceo;
       }
     }
-    console.log('mainShipper:', mainShipper);
-    console.log('mainBusinessNumber:', mainBusinessNumber);
+    //console.log('mainShipper:', mainShipper);
+    //console.log('mainBusinessNumber:', mainBusinessNumber);
     // form.setValue('shipperName', mainShipper);
     // form.setValue('businessNumber', mainBusinessNumber);
 
@@ -652,7 +652,8 @@ export function SettlementEditFormSheet() {
     };
     
     const totalFreight = orders.reduce((sum, order) => sum + (Number(order.amount) || 0), 0);
-    const tax = Math.round(totalFreight * 0.1);
+    const hasTax = form.watch('hasTax');
+    const tax = hasTax ? Math.round(totalFreight * 0.1) : 0;
     const totalAmount = totalFreight + tax;
     
     return { 
@@ -662,7 +663,7 @@ export function SettlementEditFormSheet() {
       tax, 
       totalAmount 
     };
-  }, [orders, isEditMode, editingSalesBundle]);
+  }, [orders, isEditMode, editingSalesBundle, form]);
 
   // 회사 검색 함수
   const handleCompanySearch = () => {
