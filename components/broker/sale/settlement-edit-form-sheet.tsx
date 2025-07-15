@@ -1,11 +1,11 @@
 "use client";
 
+//react
 import React, { useState, useEffect, useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 
-// 컴포넌트
+
+//ui
 import {
   Sheet,
   SheetContent,
@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
 import {
   Select,
   SelectContent,
@@ -23,34 +22,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  CheckCircle,
-  CalendarIcon,
-  Loader2,
-  Save,
-  X,
-  ChevronDown,
-  ChevronUp,
-  Building2,
-  Map,
-  Search,
-  User,
-  Phone,
-  Mail,
-  Building,
-  Landmark,
-  Hash,
-  Ellipsis,
-  UserPen,
-  Plus
-} from "lucide-react";
+
 import { 
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
@@ -62,31 +39,39 @@ import {
 } from "@/components/ui/form";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
+
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { toast } from "sonner";
+import { 
+  CalendarIcon,
+  Loader2,
+  Save,
+  X,
+  Ellipsis,
+} from "lucide-react";
 
-// 컴포넌트
+//components
 import { FreightListTable } from "@/components/broker/sale/freight-list-table";
 import { BundleAdjustmentManager } from "@/components/broker/sale/bundle-adjustment-manager";
 import { ItemAdjustmentDialog } from "@/components/broker/sale/item-adjustment-dialog";
 import { CompanyInfoSection } from "@/components/broker/sale/company-info-section";
 import { ManagerInfoSection } from "@/components/broker/sale/manager-info-section";
 
-// 타입
+//types
 import { IBrokerOrder } from "@/types/broker-order";
 import { ISettlementFormData, ISettlementWaitingItem } from "@/types/broker-charge";
 
-// 스토어
+//store
 import { useCompanies, useCompanyStore } from '@/store/company-store';
 import { useBrokerCompanyManagerStore } from '@/store/broker-company-manager-store';
 import { useBrokerChargeStore } from '@/store/broker-charge-store';
 
-// 유틸
+//utils
 import { formatCurrency, cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { constrainedMemory } from "process";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 
 
@@ -173,7 +158,6 @@ export function SettlementEditFormSheet() {
   } = useBrokerChargeStore();
 
   const { isOpen, selectedItems: orders, formData } = settlementForm;
-  
 
   
   
@@ -608,6 +592,8 @@ export function SettlementEditFormSheet() {
     console.log("editingSalesBundle:", editingSalesBundle);
 
     if (isEditMode && editingSalesBundle) {
+     
+      console.log("편집 모드 통합 추가금 계산 bundleAdjustments", bundleAdjustments);
       // 편집 모드: 기존 sales bundle 데이터 + 추가금 계산
       let bundleAdjustmentTotal = 0;
       let itemAdjustmentTotal = 0;
@@ -635,11 +621,14 @@ export function SettlementEditFormSheet() {
         });
       });
 
-      const baseAmount = editingSalesBundle.totalBaseAmount || 0;
+      const baseAmount = editingSalesBundle.totalAmount || 0;
       const totalAdjustments = bundleAdjustmentTotal + itemAdjustmentTotal;
       const netAmount = baseAmount + totalAdjustments;
       const tax = Math.round(netAmount * 0.1);
       const totalAmount = netAmount + tax;
+
+      console.log("편집 모드 통합 추가금 계산 editingSalesBundle last", editingSalesBundle);
+      console.log("편집 모드 통합 추가금 계산 baseAmount", baseAmount);
 
       return {
         totalFreight: baseAmount,
