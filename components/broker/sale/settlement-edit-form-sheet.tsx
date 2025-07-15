@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -589,6 +589,7 @@ export function SettlementEditFormSheet() {
   const hasShipperGroups = Object.keys(displayShipperGroups).length > 0;
 
   // 선택된 화물의 운임 및 금액 계산
+  const hasTax = useWatch({ control: form.control, name: 'hasTax' });
   const calculatedTotals = useMemo(() => {
     const {
       //bundleAdjustments,
@@ -652,7 +653,6 @@ export function SettlementEditFormSheet() {
     };
     
     const totalFreight = orders.reduce((sum, order) => sum + (Number(order.amount) || 0), 0);
-    const hasTax = form.watch('hasTax');
     const tax = hasTax ? Math.round(totalFreight * 0.1) : 0;
     const totalAmount = totalFreight + tax;
     
@@ -663,7 +663,7 @@ export function SettlementEditFormSheet() {
       tax, 
       totalAmount 
     };
-  }, [orders, isEditMode, editingSalesBundle, form]);
+  }, [orders, isEditMode, editingSalesBundle, hasTax]);
 
   // 회사 검색 함수
   const handleCompanySearch = () => {
