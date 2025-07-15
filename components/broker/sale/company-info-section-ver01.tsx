@@ -12,6 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 
 export interface ICompanyInfoSectionProps {
   form: any;
@@ -281,16 +282,19 @@ export function CompanyInfoSection({
                     <FormItem>
                       <FormControl>
                         <div className="relative">
-                          <Landmark className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <select
-                            className="h-9 pl-10 pr-3 w-full rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                            {...field}
-                          >
-                            <option value="">은행 선택</option>
-                            {BANK_CODES.map((bank) => (
-                              <option key={bank.code} value={bank.code}>{bank.name}</option>
-                            ))}
-                          </select>
+                          <Landmark className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger className="h-9 pl-10 w-full">
+                              <SelectValue placeholder="은행 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {BANK_CODES.map((bank) => (
+                                <SelectItem key={bank.code} value={bank.code}>
+                                  {bank.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                       </FormControl>
                       <FormMessage />
