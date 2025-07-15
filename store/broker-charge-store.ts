@@ -714,6 +714,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
     try {
       set({ selectedSalesBundleId: bundleId });
       const bundle = await getSalesBundleById(bundleId);
+      console.log("openSettlementFormForEdit:", bundle);
       set({ 
         editingSalesBundle: bundle,
         settlementForm: {

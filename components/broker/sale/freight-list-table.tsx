@@ -138,8 +138,8 @@ export function FreightListTable({
                 <TableHead className="text-xs">일정</TableHead>
                 <TableHead className="text-xs">출발지</TableHead>
                 <TableHead className="text-xs">도착지</TableHead>
-                <TableHead className="text-right text-xs">주선료</TableHead>
-                <TableHead className="text-right text-xs">세금</TableHead>
+                <TableHead className="text-right text-xs">청구</TableHead>
+                {/* <TableHead className="text-right text-xs">세금</TableHead> */}
                 {mode === 'reconciliation' && (
                   <TableHead className="text-center text-xs">개별 추가금</TableHead>
                 )}
@@ -168,7 +168,7 @@ export function FreightListTable({
                       deliveryName: waitingItem.deliveryName,
                       pickupDate: waitingItem.pickupDate,
                       deliveryDate: waitingItem.deliveryDate,
-                      amount: waitingItem.chargeAmount
+                      amount: waitingItem.amount
                     };
                   } else {
                     // ISalesBundleItemWithDetails 구조
@@ -206,11 +206,18 @@ export function FreightListTable({
                       <TableCell className="text-right text-xs">
                         {formatCurrency(displayItem.amount || 0)}
                       </TableCell>
-                      <TableCell className="text-right text-xs">
-                        {formatCurrency((displayItem.amount || 0) * 0.1)}
-                      </TableCell>
+                      {/* {mode === 'waiting' && (
+                        <TableCell className="text-right text-xs">
+                          {formatCurrency(0)}
+                        </TableCell>
+                      )} */}
+                      
                       
                       {mode === 'reconciliation' && (
+                        <>
+                        {/* <TableCell className="text-right text-xs">
+                          {displayItem.. ? formatCurrency(displayItem.taxAmount) : formatCurrency((displayItem.amount || 0) * 0.1)}
+                        </TableCell> */}
                         <TableCell className="text-center">
                           {itemAdjustmentList.length > 0 ? (
                             // 추가금이 있는 경우: 합계 표시 + Popover
@@ -327,6 +334,7 @@ export function FreightListTable({
                             </Button>
                           )}
                         </TableCell>
+                        </>
                       )}
                     </TableRow>
                   );

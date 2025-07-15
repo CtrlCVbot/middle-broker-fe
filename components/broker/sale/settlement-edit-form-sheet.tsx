@@ -118,6 +118,27 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+// 결제방법 DB/백엔드 값 → Select value 매핑 함수
+function mapPaymentMethodToSelectValue(method?: string): string {
+  if (!method) return 'BANK_TRANSFER';
+  switch (method.toLowerCase()) {
+    case 'bank_transfer':
+    case '계좌이체':
+    case '은행이체':
+      return 'BANK_TRANSFER';
+    case 'card':
+    case 'credit_card':
+    case '신용카드':
+    case '카드':
+      return 'CREDIT_CARD';
+    case 'cash':
+    case '현금':
+      return 'CASH';
+    default:
+      return 'BANK_TRANSFER';
+  }
+}
+
 export function SettlementEditFormSheet() {
   // 1. form 선언을 최상단에 위치
   const form = useForm<FormValues>({
@@ -274,7 +295,7 @@ export function SettlementEditFormSheet() {
       form.setValue('endDate', editingSalesBundle.periodTo || '');
       form.setValue('memo', editingSalesBundle.settlementMemo || '');
       form.setValue('taxFree', editingSalesBundle.totalTaxAmount === 0);
-      form.setValue('paymentMethod', editingSalesBundle.paymentMethod || 'BANK_TRANSFER');
+      form.setValue('paymentMethod', mapPaymentMethodToSelectValue(editingSalesBundle.paymentMethod));
       form.setValue('bankName', editingSalesBundle.bankCode || '');
       form.setValue('accountHolder', editingSalesBundle.bankAccountHolder || '');
       form.setValue('accountNumber', editingSalesBundle.bankAccount || '');

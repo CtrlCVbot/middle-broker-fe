@@ -220,6 +220,7 @@ export async function POST(request: NextRequest) {
       // 매출 번들 생성
       const newBundle = await tx.insert(salesBundles).values({
         ...bundleData,
+        settlementMemo: bundleData.memo,
         companySnapshot: {
           name: selectedCompany.name,
           businessNumber: selectedCompany.businessNumber,
