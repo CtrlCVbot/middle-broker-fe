@@ -200,80 +200,28 @@ export function CompanyInfoSection({
           </div>
         </div>
       ) : (
-        <div className="mb-4">                      
-          {/* 회사 정보 + 계좌 정보 (세로 정렬) */}
-          <div className="flex items-center justify-between border p-4 rounded-md bg-background bg-muted/30">
-            {/* 회사 영역 */}                      
-            <div className={cn("grid gap-2", "grid-cols-1", "w-full")}>
-              <div>
-                <FormField
-                  control={form.control}
-                  name="shipperName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>                                      
-                        <div className="relative">
-                          <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input 
-                            placeholder="회사명을 입력해주세요." 
-                            className="h-9 pl-10" 
-                            {...field} 
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div>
-                <FormField
-                  control={form.control}
-                  name="businessNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <div className="relative">
-                          <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input 
-                            placeholder="000-0000-0000" 
-                            className="h-9 pl-10" 
-                            {...field} 
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="mb-1">
-                <FormField
-                  control={form.control}
-                  name="shipperCeo"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <div className="relative">
-                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input 
-                            placeholder="대표자명" 
-                            className="h-9 pl-10" 
-                            {...field} 
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+        <div className="mb-4">
+          <div className="border p-4 rounded-md bg-background bg-muted/30 flex flex-col gap-4">
+            {/* 회사 정보 영역: 한 줄 정보 표시 */}
+            <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-foreground/90 min-h-[32px]">
+              {form.watch("shipperName") || form.watch("businessNumber") || form.watch("shipperCeo") ? (
+                <>
+                  <Building2 className="inline-block mr-1 h-4 w-4 text-muted-foreground" />
+                  <span>{form.watch("shipperName") || <span className="text-muted-foreground">회사명 없음</span>}</span>
+                  <span className="mx-2 text-muted-foreground">|</span>
+                  <Hash className="inline-block mr-1 h-4 w-4 text-muted-foreground" />
+                  <span>{form.watch("businessNumber") || <span className="text-muted-foreground">사업자번호 없음</span>}</span>
+                  {/* <span className="mx-2 text-muted-foreground">|</span>
+                  <User className="inline-block mr-1 h-4 w-4 text-muted-foreground" />
+                  <span>{form.watch("shipperCeo") || <span className="text-muted-foreground">대표자 없음</span>}</span> */}
+                </>
+              ) : (
+                <span className="text-muted-foreground">회사 정보가 없습니다.</span>
+              )}
             </div>
-
-            {/* 계좌 정보 영역 */}                      
-            <div className={cn("grid gap-2", "grid-cols-1", "w-full")}>
+            {/* 계좌 정보 영역: 2행 배치 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {/* 은행 */}
               <div>
                 <FormField
                   control={form.control}
@@ -302,30 +250,8 @@ export function CompanyInfoSection({
                   )}
                 />
               </div>
-              
+              {/* 예금주 */}
               <div>
-                <FormField
-                  control={form.control}
-                  name="bankAccount"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <div className="relative">
-                          <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input 
-                            placeholder="계좌번호를 입력해주세요." 
-                            className="h-9 pl-10" 
-                            {...field} 
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="mb-1">
                 <FormField
                   control={form.control}
                   name="bankAccountHolder"
@@ -336,6 +262,28 @@ export function CompanyInfoSection({
                           <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input 
                             placeholder="예금주명" 
+                            className="h-9 pl-10" 
+                            {...field} 
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              {/* 계좌번호 (2행) */}
+              <div className="md:col-span-2">
+                <FormField
+                  control={form.control}
+                  name="bankAccount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div className="relative">
+                          <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input 
+                            placeholder="계좌번호를 입력해주세요." 
                             className="h-9 pl-10" 
                             {...field} 
                           />

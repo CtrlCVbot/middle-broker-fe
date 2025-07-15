@@ -625,6 +625,8 @@ export function SettlementEditFormSheet() {
   }, [isEditMode, bundleFreightList, editingSalesBundle]);
 
   // 표시할 shipperGroups 결정
+  console.log("shipperGroups:", shipperGroups);
+  console.log("editModeShipperGroups:", editModeShipperGroups);
   const displayShipperGroups = isEditMode ? editModeShipperGroups : shipperGroups;
   const hasShipperGroups = Object.keys(displayShipperGroups).length > 0;
 
