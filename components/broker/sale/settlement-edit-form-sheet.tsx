@@ -634,13 +634,7 @@ export function SettlementEditFormSheet() {
       const netAmount = Number(baseAmount) + Number(totalAdjustments);
       const tax = Math.round(Number(baseAmount) * 0.1) + Number(bundleAdjustmentTax);
       const totalAmount = Number(netAmount) + Number(tax);
-
-      console.log("편집 모드 통합 추가금 계산 editingSalesBundle last", editingSalesBundle);
-      console.log("편집 모드 통합 추가금 계산 baseAmount", baseAmount);
-      console.log("편집 모드 통합 추가금 계산 totalAdjustments", totalAdjustments);
-      console.log("편집 모드 통합 추가금 계산 netAmount", netAmount);
-      console.log("편집 모드 통합 추가금 계산 tax", tax);
-      console.log("편집 모드 통합 추가금 계산 totalAmount", totalAmount);
+      
 
       return {
         totalFreight: baseAmount,
