@@ -785,7 +785,7 @@ export function SettlementEditFormSheet() {
                       onSelectManager={(manager) => {
                         setSelectedManagerId(manager.id);
                         form.setValue("manager", manager.name);
-                        form.setValue("managerContact", manager.phoneNumber || "");
+                        form.setValue("managerContact", manager.phoneNumber || manager.mobile || manager.phone || "");
                         form.setValue("managerEmail", manager.email || "");
                       }}
                       selectedManagerId={selectedManagerId}
