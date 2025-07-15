@@ -1,36 +1,40 @@
 "use client";
 
+//use client
 import React, { useEffect } from "react";
 
+//ui
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Loader2,
-  ListFilter,
-  Grid3x3
-} from "lucide-react";
-import { useIncomeStore } from "@/store/income-store";
-import { useIncomeWaitingStore } from "@/store/income-waiting-store";
-import { useBrokerChargeStore } from "@/store/broker-charge-store";
-
-import { SettlementBundleDetailSheet } from "@/components/broker/sale/settlement-bundle-detail-sheet";
-
-import { IncomeStatusType } from "@/types/income";
-
-import { WaitingTable } from "@/components/broker/sale/settlement-waiting-table";
-import { WaitingSearch } from "@/components/broker/sale/settlement-waiting-search";
-
-import WaitingSummary from "@/components/broker/sale/settlement-waiting-summary";
-
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ToggleGroup } from "@/components/ui/toggle-group";
+import { 
+  Loader2,
+  ListFilter,
+  Grid3x3
+} from "lucide-react";
+
+//store
+import { useIncomeStore } from "@/store/income-store";
+import { useIncomeWaitingStore } from "@/store/income-waiting-store";
+import { useBrokerChargeStore } from "@/store/broker-charge-store";
+
+//component
+import { SettlementBundleDetailSheet } from "@/components/broker/sale/settlement-bundle-detail-sheet";
+import { WaitingTable } from "@/components/broker/sale/settlement-waiting-table";
+import { WaitingSearch } from "@/components/broker/sale/settlement-waiting-search";
+import WaitingSummary from "@/components/broker/sale/settlement-waiting-summary";
 import { BundleMatchingFilter } from "@/components/broker/sale/settlement-bundle-matching-filter";
 import { BundleMatchingList } from "@/components/broker/sale/settlement-bundle-matching-list";
 import { SettlementEditFormSheet } from "@/components/broker/sale/settlement-edit-form-sheet";
+
+//types
+import { IncomeStatusType } from "@/types/income";
+
 export default function IncomePage() {
   // 정산 데이터 스토어 접근
   const {

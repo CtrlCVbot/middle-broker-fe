@@ -145,6 +145,7 @@ export async function POST(request: NextRequest) {
 
     console.log("매출 번들 생성 시작!");
     const userId = request.headers.get('x-user-id') || '';
+    
     console.log("userId:", userId);
     if (!userId) {
       return NextResponse.json(
@@ -219,7 +220,9 @@ export async function POST(request: NextRequest) {
           name: selectedManager.name,
           email: selectedManager.email,
           mobile: selectedManager.phone_number,
-        }
+        },
+        createdBy: userId,
+        updatedBy: userId
       }as any).returning();
       
       const bundleId = newBundle[0].id;

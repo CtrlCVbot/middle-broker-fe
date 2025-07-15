@@ -101,7 +101,7 @@ export function WaitingTable({
                 />
               </TableHead>
               <TableHead>업체명</TableHead>
-              <TableHead className="w-[80px] text-center">ID</TableHead>
+              {/* <TableHead className="w-[80px] text-center">ID</TableHead> */}
               <TableHead className="text-center">상태</TableHead>             
               <TableHead className="w-[80px] ">일정</TableHead>
               <TableHead className="w-[120px] ">시간</TableHead>              
@@ -111,8 +111,8 @@ export function WaitingTable({
               <TableHead>차량</TableHead>
               <TableHead>차주</TableHead>              
               <TableHead>청구비용</TableHead>
-              <TableHead>결제방식</TableHead>
-              <TableHead>관리자</TableHead>
+              {/* <TableHead>결제방식</TableHead>
+              <TableHead>관리자</TableHead> */}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -145,9 +145,9 @@ export function WaitingTable({
                   <TableCell className="max-w-[100px] truncate" title={`${order.company}`}>
                     {order.company}
                   </TableCell>
-                  <TableCell className="font-medium text-primary">
+                  {/* <TableCell className="font-medium text-primary">
                     {order.id.slice(0, 8)}
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell>
                     {/* <BrokerStatusBadge status={order.status} size="sm" />                     */}
                     {order.status ? <SquareCheckBig className="h-4 w-4 mr-1 text-purple-700" /> : <Ban className="h-4 w-4 mr-1 text-red-700" />}
@@ -203,19 +203,19 @@ export function WaitingTable({
                       </span>
                       {order.chargeAmount !== order.amount && (
                         <span className="text-xs text-muted-foreground">
-                          견적: {formatCurrency(order.amount)}원
+                          세금: {formatCurrency(order.amount*0.1)}원
                         </span>
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     <Badge variant="secondary" className="font-normal">
                       {order.paymentMethod}
                     </Badge>
                   </TableCell>
                   <TableCell className="max-w-[100px] truncate" title={`${order.manager}`}>
                     {order.manager}
-                  </TableCell>
+                  </TableCell> */}
                 </TableRow>
               ))
             )}
