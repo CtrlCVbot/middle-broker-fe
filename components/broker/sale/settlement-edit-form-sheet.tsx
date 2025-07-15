@@ -430,32 +430,33 @@ export function SettlementEditFormSheet() {
       console.log('formValues.memo:', formValues.memo);
 
       if (isEditMode && selectedSalesBundleId) {
+        console.log("편집 모드: 기존 sales bundle 수정", selectedSalesBundleId);
         // 편집 모드: 기존 sales bundle 수정
-        const updateFields = {
-          companySnapshot: {
-            name: formValues.shipperName,
-            businessNumber: formValues.businessNumber,
-            ceoName: formValues.shipperCeo || ''
-          },
-          managerSnapshot: {
-            name: formValues.manager,
-            contact: formValues.managerContact,
-            email: formValues.managerEmail || ''
-          },
+        const updateFields: ISettlementFormData = {
+          shipperId: selectedCompanyId || '',
+          shipperName: formValues.shipperName,
+          shipperCeo: formValues.shipperCeo || '',
+          businessNumber: formValues.businessNumber,
+          billingCompany: formValues.shipperName, // shipperName을 billingCompany로 사용
+          managerId: selectedManagerId || '',
+          manager: formValues.manager,
+          managerContact: formValues.managerContact,
+          managerEmail: formValues.managerEmail || '',
           periodType: formValues.periodType,
-          periodFrom: formValues.startDate,
-          periodTo: formValues.endDate,
-          settlementMemo: formValues.memo,
+          startDate: formValues.startDate,
+          endDate: formValues.endDate,
+          dueDate: formValues.dueDate ? format(formValues.dueDate, 'yyyy-MM-dd') : '',
+          memo: formValues.memo || '',
+          taxFree: formValues.taxFree,
+          hasTax: formValues.hasTax,
+          issueInvoice: formValues.issueInvoice,
           paymentMethod: formValues.paymentMethod,
-          bankCode: formValues.bankName || null,
-          bankAccountHolder: formValues.accountHolder || null,
-          bankAccount: formValues.accountNumber || null,
-          settledAt: formValues.dueDate ? format(formValues.dueDate, 'yyyy-MM-dd') : null,
-          // itemExtraAmount: 0,
-          // itemExtraAmountTax: 0,
-          // bundleExtraAmount: 0,
-          // bundleExtraAmountTax: 0,
-          
+          bankName: formValues.bankName || '',
+          accountHolder: formValues.accountHolder || '',
+          accountNumber: formValues.accountNumber || '',
+          totalAmount: calculatedTotals.totalFreight,
+          totalTaxAmount: calculatedTotals.tax,
+          totalAmountWithTax: calculatedTotals.totalAmount,
         };
         console.log('updateFields:', updateFields);
 

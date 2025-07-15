@@ -133,7 +133,7 @@ interface IBrokerChargeState {
   
   // sales bundle 편집 관련 액션 추가
   openSettlementFormForEdit: (bundleId: string) => Promise<void>;
-  updateSalesBundleData: (id: string, fields: Record<string, any>, reason?: string) => Promise<boolean>;
+  updateSalesBundleData: (id: string, formData: ISettlementFormData, reason?: string) => Promise<boolean>;
   deleteSalesBundleData: (id: string) => Promise<boolean>;
 
   // 새로 추가: 추가금 관련 액션들
@@ -727,19 +727,42 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
     }
   },
 
-  updateSalesBundleData: async (id: string, fields: Record<string, any>, reason?: string) => {
+  updateSalesBundleData: async (id: string, formData: ISettlementFormData, reason?: string) => {
     try {
       set({ isLoading: true, error: null });
 
-      console.log('updateSalesBundleData-before:', fields);
-      fields.settlementMemo = fields.memo || null;
-      console.log('updateSalesBundleData-after:', fields);
-      await updateSalesBundle(id, fields, reason);
+      // ISettlementFormData → sales bundle update input 변환
+      const updateInput = {
+        companySnapshot: {
+          name: formData.shipperName,
+          businessNumber: formData.businessNumber,
+          ceoName: formData.shipperCeo || '',
+        },
+        managerSnapshot: {
+          name: formData.manager,
+          contact: formData.managerContact,
+          email: formData.managerEmail || '',
+        },
+        periodType: formData.periodType,
+        periodFrom: formData.startDate,
+        periodTo: formData.endDate,
+        settlementMemo: formData.memo || '',
+        paymentMethod: formData.paymentMethod,
+        bankCode: formData.bankName === '' ? null : formData.bankName,
+        bankAccountHolder: formData.accountHolder === '' ? null : formData.accountHolder,
+        bankAccount: formData.accountNumber === '' ? null : formData.accountNumber,
+        settledAt: formData.dueDate || '',
+        totalAmount: formData.totalAmount,
+        totalTaxAmount: formData.totalTaxAmount,
+        totalAmountWithTax: formData.totalAmountWithTax,
+        // 필요시 추가 필드 변환
+      };
+
+      console.log('updateSalesBundleData-before:', updateInput);
+      await updateSalesBundle(id, updateInput, reason);
       set({ isLoading: false });
-      
       // 성공 시 sales bundles 목록 새로고침
       await get().fetchSalesBundles();
-      
       return true;
     } catch (error) {
       console.error('sales bundle 업데이트 중 오류 발생:', error);
