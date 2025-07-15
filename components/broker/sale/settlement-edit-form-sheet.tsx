@@ -22,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 import { 
   Popover,
   PopoverContent,
@@ -37,12 +36,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-
 import { 
   CalendarIcon,
   Loader2,
@@ -55,7 +52,8 @@ import {
 import { FreightListTable } from "@/components/broker/sale/freight-list-table";
 import { BundleAdjustmentManager } from "@/components/broker/sale/bundle-adjustment-manager";
 import { ItemAdjustmentDialog } from "@/components/broker/sale/item-adjustment-dialog";
-import { CompanyInfoSection } from "@/components/broker/sale/company-info-section";
+//import { CompanyInfoSection } from "@/components/broker/sale/company-info-section";
+import { CompanyInfoSection } from "@/components/broker/sale/company-info-section-ver01";
 import { ManagerInfoSection } from "@/components/broker/sale/manager-info-section";
 
 //types
