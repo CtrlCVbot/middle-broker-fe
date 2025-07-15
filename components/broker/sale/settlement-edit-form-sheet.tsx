@@ -249,7 +249,14 @@ export function SettlementEditFormSheet() {
       console.log('selectedCompanyId:', selectedCompanyId);
       // 담당자 데이터 로드
       form.setValue('manager', editingSalesBundle.managerSnapshot?.name || '');
-      form.setValue('managerContact', editingSalesBundle.managerSnapshot?.contact || '');
+      form.setValue(
+        'managerContact',
+        editingSalesBundle.managerSnapshot?.contact ||
+        editingSalesBundle.managerSnapshot?.phoneNumber ||
+        editingSalesBundle.managerSnapshot?.phone ||
+        editingSalesBundle.managerSnapshot?.mobile ||
+        ''
+      );
       form.setValue('managerEmail', editingSalesBundle.managerSnapshot?.email || '');
 
 
@@ -785,7 +792,10 @@ export function SettlementEditFormSheet() {
                       onSelectManager={(manager) => {
                         setSelectedManagerId(manager.id);
                         form.setValue("manager", manager.name);
-                        form.setValue("managerContact", manager.phoneNumber || manager.mobile || manager.phone || "");
+                        form.setValue(
+                          "managerContact",
+                          manager.phoneNumber || manager.mobile || manager.phone || ""
+                        );
                         form.setValue("managerEmail", manager.email || "");
                       }}
                       selectedManagerId={selectedManagerId}
