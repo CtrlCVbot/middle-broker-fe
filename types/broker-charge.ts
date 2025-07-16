@@ -233,6 +233,7 @@ export interface ISettlementFormData {
   totalAmountWithTax: number;
   itemExtraAmount?: number;
   bundleExtraAmount?: number;
+  orderCount?: number;
 }
 
 // 정산 폼 시트 상태 타입
@@ -377,6 +378,7 @@ export interface CreateSalesBundleInput {
   status?: SalesBundleStatus;
   items: { orderSalesId: string; baseAmount: number }[];
   adjustments?: { type: BundleAdjType; description?: string; amount: number }[];
+  orderCount?: number;
 }
 
 // sales bundle 목록 조회 관련 타입
@@ -417,6 +419,7 @@ export interface ISalesBundleListItem {
   status: SalesBundleStatus;
   createdAt: string;
   updatedAt: string;
+  orderCount?: number;
 }
 
 // sales bundle 목록 응답 타입

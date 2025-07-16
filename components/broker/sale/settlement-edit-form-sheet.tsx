@@ -524,6 +524,7 @@ export function SettlementEditFormSheet() {
           totalAmountWithTax: calculatedTotals.totalAmount,
           itemExtraAmount: calculatedTotals.totalItemAdjustments,
           bundleExtraAmount: calculatedTotals.totalBundleAdjustments,
+          //orderCount: orders.length,
         };
         console.log('updateFields:', updateFields);
 
@@ -560,7 +561,8 @@ export function SettlementEditFormSheet() {
           accountNumber: formValues.accountNumber || '',
           totalAmount: ordersSummary.totalFreight,
           totalTaxAmount: taxAmount,
-          totalAmountWithTax: finalAmount + taxAmount
+          totalAmountWithTax: finalAmount + taxAmount,
+          orderCount: orders.length
         };
         
         console.log("handleSubmit formData:", formData);

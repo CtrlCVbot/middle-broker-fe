@@ -142,7 +142,8 @@ const CreateSalesBundleSchema = z.object({
   bankCode: z.string().optional(),
   bankAccount: z.string().optional(),
   bankAccountHolder: z.string().optional(),  
-  //periodType: z.enum(periodTypeEnum.enumValues).default('departure'),
+  periodType: z.string().default('departure'),
+  orderCount: z.number().nonnegative(),
 });
 
 // 매출 번들 생성

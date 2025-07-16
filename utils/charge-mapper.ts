@@ -330,7 +330,8 @@ export function mapSettlementFormToSalesBundleInput(
       orderSalesId: item.id, // 실제로는 orderSalesId, 필요시 매핑 보정
       baseAmount: Number(item.chargeAmount) || 0
     })),
-    adjustments: additionalAdjustments || []
+    adjustments: additionalAdjustments || [],
+    orderCount: selectedWaitingItems.length
   };
   
   console.log('Final CreateSalesBundleInput:', result);
@@ -376,7 +377,7 @@ export function mapSalesBundlesToIncomes(salesBundles: ISalesBundleListItem[]): 
       id: bundle.id,
       status: mapSalesBundleStatusToIncomeStatus(bundle.status),
       orderIds: [], // sales_bundle_items에서 가져와야 하므로 현재는 빈 배열
-      orderCount: 0, // 실제로는 sales_bundle_items 개수
+      orderCount: bundle.orderCount, // 실제로는 sales_bundle_items 개수
       
       // 화주 정보
       shipperId: bundle.companyId,
@@ -409,7 +410,8 @@ export function mapSalesBundlesToIncomes(salesBundles: ISalesBundleListItem[]): 
       managerContact: bundle.managerSnapshot?.mobile,
       createdAt: bundle.createdAt,
       updatedAt: bundle.updatedAt,
-      memo: bundle.settlementMemo
+      memo: bundle.settlementMemo,
+      
     } as IIncome;
   });
 }
