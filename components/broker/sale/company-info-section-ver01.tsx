@@ -247,7 +247,7 @@ export function CompanyInfoSection({
               <div>
                 <FormField
                   control={form.control}
-                  name="bankCode"
+                  name="bankName"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>

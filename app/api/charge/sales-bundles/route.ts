@@ -141,7 +141,7 @@ const CreateSalesBundleSchema = z.object({
   adjustments: z.array(SalesBundleAdjustmentSchema).optional(),
   memo: z.string().optional(),
   settledAt: z.string().optional(),
-  bankName: z.string().optional(),
+  bankCode: z.string().optional(),
   bankAccount: z.string().optional(),
   bankAccountHolder: z.string().optional(),  
   //periodType: z.enum(periodTypeEnum.enumValues).default('departure'),

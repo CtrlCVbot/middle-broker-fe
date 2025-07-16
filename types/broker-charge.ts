@@ -360,7 +360,7 @@ export interface IUpdateItemAdjustmentInput {
 export interface CreateSalesBundleInput {
   companyId: string;
   managerId: string;
-  bankName?: string;
+  bankCode?: string;
   bankAccount?: string;
   bankAccountHolder?: string;
   memo?: string;

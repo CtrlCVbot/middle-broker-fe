@@ -313,7 +313,7 @@ export function mapSettlementFormToSalesBundleInput(
   const result = {
     companyId: formData.shipperId,
     managerId: formData.managerId,
-    bankName: formData.bankName || '',
+    bankCode: formData.bankName || '',
     bankAccount: formData.accountNumber || '',
     bankAccountHolder: formData.accountHolder || '',
     memo: formData.memo || '',

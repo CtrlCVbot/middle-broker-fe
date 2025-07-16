@@ -72,6 +72,12 @@ import { ko } from "date-fns/locale";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+const PaymentMethod = [
+  { key: 'bank_transfer', name: '계좌이체' },
+  { key: 'credit_card', name: '신용카드' },
+  { key: 'cash', name: '현금' },
+];
+
 
 
 // 정산 생성 폼 스키마
@@ -118,22 +124,22 @@ type FormValues = z.infer<typeof formSchema>;
 
 // 결제방법 DB/백엔드 값 → Select value 매핑 함수
 function mapPaymentMethodToSelectValue(method?: string): string {
-  if (!method) return 'BANK_TRANSFER';
+  if (!method) return 'bank_transfer';
   switch (method.toLowerCase()) {
     case 'bank_transfer':
     case '계좌이체':
     case '은행이체':
-      return 'BANK_TRANSFER';
+      return 'bank_transfer';
     case 'card':
     case 'credit_card':
     case '신용카드':
     case '카드':
-      return 'CREDIT_CARD';
+      return 'credit_card';
     case 'cash':
     case '현금':
-      return 'CASH';
+      return 'cash';
     default:
-      return 'BANK_TRANSFER';
+      return 'bank_transfer';
   }
 }
 
@@ -155,7 +161,7 @@ export function SettlementEditFormSheet() {
       taxFree: false,
       hasTax: true,
       issueInvoice: false,
-      paymentMethod: "BANK_TRANSFER",
+      paymentMethod: "bank_transfer",
       bankName: "",
       accountHolder: "",
       accountNumber: "",
@@ -361,11 +367,11 @@ export function SettlementEditFormSheet() {
       form.setValue('startDate', start);
       form.setValue('endDate', end);
     } else {
-      let earliestDate = new Date(orders[0].pickupDate);
-      let latestDate = new Date(orders[0].pickupDate);
+      let earliestDate = new Date(orders[0].deliveryDate);
+      let latestDate = new Date(orders[0].deliveryDate);
 
       orders.forEach(order => {
-        const date = new Date(order.pickupDate);
+        const date = new Date(order.deliveryDate);
         if (date < earliestDate) earliestDate = date;
         if (date > latestDate) latestDate = date;
       });
@@ -818,32 +824,13 @@ export function SettlementEditFormSheet() {
                       setCompanySearchTerm={setCompanySearchTerm}
                       companies={companiesQuery.data?.data ?? []}
                       onSelectCompany={(company) => {
-
-                        // form.reset({
-                        //   ...form.getValues(),
-                        //   shipperName: company.name,
-                        //   businessNumber: company.businessNumber,
-                        //   shipperCeo: company.ceoName,
-                        //   accountHolder: company.bankAccountHolder,
-                        //   accountNumber: company.bankAccountNumber,
-                        //   bankName: company.bankCode,
-                        // });
                         form.setValue("shipperName", company.name);
                         form.setValue("businessNumber", company.businessNumber);
                         form.setValue("shipperCeo", company.ceoName || company.ceo || company.companyCeo);
                         form.setValue("accountHolder", company.bankAccountHolder || company.accountHolder || '');
                         form.setValue("accountNumber", company.bankAccountNumber || company.accountNumber || '');
-                        form.setValue("bankName", company.bankCode || '');
+                        form.setValue("bankName", company.bankCode);
                         
-
-                        // form.setValue("shipperName", company.name);
-                        // form.setValue("businessNumber", company.businessNumber || "-");
-                        // if (company.ceoName || company.ceo || company.companyCeo) {
-                        //   form.setValue("shipperCeo", company.ceoName || company.ceo || company.companyCeo);
-                        // }
-                        // form.setValue("bankName", company.bankCode || "");
-                        // form.setValue("accountHolder", company.bankAccountHolder || "");
-                        // form.setValue("accountNumber", company.bankAccountNumber || "");
                         setSelectedCompanyId(company.id);
                         // 회사 선택 시 담당자 목록 로드
                         if (company.id) {
@@ -862,7 +849,7 @@ export function SettlementEditFormSheet() {
                           managerEmail: "",
                           bankName: "",
                           accountHolder: "",
-                          accountNumber: ""
+                          accountNumber: "",
                         });
                         setSelectedCompanyId(null);
                         setSelectedManagerId(null);
@@ -1235,9 +1222,9 @@ export function SettlementEditFormSheet() {
                                         </SelectTrigger>
                                       </FormControl>
                                       <SelectContent>
-                                        <SelectItem value="BANK_TRANSFER">계좌이체</SelectItem>
-                                        <SelectItem value="CREDIT_CARD">신용카드</SelectItem>
-                                        <SelectItem value="CASH">현금</SelectItem>
+                                        {PaymentMethod.map((method) => (
+                                          <SelectItem key={method.key} value={method.key}>{method.name}</SelectItem>
+                                        ))}
                                       </SelectContent>
                                     </Select>
                                     <FormMessage />
