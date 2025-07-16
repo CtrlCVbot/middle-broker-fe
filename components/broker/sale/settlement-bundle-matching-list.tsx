@@ -135,6 +135,7 @@ export function BundleMatchingList({
     }
   }
 
+  console.log('incomes:', incomes);
   return (
     <div className="space-y-4">
       <div className="rounded-md border">

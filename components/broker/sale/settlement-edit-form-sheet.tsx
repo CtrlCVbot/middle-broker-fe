@@ -390,13 +390,13 @@ export function SettlementEditFormSheet() {
 
 
   // 정산 대사 모드에서 통합 추가금 로딩
-  // useEffect(() => {
-  //   console.log("정산 대사 모드에서 통합 추가금 로딩:", isEditMode, editingSalesBundle, isOpen);
+  useEffect(() => {
+    console.log("정산 대사 모드에서 통합 추가금 로딩:", isEditMode, editingSalesBundle, isOpen);
 
-  //   if (isEditMode && editingSalesBundle && isOpen) {
-  //     fetchBundleAdjustments(editingSalesBundle.id);
-  //   }
-  // }, [isEditMode, editingSalesBundle, isOpen, fetchBundleAdjustments]); // ✅ 모든 의존성 추가
+    if (isEditMode && editingSalesBundle && isOpen) {
+      fetchBundleAdjustments(editingSalesBundle.id);
+    }
+  }, [isEditMode, editingSalesBundle, isOpen, fetchBundleAdjustments]); // ✅ 모든 의존성 추가
 
   // 정산 대사 모드에서 화물 목록 로딩
   useEffect(() => {
@@ -406,6 +406,8 @@ export function SettlementEditFormSheet() {
       fetchBundleFreightList(selectedSalesBundleId);
     }
   }, [isEditMode, selectedSalesBundleId, fetchBundleFreightList]); // ✅ 모든 의존성 추가
+
+  
 
   // 화주 데이터 - 대부분의 화물이 같은 화주일 경우 해당 화주를 기본값으로 설정
   useEffect(() => {
@@ -518,8 +520,10 @@ export function SettlementEditFormSheet() {
           accountHolder: formValues.accountHolder || '',
           accountNumber: formValues.accountNumber || '',
           totalAmount: calculatedTotals.totalFreight,
-          totalTaxAmount: calculatedTotals.tax,
+          totalTaxAmount: calculatedTotals.tax,          
           totalAmountWithTax: calculatedTotals.totalAmount,
+          itemExtraAmount: calculatedTotals.totalItemAdjustments,
+          bundleExtraAmount: calculatedTotals.totalBundleAdjustments,
         };
         console.log('updateFields:', updateFields);
 
@@ -668,8 +672,7 @@ export function SettlementEditFormSheet() {
 
   // 선택된 화물의 운임 및 금액 계산
   const hasTax = useWatch({ control: form.control, name: 'hasTax' });
-  const calculatedTotals = useMemo(() => {
-    
+  const calculatedTotals = useMemo(() => {    
 
     console.log("calculatedTotals 호출");
     console.log("isEditMode:", isEditMode);
@@ -709,24 +712,34 @@ export function SettlementEditFormSheet() {
       bundleFreightList.forEach(item => {
         item.adjustments?.forEach(adj => {
           if (adj.type === 'surcharge') {
-            itemAdjustmentTotal += adj.amount;
-            itemAdjustmentTax += adj.taxAmount;
+            itemAdjustmentTotal += Number(adj.amount);
+            itemAdjustmentTax += Number(adj.taxAmount);
           } else {
-            itemAdjustmentTotal -= adj.amount;
-            itemAdjustmentTax -= adj.taxAmount;
+            itemAdjustmentTotal -= Number(adj.amount);
+            itemAdjustmentTax -= Number(adj.taxAmount);
           }
         });
       });
 
-      const baseAmount = editingSalesBundle.totalAmount || 0;
+      const baseAmount = Number(editingSalesBundle.totalAmount) || 0;
+      const totalBundleAdjustments = Number(bundleAdjustmentTotal);
+      const totalItemAdjustments = Number(itemAdjustmentTotal);
       const totalAdjustments = Number(bundleAdjustmentTotal) + Number(itemAdjustmentTotal) + Number(bundleAdjustmentTax);
       const netAmount = Number(baseAmount) + Number(totalAdjustments);
       const tax = Math.round(Number(baseAmount) * 0.1) + Number(bundleAdjustmentTax);
       const totalAmount = Number(netAmount) + Number(tax);
+
+      console.log("편집 모드 통합 추가금 계산 baseAmount", baseAmount);
+      console.log("편집 모드 통합 추가금 계산 totalAdjustments", totalAdjustments);
+      console.log("편집 모드 통합 추가금 계산 netAmount", netAmount);
+      console.log("편집 모드 통합 추가금 계산 tax", tax);
+      console.log("편집 모드 통합 추가금 계산 totalAmount", totalAmount);
       
 
       return {
         totalFreight: baseAmount,
+        totalBundleAdjustments,
+        totalItemAdjustments,
         totalAdjustments,
         totalNet: netAmount,
         tax,
@@ -737,6 +750,8 @@ export function SettlementEditFormSheet() {
     // 생성 모드: 선택된 화물 기반 계산 (추가금은 아직 없음)
     if (!orders || orders.length === 0) return { 
       totalFreight: 0, 
+      totalBundleAdjustments: 0,
+      totalItemAdjustments: 0,
       totalAdjustments: 0, 
       totalNet: 0, 
       tax: 0, 
@@ -748,7 +763,8 @@ export function SettlementEditFormSheet() {
     const totalAmount = totalFreight + tax;
     
     return { 
-      totalFreight, 
+      totalFreight,
+      totalBundleAdjustments: 0,
       totalAdjustments: 0, 
       totalNet: totalFreight, 
       tax, 
@@ -1385,14 +1401,17 @@ export function SettlementEditFormSheet() {
               <div className="text-xs text-muted-foreground">총 주선료</div>
               <div className="font-medium">{formatCurrency(calculatedTotals.totalFreight)}</div>
             </div>
-            <div>
-              <div className="text-xs text-muted-foreground">추가금</div>
-              <div className="font-medium">{formatCurrency(calculatedTotals.totalAdjustments || 0)}</div>
-            </div>
+            
             <div>
               <div className="text-xs text-muted-foreground">총 세금</div>
               <div className="font-medium">{formatCurrency(calculatedTotals.tax)}</div>
             </div>
+
+            <div>
+              <div className="text-xs text-muted-foreground">정산 추가금</div>
+              <div className="font-medium">{formatCurrency(calculatedTotals.totalAdjustments || 0)}</div>
+            </div>
+
             <div>
               <div className="text-xs text-muted-foreground">청구 금액</div>
               <div className="font-medium text-green-600">{formatCurrency(calculatedTotals.totalAmount)}</div>

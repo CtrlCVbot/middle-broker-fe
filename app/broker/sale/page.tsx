@@ -368,7 +368,7 @@ export default function IncomePage() {
                               deliveryTime: item.deliveryTime,
                               vehicle: { type: item.requestedVehicleType, weight: item.requestedVehicleWeight },
                               driver: { name: item.assignedDriverSnapshot?.name, contact: item.assignedDriverSnapshot?.contact },
-                              paymentMethod: "계좌이체",
+                              paymentMethod: "bank_transfer",
                               manager: "-",
                               bankName: item.companyBankCode,
                               accountHolder: item.companyBankAccountHolder,
@@ -404,7 +404,7 @@ export default function IncomePage() {
                               arrivalCity: "-",
                               vehicle: { type: "-", weight: "-" },
                               driver: { name: "-" },
-                              paymentMethod: "계좌이체",
+                              paymentMethod: "bank_transfer",
                               manager: "-",
                               chargeAmount: item.chargeAmount
                             }) as any )}

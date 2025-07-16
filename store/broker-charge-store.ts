@@ -634,9 +634,8 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
         salesBundlesPageSize,
         salesBundlesFilter
       );
-
       
-      
+      console.log('fetchSalesBundles:', response.data);
       // IIncome 형태로 변환
       const salesBundlesAsIncomes = mapSalesBundlesToIncomes(response.data);
       
@@ -756,6 +755,8 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
         totalAmount: formData.totalAmount,
         totalTaxAmount: formData.totalTaxAmount,
         totalAmountWithTax: formData.totalAmountWithTax,
+        itemExtraAmount: formData.itemExtraAmount,
+        bundleExtraAmount: formData.bundleExtraAmount,
         // 필요시 추가 필드 변환
       };
 

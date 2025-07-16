@@ -231,6 +231,8 @@ export interface ISettlementFormData {
   totalAmount: number;
   totalTaxAmount: number;
   totalAmountWithTax: number;
+  itemExtraAmount?: number;
+  bundleExtraAmount?: number;
 }
 
 // 정산 폼 시트 상태 타입
@@ -410,6 +412,8 @@ export interface ISalesBundleListItem {
   totalAmount: number;
   totalTaxAmount?: number;
   totalAmountWithTax?: number;
+  itemExtraAmount?: number;
+  bundleExtraAmount?: number;
   status: SalesBundleStatus;
   createdAt: string;
   updatedAt: string;

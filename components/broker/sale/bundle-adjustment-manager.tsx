@@ -96,11 +96,11 @@ export function BundleAdjustmentManager({
   } = useBrokerChargeStore();
 
   // 정산 대사 모드에서 통합 추가금 로딩
-  useEffect(() => {
-    if (isEditMode && bundleId) {
-      fetchBundleAdjustments(bundleId);
-    }
-  }, [isEditMode, bundleId, fetchBundleAdjustments]);
+  // useEffect(() => {
+  //   if (isEditMode && bundleId) {
+  //     fetchBundleAdjustments(bundleId);
+  //   }
+  // }, [isEditMode, bundleId, fetchBundleAdjustments]);
 
   const handleOpenDialog = (adjustment?: ISalesBundleAdjustment) => {
     if (adjustment) {
@@ -238,10 +238,10 @@ export function BundleAdjustmentManager({
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[40px] text-xs">번호</TableHead>
-                  <TableHead className="text-xs">구분</TableHead>
+                  <TableHead className="w-[70px] text-xs">구분</TableHead>
                   <TableHead className="text-xs">설명</TableHead>
                   <TableHead className="text-right text-xs">금액</TableHead>
-                  <TableHead className="text-right text-xs">세금</TableHead>
+                  {/* <TableHead className="text-right text-xs">세금</TableHead> */}
                   <TableHead className="text-center text-xs">작업</TableHead>
                 </TableRow>
               </TableHeader>
@@ -265,9 +265,9 @@ export function BundleAdjustmentManager({
                       <TableCell className="text-right text-xs">
                         {formatCurrency(adjustment.amount)}
                       </TableCell>
-                      <TableCell className="text-right text-xs">
+                      {/* <TableCell className="text-right text-xs">
                         {formatCurrency(adjustment.taxAmount)}
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell className="text-center">
                         <div className="flex justify-center gap-1">
                           <Button
@@ -376,7 +376,7 @@ export function BundleAdjustmentManager({
                   />
                 </div>
                 
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label htmlFor="taxAmount">세금</Label>
                   <Input
                     id="taxAmount"
@@ -385,7 +385,7 @@ export function BundleAdjustmentManager({
                     value={formData.taxAmount}
                     onChange={(e) => setFormData(prev => ({ ...prev, taxAmount: e.target.value }))}
                   />
-                </div>
+                </div> */}
               </div>
               
               <div className="flex justify-end gap-2 mt-6">

@@ -109,6 +109,8 @@ export function WaitingSearch({ filter, setFilter, filterOptions }: IWaitingSear
     setFilter({ searchTerm: e.target.value });
   };
 
+  
+
   // 임시 필터 업데이트 함수
   const handleTempFilterUpdate = (updates: Partial<IWaitingFilter>) => {
     setTempFilter(prev => ({ ...prev, ...updates }));

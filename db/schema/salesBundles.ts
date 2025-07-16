@@ -55,6 +55,8 @@ export const salesBundles = pgTable('sales_bundles', {
   managerId: uuid('manager_id').references(() => users.id),
   managerSnapshot: jsonb('manager_snapshot').$type<IUserSnapshot>(),
   
+  //화물 정보
+  orderCount: integer('order_count').notNull().default(0),
 
   //결제방법
   paymentMethod: paymentMethodEnum('payment_method').notNull().default('bank_transfer'),

@@ -389,7 +389,7 @@ export function mapSalesBundlesToIncomes(salesBundles: ISalesBundleListItem[]): 
       
       // 금액 정보
       totalBaseAmount: totalAmount, // 기본 운임 (추가금 제외)
-      totalAdditionalAmount: 0, // 추가금 (bundle_adjustments에서 계산)
+      totalAdditionalAmount: Number(bundle.bundleExtraAmount) + Number(bundle.itemExtraAmount) || 0, // 추가금 (bundle_adjustments에서 계산)
       totalAmount: totalAmount,
       tax: totalTaxAmount,
       isTaxFree: totalTaxAmount === 0,

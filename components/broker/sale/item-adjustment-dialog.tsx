@@ -214,7 +214,7 @@ export function ItemAdjustmentDialog({
             />
           </div>
           
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="taxAmount">세금</Label>
             <Input
               id="taxAmount"
@@ -223,7 +223,7 @@ export function ItemAdjustmentDialog({
               value={formData.taxAmount}
               onChange={(e) => setFormData(prev => ({ ...prev, taxAmount: e.target.value }))}
             />
-          </div>
+          </div> */}
         </div>
         
         <div className="flex justify-end gap-2 mt-6">

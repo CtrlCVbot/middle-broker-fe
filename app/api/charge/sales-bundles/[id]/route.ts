@@ -138,6 +138,8 @@ export async function PATCH(
       'totalAmount',
       'totalTaxAmount',
       'totalAmountWithTax',
+      'itemExtraAmount',
+      'bundleExtraAmount',
       'status'
     ];
 
@@ -152,6 +154,7 @@ export async function PATCH(
         { status: 400 }
       );
     }
+    console.log('fields', fields);
 
     // 업데이트 데이터 준비
     const updateData = {

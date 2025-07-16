@@ -77,11 +77,11 @@ export function FreightListTable({
   } = useBrokerChargeStore();
 
   // 정산 대사 모드에서 화물 목록 로딩
-  useEffect(() => {
-    if (mode === 'reconciliation' && bundleId) {
-      fetchBundleFreightList(bundleId);
-    }
-  }, [mode, bundleId, fetchBundleFreightList]);
+  // useEffect(() => {
+  //   if (mode === 'reconciliation' && bundleId) {
+  //     fetchBundleFreightList(bundleId);
+  //   }
+  // }, [mode, bundleId, fetchBundleFreightList]);
 
   // 표시할 데이터 결정
   const displayData = mode === 'waiting' ? orders : bundleFreightList;
