@@ -204,8 +204,11 @@ export default function IncomePage() {
       setFilter({ status: value as IncomeStatusType });
       
       // sales bundles 필터도 업데이트
-      if (value === "MATCHING" || value === "COMPLETED") {
+      if (value === "MATCHING") {
         const salesBundleStatus = value === "MATCHING" ? 'draft' : 'issued';
+        updateSalesBundlesFilter({ status: salesBundleStatus });
+      } else if (value === "COMPLETED") {
+        const salesBundleStatus = 'paid';
         updateSalesBundlesFilter({ status: salesBundleStatus });
       }
     }

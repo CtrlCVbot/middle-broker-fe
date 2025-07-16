@@ -1519,7 +1519,7 @@ export function SettlementEditFormSheet() {
                     <Button 
                       type="button" 
                       variant="default"
-                      //onClick={() => setIsDeleteDialogOpen(true)}
+                      onClick={() => setIsCompleteDialogOpen(true)}
                       disabled={loading}
                       size="sm"
                       className="bg-blue-500 hover:bg-blue-700 hover:cursor-pointer"
@@ -1619,12 +1619,12 @@ export function SettlementEditFormSheet() {
     <ConfirmDialog
       open={isCompleteDialogOpen}
       onOpenChange={setIsCompleteDialogOpen}
-      title="정산 삭제 확인"
-      description="정말로 이 정산을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
-      confirmText="정산 삭제"
+      title="정산 완료 확인"
+      description="정말로 이 정산을 완료하시겠습니까?"
+      confirmText="정산 완료"
       cancelText="취소"
       onConfirm={handleComplete}
-      variant="destructive"
+      variant="default"
     />
 
     {/* 개별 추가금 삭제 확인 ConfirmDialog */}
