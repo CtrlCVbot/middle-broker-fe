@@ -150,6 +150,9 @@ export interface ISettlementWaitingItem {
   companyName: string;
   companyBusinessNumber: string;
   companyCeo: string;
+  companyBankCode: string;
+  companyBankAccountHolder: string;
+  companyBankAccount: string;
   pickupName: string;
   deliveryName: string;
   pickupDate: string;
@@ -168,6 +171,7 @@ export interface ISettlementWaitingItem {
   isClosed: boolean;
   flowStatus: string;
   amount: number;
+  
 }
 
 // 정산 대기 목록 페이지 응답 타입

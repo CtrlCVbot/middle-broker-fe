@@ -276,18 +276,9 @@ export function mapWaitingItemsToBrokerOrders(
 
     amount: item.amount,
     
-    // chargeAmount: item.chargeAmount,
-    // //amount: item.totalAmount,
-    // //fee: item.totalAmount - item.chargeAmount,
-    // shipperName: item.companyName,
-    // //shipperContact: item.managerContact,
-    // //shipperEmail: item.managerEmail,
-    // //manager: item.manager,
-    // driver: {
-    //   name: item.assignedDriverSnapshot?.name || "정보 없음",
-    //   contact: item.assignedDriverSnapshot?.contact || "정보 없음",
-    // };
-    // createdAt: item.createdAt
+    bankName: item.companyBankCode,
+    accountHolder: item.companyBankAccountHolder,
+    accountNumber: item.companyBankAccount,
     
    
   } as IBrokerOrder));

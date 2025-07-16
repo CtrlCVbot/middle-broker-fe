@@ -126,10 +126,10 @@ export default function IncomePage() {
       fetchIncomes]);
       
   // 정산 대기 화물 데이터 로드 (기존)
-  useEffect(() => {
-    console.log('useEffect 실행됨 - 정산 대기 화물 데이터 로드');
-    fetchWaitingOrders();
-  }, [fetchWaitingOrders]);
+  // useEffect(() => {
+  //   console.log('useEffect 실행됨 - 정산 대기 화물 데이터 로드');
+  //   fetchWaitingOrders();
+  // }, [fetchWaitingOrders]);
 
   // 정산 대기 화물 데이터 로드 (새로운 구현)
   useEffect(() => {
@@ -369,7 +369,10 @@ export default function IncomePage() {
                               vehicle: { type: item.requestedVehicleType, weight: item.requestedVehicleWeight },
                               driver: { name: item.assignedDriverSnapshot?.name, contact: item.assignedDriverSnapshot?.contact },
                               paymentMethod: "계좌이체",
-                              manager: "-"
+                              manager: "-",
+                              bankName: item.companyBankCame,
+                              accountHolder: item.companyBankAccountHolder,
+                              accountNumber: item.companyBankAccount
                             }) as any)}
                             currentPage={waitingItemsPage}
                             totalPages={waitingItemsTotalPages}

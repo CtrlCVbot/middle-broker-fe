@@ -88,6 +88,9 @@ export interface IBrokerOrder {
     updatedAt: string;
   };
   settlementId?: string;
+  bankName?: string;
+  accountHolder?: string;
+  accountNumber?: string;
 }
 
 // 응답 페이징 정보 인터페이스

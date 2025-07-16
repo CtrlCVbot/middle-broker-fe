@@ -4,7 +4,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
-
 //ui
 import {
   Sheet,
@@ -62,6 +61,7 @@ import { ISettlementFormData, ISettlementWaitingItem } from "@/types/broker-char
 
 //store
 import { useCompanies, useCompanyStore } from '@/store/company-store';
+//import { useBrokerCompanyById } from '@/store/broker-company-store';
 import { useBrokerCompanyManagerStore } from '@/store/broker-company-manager-store';
 import { useBrokerChargeStore } from '@/store/broker-charge-store';
 
@@ -177,6 +177,8 @@ export function SettlementEditFormSheet() {
     fetchBundleAdjustments
   } = useBrokerChargeStore();
 
+
+
   const { isOpen, selectedItems: orders, formData } = settlementForm;
 
   
@@ -192,6 +194,7 @@ export function SettlementEditFormSheet() {
   const [selectedManagerId, setSelectedManagerId] = useState<string | null>(null);
   const { setFilter } = useCompanyStore();
   const companiesQuery = useCompanies();
+  
 
   
   
@@ -577,7 +580,11 @@ export function SettlementEditFormSheet() {
   const shipperGroups = useMemo(() => {
     if (!orders || orders.length === 0) return {};
     
-    const groups: Record<string, { orders: ISettlementWaitingItem[], total: number, company: { id: string, name: string, businessNumber: string, ceo: string } }> = {};
+    const groups: Record<string, { 
+      orders: ISettlementWaitingItem[], 
+      total: number, 
+      company: { id: string, name: string, businessNumber: string, ceo: string, bankCode: string, accountHolder: string, accountNumber: string } 
+    }> = {};
 
     console.log("화주별 그룹화 orders", orders);
     
@@ -585,7 +592,19 @@ export function SettlementEditFormSheet() {
       const shipper = order.companyName || '미지정';
         
       if (!groups[shipper]) {
-        groups[shipper] = { orders: [], total: 0, company: { id: order.companyId || '', name: order.companyName || '', businessNumber: order.companyBusinessNumber || '', ceo: order.companyCeo || '' } };
+        groups[shipper] = { 
+          orders: [], 
+          total: 0, 
+          company: { 
+            id: order.companyId || '', 
+            name: order.companyName || '', 
+            businessNumber: order.companyBusinessNumber || '', 
+            ceo: order.companyCeo || '', 
+            bankCode: order.companyBankCode || '', 
+            accountHolder: order.companyBankAccountHolder || '', 
+            accountNumber: order.companyBankAccount || '' 
+          } 
+        };
       }
       groups[shipper].orders.push(order);
       groups[shipper].total += order.amount || 0;
@@ -598,7 +617,8 @@ export function SettlementEditFormSheet() {
   const editModeShipperGroups = useMemo(() => {
     if (!isEditMode || !bundleFreightList || bundleFreightList.length === 0) return {};
     
-    const groups: Record<string, { orders: any[], total: number, company: { id: string, name: string, businessNumber: string, ceo: string } }> = {};
+    const groups: Record<string, { orders: any[], total: number, 
+      company: { id: string, name: string, businessNumber: string, ceo: string } }> = {};
 
     console.log("수정 모드 화주별 그룹화 bundleFreightList", bundleFreightList);
     
@@ -613,7 +633,7 @@ export function SettlementEditFormSheet() {
             id: item.orderDetails.companyId || '', 
             name: item.orderDetails.companyName || '', 
             businessNumber: editingSalesBundle?.companySnapshot?.businessNumber || '', 
-            ceo: editingSalesBundle?.companySnapshot?.ceoName || '' 
+            ceo: editingSalesBundle?.companySnapshot?.ceoName || ''
           } 
         };
       }
@@ -723,10 +743,13 @@ export function SettlementEditFormSheet() {
     setFilter({ keyword: companySearchTerm });
   };
 
+  
+
   // 회사 선택 시 담당자 목록 로드
   useEffect(() => {
     if (selectedCompanyId) {
       console.log('🔍 선택된 회사 ID로 담당자 목록 로드:', selectedCompanyId);
+      
       loadManagers(selectedCompanyId);
     }
   }, [selectedCompanyId, loadManagers]);
@@ -800,6 +823,9 @@ export function SettlementEditFormSheet() {
                         if (company.ceoName || company.ceo || company.companyCeo) {
                           form.setValue("shipperCeo", company.ceoName || company.ceo || company.companyCeo);
                         }
+                        form.setValue("bankName", company.bankCode || "");
+                        form.setValue("accountHolder", company.accountHolder || "");
+                        form.setValue("accountNumber", company.accountNumber || "");
                         setSelectedCompanyId(company.id);
                         // 회사 선택 시 담당자 목록 로드
                         if (company.id) {
@@ -816,6 +842,9 @@ export function SettlementEditFormSheet() {
                           manager: "",
                           managerContact: "",
                           managerEmail: "",
+                          bankName: "",
+                          accountHolder: "",
+                          accountNumber: ""
                         });
                         setSelectedCompanyId(null);
                         setSelectedManagerId(null);

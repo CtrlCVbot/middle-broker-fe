@@ -1,18 +1,23 @@
+//react
 import React from 'react';
+
+//ui
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Building2, Search, CheckCircle, Hash, User, Landmark } from 'lucide-react';
 import {
   FormControl,
   FormField,
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { cn } from "@/lib/utils";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { Building2, Search, CheckCircle, Hash, User, Landmark } from 'lucide-react';
+
+//utils
+import { cn } from "@/lib/utils";
 
 export interface ICompanyInfoSectionProps {
   form: any;
@@ -75,6 +80,9 @@ export function CompanyInfoSection({
     { code: '090', name: '카카오뱅크' },
     { code: '092', name: '토스뱅크' },
   ];
+
+  console.log("editingSalesBundle", editingSalesBundle);
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between mb-2">
@@ -110,10 +118,14 @@ export function CompanyInfoSection({
                     id: editingSalesBundle.companyId || '',
                     name: editingSalesBundle.companySnapshot?.name || '',
                     businessNumber: editingSalesBundle.companySnapshot?.businessNumber || '',
-                    ceoName: editingSalesBundle.companySnapshot?.ceoName || ''
+                    ceoName: editingSalesBundle.companySnapshot?.ceoName || '',
+                    bankCode: editingSalesBundle.companySnapshot?.bankCode || '',
+                    bankAccountHolder: editingSalesBundle.companySnapshot?.bankAccountHolder || '',
+                    bankAccount: editingSalesBundle.companySnapshot?.bankAccount || ''
                   });
                 } else {
                   // 생성 모드: 기존 로직 유지
+                  console.log("displayShipperGroups[shipper].company", displayShipperGroups[shipper].company);
                   onSelectCompany(displayShipperGroups[shipper].company);
                 }
               }}
@@ -172,6 +184,10 @@ export function CompanyInfoSection({
                               onClick={() => {
                                 field.onChange(company.name);
                                 form.setValue("businessNumber", company.businessNumber || "-");
+                                // 은행 정보도 함께 설정
+                                form.setValue("bankCode", company.bankCode || "");
+                                form.setValue("accountHolder", company.bankAccountHolder || "");
+                                form.setValue("accountNumber", company.bankAccount || "");
                                 onSelectCompany(company);
                               }}
                             >
@@ -231,7 +247,10 @@ export function CompanyInfoSection({
                       <FormControl>
                         <div className="relative">
                           <Landmark className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            value={field.value} // defaultValue 대신 value 사용
+                          >
                             <SelectTrigger className="h-9 pl-10 w-full">
                               <SelectValue placeholder="은행 선택" />
                             </SelectTrigger>
@@ -254,7 +273,7 @@ export function CompanyInfoSection({
               <div>
                 <FormField
                   control={form.control}
-                  name="bankAccountHolder"
+                  name="accountHolder"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
@@ -276,7 +295,7 @@ export function CompanyInfoSection({
               <div className="md:col-span-2">
                 <FormField
                   control={form.control}
-                  name="bankAccount"
+                  name="accountNumber"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
