@@ -1,6 +1,9 @@
 "use client";
 
+//react
 import React from "react";
+
+//ui
 import {
   Table,
   TableBody,
@@ -10,17 +13,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
+
+//types
 import { IIncome, IncomeStatusType } from "@/types/income";
-import { formatCurrency } from "@/lib/utils";
+
+//store
 import { useIncomeDetailStore } from "@/store/income-store";
 import { useBrokerChargeStore } from "@/store/broker-charge-store";
-import { Badge } from "@/components/ui/badge";
+
+//utils
+import { formatCurrency } from "@/lib/utils";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 

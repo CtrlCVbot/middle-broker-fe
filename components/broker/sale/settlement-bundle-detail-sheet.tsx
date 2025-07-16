@@ -1,6 +1,9 @@
 "use client";
 
+//react
 import React, { useState } from "react";
+
+//ui
 import {
   Sheet,
   SheetContent,
@@ -8,16 +11,11 @@ import {
   SheetTitle,
   
 } from "@/components/ui/sheet";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { 
   DollarSign, 
   FileText, 
@@ -31,9 +29,17 @@ import {
   Truck,
   ShieldCheck
 } from "lucide-react";
+
+//util
 import { formatCurrency } from "@/lib/utils";
+
+//store
 import { useIncomeDetailStore } from "@/store/income-store";
-import { IncomeStatusType, AdditionalFeeType } from "@/types/income";
+
+//types
+import { IncomeStatusType } from "@/types/income";
+
+//component
 import { IncomeAdditionalCost } from "./settlement-additional-cost";
 import { IncomeStatusBadge } from "./settlement-status-badge";
 

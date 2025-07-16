@@ -51,7 +51,6 @@ import {
 import { FreightListTable } from "@/components/broker/sale/freight-list-table";
 import { BundleAdjustmentManager } from "@/components/broker/sale/bundle-adjustment-manager";
 import { ItemAdjustmentDialog } from "@/components/broker/sale/item-adjustment-dialog";
-//import { CompanyInfoSection } from "@/components/broker/sale/company-info-section";
 import { CompanyInfoSection } from "@/components/broker/sale/company-info-section-ver01";
 import { ManagerInfoSection } from "@/components/broker/sale/manager-info-section";
 
@@ -61,7 +60,6 @@ import { ISettlementFormData, ISettlementWaitingItem } from "@/types/broker-char
 
 //store
 import { useCompanies, useCompanyStore } from '@/store/company-store';
-//import { useBrokerCompanyById } from '@/store/broker-company-store';
 import { useBrokerCompanyManagerStore } from '@/store/broker-company-manager-store';
 import { useBrokerChargeStore } from '@/store/broker-charge-store';
 
