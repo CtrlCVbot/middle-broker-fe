@@ -263,7 +263,7 @@ export function BundleAdjustmentManager({
                       </TableCell>
                       <TableCell className="text-xs">{adjustment.description || '-'}</TableCell>
                       <TableCell className="text-right text-xs">
-                        {formatCurrency(adjustment.amount)}
+                      {adjustment.type === 'surcharge' ? '' : '- '}{formatCurrency(adjustment.amount)}
                       </TableCell>
                       {/* <TableCell className="text-right text-xs">
                         {formatCurrency(adjustment.taxAmount)}

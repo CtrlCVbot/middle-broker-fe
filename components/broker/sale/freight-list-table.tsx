@@ -266,7 +266,7 @@ export function FreightListTable({
                                             {adj.type === 'surcharge' ? '추가' : '할인'}
                                           </Badge>
                                           <div className="text-xs">
-                                            <div className="font-medium">{formatCurrency(adj.amount)}</div>
+                                            <div className="font-medium">{adj.type === 'surcharge' ? '' : '- '}{formatCurrency(adj.amount)}</div>
                                             {adj.description && (
                                               <div className="text-muted-foreground">{adj.description}</div>
                                             )}

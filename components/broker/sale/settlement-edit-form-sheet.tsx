@@ -118,6 +118,8 @@ const formSchema = z.object({
   bankName: z.string().optional(),
   accountHolder: z.string().optional(),
   accountNumber: z.string().optional(),
+  invoiceIssuedAt: z.date().optional(),
+  depositReceivedAt: z.date().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -165,6 +167,8 @@ export function SettlementEditFormSheet() {
       bankName: "",
       accountHolder: "",
       accountNumber: "",
+      invoiceIssuedAt: undefined,
+      depositReceivedAt: undefined,
     },
   });
 
@@ -855,7 +859,7 @@ export function SettlementEditFormSheet() {
                 {/* 기본 정보 탭 */}
                 <TabsContent value="settlement">
              
-                  {/* 회사 정보와 담당자 정보 섹션을 그리드로 감싸기 */}
+                {/* 회사 정보와 담당자 정보 섹션을 그리드로 감싸기 */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-2">
 
                     {/* 회사 정보 섹션 */}
@@ -1011,64 +1015,7 @@ export function SettlementEditFormSheet() {
                             />
                           </div>
                           <div className="grid grid-cols-2 gap-2">
-                            {/* <FormField
-                              control={form.control}
-                              name="startDate"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <div className="text-sm font-medium">시작일</div>
-                                  <FormControl>
-                                    <Input 
-                                      type="date" 
-                                      className="h-9"
-                                      {...field}
-                                      onChange={(e) => {
-                                        field.onChange(e);
-                                        setFormField('startDate', e.target.value);
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            /> */}
-                            {/* <FormField
-                              control={form.control}
-                              name="startDate"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <div className="text-sm font-medium">시작일</div>
-                                  <Popover>
-                                    <PopoverTrigger asChild>
-                                      <FormControl>
-                                        <Button
-                                          variant="outline"
-                                          className="w-full h-9 pl-3 text-left font-normal"
-                                        >
-                                          {field.value ? (
-                                            format(field.value, "PPP", { locale: ko })
-                                          ) : (
-                                            <span>날짜 선택</span>
-                                          )}
-                                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                        </Button>
-                                      </FormControl>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="start">
-                                      <CalendarComponent
-                                        mode="single"
-                                        selected={new Date(field.value)}
-                                        onSelect={field.onChange}
-                                        disabled={(date) => date < new Date()}
-                                        initialFocus
-                                      />
-                                    </PopoverContent>
-                                  </Popover>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            /> */}
-
+                            
                             <FormField
                               control={form.control}
                               name="startDate"
@@ -1184,6 +1131,94 @@ export function SettlementEditFormSheet() {
                                         //disabled={(date) => date < new Date()}
                                         initialFocus
                                         locale={ko}
+                                      />
+                                    </PopoverContent>
+                                  </Popover>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4">
+                            
+                            <FormField
+                              control={form.control}
+                              name="invoiceIssuedAt"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <div className="text-sm font-medium">세금계산서 발행일</div>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <FormControl>
+                                        <Button
+                                          variant="outline"
+                                          className="w-full h-9 pl-3 text-left font-normal"
+                                        >
+                                          {field.value ? (
+                                            format(field.value, "PPP", { locale: ko })
+                                          ) : (
+                                            <span>날짜 선택</span>
+                                          )}                                      
+                                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                        </Button>
+                                      </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                      <CalendarComponent
+                                        mode="single"
+                                        selected={new Date(field.value)}
+                                        onSelect={(e) => {
+                                          field.onChange(e);
+                                          //form.setValue('startDate', e ? format(e, 'yyyy-MM-dd') : '');
+                                        }}
+                                        
+                                        //disabled={(date) => date < new Date()}
+                                        locale={ko}
+                                        initialFocus
+                                        captionLayout="dropdown"
+                                      />
+                                    </PopoverContent>
+                                  </Popover>
+                                  <FormMessage />
+                                </FormItem>
+                              )}                              
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="depositReceivedAt"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <div className="text-sm font-medium">입금일</div>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <FormControl>
+                                        <Button
+                                          variant="outline"
+                                          className="w-full h-9 pl-3 text-left font-normal"
+                                        >
+                                          {field.value ? (
+                                            format(field.value, "PPP", { locale: ko })
+                                          ) : (
+                                            <span>날짜 선택</span>
+                                          )}                                      
+                                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                        </Button>
+                                      </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                      <CalendarComponent
+                                        mode="single"
+                                        selected={new Date(field.value)}
+                                        onSelect={(e) => {
+                                          field.onChange(e);
+                                          //form.setValue('endDate', e ? format(e, 'yyyy-MM-dd') : '');
+                                        }}
+                                        
+                                        //disabled={(date) => date < new Date()}
+                                        locale={ko}
+                                        initialFocus
                                       />
                                     </PopoverContent>
                                   </Popover>
