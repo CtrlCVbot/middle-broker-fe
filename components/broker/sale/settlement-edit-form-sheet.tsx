@@ -1041,7 +1041,7 @@ export function SettlementEditFormSheet() {
                                     <PopoverContent className="w-auto p-0" align="start">
                                       <CalendarComponent
                                         mode="single"
-                                        selected={new Date(field.value)}
+                                        selected={field.value ? new Date(field.value) : undefined}
                                         onSelect={(e) => {
                                           field.onChange(e);
                                           form.setValue('startDate', e ? format(e, 'yyyy-MM-dd') : '');
@@ -1083,7 +1083,7 @@ export function SettlementEditFormSheet() {
                                     <PopoverContent className="w-auto p-0" align="start">
                                       <CalendarComponent
                                         mode="single"
-                                        selected={new Date(field.value)}
+                                        selected={field.value ? new Date(field.value) : undefined}
                                         onSelect={(e) => {
                                           field.onChange(e);
                                           form.setValue('endDate', e ? format(e, 'yyyy-MM-dd') : '');
@@ -1167,7 +1167,7 @@ export function SettlementEditFormSheet() {
                                     <PopoverContent className="w-auto p-0" align="start">
                                       <CalendarComponent
                                         mode="single"
-                                        selected={new Date(field.value)}
+                                        selected={field.value ? new Date(field.value) : undefined}
                                         onSelect={(e) => {
                                           field.onChange(e);
                                           //form.setValue('startDate', e ? format(e, 'yyyy-MM-dd') : '');
@@ -1210,7 +1210,7 @@ export function SettlementEditFormSheet() {
                                     <PopoverContent className="w-auto p-0" align="start">
                                       <CalendarComponent
                                         mode="single"
-                                        selected={new Date(field.value)}
+                                        selected={field.value ? new Date(field.value) : undefined}
                                         onSelect={(e) => {
                                           field.onChange(e);
                                           //form.setValue('endDate', e ? format(e, 'yyyy-MM-dd') : '');
