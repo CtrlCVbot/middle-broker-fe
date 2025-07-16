@@ -81,6 +81,7 @@ export interface IIncome {
   invoiceNumber?: string;      // 세금계산서 번호
   invoiceIssuedDate?: string;  // 세금계산서 발행일
   invoiceStatus?: '미발행' | '발행대기' | '발행완료' | '발행오류'; // 세금계산서 상태
+  depositReceivedAt?: string;  // 입금일
   
   // 관리 정보
   manager: string;             // 담당자

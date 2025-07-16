@@ -103,14 +103,23 @@ export function BundleMatchingList({
       case '미발행':
         return <Badge variant="outline" className="bg-slate-100">미발행</Badge>;
       case '발행대기':
-        return <Badge variant="outline" className="bg-yellow-100 text-yellow-700">발행대기</Badge>;
+        return <Badge variant="outline" className="bg-yellow-100 text-yellow-700">대기</Badge>;
       case '발행완료':
-        return <Badge variant="outline" className="bg-green-100 text-green-700">발행완료</Badge>;
+        return <Badge variant="outline" className="bg-green-100 text-green-700">발행</Badge>;
       case '발행오류':
-        return <Badge variant="outline" className="bg-red-100 text-red-700">발행오류</Badge>;
+        return <Badge variant="outline" className="bg-red-100 text-red-700">오류</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
+  };
+  const renderDepositStatusBadge = (status?: boolean) => {
+    if (!status) return null;
+    if (status) {
+      return <Badge variant="outline" className="bg-green-100 text-green-700">완료</Badge>;
+    } else {
+      return <Badge variant="outline" className="bg-slate-100">미입금</Badge>;
+    }
+    
   };
 
   // 현재 탭에 따른 상태 컬럼 이름 설정
@@ -142,16 +151,17 @@ export function BundleMatchingList({
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <TableHead className="w-[80px] text-center">그룹 ID</TableHead>
+              {/* <TableHead className="w-[80px] text-center">그룹 ID</TableHead> */}
               <TableHead className="w-[80px] text-center">상태</TableHead>
               <TableHead>청구 화주</TableHead>
               <TableHead>정산 기간</TableHead>
               <TableHead className="text-center">화물 건수</TableHead>
               <TableHead className="text-right">기본 운임</TableHead>
-              <TableHead className="text-right">추가금</TableHead>
-              <TableHead className="text-right pr-4">세금(10%)</TableHead>
+              <TableHead className="text-right">세금(10%)</TableHead>
+              <TableHead className="text-right">정산 추가금</TableHead>
               <TableHead className="text-right">총 청구금액</TableHead>
-              <TableHead>세금계산서</TableHead>
+              <TableHead className="text-center">세금계산서</TableHead>
+              <TableHead className="text-center">입금</TableHead>
               <TableHead>담당자</TableHead>
             </TableRow>
           </TableHeader>
@@ -172,10 +182,10 @@ export function BundleMatchingList({
                   className="cursor-pointer hover:bg-secondary/20"
                   onClick={() => handleIncomeClick(income.id)}
                 >
-                  <TableCell className="font-medium text-primary underline">
+                  {/* <TableCell className="font-medium text-primary underline">
                     {income.id.slice(0, 8)}
-                  </TableCell>
-                  <TableCell>
+                  </TableCell> */}
+                  <TableCell className="text-center">
                     {renderStatusBadge(income.status)}
                   </TableCell>
                   <TableCell>
@@ -196,23 +206,27 @@ export function BundleMatchingList({
                   <TableCell className="text-right">
                     {formatCurrency(income.totalBaseAmount)}원
                   </TableCell>
-                  <TableCell className="text-right">
-                    <span className={income.totalAdditionalAmount >= 0 ? "text-blue-600" : "text-red-600"}>
-                      {income.totalAdditionalAmount >= 0 ? "+" : ""}{formatCurrency(income.totalAdditionalAmount)}원
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right pr-4">
+                  <TableCell className="text-right text-muted-foreground">
                     {income.isTaxFree ? (
                       <Badge variant="outline" className="bg-gray-100">면세</Badge>
                     ) : (
                       `${formatCurrency(income.tax)}원`
                     )}
                   </TableCell>
+                  <TableCell className="text-right">
+                    <span className={income.totalAdditionalAmount >= 0 ? "text-blue-600" : "text-red-600"}>
+                      {income.totalAdditionalAmount >= 0 ? "+" : ""}{formatCurrency(income.totalAdditionalAmount)}원
+                    </span>
+                  </TableCell>
+                  
                   <TableCell className="text-right font-semibold">
                     {formatCurrency(income.finalAmount)}원
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-center">
                     {renderInvoiceStatusBadge(income.invoiceStatus)}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {renderDepositStatusBadge(income.depositReceivedAt !== null ? true : false)}
                   </TableCell>
                   <TableCell>
                     {income.manager}
