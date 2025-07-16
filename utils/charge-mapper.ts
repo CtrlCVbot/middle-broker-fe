@@ -331,7 +331,9 @@ export function mapSettlementFormToSalesBundleInput(
       baseAmount: Number(item.chargeAmount) || 0
     })),
     adjustments: additionalAdjustments || [],
-    orderCount: selectedWaitingItems.length
+    orderCount: selectedWaitingItems.length,
+    invoiceIssuedAt: formData.invoiceIssuedAt || null,
+    depositReceivedAt: formData.depositReceivedAt || null,
   };
   
   console.log('Final CreateSalesBundleInput:', result);

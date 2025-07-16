@@ -181,6 +181,7 @@ export function SettlementEditFormSheet() {
     selectedSalesBundleId,
     editingSalesBundle,
     updateSalesBundleData,
+    completeSalesBundleData,
     deleteSalesBundleData,
     bundleFreightList,
     bundleAdjustments,
@@ -228,6 +229,7 @@ export function SettlementEditFormSheet() {
   });
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
 
   // 개별 추가금 삭제 다이얼로그 상태
   const [itemDeleteDialog, setItemDeleteDialog] = useState<{
@@ -313,9 +315,11 @@ export function SettlementEditFormSheet() {
       form.setValue('accountNumber', editingSalesBundle.bankAccount || '');
       
       // 만료일 설정 (있는 경우)
-      if (editingSalesBundle.depositRequestedAt) {
-        form.setValue('dueDate', new Date(editingSalesBundle.depositRequestedAt));
+      if (editingSalesBundle.settledAt) {
+        form.setValue('dueDate', new Date(editingSalesBundle.settledAt));
       }
+      form.setValue('invoiceIssuedAt', editingSalesBundle.invoiceIssuedAt ? new Date(editingSalesBundle.invoiceIssuedAt) : undefined);
+      form.setValue('depositReceivedAt', editingSalesBundle.depositReceivedAt ? new Date(editingSalesBundle.depositReceivedAt) : undefined);
     }
   }, [isEditMode, editingSalesBundle, isOpen, form]);
 
@@ -529,6 +533,8 @@ export function SettlementEditFormSheet() {
           itemExtraAmount: calculatedTotals.totalItemAdjustments,
           bundleExtraAmount: calculatedTotals.totalBundleAdjustments,
           //orderCount: orders.length,
+          invoiceIssuedAt: formValues.invoiceIssuedAt ? format(formValues.invoiceIssuedAt, 'yyyy-MM-dd') : null,
+          depositReceivedAt: formValues.depositReceivedAt ? format(formValues.depositReceivedAt, 'yyyy-MM-dd') : null,
         };
         console.log('updateFields:', updateFields);
 
@@ -566,7 +572,9 @@ export function SettlementEditFormSheet() {
           totalAmount: ordersSummary.totalFreight,
           totalTaxAmount: taxAmount,
           totalAmountWithTax: finalAmount + taxAmount,
-          orderCount: orders.length
+          orderCount: orders.length,
+          invoiceIssuedAt: formValues.invoiceIssuedAt ? format(formValues.invoiceIssuedAt, 'yyyy-MM-dd') : null,
+          depositReceivedAt: formValues.depositReceivedAt ? format(formValues.depositReceivedAt, 'yyyy-MM-dd') : null,
         };
         
         console.log("handleSubmit formData:", formData);
@@ -599,6 +607,24 @@ export function SettlementEditFormSheet() {
       }
     } catch (error) {
       toast.error("정산 삭제 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 정산 완료
+  const handleComplete = async () => {
+    if (!selectedSalesBundleId) return;
+    setIsCompleteDialogOpen(false);
+    try {
+
+      const success = await completeSalesBundleData(selectedSalesBundleId);
+      if (success) {
+        toast.success("정산이 성공적으로 완료되었습니다.");
+        closeSettlementForm();
+      } else {
+        toast.error("정산 완료에 실패했습니다.");
+      }
+    } catch (error) {
+      toast.error("정산 완료 중 오류가 발생했습니다.");
     }
   };
 
@@ -1170,7 +1196,7 @@ export function SettlementEditFormSheet() {
                                         selected={field.value ? new Date(field.value) : undefined}
                                         onSelect={(e) => {
                                           field.onChange(e);
-                                          //form.setValue('startDate', e ? format(e, 'yyyy-MM-dd') : '');
+                                          form.setValue('invoiceIssuedAt', e ?? undefined);
                                         }}
                                         
                                         //disabled={(date) => date < new Date()}
@@ -1213,7 +1239,7 @@ export function SettlementEditFormSheet() {
                                         selected={field.value ? new Date(field.value) : undefined}
                                         onSelect={(e) => {
                                           field.onChange(e);
-                                          //form.setValue('endDate', e ? format(e, 'yyyy-MM-dd') : '');
+                                          form.setValue('depositReceivedAt', e ?? undefined);
                                         }}
                                         
                                         //disabled={(date) => date < new Date()}
@@ -1249,7 +1275,7 @@ export function SettlementEditFormSheet() {
                             onClick={() => form.reset({
                               ...form.getValues(),
                               memo: "",
-                              paymentMethod: "계좌이체",
+                              paymentMethod: "bank_transfer",
                               taxFree: false,
                               hasTax: true,
                               issueInvoice: false,
@@ -1362,7 +1388,7 @@ export function SettlementEditFormSheet() {
 
                             <div className="space-y-1">
                               {/* 세금계산서 발행 여부 체크박스 추가 */}
-                              <FormField
+                              {/* <FormField
                                 control={form.control}
                                 name="issueInvoice"
                                 render={({ field }) => (
@@ -1378,9 +1404,7 @@ export function SettlementEditFormSheet() {
                                     </FormLabel>
                                   </FormItem>
                                 )}
-                              />
-
-                              
+                              /> */}
                             </div>                
                           </div>
                           
@@ -1456,80 +1480,115 @@ export function SettlementEditFormSheet() {
           </div>
           
           {/* 버튼 그룹 */}
-          <div className="flex justify-end space-x-2">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => closeSettlementForm()}
-              disabled={loading}
-              size="sm"
-            >
-              <X className="mr-1 h-4 w-4" />
-              닫기
-            </Button>
-            
-            {isEditMode ? (
-              // 편집 모드: 수정 및 삭제 버튼
-              <>
-                <Button 
-                  type="button" 
-                  variant="destructive"
-                  onClick={() => setIsDeleteDialogOpen(true)}
-                  disabled={loading}
-                  size="sm"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                      삭제 중...
-                    </>
-                  ) : (
-                    <>
-                      <X className="mr-1 h-4 w-4" />
-                      삭제
-                    </>
+          <div className="flex justify-between items-center space-x-2">
+            <div className="flex space-x-4">
+              {/* <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => closeSettlementForm()}
+                disabled={loading}
+                size="sm"
+              >
+                <X className="mr-1 h-4 w-4" />
+                닫기
+              </Button> */}
+              {isEditMode ? (
+                // 편집 모드: 수정 및 삭제 버튼
+                <>
+                  <Button 
+                    type="button" 
+                    variant="destructive"
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                    disabled={loading}
+                    size="sm"
+                    className="hover:cursor-pointer"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                        삭제 중...
+                      </>
+                    ) : (
+                      <>
+                        <X className="mr-1 h-4 w-4" />
+                        삭제
+                      </>
+                    )}
+                  </Button>
+                  {form.watch('invoiceIssuedAt') && form.watch('depositReceivedAt') && (
+                    <Button 
+                      type="button" 
+                      variant="default"
+                      //onClick={() => setIsDeleteDialogOpen(true)}
+                      disabled={loading}
+                      size="sm"
+                      className="bg-blue-500 hover:bg-blue-700 hover:cursor-pointer"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                          완료 중...
+                        </>
+                      ) : (
+                        <>
+                          <X className="mr-1 h-4 w-4" />
+                          완료
+                        </>
+                      )}
+                    </Button>
                   )}
-                </Button>
+                </>
+              ) : (
+                <></>
+              )}
+            </div>
+            <div className="flex space-x-2">  
+              {isEditMode ? (
+                // 편집 모드: 수정 및 삭제 버튼
+                <>                  
+                  <Button 
+                    type="submit" 
+                    disabled={loading}
+                    size="sm"
+                    onClick={form.handleSubmit(handleSubmit)}
+                    className="hover:cursor-pointer"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                        수정 중...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-1 h-4 w-4" />
+                        수정
+                      </>
+                    )}
+                  </Button>
+                </>
+              ) : (
+                // 생성 모드: 생성 버튼
                 <Button 
                   type="submit" 
                   disabled={loading}
                   size="sm"
                   onClick={form.handleSubmit(handleSubmit)}
+                  className="hover:cursor-pointer"
                 >
                   {loading ? (
                     <>
                       <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                      수정 중...
+                      처리 중...
                     </>
                   ) : (
                     <>
                       <Save className="mr-1 h-4 w-4" />
-                      수정
+                      정산 생성
                     </>
                   )}
                 </Button>
-              </>
-            ) : (
-              // 생성 모드: 생성 버튼
-              <Button 
-                type="submit" 
-                disabled={loading}
-                size="sm"
-                onClick={form.handleSubmit(handleSubmit)}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                    처리 중...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-1 h-4 w-4" />
-                    정산 생성
-                  </>
-                )}
-              </Button>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </SheetContent>
@@ -1553,6 +1612,18 @@ export function SettlementEditFormSheet() {
       confirmText="정산 삭제"
       cancelText="취소"
       onConfirm={handleDelete}
+      variant="destructive"
+    />
+
+    {/* 정산 완료 확인 ConfirmDialog */}
+    <ConfirmDialog
+      open={isCompleteDialogOpen}
+      onOpenChange={setIsCompleteDialogOpen}
+      title="정산 삭제 확인"
+      description="정말로 이 정산을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+      confirmText="정산 삭제"
+      cancelText="취소"
+      onConfirm={handleComplete}
       variant="destructive"
     />
 

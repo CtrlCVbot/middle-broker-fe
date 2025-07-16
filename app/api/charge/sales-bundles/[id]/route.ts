@@ -140,7 +140,9 @@ export async function PATCH(
       'totalAmountWithTax',
       'itemExtraAmount',
       'bundleExtraAmount',
-      'status'
+      'status',      
+      'invoiceIssuedAt',
+      'depositReceivedAt'
     ];
 
     // 업데이트할 필드 검증

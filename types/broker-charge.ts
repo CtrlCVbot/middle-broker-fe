@@ -234,6 +234,9 @@ export interface ISettlementFormData {
   itemExtraAmount?: number;
   bundleExtraAmount?: number;
   orderCount?: number;
+  invoiceIssuedAt?: string | null;
+  depositReceivedAt?: string | null;
+  status?: SalesBundleStatus;
 }
 
 // 정산 폼 시트 상태 타입

@@ -135,6 +135,7 @@ interface IBrokerChargeState {
   openSettlementFormForEdit: (bundleId: string) => Promise<void>;
   updateSalesBundleData: (id: string, formData: ISettlementFormData, reason?: string) => Promise<boolean>;
   deleteSalesBundleData: (id: string) => Promise<boolean>;
+  completeSalesBundleData: (id: string) => Promise<boolean>;
 
   // 새로 추가: 추가금 관련 액션들
   fetchBundleFreightList: (bundleId: string) => Promise<ISalesBundleItemWithDetails[]>;
@@ -757,10 +758,36 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
         totalAmountWithTax: formData.totalAmountWithTax,
         itemExtraAmount: formData.itemExtraAmount,
         bundleExtraAmount: formData.bundleExtraAmount,
+        invoiceIssuedAt: formData.invoiceIssuedAt || null,
         // 필요시 추가 필드 변환
       };
 
       console.log('updateSalesBundleData-before:', updateInput);
+      await updateSalesBundle(id, updateInput, reason);
+      set({ isLoading: false });
+      // 성공 시 sales bundles 목록 새로고침
+      await get().fetchSalesBundles();
+      return true;
+    } catch (error) {
+      console.error('sales bundle 업데이트 중 오류 발생:', error);
+      set({ 
+        error: error instanceof Error ? error.message : 'sales bundle 업데이트에 실패했습니다.',
+        isLoading: false 
+      });
+      return false;
+    }
+  },
+
+  completeSalesBundleData: async (id: string, reason?: string) => {
+    try {
+      set({ isLoading: true, error: null });
+
+      // ISettlementFormData → sales bundle update input 변환
+      const updateInput = {
+        status: 'paid'
+        // 필요시 추가 필드 변환
+      };
+      
       await updateSalesBundle(id, updateInput, reason);
       set({ isLoading: false });
       // 성공 시 sales bundles 목록 새로고침
@@ -931,6 +958,8 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       return false;
     }
   },
+
+ 
 
   /**
    * 개별 화물 추가금 목록 조회
