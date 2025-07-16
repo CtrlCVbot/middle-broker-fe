@@ -62,6 +62,9 @@ export interface ICompany {
   };
   registeredAt: string;
   updatedAt: string;
+  bankCode?: string;
+  bankAccountNumber?: string;
+  bankAccountHolder?: string;
 }
 
 // 회사 변경 이력 인터페이스
@@ -203,6 +206,9 @@ export const convertApiToLegacyCompany = (company: ICompany): ILegacyCompany => 
     status: COMPANY_STATUS_LABEL[company.status],
     warnings: [],
     files: [],
+    bankCode: company.bankCode || '',
+    bankAccount: company.bankAccountNumber || '',
+    bankAccountHolder: company.bankAccountHolder || '',
   };
 };
 

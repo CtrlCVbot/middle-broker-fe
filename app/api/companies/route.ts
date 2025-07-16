@@ -96,7 +96,10 @@ export async function GET(request: NextRequest) {
         email: company.contactEmail || ''
       },
       registeredAt: company.createdAt?.toISOString() || '',
-      updatedAt: company.updatedAt?.toISOString() || ''
+      updatedAt: company.updatedAt?.toISOString() || '',
+      bankCode: company.bankCode || '',
+      bankAccountNumber: company.bankAccountNumber || '',
+      bankAccountHolder: company.bankAccountHolder || ''
     }));
 
     return NextResponse.json({

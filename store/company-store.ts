@@ -178,8 +178,10 @@ export const useCompanyStore = create<ICompanyState>()(
           const { filter, currentPage, pageSize } = get();
           const response = await companyService.getCompanies(currentPage, pageSize, filter);
           
+          
           // API 응답을 레거시 형식으로 변환
           const legacyCompanies = get().getLegacyFormatCompanies(response.data);
+          console.log("legacyCompanies:", legacyCompanies);
           
           set({ isLoading: false });
           

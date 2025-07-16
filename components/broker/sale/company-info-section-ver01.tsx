@@ -182,12 +182,18 @@ export function CompanyInfoSection({
                               key={company.id}
                               className="flex items-center justify-between px-2 py-1.5 hover:bg-secondary/50 rounded-md cursor-pointer"
                               onClick={() => {
-                                field.onChange(company.name);
-                                form.setValue("businessNumber", company.businessNumber || "-");
-                                // 은행 정보도 함께 설정
-                                form.setValue("bankCode", company.bankCode || "");
-                                form.setValue("accountHolder", company.bankAccountHolder || "");
-                                form.setValue("accountNumber", company.bankAccount || "");
+                                // form.reset({
+                                //   ...form.getValues(),
+                                //   // shipperName: company.name,
+                                //   // businessNumber: company.businessNumber,
+                                //   // shipperCeo: company.ceoName,
+                                //   // accountHolder: company.bankAccountHolder,
+                                //   // accountNumber: company.bankAccountNumber,
+                                //   // bankCode: company.bankCode,
+                                // });
+                                console.log("company!!!", company);
+                                console.log("form!!!", form.getValues());
+                                
                                 onSelectCompany(company);
                               }}
                             >

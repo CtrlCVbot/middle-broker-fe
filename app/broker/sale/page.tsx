@@ -370,7 +370,7 @@ export default function IncomePage() {
                               driver: { name: item.assignedDriverSnapshot?.name, contact: item.assignedDriverSnapshot?.contact },
                               paymentMethod: "계좌이체",
                               manager: "-",
-                              bankName: item.companyBankCame,
+                              bankName: item.companyBankCode,
                               accountHolder: item.companyBankAccountHolder,
                               accountNumber: item.companyBankAccount
                             }) as any)}

@@ -818,14 +818,32 @@ export function SettlementEditFormSheet() {
                       setCompanySearchTerm={setCompanySearchTerm}
                       companies={companiesQuery.data?.data ?? []}
                       onSelectCompany={(company) => {
+
+                        // form.reset({
+                        //   ...form.getValues(),
+                        //   shipperName: company.name,
+                        //   businessNumber: company.businessNumber,
+                        //   shipperCeo: company.ceoName,
+                        //   accountHolder: company.bankAccountHolder,
+                        //   accountNumber: company.bankAccountNumber,
+                        //   bankName: company.bankCode,
+                        // });
                         form.setValue("shipperName", company.name);
-                        form.setValue("businessNumber", company.businessNumber || "-");
-                        if (company.ceoName || company.ceo || company.companyCeo) {
-                          form.setValue("shipperCeo", company.ceoName || company.ceo || company.companyCeo);
-                        }
-                        form.setValue("bankName", company.bankCode || "");
-                        form.setValue("accountHolder", company.accountHolder || "");
-                        form.setValue("accountNumber", company.accountNumber || "");
+                        form.setValue("businessNumber", company.businessNumber);
+                        form.setValue("shipperCeo", company.ceoName || company.ceo || company.companyCeo);
+                        form.setValue("accountHolder", company.bankAccountHolder || company.accountHolder || '');
+                        form.setValue("accountNumber", company.bankAccountNumber || company.accountNumber || '');
+                        form.setValue("bankName", company.bankCode || '');
+                        
+
+                        // form.setValue("shipperName", company.name);
+                        // form.setValue("businessNumber", company.businessNumber || "-");
+                        // if (company.ceoName || company.ceo || company.companyCeo) {
+                        //   form.setValue("shipperCeo", company.ceoName || company.ceo || company.companyCeo);
+                        // }
+                        // form.setValue("bankName", company.bankCode || "");
+                        // form.setValue("accountHolder", company.bankAccountHolder || "");
+                        // form.setValue("accountNumber", company.bankAccountNumber || "");
                         setSelectedCompanyId(company.id);
                         // 회사 선택 시 담당자 목록 로드
                         if (company.id) {
