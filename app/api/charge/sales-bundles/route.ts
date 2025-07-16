@@ -73,9 +73,7 @@ export async function GET(request: NextRequest) {
         .from(salesBundles)
         .where(query)
         .execute()
-        .then(res => Number(res[0].count)),
-      
-        
+        .then(res => Number(res[0].count))
     ]);
 
 

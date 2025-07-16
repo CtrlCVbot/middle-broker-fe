@@ -180,7 +180,8 @@ export function SettlementEditFormSheet() {
     deleteSalesBundleData,
     bundleFreightList,
     bundleAdjustments,
-    fetchBundleAdjustments
+    fetchBundleAdjustments,
+    fetchBundleFreightList,
   } = useBrokerChargeStore();
 
 
@@ -389,13 +390,22 @@ export function SettlementEditFormSheet() {
 
 
   // 정산 대사 모드에서 통합 추가금 로딩
-  useEffect(() => {
-    console.log("정산 대사 모드에서 통합 추가금 로딩");
+  // useEffect(() => {
+  //   console.log("정산 대사 모드에서 통합 추가금 로딩:", isEditMode, editingSalesBundle, isOpen);
 
-    if (isEditMode && editingSalesBundle && isOpen) {
-      fetchBundleAdjustments(editingSalesBundle.id);
+  //   if (isEditMode && editingSalesBundle && isOpen) {
+  //     fetchBundleAdjustments(editingSalesBundle.id);
+  //   }
+  // }, [isEditMode, editingSalesBundle, isOpen, fetchBundleAdjustments]); // ✅ 모든 의존성 추가
+
+  // 정산 대사 모드에서 화물 목록 로딩
+  useEffect(() => {
+    console.log("정산 대사 모드에서 화물 목록 로딩:", isEditMode, selectedSalesBundleId);
+
+    if (isEditMode && selectedSalesBundleId) {
+      fetchBundleFreightList(selectedSalesBundleId);
     }
-  }, [fetchBundleAdjustments]);
+  }, [isEditMode, selectedSalesBundleId, fetchBundleFreightList]); // ✅ 모든 의존성 추가
 
   // 화주 데이터 - 대부분의 화물이 같은 화주일 경우 해당 화주를 기본값으로 설정
   useEffect(() => {
@@ -659,16 +669,18 @@ export function SettlementEditFormSheet() {
   // 선택된 화물의 운임 및 금액 계산
   const hasTax = useWatch({ control: form.control, name: 'hasTax' });
   const calculatedTotals = useMemo(() => {
-    const {
-      //bundleAdjustments,
-      //bundleFreightList
-    } = useBrokerChargeStore.getState();
+    
 
     console.log("calculatedTotals 호출");
     console.log("isEditMode:", isEditMode);
     console.log("editingSalesBundle:", editingSalesBundle);
 
     if (isEditMode && editingSalesBundle) {
+
+      // const {
+      //   bundleAdjustments,
+      //   bundleFreightList
+      // } = useBrokerChargeStore.getState();
      
       console.log("편집 모드 통합 추가금 계산 bundleAdjustments", bundleAdjustments);
       // 편집 모드: 기존 sales bundle 데이터 + 추가금 계산
@@ -770,6 +782,16 @@ export function SettlementEditFormSheet() {
     }
   };
 
+  // 디버깅용 useEffect 추가
+  useEffect(() => {
+    console.log("폼 상태 변경:", {
+      isEditMode,
+      editingSalesBundle: editingSalesBundle?.id,
+      isOpen,
+      selectedSalesBundleId
+    });
+  }, [isEditMode, editingSalesBundle, isOpen, selectedSalesBundleId]);
+
   if (!isOpen) return null;
 
   return (
@@ -812,6 +834,7 @@ export function SettlementEditFormSheet() {
                   <TabsTrigger value="freight">화물 및 추가금</TabsTrigger>
                 </TabsList>
 
+                {/* 기본 정보 탭 */}
                 <TabsContent value="settlement">
              
                   {/* 회사 정보와 담당자 정보 섹션을 그리드로 감싸기 */}
@@ -1315,6 +1338,7 @@ export function SettlementEditFormSheet() {
                   </div>
                 </TabsContent>
 
+                {/* 화물 및 추가금 탭 */}
                 <TabsContent value="freight">
                   {/* 화물 목록 컴포넌트 */}
                   <FreightListTable

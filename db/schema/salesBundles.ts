@@ -7,7 +7,8 @@ import {
   pgEnum,
   text,
   numeric,
-  jsonb
+  jsonb,
+  integer
 } from "drizzle-orm/pg-core";
 import { companies } from "./companies";
 import { orderSales } from "./orderSales";
@@ -53,6 +54,7 @@ export const salesBundles = pgTable('sales_bundles', {
   companiesSnapshot: jsonb('companies_snapshot').$type<ICompanySnapshotForSales[]>(), //선택된 화물들의 회사 목록 정보
   managerId: uuid('manager_id').references(() => users.id),
   managerSnapshot: jsonb('manager_snapshot').$type<IUserSnapshot>(),
+  
 
   //결제방법
   paymentMethod: paymentMethodEnum('payment_method').notNull().default('bank_transfer'),
@@ -64,7 +66,6 @@ export const salesBundles = pgTable('sales_bundles', {
   
   //기타
   settlementMemo: varchar('settlement_memo', { length: 200 }), //정산 메모
-
 
   // 기간 정보
   periodType: bundlePeriodTypeEnum('period_type').notNull().default('departure'), //기간 유형
