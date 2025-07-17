@@ -42,6 +42,7 @@ import { getSchedule } from "@/components/order/order-table-ver01";
 
 interface IFreightListTableProps {
   mode: 'waiting' | 'reconciliation';
+  completed: boolean;
   orders?: ISettlementWaitingItem[];
   bundleId?: string;
   onAddItemAdjustment?: (itemId: string) => void;
@@ -60,6 +61,7 @@ const calculateAdjustmentTotal = (adjustments: any[]) => {
 
 export function FreightListTable({
   mode,
+  completed,
   orders = [],
   bundleId,
   onAddItemAdjustment,
@@ -140,7 +142,7 @@ export function FreightListTable({
                 <TableHead className="text-xs">도착지</TableHead>
                 <TableHead className="text-right text-xs">청구</TableHead>
                 {/* <TableHead className="text-right text-xs">세금</TableHead> */}
-                {mode === 'reconciliation' && (
+                {mode === 'reconciliation' && !completed && (
                   <TableHead className="text-center text-xs">개별 추가금</TableHead>
                 )}
               </TableRow>
@@ -213,7 +215,7 @@ export function FreightListTable({
                       )} */}
                       
                       
-                      {mode === 'reconciliation' && (
+                      {mode === 'reconciliation' && !completed && (
                         <>
                         {/* <TableCell className="text-right text-xs">
                           {displayItem.. ? formatCurrency(displayItem.taxAmount) : formatCurrency((displayItem.amount || 0) * 0.1)}

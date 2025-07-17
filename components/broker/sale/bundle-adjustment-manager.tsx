@@ -58,6 +58,7 @@ import { useBrokerChargeStore } from "@/store/broker-charge-store";
 import { formatCurrency } from "@/lib/utils";
 
 interface IBundleAdjustmentManagerProps {
+  completed: boolean;
   bundleId?: string;
   isEditMode?: boolean;
 }
@@ -77,6 +78,7 @@ const initialFormData: IAdjustmentFormData = {
 };
 
 export function BundleAdjustmentManager({
+  completed,
   bundleId,
   isEditMode = false
 }: IBundleAdjustmentManagerProps) {
@@ -311,7 +313,8 @@ export function BundleAdjustmentManager({
             </Table>
           </ScrollArea>
           
-          <Button 
+          {!completed ? (
+            <Button 
             variant="ghost" 
             size="sm" 
             className="w-full"
@@ -327,6 +330,10 @@ export function BundleAdjustmentManager({
               <span>추가</span>
             </div>
           </Button>
+          ) : (
+            <></>
+          )}
+          
           
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen} modal={true}>
             <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>

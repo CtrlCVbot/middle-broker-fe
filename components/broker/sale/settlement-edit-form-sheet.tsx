@@ -76,8 +76,6 @@ const PaymentMethod = [
   { key: 'cash', name: '현금' },
 ];
 
-
-
 // 정산 생성 폼 스키마
 const formSchema = z.object({
   shipperName: z.string({
@@ -1418,6 +1416,7 @@ export function SettlementEditFormSheet() {
                   {/* 화물 목록 컴포넌트 */}
                   <FreightListTable
                     mode={isEditMode ? 'reconciliation' : 'waiting'}
+                    completed={editingSalesBundle?.status === 'paid' ? true : false}
                     orders={orders}
                     bundleId={selectedSalesBundleId || undefined}
                     onAddItemAdjustment={(itemId) => {
@@ -1441,6 +1440,7 @@ export function SettlementEditFormSheet() {
 
                   {/* 통합 추가금 관리 컴포넌트 */}
                   <BundleAdjustmentManager
+                    completed={editingSalesBundle?.status === 'paid' ? true : false}
                     bundleId={selectedSalesBundleId || undefined}
                     isEditMode={isEditMode}
                   />
@@ -1478,72 +1478,95 @@ export function SettlementEditFormSheet() {
           </div>
           
           {/* 버튼 그룹 */}
-          <div className="flex justify-between items-center space-x-2">
-            <div className="flex space-x-4">
-              {/* <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => closeSettlementForm()}
-                disabled={loading}
-                size="sm"
-              >
-                <X className="mr-1 h-4 w-4" />
-                닫기
-              </Button> */}
-              {isEditMode ? (
-                // 편집 모드: 수정 및 삭제 버튼
-                <>
-                  <Button 
-                    type="button" 
-                    variant="destructive"
-                    onClick={() => setIsDeleteDialogOpen(true)}
-                    disabled={loading}
-                    size="sm"
-                    className="hover:cursor-pointer"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                        삭제 중...
-                      </>
-                    ) : (
-                      <>
-                        <X className="mr-1 h-4 w-4" />
-                        삭제
-                      </>
-                    )}
-                  </Button>
-                  {form.watch('invoiceIssuedAt') && form.watch('depositReceivedAt') && (
+          {editingSalesBundle?.status === 'MATCHING' ? (
+            <div className="flex justify-between items-center space-x-2">
+              <div className="flex space-x-4">
+                {/* <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => closeSettlementForm()}
+                  disabled={loading}
+                  size="sm"
+                >
+                  <X className="mr-1 h-4 w-4" />
+                  닫기
+                </Button> */}
+                {isEditMode ? (
+                  // 편집 모드: 수정 및 삭제 버튼
+                  <>
                     <Button 
                       type="button" 
-                      variant="default"
-                      onClick={() => setIsCompleteDialogOpen(true)}
+                      variant="destructive"
+                      onClick={() => setIsDeleteDialogOpen(true)}
                       disabled={loading}
                       size="sm"
-                      className="bg-blue-500 hover:bg-blue-700 hover:cursor-pointer"
+                      className="hover:cursor-pointer"
                     >
                       {loading ? (
                         <>
                           <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                          완료 중...
+                          삭제 중...
                         </>
                       ) : (
                         <>
                           <X className="mr-1 h-4 w-4" />
-                          완료
+                          삭제
                         </>
                       )}
                     </Button>
-                  )}
-                </>
-              ) : (
-                <></>
-              )}
-            </div>
-            <div className="flex space-x-2">  
-              {isEditMode ? (
-                // 편집 모드: 수정 및 삭제 버튼
-                <>                  
+                    {form.watch('invoiceIssuedAt') && form.watch('depositReceivedAt') && (
+                      <Button 
+                        type="button" 
+                        variant="default"
+                        onClick={() => setIsCompleteDialogOpen(true)}
+                        disabled={loading}
+                        size="sm"
+                        className="bg-blue-500 hover:bg-blue-700 hover:cursor-pointer"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                            완료 중...
+                          </>
+                        ) : (
+                          <>
+                            <X className="mr-1 h-4 w-4" />
+                            완료
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <></>
+                )}
+              </div>
+              <div className="flex space-x-2">  
+                {isEditMode ? (
+                  // 편집 모드: 수정 및 삭제 버튼
+                  <>                  
+                    <Button 
+                      type="submit" 
+                      disabled={loading}
+                      size="sm"
+                      onClick={form.handleSubmit(handleSubmit)}
+                      className="hover:cursor-pointer"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                          수정 중...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-1 h-4 w-4" />
+                          수정
+                        </>
+                      )}
+                    </Button>
+                  </>
+                ) : (
+                  // 생성 모드: 생성 버튼
                   <Button 
                     type="submit" 
                     disabled={loading}
@@ -1554,40 +1577,22 @@ export function SettlementEditFormSheet() {
                     {loading ? (
                       <>
                         <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                        수정 중...
+                        처리 중...
                       </>
                     ) : (
                       <>
                         <Save className="mr-1 h-4 w-4" />
-                        수정
+                        정산 생성
                       </>
                     )}
                   </Button>
-                </>
-              ) : (
-                // 생성 모드: 생성 버튼
-                <Button 
-                  type="submit" 
-                  disabled={loading}
-                  size="sm"
-                  onClick={form.handleSubmit(handleSubmit)}
-                  className="hover:cursor-pointer"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                      처리 중...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-1 h-4 w-4" />
-                      정산 생성
-                    </>
-                  )}
-                </Button>
-              )}
+                )}
+              </div>
             </div>
-          </div>
+            ) : (
+              <></>
+            )
+          }
         </div>
       </SheetContent>
     </Sheet>
