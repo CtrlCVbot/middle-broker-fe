@@ -52,8 +52,9 @@ export function BundleMatchingList({
   onStatusChange,
   onIssueInvoice,
   onExportExcel,
-  currentTab = "MATCHING", // 기본값은 정산대사
+  currentTab,// = "MATCHING", // 기본값은 정산대사
 }: BundleMatchingListProps) {
+  
   // 상세 정보 모달을 위한 스토어 액세스
   const { openSheet } = useIncomeDetailStore();
   
@@ -121,12 +122,14 @@ export function BundleMatchingList({
         return <Badge variant="outline">{status}</Badge>;
     }
   };
-  const renderDepositStatusBadge = (status?: boolean) => {
-    if (!status) return null;
-    if (status) {
-      return <Badge variant="outline" className="bg-green-100 text-green-700">완료</Badge>;
-    } else {
+  const renderDepositStatusBadge = (date?: any) => {
+    
+    console.log('date:', date);
+    if (date === undefined || date === null || date === '') {
       return <Badge variant="outline" className="bg-slate-100">미입금</Badge>;
+    } else {
+      return <Badge variant="outline" className="bg-green-100 text-green-700">완료</Badge>;
+      
     }
     
   };
@@ -235,7 +238,7 @@ export function BundleMatchingList({
                     {renderInvoiceStatusBadge(income.invoiceStatus)}
                   </TableCell>
                   <TableCell className="text-center">
-                    {renderDepositStatusBadge(income.depositReceivedAt !== null ? true : false)}
+                    {renderDepositStatusBadge(income.depositReceivedAt)}
                   </TableCell>
                   <TableCell>
                     {income.manager}

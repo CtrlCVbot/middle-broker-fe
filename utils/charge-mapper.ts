@@ -406,6 +406,9 @@ export function mapSalesBundlesToIncomes(salesBundles: ISalesBundleListItem[]): 
       invoiceNumber: bundle.invoiceNo,
       invoiceIssuedDate: bundle.invoiceIssuedAt,
       invoiceStatus,
+
+      //걸제 정보
+      depositReceivedAt: bundle.depositReceivedAt,
       
       // 관리 정보
       manager: bundle.managerSnapshot?.name || '담당자 미지정',

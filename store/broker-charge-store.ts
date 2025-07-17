@@ -799,6 +799,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
         itemExtraAmount: formData.itemExtraAmount,
         bundleExtraAmount: formData.bundleExtraAmount,
         invoiceIssuedAt: formData.invoiceIssuedAt || null,
+        depositReceivedAt: formData.depositReceivedAt || null,
         // 필요시 추가 필드 변환
       };
 
