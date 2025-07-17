@@ -857,7 +857,11 @@ export function SettlementEditFormSheet() {
       <SheetContent className="sm:max-w-3xl overflow-y-auto p-0" side="right">
         <SheetHeader className="p-6 pb-2">
           <SheetTitle className="text-xl font-semibold">
-            {isEditMode ? '매출 정산 수정' : '매출 정산 생성'}
+            {isEditMode ? 
+            (editingSalesBundle?.status === 'draft' || editingSalesBundle?.status === 'issued') 
+              ? '매출 정산 수정' 
+              : '매출 정산 완료'
+            : '매출 정산 생성'}
           </SheetTitle>
           <SheetDescription>
             {isEditMode 
@@ -1478,7 +1482,7 @@ export function SettlementEditFormSheet() {
           </div>
           
           {/* 버튼 그룹 */}
-          {editingSalesBundle?.status === 'MATCHING' || editingSalesBundle?.status === 'paid' || isEditMode === false ? (
+          
             <div className="flex justify-between items-center space-x-2">
               <div className="flex space-x-4">
                 {/* <Button 
@@ -1491,8 +1495,12 @@ export function SettlementEditFormSheet() {
                   <X className="mr-1 h-4 w-4" />
                   닫기
                 </Button> */}
-                {isEditMode ? (
-                  // 편집 모드: 수정 및 삭제 버튼
+                {isEditMode && (editingSalesBundle?.status === 'draft' 
+                              || editingSalesBundle?.status === 'issued' 
+                              || editingSalesBundle?.status === 'paid'
+                              ) 
+                ? (
+                  // 편집 모드: 수정 및 삭제 버튼                  
                   <>
                     <Button 
                       type="button" 
@@ -1589,10 +1597,8 @@ export function SettlementEditFormSheet() {
                 )}
               </div>
             </div>
-            ) : (
-              <></>
-            )
-          }
+            
+          
         </div>
       </SheetContent>
     </Sheet>

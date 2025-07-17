@@ -162,8 +162,8 @@ export async function PATCH(
     const updateData = {
       ...fields,
       updatedAt: new Date(),
-      companyName: fields.companySnapshot.name,
-      businessNumber: fields.companySnapshot.businessNumber,
+      //companyName: fields.companySnapshot?.name || '',
+      //businessNumber: fields.companySnapshot?.businessNumber || '',
     };
 
     // 매출 번들 업데이트
