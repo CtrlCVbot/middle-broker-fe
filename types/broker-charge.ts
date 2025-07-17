@@ -248,10 +248,16 @@ export interface ISettlementFormState {
 }
 
 // 매출 번들(정산 묶음) 관련 타입
+export type SalesMode= 'WAITING' | 'MATCHING' | 'COMPLETED';
 export type SalesBundleStatus = 'draft' | 'issued' | 'paid' | 'canceled';
 export type BundleAdjType = 'discount' | 'surcharge';
 export type BundlePeriodType = 'departure' | 'arrival' | 'etc';
 export type PaymentMethod = 'cash' | 'bank_transfer' | 'card' | 'etc';
+
+
+export interface ISalesMode {
+  mode: SalesMode;
+}
 
 export interface ISalesBundle {
   id: string;

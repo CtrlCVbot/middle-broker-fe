@@ -202,9 +202,7 @@ export function SettlementEditFormSheet() {
   const [selectedManagerId, setSelectedManagerId] = useState<string | null>(null);
   const { setFilter } = useCompanyStore();
   const companiesQuery = useCompanies();
-  
-
-  
+    
   
   // 담당자 관리 store 사용
   const {
@@ -248,7 +246,6 @@ export function SettlementEditFormSheet() {
     }
     setItemDeleteDialog({ open: false });
   };
-
   
 
   // 정산 생성 이벤트 리스너 추가
@@ -316,6 +313,9 @@ export function SettlementEditFormSheet() {
       }
       form.setValue('invoiceIssuedAt', editingSalesBundle.invoiceIssuedAt ? new Date(editingSalesBundle.invoiceIssuedAt) : undefined);
       form.setValue('depositReceivedAt', editingSalesBundle.depositReceivedAt ? new Date(editingSalesBundle.depositReceivedAt) : undefined);
+    }
+    else if (isOpen) {
+      form.reset();
     }
   }, [isEditMode, editingSalesBundle, isOpen, form]);
 

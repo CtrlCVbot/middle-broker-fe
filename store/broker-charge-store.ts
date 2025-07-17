@@ -31,9 +31,10 @@ import {
 } from '@/utils/charge-mapper';
 
 //types
-import { ISalesBundleFilter, ISalesBundleListItem } from '@/types/broker-charge';
-import { IIncome } from '@/types/income';
+import { ISalesBundleFilter, ISalesBundleListItem, SalesBundleStatus, SalesMode } from '@/types/broker-charge';
+import { IIncome, IncomeStatusType } from '@/types/income';
 import { 
+  ISalesMode,
   IChargeGroupWithLines,
   IFinanceSummary,
   IAdditionalFeeInput,  
@@ -53,6 +54,10 @@ import { IWaitingFilter } from '@/components/broker/sale/settlement-waiting-sear
 
 
 interface IBrokerChargeState {  
+
+  // 필터 상태
+  tabMode: ISalesMode;
+
   // 기존 운임 관련 상태
   isLoading: boolean;
   error: string | null;  
@@ -77,8 +82,7 @@ interface IBrokerChargeState {
   
   // 편집 중인 sales bundle 관련 상태 추가
   selectedSalesBundleId: string | null;
-  editingSalesBundle: any | null;
-  
+  editingSalesBundle: any | null;  
   
 
   // sales bundles 관련 상태 추가
@@ -99,6 +103,9 @@ interface IBrokerChargeState {
   itemAdjustments: Map<string, ISalesItemAdjustment[]>; // itemId -> adjustments
   adjustmentsLoading: boolean;
   adjustmentsError: string | null;
+
+  //탭 모드
+  setTabMode: (mode: Partial<ISalesMode>) => void;
 
   //대기 화물 검색
   setFilter: (filter: Partial<IWaitingFilter>) => void;
@@ -141,6 +148,7 @@ interface IBrokerChargeState {
   resetSalesBundlesTempFilter: () => void;
   resetSalesBundlesState: () => void;
   
+  
   // sales bundle 편집 관련 액션 추가
   openSettlementFormForEdit: (bundleId: string) => Promise<void>;
   updateSalesBundleData: (id: string, formData: ISettlementFormData, reason?: string) => Promise<boolean>;
@@ -161,6 +169,11 @@ interface IBrokerChargeState {
   
   resetAdjustmentsState: () => void;
 }
+
+const initialTabMode: ISalesMode = {
+  mode: 'WAITING' as SalesMode,
+};
+
 const initialWaitingFilter: IWaitingFilter = {
   searchTerm: undefined,
   departureCity: undefined,
@@ -235,6 +248,10 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
     isLoading: false
   },
   
+
+  //탭 모드
+  tabMode: initialTabMode,
+
   // 편집 중인 sales bundle 관련 상태 추가
   selectedSalesBundleId: null,
   editingSalesBundle: null,
@@ -263,6 +280,10 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   itemAdjustments: new Map(),
   adjustmentsLoading: false,
   adjustmentsError: null,
+
+  setTabMode: (mode: Partial<ISalesMode>) => set((state) => ({
+    tabMode: { ...state.tabMode, ...mode },
+  })),
 
   setFilter: (filter: Partial<IWaitingFilter>) => set((state) => ({
     waitingItemsFilter: { ...state.waitingItemsFilter, ...filter },
@@ -436,7 +457,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   },
   
   // 정산 대기 항목 필터 변경
-  updateWaitingItemsFilter: (filter: Partial<IBrokerChargeState['waitingItemsFilter']>) => {
+  updateWaitingItemsFilter: (filter: Partial<IWaitingFilter>) => {
     set({ 
       waitingItemsFilter: { ...get().waitingItemsFilter, ...filter },
       waitingItemsPage: 1 // 필터가 변경되면, 첫 페이지로 이동
@@ -773,6 +794,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       salesBundlesTempFilter: { ...initialSalesBundleFilter },
     });
   },
+  
 
   // sales bundle 편집 관련 액션 추가
   openSettlementFormForEdit: async (bundleId: string) => {

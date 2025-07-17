@@ -19,12 +19,12 @@ import {
 } from "lucide-react";
 
 //store
-import { useIncomeStore } from "@/store/income-store";
-import { useIncomeWaitingStore } from "@/store/income-waiting-store";
+//import { useIncomeStore } from "@/store/income-store";
+//import { useIncomeWaitingStore } from "@/store/income-waiting-store";
 import { useBrokerChargeStore } from "@/store/broker-charge-store";
 
 //component
-import { SettlementBundleDetailSheet } from "@/components/broker/sale/settlement-bundle-detail-sheet";
+//import { SettlementBundleDetailSheet } from "@/components/broker/sale/settlement-bundle-detail-sheet";
 import { WaitingTable } from "@/components/broker/sale/settlement-waiting-table";
 import { WaitingSearch } from "@/components/broker/sale/settlement-waiting-search";
 import WaitingSummary from "@/components/broker/sale/settlement-waiting-summary";
@@ -33,43 +33,29 @@ import { BundleMatchingList } from "@/components/broker/sale/settlement-bundle-m
 import { SettlementEditFormSheet } from "@/components/broker/sale/settlement-edit-form-sheet";
 
 //types
-import { IncomeStatusType } from "@/types/income";
+//import { IncomeStatusType } from "@/types/income";
+import { SalesMode } from "@/types/broker-charge";
 
 export default function IncomePage() {
   // 정산 데이터 스토어 접근
-  const {
-    incomes,
-    currentPage,
-    totalPages,
-    isLoading,
-    filter,
-    setFilter,
-    fetchIncomes,
-    setPage,
-    updateIncomeStatus,
-    resetFilter
-  } = useIncomeStore();
+  // const {    
+  //   currentPage,    
+  //   filter,
+  //   setFilter,
+  //   fetchIncomes,
+  //   setPage,
+  //   updateIncomeStatus,
+  //   resetFilter
+  // } = useIncomeStore();
   
-  // 정산 대기 화물 스토어 접근 (기존)
-  const {
-    filter: waitingFilter,
-    filterOptions,
-    currentPage: waitingCurrentPage,
-    totalPages: waitingTotalPages,
-    isLoading: waitingIsLoading,
-    selectedOrderIds,
-    fetchWaitingOrders,
-    getOrdersByPage,
-    setFilter: setWaitingFilter,
-    setCurrentPage: setWaitingPage,
-    selectOrder,
-    selectAllOrders,
-    createIncome,
-    getSelectedOrders,
-  } = useIncomeWaitingStore();
+  
 
-  // broker-charge-store 사용 (새로운 구현)
+  // 정산 스토어 접근 (새로운 구현)
   const {
+    tabMode,
+    setTabMode,
+    
+    // 정산 대기 화물 관련 추가
     waitingItems,
     selectedWaitingItemIds,
     waitingItemsTotal,
@@ -87,10 +73,12 @@ export default function IncomePage() {
     calculateSettlementSummary,
     createOrderSaleFromWaitingItems,
     openSettlementForm,
+
     // sales bundles 관련 추가
     salesBundlesAsIncomes,
     salesBundlesTotal,
     salesBundlesPage,
+    salesBundlesPageSize,
     salesBundlesTotalPages,
     salesBundlesIsLoading,
     salesBundlesFilter,
@@ -103,28 +91,28 @@ export default function IncomePage() {
 
   console.log('waitingItems:', waitingItems);
 
-  // 초기 데이터 로드
-  useEffect(() => {
-    console.log('useEffect 실행됨 - 정산 데이터 로드');
-    const loadData = async () => {
-      try {
-        await fetchIncomes(currentPage);
-        console.log('정산 데이터 로드 완료');
-      } catch (error) {
-        console.error('정산 데이터 로드 중 오류 발생:', error);
-      }
-    };
+  // 초기 정산 데이터 로드
+  // useEffect(() => {
+  //   console.log('useEffect 실행됨 - 정산 데이터 로드');
+  //   const loadData = async () => {
+  //     try {
+  //       await fetchIncomes(currentPage);
+  //       console.log('정산 데이터 로드 완료');
+  //     } catch (error) {
+  //       console.error('정산 데이터 로드 중 오류 발생:', error);
+  //     }
+  //   };
     
-    loadData();
-  }, [currentPage, 
-      filter.status, 
-      filter.startDate, 
-      filter.endDate, 
-      filter.searchTerm, 
-      filter.shipperName, 
-      filter.invoiceStatus, 
-      filter.manager,
-      fetchIncomes]);
+  //   loadData();
+  // }, [currentPage, 
+  //     filter.status, 
+  //     filter.startDate, 
+  //     filter.endDate, 
+  //     filter.searchTerm, 
+  //     filter.shipperName, 
+  //     filter.invoiceStatus, 
+  //     filter.manager,
+  //     fetchIncomes]);
       
 
 
@@ -136,24 +124,42 @@ export default function IncomePage() {
 
   // 정산 대기 필터 변경 시 데이터 다시 조회
   useEffect(() => {
-    fetchWaitingItems();
-  }, [currentPage, waitingItemsPageSize, waitingItemsFilter, fetchWaitingItems]);
+    console.log('useEffect 실행됨 - 정산 대기 화물 데이터 로드');
+    const loadData = async () => {
+      try {
+        await fetchWaitingItems();
+        console.log('정산 대기 화물 데이터 로드 완료');
+      } catch (error) {
+        console.error('정산 대기 화물 데이터 로드 중 오류 발생:', error);
+      }
+    };
+    loadData();
+  }, [waitingItemsPage, waitingItemsPageSize, waitingItemsFilter, fetchWaitingItems]);
  
   // sales bundles 데이터 로드 (정산 대사용)
   useEffect(() => {
     console.log('useEffect 실행됨 - sales bundles 데이터 로드');
-    fetchSalesBundles();
-  }, [salesBundlesPage, salesBundlesFilter, fetchSalesBundles]);
+    const loadData = async () => {
+      try {
+        await fetchSalesBundles();
+        console.log('sales bundles 데이터 로드 완료');
+      } catch (error) {
+        console.error('sales bundles 데이터 로드 중 오류 발생:', error);
+      }
+    };
+    loadData();
+    //fetchSalesBundles();
+  }, [salesBundlesPage, salesBundlesPageSize, salesBundlesFilter, fetchSalesBundles]);
 
   // 페이지 변경 처리
-  const handlePageChange = (page: number) => {
-    setPage(page);
-  };
+  // const handlePageChange = (page: number) => {
+  //   setPage(page);
+  // };
   
   // 정산 대기 화물 페이지 변경 처리 (기존)
-  const handleWaitingPageChange = (page: number) => {
-    setWaitingPage(page);
-  };
+  // const handleWaitingPageChange = (page: number) => {
+  //   setWaitingPage(page);
+  // };
 
   // 정산 대기 화물 페이지 변경 처리 (새로운 구현)
   const handleBrokerWaitingPageChange = (page: number) => {
@@ -166,9 +172,9 @@ export default function IncomePage() {
   };
 
   // 정산 상태 변경 처리
-  const handleStatusChange = (incomeId: string, newStatus: IncomeStatusType) => {
-    updateIncomeStatus(incomeId, newStatus);
-  };
+  // const handleStatusChange = (incomeId: string, newStatus: IncomeStatusType) => {
+  //   updateIncomeStatus(incomeId, newStatus);
+  // };
 
   // 세금계산서 발행 처리
   const handleIssueInvoice = (incomeId: string) => {
@@ -183,28 +189,29 @@ export default function IncomePage() {
   };
   
   // 필터 변경 처리
-  const handleFilterChange = (newFilter: Partial<typeof filter>) => {
-    setFilter(newFilter);
-  };
+  // const handleFilterChange = (newFilter: Partial<typeof filter>) => {
+  //   setFilter(newFilter);
+  // };
   
   // sales bundles 필터 변경 처리
-  const handleSalesBundlesFilterChange = (newFilter: Partial<typeof filter>) => {
-    // IIncomeFilter를 ISalesBundleFilter로 변환
-    const salesBundleFilter = {
-      search: newFilter.searchTerm,      
-      //shipperName: newFilter.shipperName, // 임시로 shipperName을 companyId로 사용
-      startDate: newFilter.startDate,
-      endDate: newFilter.endDate,
-      status: newFilter.status === 'MATCHING' ? 'draft' as const : 
-              newFilter.status === 'COMPLETED' ? 'paid' as const : undefined
-    };
-    updateSalesBundlesFilter(salesBundleFilter);
-  };
+  // const handleSalesBundlesFilterChange = (newFilter: Partial<typeof filter>) => {
+  //   // IIncomeFilter를 ISalesBundleFilter로 변환
+  //   const salesBundleFilter = {
+  //     search: newFilter.searchTerm,      
+  //     //shipperName: newFilter.shipperName, // 임시로 shipperName을 companyId로 사용
+  //     startDate: newFilter.startDate,
+  //     endDate: newFilter.endDate,
+  //     status: newFilter.status === 'MATCHING' ? 'draft' as const : 
+  //             newFilter.status === 'COMPLETED' ? 'paid' as const : undefined
+  //   };
+  //   updateSalesBundlesFilter(salesBundleFilter);
+  // };
   
   // 상태별 탭 처리
   const handleTabChange = (value: string) => {
     if (value === "WAITING" || value === "MATCHING" || value === "COMPLETED") {
-      setFilter({ status: value as IncomeStatusType });
+      //setFilter({ status: value as IncomeStatusType });
+      setTabMode({ mode: value as SalesMode });
       
       // sales bundles 필터도 업데이트
       if (value === "MATCHING") {
@@ -213,12 +220,15 @@ export default function IncomePage() {
       } else if (value === "COMPLETED") {
         const salesBundleStatus = 'paid';
         updateSalesBundlesFilter({ status: salesBundleStatus });
+      } else if (value === "WAITING") {
+        //const salesBundleStatus = 'draft';
+        updateWaitingItemsFilter({ });
       }
     }
   };
   
   // 현재 페이지의 정산 대기 화물 목록 (기존)
-  const currentWaitingOrders = getOrdersByPage(waitingCurrentPage);
+  //const currentWaitingOrders = getOrdersByPage(waitingCurrentPage);
 
   // 정산 대기 화물에서 선택 처리 (새로운 구현)
   const handleWaitingItemSelect = (id: string, selected: boolean) => {
@@ -295,7 +305,7 @@ export default function IncomePage() {
               <CardContent>
                 <Tabs 
                   defaultValue="WAITING" 
-                  value={filter.status || "WAITING"}
+                  value={tabMode.mode || "WAITING"}
                   onValueChange={handleTabChange}
                   className="w-full"
                 >
@@ -455,7 +465,7 @@ export default function IncomePage() {
                             currentPage={salesBundlesPage}
                             totalPages={salesBundlesTotalPages}
                             onPageChange={handleSalesBundlesPageChange}
-                            onStatusChange={handleStatusChange}
+                            //onStatusChange={handleStatusChange}
                             onIssueInvoice={handleIssueInvoice}
                             onExportExcel={handleExportExcel}
                             currentTab="MATCHING"
@@ -500,7 +510,7 @@ export default function IncomePage() {
                             currentPage={salesBundlesPage}
                             totalPages={salesBundlesTotalPages}
                             onPageChange={handleSalesBundlesPageChange}
-                            onStatusChange={handleStatusChange}
+                            //onStatusChange={handleStatusChange}
                             onIssueInvoice={handleIssueInvoice}
                             onExportExcel={handleExportExcel}
                             currentTab="COMPLETED"
@@ -517,7 +527,7 @@ export default function IncomePage() {
         </Card>
         
         {/* 정산 상세 정보 시트 */}
-        <SettlementBundleDetailSheet />
+        {/* <SettlementBundleDetailSheet /> */}
         
         {/* 정산 폼 시트 */}
         <SettlementEditFormSheet />

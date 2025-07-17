@@ -38,7 +38,7 @@ interface BundleMatchingListProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  onStatusChange?: (incomeId: string, newStatus: IncomeStatusType) => void;
+  //onStatusChange?: (incomeId: string, newStatus: IncomeStatusType) => void;
   onIssueInvoice?: (incomeId: string) => void;
   onExportExcel?: (incomeId: string) => void;
   currentTab?: IncomeStatusType; // 현재 선택된 탭
@@ -49,14 +49,14 @@ export function BundleMatchingList({
   currentPage,
   totalPages,
   onPageChange,
-  onStatusChange,
+  //onStatusChange,
   onIssueInvoice,
   onExportExcel,
   currentTab,// = "MATCHING", // 기본값은 정산대사
 }: BundleMatchingListProps) {
   
   // 상세 정보 모달을 위한 스토어 액세스
-  const { openSheet } = useIncomeDetailStore();
+  //const { openSheet } = useIncomeDetailStore();
   
   // 정산 편집을 위한 broker charge store 액세스
   const { openSettlementFormForEdit } = useBrokerChargeStore();
@@ -135,16 +135,16 @@ export function BundleMatchingList({
   };
 
   // 현재 탭에 따른 상태 컬럼 이름 설정
-  const getStatusColumnName = () => {
-    switch (currentTab) {
-      case "MATCHING":
-        return "정산대사 상태";
-      case "COMPLETED":
-        return "정산완료 상태";
-      default:
-        return "상태";
-    }
-  };
+  // const getStatusColumnName = () => {
+  //   switch (currentTab) {
+  //     case "MATCHING":
+  //       return "정산대사 상태";
+  //     case "COMPLETED":
+  //       return "정산완료 상태";
+  //     default:
+  //       return "상태";
+  //   }
+  // };
 
   const getSchedule = (from: string, to: string,) => {
     const fromDateObj = format(from, "MM.dd", { locale: ko });
