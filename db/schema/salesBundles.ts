@@ -8,7 +8,8 @@ import {
   text,
   numeric,
   jsonb,
-  integer
+  integer,
+  index
 } from "drizzle-orm/pg-core";
 import { companies } from "./companies";
 import { orderSales } from "./orderSales";
@@ -50,6 +51,9 @@ export const salesBundles = pgTable('sales_bundles', {
   
   // 고객 정보 - 청구 회사
   companyId: uuid('company_id').notNull().references(() => companies.id),
+  companyName: varchar('company_name', { length: 50 }),
+  companyBusinessNumber: varchar('company_business_number', { length: 20 }),
+
   companySnapshot: jsonb('company_snapshot').$type<ICompanySnapshot>(),
   companiesSnapshot: jsonb('companies_snapshot').$type<ICompanySnapshotForSales[]>(), //선택된 화물들의 회사 목록 정보
   managerId: uuid('manager_id').references(() => users.id),
@@ -100,7 +104,11 @@ export const salesBundles = pgTable('sales_bundles', {
   createdBy: uuid('created_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   updatedBy: uuid('updated_by').notNull().references(() => users.id, { onDelete: 'cascade' })
-});
+  
+}, (t) => ({
+  idxCompanyName: index('idx_sales_bundles_company_name').on(t.companyName),
+  idxCompanyBn: index('idx_sales_bundles_company_bn').on(t.companyBusinessNumber),
+}));
 
 // 매출 번들 아이템 테이블 (화물 매핑)
 export const salesBundleItems = pgTable('sales_bundle_items', {

@@ -437,9 +437,12 @@ export interface ISalesBundleListResponse {
 // sales bundle 필터 타입
 export interface ISalesBundleFilter {
   companyId?: string;
+  shipperName?: string;
+  shipperBusinessNumber?: string;
   status?: SalesBundleStatus;
   startDate?: string;
   endDate?: string;
   sortBy?: 'createdAt' | 'periodFrom';
   sortOrder?: 'asc' | 'desc';
+  search?: string;
 } 

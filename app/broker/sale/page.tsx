@@ -125,18 +125,19 @@ export default function IncomePage() {
       filter.manager,
       fetchIncomes]);
       
-  // 정산 대기 화물 데이터 로드 (기존)
-  // useEffect(() => {
-  //   console.log('useEffect 실행됨 - 정산 대기 화물 데이터 로드');
-  //   fetchWaitingOrders();
-  // }, [fetchWaitingOrders]);
+
 
   // 정산 대기 화물 데이터 로드 (새로운 구현)
-  useEffect(() => {
-    console.log('useEffect 실행됨 - 새로운 정산 대기 화물 데이터 로드');
-    fetchWaitingItems();
-  }, [fetchWaitingItems]);
+  // useEffect(() => {
+  //   console.log('useEffect 실행됨 - 새로운 정산 대기 화물 데이터 로드');
+  //   fetchWaitingItems();
+  // }, [fetchWaitingItems]);
 
+  // 정산 대기 필터 변경 시 데이터 다시 조회
+  useEffect(() => {
+    fetchWaitingItems();
+  }, [currentPage, waitingItemsPageSize, waitingItemsFilter, fetchWaitingItems]);
+ 
   // sales bundles 데이터 로드 (정산 대사용)
   useEffect(() => {
     console.log('useEffect 실행됨 - sales bundles 데이터 로드');
@@ -189,11 +190,12 @@ export default function IncomePage() {
   const handleSalesBundlesFilterChange = (newFilter: Partial<typeof filter>) => {
     // IIncomeFilter를 ISalesBundleFilter로 변환
     const salesBundleFilter = {
-      companyId: newFilter.shipperName, // 임시로 shipperName을 companyId로 사용
+      search: newFilter.searchTerm,      
+      //shipperName: newFilter.shipperName, // 임시로 shipperName을 companyId로 사용
       startDate: newFilter.startDate,
       endDate: newFilter.endDate,
       status: newFilter.status === 'MATCHING' ? 'draft' as const : 
-              newFilter.status === 'COMPLETED' ? 'issued' as const : undefined
+              newFilter.status === 'COMPLETED' ? 'paid' as const : undefined
     };
     updateSalesBundlesFilter(salesBundleFilter);
   };
@@ -319,18 +321,19 @@ export default function IncomePage() {
                       
                       {/* 검색 필터 */}
                       <WaitingSearch
-                        filter={{
-                          startDate: waitingItemsFilter.startDate,
-                          endDate: waitingItemsFilter.endDate,
-                          company: waitingItemsFilter.companyId
-                        }}
-                        setFilter={(newFilter) => {
-                          updateWaitingItemsFilter({
-                            startDate: newFilter.startDate,
-                            endDate: newFilter.endDate,
-                            companyId: newFilter.company
-                          });
-                        }}
+                        // filter={{
+                        //   startDate: waitingItemsFilter.startDate,
+                        //   endDate: waitingItemsFilter.endDate,
+                        //   //company: waitingItemsFilter.companyId
+                        // }}
+                        // setFilter={(newFilter) => {
+                        //   updateWaitingItemsFilter({
+                        //     startDate: newFilter.startDate,
+                        //     endDate: newFilter.endDate,
+                        //     //companyId: newFilter.company
+                        //   });
+                        // }}
+                        
                         filterOptions={{
                           cities: [],
                           vehicleTypes: [],
@@ -465,14 +468,16 @@ export default function IncomePage() {
                       <div className="flex h-24 items-center justify-center">
                         <Loader2 className="h-8 w-8 animate-spin text-primary/70" />
                       </div>
-                    ) : salesBundlesAsIncomes.filter(income => income.status === 'COMPLETED').length === 0 ? (
-                      <div className="flex h-24 items-center justify-center flex-col">
-                        <p className="text-muted-foreground mb-2">정산 완료된 데이터가 없습니다</p>
-                        <Button variant="outline" onClick={resetSalesBundlesFilter}>
-                          필터 초기화
-                        </Button>
-                      </div>
-                    ) : (
+                    ) 
+                    // : salesBundlesAsIncomes.filter(income => income.status === 'COMPLETED').length === 0 ? (
+                    //   <div className="flex h-24 items-center justify-center flex-col">
+                    //     <p className="text-muted-foreground mb-2">정산 완료된 데이터가 없습니다</p>
+                    //     <Button variant="outline" onClick={resetSalesBundlesFilter}>
+                    //       필터 초기화
+                    //     </Button>
+                    //   </div>
+                    // ) 
+                    : (
                       <>
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
                         <div>
@@ -487,17 +492,27 @@ export default function IncomePage() {
                         onResetFilter={resetSalesBundlesFilter}
                         tabStatus="COMPLETED"
                       />
-                      <BundleMatchingList
-                        incomes={salesBundlesAsIncomes.filter(income => income.status === 'COMPLETED')}
-                        currentPage={salesBundlesPage}
-                        totalPages={salesBundlesTotalPages}
-                        onPageChange={handleSalesBundlesPageChange}
-                        onStatusChange={handleStatusChange}
-                        onIssueInvoice={handleIssueInvoice}
-                        onExportExcel={handleExportExcel}
-                        currentTab="COMPLETED"
-                      />
-                      </>
+                      {salesBundlesAsIncomes.filter(income => income.status === 'COMPLETED').length === 0 ? (
+                        <div className="flex h-24 items-center justify-center flex-col">
+                          <p className="text-muted-foreground mb-2">정산 완료된 데이터가 없습니다</p>
+                          <Button variant="outline" onClick={resetSalesBundlesFilter}>
+                            필터 초기화
+                          </Button>
+                        </div>
+                      ) : (
+                        <BundleMatchingList
+                          incomes={salesBundlesAsIncomes.filter(income => income.status === 'COMPLETED')}
+                          currentPage={salesBundlesPage}
+                          totalPages={salesBundlesTotalPages}
+                          onPageChange={handleSalesBundlesPageChange}
+                          onStatusChange={handleStatusChange}
+                          onIssueInvoice={handleIssueInvoice}
+                          onExportExcel={handleExportExcel}
+                          currentTab="COMPLETED"
+                        />
+                      )}
+                    </>
+                    
                     )}
                   </TabsContent>
                 </Tabs>

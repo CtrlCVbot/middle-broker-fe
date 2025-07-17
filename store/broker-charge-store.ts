@@ -49,6 +49,7 @@ import {
   ICreateItemAdjustmentInput,
   IUpdateItemAdjustmentInput
 } from '@/types/broker-charge';
+import { IWaitingFilter } from '@/components/broker/sale/settlement-waiting-search';
 
 
 interface IBrokerChargeState {  
@@ -58,7 +59,9 @@ interface IBrokerChargeState {
     chargeGroups: IChargeGroupWithLines[];  
     financeSummary: IFinanceSummary | null;    
 
-  // 매출 정산 관련 상태
+  // 매출 정산 대기 화물 관련 상태
+  waitingItemsFilter: IWaitingFilter;
+  waitingItemsTempFilter: IWaitingFilter;
   waitingItems: ISettlementWaitingItem[];
   selectedWaitingItemIds: string[];
   waitingItemsTotal: number;
@@ -76,12 +79,7 @@ interface IBrokerChargeState {
   selectedSalesBundleId: string | null;
   editingSalesBundle: any | null;
   
-  // 필터 관련 상태
-  waitingItemsFilter: {
-    companyId?: string;
-    startDate?: string;
-    endDate?: string;
-  };
+  
 
   // sales bundles 관련 상태 추가
   salesBundles: ISalesBundleListItem[];
@@ -100,6 +98,13 @@ interface IBrokerChargeState {
   itemAdjustments: Map<string, ISalesItemAdjustment[]>; // itemId -> adjustments
   adjustmentsLoading: boolean;
   adjustmentsError: string | null;
+
+  //대기 화물 검색
+  setFilter: (filter: Partial<IWaitingFilter>) => void;
+  setTempFilter: (filter: Partial<IWaitingFilter>) => void;
+  applyTempFilter: () => void;
+  resetFilter: () => void;
+  resetTempFilter: () => void;
 
   // 기존 운임 관련 액션
   fetchChargesByOrderId: (orderId: string) => Promise<IChargeGroupWithLines[]>;  
@@ -151,6 +156,18 @@ interface IBrokerChargeState {
   
   resetAdjustmentsState: () => void;
 }
+const initialWaitingFilter: IWaitingFilter = {
+  searchTerm: undefined,
+  departureCity: undefined,
+  arrivalCity: undefined,
+  vehicleType: undefined,
+  weight: undefined,
+  status: undefined,
+  startDate: undefined,
+  endDate: undefined,
+  company: undefined,
+  manager: undefined,
+};
 
 // 정산 폼 초기 데이터
 const initialSettlementFormData: ISettlementFormData = {
@@ -208,11 +225,8 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   editingSalesBundle: null,
   
   // 필터 초기 상태
-  waitingItemsFilter: {
-    companyId: undefined,
-    startDate: undefined,
-    endDate: undefined,
-  },
+  waitingItemsFilter: { ...initialWaitingFilter },
+  waitingItemsTempFilter: { ...initialWaitingFilter },
   
   // sales bundles 초기 상태 추가
   salesBundles: [],
@@ -238,6 +252,31 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   itemAdjustments: new Map(),
   adjustmentsLoading: false,
   adjustmentsError: null,
+
+  setFilter: (filter: Partial<IWaitingFilter>) => set((state) => ({
+    waitingItemsFilter: { ...state.waitingItemsFilter, ...filter },
+    waitingItemsTempFilter: { ...state.waitingItemsTempFilter, ...filter },
+    waitingItemsPage: 1, // 필터가 변경되면 첫 페이지로 돌아감
+  })),
+
+  setTempFilter: (filter: Partial<IWaitingFilter>) => set((state) => ({
+    waitingItemsTempFilter: { ...state.waitingItemsTempFilter, ...filter },
+  })),
+
+  applyTempFilter: () => set((state) => ({
+    waitingItemsFilter: { ...state.waitingItemsTempFilter },
+    waitingItemsPage: 1, // 필터가 변경되면 첫 페이지로 돌아감
+  })),
+
+  resetFilter: () => set({ 
+    waitingItemsFilter: { ...initialWaitingFilter },
+    waitingItemsTempFilter: { ...initialWaitingFilter },
+    waitingItemsPage: 1,
+  }),
+
+  resetTempFilter: () => set((state) => ({
+    waitingItemsTempFilter: { ...state.waitingItemsFilter },
+  })),
   
   // 주문 ID로 운임 정보 조회
   fetchChargesByOrderId: async (orderId: string) => {
@@ -318,9 +357,10 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       const response = await getSettlementWaitingItems({
         page: waitingItemsPage,
         pageSize: waitingItemsPageSize,
-        companyId: waitingItemsFilter.companyId,
-        startDate: waitingItemsFilter.startDate,
-        endDate: waitingItemsFilter.endDate
+        //companyId: waitingItemsFilter.company?.,
+        //startDate: waitingItemsFilter.startDate,
+        //endDate: waitingItemsFilter.endDate
+        filter: waitingItemsFilter
       });
       
       set({ 
@@ -515,7 +555,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       waitingItemsError: null,
       settlementSummary: null,
       waitingItemsFilter: {
-        companyId: undefined,
+        //companyId: undefined,
         startDate: undefined,
         endDate: undefined,
       }

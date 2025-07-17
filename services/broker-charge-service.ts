@@ -25,6 +25,7 @@ import {
 } from '@/types/broker-charge';
 import { mapAdditionalFeeToChargeGroup, mapAdditionalFeeToChargeLine } from '@/utils/charge-mapper';
 import { IBrokerOrder } from '@/types/broker-order';
+import { IWaitingFilter } from '@/components/broker/sale/settlement-waiting-search';
 
 /**
  * 주문 ID로 운임 그룹 목록 조회
@@ -233,18 +234,17 @@ export async function getOrderSales(params: {
 export async function getSettlementWaitingItems(params: {
   page?: number;
   pageSize?: number;
-  companyId?: string;
-  startDate?: string;
-  endDate?: string;
+  filter?: IWaitingFilter;
 }): Promise<ISettlementWaitingResponse> {
   try {
     // 파라미터로 쿼리 문자열 구성
     const queryParams = new URLSearchParams();
     if (params.page) queryParams.append('page', params.page.toString());
     if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString());
-    if (params.companyId) queryParams.append('companyId', params.companyId);
-    if (params.startDate) queryParams.append('startDate', params.startDate);
-    if (params.endDate) queryParams.append('endDate', params.endDate);
+    //if (params.companyId) queryParams.append('companyId', params.companyId);
+    if (params.filter?.startDate) queryParams.append('startDate', params.filter.startDate);
+    if (params.filter?.endDate) queryParams.append('endDate', params.filter.endDate);
+    if (params.filter?.searchTerm) queryParams.append('searchTerm', params.filter.searchTerm);
 
     console.log("정산 대기 화물 조회 파라미터", queryParams.toString());
     
@@ -376,11 +376,14 @@ export async function getSalesBundles(
     // 필터 파라미터 추가
     if (filter) {
       if (filter.companyId) params.append('companyId', filter.companyId);
+      if (filter.shipperName) params.append('shipperName', filter.shipperName);
+      if (filter.shipperBusinessNumber) params.append('shipperBusinessNumber', filter.shipperBusinessNumber);
       if (filter.status) params.append('status', filter.status);
       if (filter.startDate) params.append('startDate', filter.startDate);
       if (filter.endDate) params.append('endDate', filter.endDate);
       if (filter.sortBy) params.append('sortBy', filter.sortBy);
       if (filter.sortOrder) params.append('sortOrder', filter.sortOrder);
+      if (filter.search) params.append('search', filter.search);
     }
 
     const response = await fetch(`/api/charge/sales-bundles?${params.toString()}`, {

@@ -23,9 +23,11 @@ import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { BrokerOrderStatusType } from "@/types/broker-order";
+import { useBrokerChargeStore } from "@/store/broker-charge-store";
+
 
 // 필터 옵션 타입 정의
-interface IWaitingFilter {
+export interface IWaitingFilter {
   searchTerm?: string;
   departureCity?: string;
   arrivalCity?: string;
@@ -40,8 +42,8 @@ interface IWaitingFilter {
 
 // 필터 옵션 프롭스
 interface IWaitingSearchProps {
-  filter: IWaitingFilter;
-  setFilter: (filter: Partial<IWaitingFilter>) => void;
+  //filter: IWaitingFilter;
+  //setFilter: (filter: Partial<IWaitingFilter>) => void;
   filterOptions: {
     cities: string[];
     vehicleTypes: string[];
@@ -65,99 +67,126 @@ const getFilterSummaryText = (filter: IWaitingFilter): string => {
     !filter.company &&
     !filter.manager
   ) {
-    return "필터";
+    return "모든 화물";
   }
 
   const parts = [];
-  
-  if (filter.startDate && filter.endDate) {
-    parts.push(`${filter.startDate}~${filter.endDate}`);
-  } else if (filter.startDate) {
-    parts.push(`${filter.startDate}~`);
-  } else if (filter.endDate) {
-    parts.push(`~${filter.endDate}`);
-  }
-  
+
   if (filter.status) parts.push(filter.status);
   if (filter.departureCity) parts.push(`출발:${filter.departureCity}`);
   if (filter.arrivalCity) parts.push(`도착:${filter.arrivalCity}`);
   if (filter.vehicleType) parts.push(filter.vehicleType);
   if (filter.weight) parts.push(filter.weight);
-  if (filter.company) parts.push(filter.company);
-  if (filter.manager) parts.push(filter.manager);
+  if (filter.company) parts.push(`업체: ${filter.company}`);
+  if (filter.manager) parts.push(`담당: ${filter.manager}`);
   
-  return parts.join(", ");
+  //검색기간 추가
+  if (filter.startDate && filter.endDate) {
+    parts.push(`${filter.startDate.slice(5)}~${filter.endDate.slice(5)}`);
+  } else if (filter.startDate) {
+    parts.push(`${filter.startDate.slice(5)}부터`);
+  } else if (filter.endDate) {
+    parts.push(`${filter.endDate.slice(5)}까지`);
+  }
+  
+
+  
+  return parts.join(", ") || "모든 화물";
 };
 
-export function WaitingSearch({ filter, setFilter, filterOptions }: IWaitingSearchProps) {
-  // 임시 필터 상태 관리
-  const [tempFilter, setTempFilter] = useState<IWaitingFilter>({ ...filter });
+export function WaitingSearch({ 
+  //filter, 
+  //setFilter, 
+  filterOptions 
+}: IWaitingSearchProps) {
+  
+  const {
+    waitingItemsFilter,   
+    waitingItemsTempFilter, 
+    setFilter, 
+    setTempFilter,   
+    applyTempFilter,
+    resetFilter,
+    resetTempFilter,
+  } = useBrokerChargeStore();
+  
+  // 검색 입력값을 위한 로컬 상태 추가
+  const [searchInput, setSearchInput] = useState(waitingItemsFilter.searchTerm || "");
   
   // Popover 상태 관리
   const [open, setOpen] = useState(false);
+
+  // 임시 필터 상태 관리
+  //const [waitingItemsTempFilter, setTempFilter] = useState<IWaitingFilter>({ ...waitingItemsFilter });
   
   // 날짜 상태 관리
   const [startDate, setStartDate] = useState<Date | undefined>(
-    tempFilter.startDate ? new Date(tempFilter.startDate) : undefined
+    waitingItemsTempFilter.startDate ? new Date(waitingItemsTempFilter.startDate) : undefined
   );
   const [endDate, setEndDate] = useState<Date | undefined>(
-    tempFilter.endDate ? new Date(tempFilter.endDate) : undefined
+    waitingItemsTempFilter.endDate ? new Date(waitingItemsTempFilter.endDate) : undefined
   );
 
   // 검색어 입력 시 필터 업데이트
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilter({ searchTerm: e.target.value });
+    //setFilter({ searchTerm: e.target.value });
+    setSearchInput(e.target.value);
   };
-
   
+  // 엔터 입력 시 검색 실행
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      setFilter({ searchTerm: searchInput });
+    }
+  };
 
   // 임시 필터 업데이트 함수
-  const handleTempFilterUpdate = (updates: Partial<IWaitingFilter>) => {
-    setTempFilter(prev => ({ ...prev, ...updates }));
-  };
+  // const handleTempFilterUpdate = (updates: Partial<IWaitingFilter>) => {
+  //   setTempFilter(prev => ({ ...prev, ...updates }));
+  // };
 
   // 출발지 도시 변경 시 임시 필터 업데이트
   const handleDepartureCityChange = (value: string) => {
-    handleTempFilterUpdate({ departureCity: value === "all" ? undefined : value });
+    setTempFilter({ departureCity: value === "all" ? undefined : value });
   };
 
   // 도착지 도시 변경 시 임시 필터 업데이트
   const handleArrivalCityChange = (value: string) => {
-    handleTempFilterUpdate({ arrivalCity: value === "all" ? undefined : value });
+    setTempFilter({ arrivalCity: value === "all" ? undefined : value });
   };
 
   // 차량 종류 변경 시 임시 필터 업데이트
   const handleVehicleTypeChange = (value: string) => {
-    handleTempFilterUpdate({ vehicleType: value === "all" ? undefined : value });
+    setTempFilter({ vehicleType: value === "all" ? undefined : value });
   };
 
   // 중량 변경 시 임시 필터 업데이트
   const handleWeightChange = (value: string) => {
-    handleTempFilterUpdate({ weight: value === "all" ? undefined : value });
+    setTempFilter({ weight: value === "all" ? undefined : value });
   };
   
   // 배차상태 변경 시 임시 필터 업데이트
   const handleStatusChange = (value: string) => {
-    handleTempFilterUpdate({ status: value === "all" ? undefined : value as BrokerOrderStatusType });
+    setTempFilter({ status: value === "all" ? undefined : value as BrokerOrderStatusType });
   };
   
   // 업체명 변경 시 임시 필터 업데이트
   const handleCompanyChange = (value: string) => {
-    handleTempFilterUpdate({ company: value === "all" ? undefined : value });
+    setTempFilter({ company: value === "all" ? undefined : value });
   };
   
   // 담당자 변경 시 임시 필터 업데이트
   const handleManagerChange = (value: string) => {
-    handleTempFilterUpdate({ manager: value === "all" ? undefined : value });
+    setTempFilter({ manager: value === "all" ? undefined : value });
   };
   
   // 시작일 선택 핸들러
   const handleStartDateSelect = (date: Date | undefined) => {
     setStartDate(date);
     if (date) {
-      handleTempFilterUpdate({ startDate: format(date, 'yyyy-MM-dd') });
+      setTempFilter({ startDate: format(date, 'yyyy-MM-dd') });
     } else {
-      handleTempFilterUpdate({ startDate: undefined });
+      setTempFilter({ startDate: undefined });
     }
   };
   
@@ -165,23 +194,22 @@ export function WaitingSearch({ filter, setFilter, filterOptions }: IWaitingSear
   const handleEndDateSelect = (date: Date | undefined) => {
     setEndDate(date);
     if (date) {
-      handleTempFilterUpdate({ endDate: format(date, 'yyyy-MM-dd') });
+      setTempFilter({ endDate: format(date, 'yyyy-MM-dd') });
     } else {
-      handleTempFilterUpdate({ endDate: undefined });
+      setTempFilter({ endDate: undefined });
     }
   };
 
   // 필터 적용
   const handleApplyFilter = () => {
-    setFilter(tempFilter);
+    console.log("대기handleApplyFilter");
+    applyTempFilter();
     setOpen(false);
   };
 
   // 필터 초기화
   const handleResetFilter = () => {
-    const emptyFilter: IWaitingFilter = {};
-    setFilter(emptyFilter);
-    setTempFilter(emptyFilter);
+    resetFilter();    
     setStartDate(undefined);
     setEndDate(undefined);
     setOpen(false);
@@ -189,37 +217,37 @@ export function WaitingSearch({ filter, setFilter, filterOptions }: IWaitingSear
 
   // 변경 취소
   const handleCancelChanges = () => {
-    setTempFilter({ ...filter });
-    setStartDate(filter.startDate ? new Date(filter.startDate) : undefined);
-    setEndDate(filter.endDate ? new Date(filter.endDate) : undefined);
+    resetTempFilter();
+    setStartDate(waitingItemsFilter.startDate ? new Date(waitingItemsFilter.startDate) : undefined);
+    setEndDate(waitingItemsFilter.endDate ? new Date(waitingItemsFilter.endDate) : undefined);
     setOpen(false);
   };
 
   // Popover가 열릴 때 현재 필터 값을 임시 필터에 복사
   const handleOpenChange = (open: boolean) => {
     if (open) {
-      setTempFilter({ ...filter });
-      setStartDate(filter.startDate ? new Date(filter.startDate) : undefined);
-      setEndDate(filter.endDate ? new Date(filter.endDate) : undefined);
+      resetTempFilter();
+      setStartDate(waitingItemsFilter.startDate ? new Date(waitingItemsFilter.startDate) : undefined);
+      setEndDate(waitingItemsFilter.endDate ? new Date(waitingItemsFilter.endDate) : undefined);
     }
     setOpen(open);
   };
 
   // 필터가 적용되었는지 확인
   const hasActiveFilters = !!(
-    filter.departureCity || 
-    filter.arrivalCity || 
-    filter.vehicleType || 
-    filter.weight ||
-    filter.status ||
-    filter.startDate ||
-    filter.endDate ||
-    filter.company ||
-    filter.manager
+    waitingItemsFilter.departureCity || 
+    waitingItemsFilter.arrivalCity || 
+    waitingItemsFilter.vehicleType || 
+    waitingItemsFilter.weight ||
+    waitingItemsFilter.status ||
+    waitingItemsFilter.startDate ||
+    waitingItemsFilter.endDate ||
+    waitingItemsFilter.company ||
+    waitingItemsFilter.manager
   );
 
   // 현재 선택된 필터 요약 텍스트
-  const filterSummary = getFilterSummaryText(filter);
+  const filterSummary = getFilterSummaryText(waitingItemsFilter);
 
   return (
     <div className="flex flex-col gap-4 md:flex-row items-center mb-4">
@@ -243,7 +271,7 @@ export function WaitingSearch({ filter, setFilter, filterOptions }: IWaitingSear
                   variant="secondary" 
                   className="ml-1 rounded-sm px-1 font-normal"
                 >
-                  {Object.values(filter).filter(Boolean).length - (filter.searchTerm ? 1 : 0)}
+                  {Object.values(waitingItemsFilter).filter(Boolean).length - (waitingItemsFilter.searchTerm ? 1 : 0)}
                 </Badge>
               )}
             </Button>
@@ -322,8 +350,9 @@ export function WaitingSearch({ filter, setFilter, filterOptions }: IWaitingSear
                   <div>
                     <Label htmlFor="status">배차상태</Label>
                     <Select
-                      value={tempFilter.status || "all"}
+                      value={waitingItemsTempFilter.status || "all"}
                       onValueChange={handleStatusChange}
+                      
                     >
                       <SelectTrigger id="status">
                         <SelectValue placeholder="모든 상태" />
@@ -341,7 +370,7 @@ export function WaitingSearch({ filter, setFilter, filterOptions }: IWaitingSear
                   <div>
                     <Label htmlFor="manager">담당자</Label>
                     <Select
-                      value={tempFilter.manager || "all"}
+                      value={waitingItemsTempFilter.manager || "all"}
                       onValueChange={handleManagerChange}
                     >
                       <SelectTrigger id="manager">
@@ -361,7 +390,7 @@ export function WaitingSearch({ filter, setFilter, filterOptions }: IWaitingSear
               </div>
               
               {/* 출발지 필터 */}
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <Label htmlFor="departureCity">출발지</Label>
@@ -402,10 +431,10 @@ export function WaitingSearch({ filter, setFilter, filterOptions }: IWaitingSear
                     </Select>
                   </div>
                 </div>
-              </div>
+              </div> */}
               
               {/* 차량 종류, 중량 필터 */}
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <Label htmlFor="weight">중량</Label>
@@ -446,13 +475,13 @@ export function WaitingSearch({ filter, setFilter, filterOptions }: IWaitingSear
                     </Select>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* 업체명 필터 */}
               <div className="space-y-2">
                 <Label htmlFor="company">업체명</Label>
                 <Select
-                  value={tempFilter.company || "all"}
+                  value={waitingItemsTempFilter.company || "all"}
                   onValueChange={handleCompanyChange}
                 >
                   <SelectTrigger id="company">
@@ -506,10 +535,11 @@ export function WaitingSearch({ filter, setFilter, filterOptions }: IWaitingSear
           type="search"
           placeholder="화물번호, 출발지, 도착지, 업체명 검색"
           className="w-full pl-8"
-          value={filter.searchTerm || ""}
+          value={searchInput}
           onChange={handleSearchChange}
+          onKeyDown={handleSearchKeyDown}
         />
-        {filter.searchTerm && (
+        {waitingItemsFilter.searchTerm && (
           <Button
             variant="ghost"
             size="sm"

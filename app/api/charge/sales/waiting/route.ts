@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, and, desc, not, inArray, sql, asc } from 'drizzle-orm';
+import { eq, and, desc, not, inArray, sql, asc, ilike, or } from 'drizzle-orm';
 import { db } from '@/db';
 import { orders } from '@/db/schema/orders';
 import { orderDispatches } from '@/db/schema/orderDispatches';
@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
     const companyId = searchParams.get('companyId');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
+    const searchTerm = searchParams.get('searchTerm');
     
     // 조건 구성
     const conditions = [];
@@ -45,6 +46,16 @@ export async function GET(request: NextRequest) {
       endDateObj.setDate(endDateObj.getDate() + 1);
       const adjustedEndDate = endDateObj.toISOString().split('T')[0];
       conditions.push(sql`${orders.pickupDate} < ${adjustedEndDate}`);
+    }
+
+    if (searchTerm) {
+      conditions.push(or(
+        ilike(companies.name, `%${searchTerm}%`),        
+        ilike(companies.businessNumber, `%${searchTerm}%`),
+        //ilike(companies.ceoName, `%${searchTerm}%`),
+        ilike(orders.pickupName, `%${searchTerm}%`),
+        ilike(orders.deliveryName, `%${searchTerm}%`),
+      ));
     }
     
     // 정산이 이미 생성된 주문 ID 조회 (서브쿼리용)
@@ -102,9 +113,10 @@ export async function GET(request: NextRequest) {
       
       db.select({ count: sql<number>`count(*)` })
       .from(orders)
-      .where(query)
+      .leftJoin(companies, eq(orders.companyId, companies.id))
       .innerJoin(orderDispatches, eq(orderDispatches.orderId, orders.id)) // ✅ 필수
       .innerJoin(orderSales, eq(orders.id, orderSales.orderId)) // ✅ 필요한 경우만
+      .where(query)
       .execute()
       .then(res => Number(res[0].count))
     ]);

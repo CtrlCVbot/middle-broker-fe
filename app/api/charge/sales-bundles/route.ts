@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, and, desc, asc, sql, gte, lte, inArray } from 'drizzle-orm';
+import { eq, and, desc, asc, sql, gte, lte, inArray, ilike, or } from 'drizzle-orm';
 import { db } from '@/db';
 import { salesBundles, salesBundleStatusEnum } from '@/db/schema/salesBundles';
 import { salesBundleItems } from '@/db/schema/salesBundles';
@@ -23,10 +23,12 @@ export async function GET(request: NextRequest) {
     
     // 필터 파라미터
     const companyId = searchParams.get('companyId');
+    const shipperName = searchParams.get('shipperName');
+    const shipperBusinessNumber = searchParams.get('shipperBusinessNumber');
     const status = searchParams.get('status');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
-    
+    const search = searchParams.get('search');
     // 정렬 파라미터
     const sortBy = searchParams.get('sortBy') || 'createdAt';
     const sortOrder = searchParams.get('sortOrder') || 'desc';
@@ -36,6 +38,13 @@ export async function GET(request: NextRequest) {
 
     if (companyId) {
       conditions.push(eq(salesBundles.companyId, companyId));
+    }
+
+    if (shipperName) {
+      conditions.push(ilike(salesBundles.companyName, `%${shipperName}%`));
+    }
+    if (shipperBusinessNumber) {
+      conditions.push(ilike(salesBundles.companyBusinessNumber, `%${shipperBusinessNumber}%`));
     }
 
     if (status && salesBundleStatusEnum.enumValues.includes(status as any)) {
@@ -48,6 +57,15 @@ export async function GET(request: NextRequest) {
 
     if (endDate) {
       conditions.push(lte(salesBundles.periodTo, endDate));
+    }
+
+    if (search) {
+      conditions.push(
+        or(
+          ilike(salesBundles.companyName, `%${search}%`),
+          ilike(salesBundles.companyBusinessNumber, `%${search}%`)
+        )
+      );
     }
 
     // 데이터베이스 쿼리
