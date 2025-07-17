@@ -30,6 +30,25 @@ const protectedRoutes = [
   '/broker/sale/waiting',
   '/broker/sale/waiting/:id',
   '/broker/sale/waiting/:id/edit',
+  
+  '/broker/charge/groups',
+  '/broker/charge/groups/:id',
+  '/broker/charge/lines',
+  '/broker/charge/lines/:id',
+    
+  '/broker/charge/goods/:id',
+  '/broker/charge/goods/:id/edit',
+  '/broker/charge/goods/waiting',
+  '/broker/charge/goods/waiting/:id',
+  '/broker/charge/goods/waiting/:id/edit',
+  
+  '/broker/charge/sales',
+  '/broker/charge/sales/:id',
+  '/broker/charge/sales/waiting',  
+  '/broker/charge/sales-bundle',
+  '/broker/charge/sales-bundle/:id',
+  '/broker/charge/sales-bundle/item',
+  '/broker/charge/sales-bundle/item/:id',
 ]
 
 // 로그인 상태에서 접근 불가능한 경로
