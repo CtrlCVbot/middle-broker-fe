@@ -1478,7 +1478,7 @@ export function SettlementEditFormSheet() {
           </div>
           
           {/* 버튼 그룹 */}
-          {editingSalesBundle?.status === 'MATCHING' ? (
+          {editingSalesBundle?.status === 'MATCHING' || editingSalesBundle?.status === 'paid' || isEditMode === false ? (
             <div className="flex justify-between items-center space-x-2">
               <div className="flex space-x-4">
                 {/* <Button 

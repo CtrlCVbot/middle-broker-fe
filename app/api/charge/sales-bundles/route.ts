@@ -240,6 +240,8 @@ export async function POST(request: NextRequest) {
       const newBundle = await tx.insert(salesBundles).values({
         ...bundleData,
         settlementMemo: bundleData.memo,
+        companyName: selectedCompany.name,
+        companyBusinessNumber: selectedCompany.businessNumber,
         companySnapshot: {
           name: selectedCompany.name,
           businessNumber: selectedCompany.businessNumber,

@@ -91,6 +91,7 @@ interface IBrokerChargeState {
   salesBundlesIsLoading: boolean;
   salesBundlesError: string | null;
   salesBundlesFilter: ISalesBundleFilter;
+  salesBundlesTempFilter: ISalesBundleFilter;
 
   // 새로 추가: 추가금 관련 상태
   bundleFreightList: ISalesBundleItemWithDetails[];
@@ -111,7 +112,7 @@ interface IBrokerChargeState {
   addCharge: (fee: IAdditionalFeeInput, orderId: string, dispatchId?: string) => Promise<boolean>;  
   resetChargeState: () => void;
 
-  // 매출 정산 관련 액션
+  // 매출 정산 대기 화물 관련 액션
   fetchWaitingItems: () => Promise<ISettlementWaitingItem[]>;
   selectWaitingItem: (id: string, selected: boolean) => void;
   selectAllWaitingItems: (selected: boolean) => void;
@@ -130,10 +131,14 @@ interface IBrokerChargeState {
   createSalesBundleFromWaitingItems: (formData?: ISettlementFormData) => Promise<boolean>;
 
   // sales bundles 관련 액션 추가
+  setSalesBundlesFilter: (filter: Partial<ISalesBundleFilter>) => void;
+  setSalesBundlesTempFilter: (filter: Partial<ISalesBundleFilter>) => void;
+  applySalesBundlesTempFilter: () => void;    
   fetchSalesBundles: () => Promise<ISalesBundleListItem[]>;
   updateSalesBundlesPage: (page: number) => void;
   updateSalesBundlesFilter: (filter: Partial<ISalesBundleFilter>) => void;
   resetSalesBundlesFilter: () => void;
+  resetSalesBundlesTempFilter: () => void;
   resetSalesBundlesState: () => void;
   
   // sales bundle 편집 관련 액션 추가
@@ -167,6 +172,16 @@ const initialWaitingFilter: IWaitingFilter = {
   endDate: undefined,
   company: undefined,
   manager: undefined,
+};
+
+const initialSalesBundleFilter: ISalesBundleFilter = {
+  companyId: undefined,
+  status: undefined,
+  startDate: undefined,
+  endDate: undefined,
+  sortBy: 'updatedAt',
+  sortOrder: 'desc',
+  search: undefined,
 };
 
 // 정산 폼 초기 데이터
@@ -237,14 +252,10 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   salesBundlesTotalPages: 0,
   salesBundlesIsLoading: false,
   salesBundlesError: null,
-  salesBundlesFilter: {
-    companyId: undefined,
-    status: undefined,
-    startDate: undefined,
-    endDate: undefined,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  },
+  
+  salesBundlesFilter: { ...initialSalesBundleFilter },
+  salesBundlesTempFilter: { ...initialSalesBundleFilter },
+  
   
   // 새로 추가: 추가금 관련 초기 상태
   bundleFreightList: [],
@@ -663,6 +674,23 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
     }
   },
 
+  //
+  setSalesBundlesFilter: (filter: Partial<ISalesBundleFilter>) => set((state) => ({    
+      salesBundlesFilter: { ...state.salesBundlesFilter, ...filter },
+      salesBundlesTempFilter: { ...state.salesBundlesTempFilter, ...filter },
+      salesBundlesPage: 1
+  })),
+
+  setSalesBundlesTempFilter: (filter: Partial<ISalesBundleFilter>) => set((state) => ({
+    salesBundlesTempFilter: { ...state.salesBundlesTempFilter, ...filter },
+  })),
+
+  applySalesBundlesTempFilter: () => set((state) => ({
+    salesBundlesFilter: { ...state.salesBundlesTempFilter },
+    salesBundlesPage: 1
+  })),  
+  
+
   // sales bundles 관련 액션 추가
   fetchSalesBundles: async () => {
     try {
@@ -721,15 +749,15 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   // 매출 번들 필터 초기화
   resetSalesBundlesFilter: () => {
     set({
-      salesBundlesFilter: {
-        companyId: undefined,
-        startDate: undefined,
-        endDate: undefined,
-      },
+      salesBundlesFilter: { ...initialSalesBundleFilter },
+      salesBundlesTempFilter: { ...initialSalesBundleFilter },
       salesBundlesPage: 1
     });
     get().fetchSalesBundles();
   },
+  resetSalesBundlesTempFilter: () => set((state) => ({    
+    salesBundlesTempFilter: { ...initialSalesBundleFilter },    
+  })),
   
   // 매출 번들 상태 초기화
   resetSalesBundlesState: () => {
@@ -741,11 +769,8 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       salesBundlesTotalPages: 0,
       salesBundlesIsLoading: false,
       salesBundlesError: null,
-      salesBundlesFilter: {
-        companyId: undefined,
-        startDate: undefined,
-        endDate: undefined,
-      }
+      salesBundlesFilter: { ...initialSalesBundleFilter },
+      salesBundlesTempFilter: { ...initialSalesBundleFilter },
     });
   },
 
@@ -774,6 +799,8 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
 
       // ISettlementFormData → sales bundle update input 변환
       const updateInput = {
+        //companyName: formData.shipperName,
+        //businessNumber: formData.businessNumber,
         companySnapshot: {
           name: formData.shipperName,
           businessNumber: formData.businessNumber,

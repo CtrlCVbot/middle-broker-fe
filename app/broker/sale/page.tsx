@@ -94,6 +94,7 @@ export default function IncomePage() {
     salesBundlesTotalPages,
     salesBundlesIsLoading,
     salesBundlesFilter,
+    
     fetchSalesBundles,
     updateSalesBundlesPage,
     updateSalesBundlesFilter,
@@ -142,7 +143,7 @@ export default function IncomePage() {
   useEffect(() => {
     console.log('useEffect 실행됨 - sales bundles 데이터 로드');
     fetchSalesBundles();
-  }, [fetchSalesBundles]);
+  }, [salesBundlesPage, salesBundlesFilter, fetchSalesBundles]);
 
   // 페이지 변경 처리
   const handlePageChange = (page: number) => {
@@ -426,39 +427,42 @@ export default function IncomePage() {
                       <div className="flex h-24 items-center justify-center">
                         <Loader2 className="h-8 w-8 animate-spin text-primary/70" />
                       </div>
-                    ) : salesBundlesAsIncomes.filter(income => income.status === 'MATCHING').length === 0 ? (
-                      <div className="flex h-24 items-center justify-center flex-col">
-                        <p className="text-muted-foreground mb-2">정산 대사 데이터가 없습니다</p>
-                        <Button variant="outline" onClick={resetSalesBundlesFilter}>
-                          필터 초기화
-                        </Button>
-                      </div>
                     ) : (
                       <>
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-                        <div>
-                          
-                          <p className="text-sm text-muted-foreground">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                          <div>
+                            
+                            <p className="text-sm text-muted-foreground">
                             매출 정산을 위해 그룹화된 화물 목록을 선택하여 정산을 진행할 수 있습니다.
-                          </p>
-                        </div>                
-                      </div>
-                      <BundleMatchingFilter 
-                        onFilterChange={handleSalesBundlesFilterChange}
-                        onResetFilter={resetSalesBundlesFilter}
-                        tabStatus="MATCHING"
-                      />
-                      <BundleMatchingList
-                        incomes={salesBundlesAsIncomes.filter(income => income.status === 'MATCHING')}
-                        currentPage={salesBundlesPage}
-                        totalPages={salesBundlesTotalPages}
-                        onPageChange={handleSalesBundlesPageChange}
-                        onStatusChange={handleStatusChange}
-                        onIssueInvoice={handleIssueInvoice}
-                        onExportExcel={handleExportExcel}
-                        currentTab="MATCHING"
-                      />
+                            </p>
+                          </div>
+                        </div>
+                        <BundleMatchingFilter 
+                          //onFilterChange={handleSalesBundlesFilterChange}
+                          //onResetFilter={resetSalesBundlesFilter}
+                          tabStatus="MATCHING"
+                        />
+                        {salesBundlesAsIncomes.filter(income => income.status === 'MATCHING').length === 0 ? (
+                          <div className="flex h-24 items-center justify-center flex-col">
+                            <p className="text-muted-foreground mb-2">정산 대사 데이터가 없습니다</p>
+                            <Button variant="outline" onClick={resetSalesBundlesFilter}>
+                              필터 초기화
+                            </Button>
+                          </div>
+                        ) : (
+                          <BundleMatchingList
+                            incomes={salesBundlesAsIncomes.filter(income => income.status === 'MATCHING')}
+                            currentPage={salesBundlesPage}
+                            totalPages={salesBundlesTotalPages}
+                            onPageChange={handleSalesBundlesPageChange}
+                            onStatusChange={handleStatusChange}
+                            onIssueInvoice={handleIssueInvoice}
+                            onExportExcel={handleExportExcel}
+                            currentTab="MATCHING"
+                          />
+                        )}
                       </>
+                    
                     )}
                   </TabsContent>
                   
@@ -468,50 +472,41 @@ export default function IncomePage() {
                       <div className="flex h-24 items-center justify-center">
                         <Loader2 className="h-8 w-8 animate-spin text-primary/70" />
                       </div>
-                    ) 
-                    // : salesBundlesAsIncomes.filter(income => income.status === 'COMPLETED').length === 0 ? (
-                    //   <div className="flex h-24 items-center justify-center flex-col">
-                    //     <p className="text-muted-foreground mb-2">정산 완료된 데이터가 없습니다</p>
-                    //     <Button variant="outline" onClick={resetSalesBundlesFilter}>
-                    //       필터 초기화
-                    //     </Button>
-                    //   </div>
-                    // ) 
-                    : (
+                    ) : (
                       <>
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-                        <div>
-                          
-                          <p className="text-sm text-muted-foreground">
-                            정산 완료된 목록을 선택하여 정산을 진행할 수 있습니다.
-                          </p>
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                          <div>
+                            
+                            <p className="text-sm text-muted-foreground">
+                              정산 완료된 목록을 선택하여 정산을 진행할 수 있습니다.
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <BundleMatchingFilter 
-                        onFilterChange={handleSalesBundlesFilterChange}
-                        onResetFilter={resetSalesBundlesFilter}
-                        tabStatus="COMPLETED"
-                      />
-                      {salesBundlesAsIncomes.filter(income => income.status === 'COMPLETED').length === 0 ? (
-                        <div className="flex h-24 items-center justify-center flex-col">
-                          <p className="text-muted-foreground mb-2">정산 완료된 데이터가 없습니다</p>
-                          <Button variant="outline" onClick={resetSalesBundlesFilter}>
-                            필터 초기화
-                          </Button>
-                        </div>
-                      ) : (
-                        <BundleMatchingList
-                          incomes={salesBundlesAsIncomes.filter(income => income.status === 'COMPLETED')}
-                          currentPage={salesBundlesPage}
-                          totalPages={salesBundlesTotalPages}
-                          onPageChange={handleSalesBundlesPageChange}
-                          onStatusChange={handleStatusChange}
-                          onIssueInvoice={handleIssueInvoice}
-                          onExportExcel={handleExportExcel}
-                          currentTab="COMPLETED"
+                        <BundleMatchingFilter 
+                          //onFilterChange={handleSalesBundlesFilterChange}
+                          //onResetFilter={resetSalesBundlesFilter}
+                          tabStatus="COMPLETED"
                         />
-                      )}
-                    </>
+                        {salesBundlesAsIncomes.filter(income => income.status === 'COMPLETED').length === 0 ? (
+                          <div className="flex h-24 items-center justify-center flex-col">
+                            <p className="text-muted-foreground mb-2">정산 완료된 데이터가 없습니다</p>
+                            <Button variant="outline" onClick={resetSalesBundlesFilter}>
+                              필터 초기화
+                            </Button>
+                          </div>
+                        ) : (
+                          <BundleMatchingList
+                            incomes={salesBundlesAsIncomes.filter(income => income.status === 'COMPLETED')}
+                            currentPage={salesBundlesPage}
+                            totalPages={salesBundlesTotalPages}
+                            onPageChange={handleSalesBundlesPageChange}
+                            onStatusChange={handleStatusChange}
+                            onIssueInvoice={handleIssueInvoice}
+                            onExportExcel={handleExportExcel}
+                            currentTab="COMPLETED"
+                          />
+                        )}
+                      </>
                     
                     )}
                   </TabsContent>

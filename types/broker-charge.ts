@@ -442,7 +442,12 @@ export interface ISalesBundleFilter {
   status?: SalesBundleStatus;
   startDate?: string;
   endDate?: string;
-  sortBy?: 'createdAt' | 'periodFrom';
+  sortBy?: 'createdAt' | 'periodFrom' | 'updatedAt';
   sortOrder?: 'asc' | 'desc';
+  invoiceStatus?: string;
+  manager?: string;            // 담당자
+  minAmount?: number;          // 최소 금액
+  maxAmount?: number;          // 최대 금액
   search?: string;
+  
 } 
