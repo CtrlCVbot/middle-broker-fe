@@ -1,4 +1,4 @@
-import MainLayout from "../main-layout";
+import MainLayout from "../../main-layout";
 
 export default function SettlementLayout({
   children,
