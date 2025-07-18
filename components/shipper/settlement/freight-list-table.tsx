@@ -34,7 +34,7 @@ import {
 import { ISettlementWaitingItem, ISalesBundleItemWithDetails } from "@/types/broker-charge";
 
 // 스토어
-import { useBrokerChargeStore } from "@/store/broker-charge-store";
+import { useShipperSettlementStore } from "@/store/shipper-settlement-store";
 
 // 유틸
 import { formatCurrency } from "@/lib/utils";
@@ -76,19 +76,12 @@ export function FreightListTable({
     adjustmentsError,
     fetchBundleFreightList,
     itemAdjustments
-  } = useBrokerChargeStore();
-
-  // 정산 대사 모드에서 화물 목록 로딩
-  // useEffect(() => {
-  //   if (mode === 'reconciliation' && bundleId) {
-  //     fetchBundleFreightList(bundleId);
-  //   }
-  // }, [mode, bundleId, fetchBundleFreightList]);
+  } = useShipperSettlementStore();
 
   // 표시할 데이터 결정
   const displayData = mode === 'waiting' ? orders : bundleFreightList;
   const itemCount = displayData.length;
-
+  console.log('bundleFreightList:', bundleFreightList);
   console.log('화물 탭 오픈: orders:', orders);
 
   // 디버깅: bundleFreightList 변경 감지
@@ -142,8 +135,9 @@ export function FreightListTable({
                 <TableHead className="text-xs">도착지</TableHead>
                 <TableHead className="text-right text-xs">청구</TableHead>
                 {/* <TableHead className="text-right text-xs">세금</TableHead> */}
+                
                 {mode === 'reconciliation' && !completed && (
-                  <TableHead className="text-center text-xs">개별 추가금</TableHead>
+                  <TableHead className="text-right text-xs">개별 추가금</TableHead>
                 )}
               </TableRow>
             </TableHeader>
@@ -216,12 +210,9 @@ export function FreightListTable({
                       
                       
                       {mode === 'reconciliation' && !completed && (
-                        <>
-                        {/* <TableCell className="text-right text-xs">
-                          {displayItem.. ? formatCurrency(displayItem.taxAmount) : formatCurrency((displayItem.amount || 0) * 0.1)}
-                        </TableCell> */}
-                        <TableCell className="text-center">
-                          {itemAdjustmentList.length > 0 ? (
+                        <>                        
+                        <TableCell className="text-right text-xs">
+                          {/* {itemAdjustmentList.length > 0 ? (
                             // 추가금이 있는 경우: 합계 표시 + Popover
                             <Popover>
                               <PopoverTrigger asChild>
@@ -238,7 +229,7 @@ export function FreightListTable({
                               </PopoverTrigger>
                               <PopoverContent className="w-80" align="end">
                                 <div className="space-y-3">
-                                  {/* 상단 추가 버튼 */}
+                                  
                                   <div className="flex items-center justify-between">
                                     <h4 className="text-sm font-semibold">개별 추가금</h4>
                                     <Button
@@ -256,7 +247,7 @@ export function FreightListTable({
                                     </Button>
                                   </div>
                                   
-                                  {/* 추가금 목록 */}
+                                  
                                   <div className="space-y-2 max-h-48 overflow-y-auto">
                                     {itemAdjustmentList.map((adj) => (
                                       <div key={adj.id} className="flex items-center justify-between p-2 border rounded-md">
@@ -306,7 +297,7 @@ export function FreightListTable({
                                     ))}
                                   </div>
                                   
-                                  {/* 합계 정보 */}
+                                  
                                   <div className="pt-2 border-t">
                                     <div className="flex justify-between items-center text-sm">
                                       <span className="font-medium">총 합계:</span>
@@ -319,7 +310,7 @@ export function FreightListTable({
                               </PopoverContent>
                             </Popover>
                           ) : (
-                            // 추가금이 없는 경우: 기존 추가 버튼
+                            //추가금이 없는 경우: 기존 추가 버튼
                             <Button
                               variant="ghost"
                               size="sm"
@@ -334,7 +325,14 @@ export function FreightListTable({
                               <Plus className="h-2 w-2 mr-1" />
                               추가
                             </Button>
-                          )}
+                            
+                          )} */}
+                          <div className="flex justify-end">
+                            {formatCurrency(adjustmentTotal)}
+                            <span className="ml-1 text-xs text-muted-foreground">
+                              ({itemAdjustmentList.length}개)
+                            </span>
+                          </div>
                         </TableCell>
                         </>
                       )}

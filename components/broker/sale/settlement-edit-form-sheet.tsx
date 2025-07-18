@@ -188,8 +188,7 @@ export function SettlementEditFormSheet() {
 
 
   const { isOpen, selectedItems: orders, formData } = settlementForm;
-
-  
+  console.log('orders!:', orders);
   
   // 편집 모드 여부 확인
   const isEditMode = selectedSalesBundleId !== null;
@@ -801,6 +800,10 @@ export function SettlementEditFormSheet() {
     };
   //}, [orders, isEditMode, editingSalesBundle, hasTax]);
 }, [orders, isEditMode, editingSalesBundle, hasTax, bundleAdjustments, bundleFreightList]);
+
+
+  console.log('orders--!!:', orders);
+
   // 회사 검색 함수
   const handleCompanySearch = () => {
     setFilter({ keyword: companySearchTerm });

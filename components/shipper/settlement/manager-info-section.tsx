@@ -42,9 +42,10 @@ export function ManagerInfoSection({
           <User className="h-5 w-5 text-primary" />
           <h3 className="text-lg font-bold">담당자 정보</h3>
         </div>
-        <Button type="button" variant="outline" size="sm" onClick={onReset} disabled={loading}>초기화</Button>
+        {/* <Button type="button" variant="outline" size="sm" onClick={onReset} disabled={loading}>초기화</Button> */}
       </div>
-      <div className="flex flex-wrap gap-1.5">
+      {/* 담당자 정보 즐겨찾기 기능 비활성화 */}
+      {/* <div className="flex flex-wrap gap-1.5">
         {companySelected && managers.filter((m: any) => m.status === '활성').map((manager) => (
           <Badge
             key={manager.id}
@@ -54,13 +55,8 @@ export function ManagerInfoSection({
           >
             {manager.name}
           </Badge>
-        ))}
-        {/* {!companySelected && (
-          <div className="text-xs text-muted-foreground py-1">
-            {isEditMode ? '회사 정보가 설정되지 않았습니다' : '먼저 회사를 선택해주세요'}
-          </div>
-        )} */}
-      </div>
+        ))}        
+      </div> */}
       {(!form.watch('manager') || form.watch('manager') === '김중개') ? (
         <div className="flex flex-col items-center justify-center py-4 border-5 border-dashed rounded-md bg-muted/30 mb-2">
           <User className="h-8 w-8 text-muted-foreground mb-2" />

@@ -24,7 +24,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, Search, Filter, X } from "lucide-react";
 
 //store
-import { useBrokerChargeStore } from "@/store/broker-charge-store";
+import { useShipperSettlementStore } from "@/store/shipper-settlement-store";
 
 //utils
 import { format } from "date-fns";
@@ -35,8 +35,6 @@ import { debounce } from "@/utils/debounce";
 import { ISalesBundleFilter } from "@/types/broker-charge";
 
 interface BundleMatchingFilterProps {
-  //onFilterChange: (filter: Partial<IIncomeFilter>) => void;
-  //onResetFilter: () => void;
   tabStatus?: IncomeStatusType; // 현재 탭의 상태(정산대사/정산완료),
   debounceTime?: number;
 }
@@ -81,7 +79,7 @@ export function BundleMatchingFilter({
     applySalesBundlesTempFilter,
     resetSalesBundlesFilter,
     resetSalesBundlesTempFilter, 
-  } = useBrokerChargeStore();
+  } = useShipperSettlementStore();
 
   // 필터 상태
   const [tempFilter, setTempFilter] = useState<Partial<IIncomeFilter>>({});
@@ -100,62 +98,18 @@ export function BundleMatchingFilter({
   
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [invoiceStatus, setInvoiceStatus] = useState<string>("all");
-  // const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  // const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-
-  // 디바운스 검색 핸들러 (useCallback으로 메모이제이션)
-  // const debouncedSearch = useCallback(
-  //   debounce((term: string, filter: Partial<IIncomeFilter>) => {
-  //     setIsSearching(false);
-  //     const filterWithTabStatus = tabStatus ? { ...tempFilter, status: tabStatus, searchTerm: term || undefined } : tempFilter;
-  //     onFilterChange(filterWithTabStatus);
-  //   }, debounceTime),
-  //   [onFilterChange, debounceTime]
-  // );
-
-  // // 검색어나 타입이 변경될 때 검색 실행
-  // useEffect(() => {
-  //   if (typeof window === 'undefined') return;
-    
-  //   if (searchTerm) {
-  //     setIsSearching(true);
-  //     debouncedSearch(searchTerm, tempFilter);
-  //   }
-    
-  //   return () => {
-  //     debouncedSearch.cancel();
-  //   };
-  // }, [searchTerm, tempFilter, debouncedSearch]);
-  
-  
-  
-  // 검색어 입력 시 필터 업데이트
-  // const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   setSearchTerm(e.target.value);
-  //   //onFilterChange({ searchTerm: e.target.value || undefined });
-  // };
+ 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    //onFilterChange({ searchTerm: e.target.value || undefined });
+    setSearchTerm(e.target.value);    
   }, []);
 
   // 엔터 키 핸들러
   const handleSearchKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      // setIsSearching(true);
-      // debouncedSearch.cancel();
-      // onFilterChange({ searchTerm: undefined });
       setSalesBundlesFilter({ search: searchTerm || undefined });
     }
-  }, [searchTerm]); //[debouncedSearch, onFilterChange, searchTerm]);
+  }, [searchTerm]); 
 
-  // 임시 필터 업데이트 함수
-  // const handleTempFilterUpdate = (updates: Partial<IIncomeFilter>) => {
-  //   setTempFilter(prev => ({ ...prev, ...updates }));
-  // };
-
-  
-  
   // 세금계산서 상태 변경 시 임시 필터 업데이트
   const handleInvoiceStatusChange = (value: string) => {
     setInvoiceStatus(value);
@@ -184,29 +138,21 @@ export function BundleMatchingFilter({
 
   // 필터 적용
   const handleApplyFilter = () => {
-    // 탭 상태가 전달된 경우 항상 해당 상태로 필터 적용
-    //const filterWithTabStatus = tabStatus ? { ...tempFilter, status: tabStatus, searchTerm: searchTerm || undefined } : tempFilter;
-    // onFilterChange(filterWithTabStatus);
     applySalesBundlesTempFilter();
     setOpen(false);
   };
 
   // 필터 초기화
   const handleResetFilter = () => {
-    //const emptyFilter: Partial<IIncomeFilter> = tabStatus ? { status: tabStatus } : {};
-    //setTempFilter(emptyFilter);
     resetSalesBundlesFilter();
-    //setSearchTerm("");
     setInvoiceStatus("all");
     setStartDate(undefined);
     setEndDate(undefined);
-    //onResetFilter();
     setOpen(false);
   };
 
   // 변경 취소
   const handleCancelChanges = () => {
-    //setTempFilter({});
     resetSalesBundlesTempFilter();
     setInvoiceStatus("all");
     setStartDate(salesBundlesFilter.startDate ? new Date(salesBundlesFilter.startDate) : undefined);
@@ -217,7 +163,6 @@ export function BundleMatchingFilter({
   // Popover가 열릴 때 현재 필터 값을 임시 필터에 복사
   const handleOpenChange = (open: boolean) => {
     if (open) {
-      //setTempFilter({});
       resetSalesBundlesTempFilter();
       setInvoiceStatus("all");
       setStartDate(salesBundlesFilter.startDate ? new Date(salesBundlesFilter.startDate) : undefined);
@@ -399,7 +344,6 @@ export function BundleMatchingFilter({
             className="absolute right-0 top-0 h-9 px-2"
             onClick={() => {
               setSalesBundlesFilter({ search: "" });
-              //onFilterChange({ searchTerm: undefined });
             }}
           >
             <X className="h-4 w-4" />

@@ -91,7 +91,7 @@ export function CompanyInfoSection({
           <Building2 className="h-5 w-5 text-primary" />
           <h3 className="text-lg font-bold">회사 정보</h3>
         </div>
-        <div className="flex gap-2">
+        {/* <div className="flex gap-2">
           <Button
             type="button"
             variant="outline"
@@ -101,11 +101,11 @@ export function CompanyInfoSection({
           >
             초기화
           </Button>
-        </div>
+        </div> */}
       </div>
 
       {/* 선택된 업체 배지 표시 */}
-      {hasShipperGroups ? (
+      {/* {hasShipperGroups ? (
         <div className="flex flex-wrap gap-1.5">
           {Object.keys(displayShipperGroups).map((shipper) => (
             <Badge 
@@ -142,7 +142,7 @@ export function CompanyInfoSection({
         <p className="text-sm text-muted-foreground mb-4">
           
         </p>
-      )}    
+      )}     */}
 
       {form.watch("shipperName") === "기본 화주" || form.watch("shipperName") === "" ? (
         <div className="flex flex-col items-center justify-center py-4 border-5 border-dashed border-gray-300 rounded-md bg-gray-100 mb-2">

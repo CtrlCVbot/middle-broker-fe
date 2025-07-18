@@ -41,18 +41,15 @@ import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { 
   CalendarIcon,
-  Loader2,
-  Save,
-  X,
   Ellipsis,
 } from "lucide-react";
 
 //components
-import { FreightListTable } from "@/components/broker/sale/freight-list-table";
-import { BundleAdjustmentManager } from "@/components/broker/sale/bundle-adjustment-manager";
-import { ItemAdjustmentDialog } from "@/components/broker/sale/item-adjustment-dialog";
-import { CompanyInfoSection } from "@/components/broker/sale/company-info-section-ver01";
-import { ManagerInfoSection } from "@/components/broker/sale/manager-info-section";
+import { FreightListTable } from "@/components/shipper/settlement/freight-list-table";
+import { BundleAdjustmentManager } from "@/components/shipper/settlement/bundle-adjustment-manager";
+import { ItemAdjustmentDialog } from "@/components/shipper/settlement/item-adjustment-dialog";
+import { CompanyInfoSection } from "@/components/shipper/settlement/company-info-section-ver01";
+import { ManagerInfoSection } from "@/components/shipper/settlement/manager-info-section";
 
 //types
 import { IBrokerOrder } from "@/types/broker-order";
@@ -61,7 +58,7 @@ import { ISettlementFormData, ISettlementWaitingItem } from "@/types/broker-char
 //store
 import { useCompanies, useCompanyStore } from '@/store/company-store';
 import { useBrokerCompanyManagerStore } from '@/store/broker-company-manager-store';
-import { useBrokerChargeStore } from '@/store/broker-charge-store';
+import { useShipperSettlementStore } from '@/store/shipper-settlement-store';
 
 //utils
 import { formatCurrency, cn } from "@/lib/utils";
@@ -183,13 +180,11 @@ export function SettlementEditFormSheet() {
     bundleAdjustments,
     fetchBundleAdjustments,
     fetchBundleFreightList,
-  } = useBrokerChargeStore();
-
+  } = useShipperSettlementStore();
 
 
   const { isOpen, selectedItems: orders, formData } = settlementForm;
-
-  
+  console.log('orders!:', orders);
   
   // 편집 모드 여부 확인
   const isEditMode = selectedSalesBundleId !== null;
@@ -240,7 +235,7 @@ export function SettlementEditFormSheet() {
   const handleConfirmItemDelete = () => {
     const { itemId, adjustmentId } = itemDeleteDialog;
     if (itemId && adjustmentId) {
-      const { removeItemAdjustment } = useBrokerChargeStore.getState();
+      const { removeItemAdjustment } = useShipperSettlementStore.getState();
       removeItemAdjustment(itemId, adjustmentId);
       toast.success("추가금이 삭제되었습니다.");
     }
@@ -256,11 +251,6 @@ export function SettlementEditFormSheet() {
       
       if (customEvent.detail?.orders && Array.isArray(customEvent.detail.orders)) {
         console.log("정산 폼 열기 이벤트 수신", customEvent.detail.orders.length, "개의 화물");
-        
-        // 다음 렌더 사이클에서 상태 업데이트 (경쟁 상태 방지)
-        // setTimeout(() => {
-        //   openForm(customEvent.detail.orders);
-        // }, 0);
       }
     };
     
@@ -409,6 +399,7 @@ export function SettlementEditFormSheet() {
     if (isEditMode && selectedSalesBundleId) {
       fetchBundleFreightList(selectedSalesBundleId);
     }
+    console.log('bundleFreightList!:', bundleFreightList);
   }, [isEditMode, selectedSalesBundleId, fetchBundleFreightList]); // ✅ 모든 의존성 추가
 
   
@@ -446,14 +437,6 @@ export function SettlementEditFormSheet() {
         mainShipperCeo = shipperCounts[shipper].ceo;
       }
     }
-    //console.log('mainShipper:', mainShipper);
-    //console.log('mainBusinessNumber:', mainBusinessNumber);
-    // form.setValue('shipperName', mainShipper);
-    // form.setValue('businessNumber', mainBusinessNumber);
-
-    //form.setValue('shipperCeo', mainShipperCeo);
-    // 매출 회사 = 화주로 기본 설정
-    //form.setValue('billingCompany', mainShipper);
   }, [orders, isOpen, form]);
 
   // 정산 대상 화물 요약 계산
@@ -470,11 +453,6 @@ export function SettlementEditFormSheet() {
       { totalOrders: 0, totalFreight: 0, totalDispatch: 0 }
     );
   }, [orders]);
-
-  // 추가금 합계 계산
-  // const additionalTotal = React.useMemo(() => {
-  //   return additionalFees.reduce((sum, fee) => sum + fee.amount, 0);
-  // }, [additionalFees]);
 
   // 세금 계산
   const taxAmount = React.useMemo(() => {
@@ -664,7 +642,7 @@ export function SettlementEditFormSheet() {
 
   // 수정 모드용 화주별 그룹화 (bundleFreightList 기반)
   const editModeShipperGroups = useMemo(() => {
-    if (!isEditMode || !bundleFreightList || bundleFreightList.length === 0) return {};
+    if (!bundleFreightList || bundleFreightList.length === 0) return {};
     
     const groups: Record<string, { orders: any[], total: number, 
       company: { id: string, name: string, businessNumber: string, ceo: string } }> = {};
@@ -696,8 +674,9 @@ export function SettlementEditFormSheet() {
   // 표시할 shipperGroups 결정
   console.log("shipperGroups:", shipperGroups);
   console.log("editModeShipperGroups:", editModeShipperGroups);
-  const displayShipperGroups = isEditMode ? editModeShipperGroups : shipperGroups;
+  const displayShipperGroups = editModeShipperGroups;//isEditMode ? editModeShipperGroups : shipperGroups;
   const hasShipperGroups = Object.keys(displayShipperGroups).length > 0;
+  console.log("displayShipperGroups:", displayShipperGroups);
 
   // 선택된 화물의 운임 및 금액 계산
   const hasTax = useWatch({ control: form.control, name: 'hasTax' });
@@ -799,14 +778,13 @@ export function SettlementEditFormSheet() {
       tax, 
       totalAmount 
     };
-  //}, [orders, isEditMode, editingSalesBundle, hasTax]);
-}, [orders, isEditMode, editingSalesBundle, hasTax, bundleAdjustments, bundleFreightList]);
+  
+  }, [orders, isEditMode, editingSalesBundle, hasTax, bundleAdjustments, bundleFreightList]);
+
   // 회사 검색 함수
   const handleCompanySearch = () => {
     setFilter({ keyword: companySearchTerm });
   };
-
-  
 
   // 회사 선택 시 담당자 목록 로드
   useEffect(() => {
@@ -839,6 +817,7 @@ export function SettlementEditFormSheet() {
 
   if (!isOpen) return null;
 
+  console.log('orders!!:', orders);
   return (
     <>
     <Sheet 
@@ -982,7 +961,7 @@ export function SettlementEditFormSheet() {
                           <h3 className="text-lg font-bold">정산 기간 설정</h3>
                         </div>
                         
-                        <div className="flex gap-2">
+                        {/* <div className="flex gap-2">
                           <Button
                             type="button"
                             variant="outline"
@@ -995,7 +974,7 @@ export function SettlementEditFormSheet() {
                           >
                             자동 설정
                           </Button>
-                        </div>
+                        </div> */}
                       </div>
 
                       {/* 기간 설정 영역 */}
@@ -1270,7 +1249,7 @@ export function SettlementEditFormSheet() {
                           <h3 className="text-lg font-bold">기타 정보</h3>
                         </div>
                         
-                        <div className="flex gap-2">
+                        {/* <div className="flex gap-2">
                           <Button
                             type="button"
                             variant="outline"
@@ -1287,7 +1266,7 @@ export function SettlementEditFormSheet() {
                           >
                             초기화
                           </Button>
-                        </div>
+                        </div> */}
                       </div>
 
                       {/* 기간 설정 영역 */}
@@ -1484,122 +1463,8 @@ export function SettlementEditFormSheet() {
             </div>
           </div>
           
-          {/* 버튼 그룹 */}
+          {/* 버튼 그룹 */}          
           
-            <div className="flex justify-between items-center space-x-2">
-              <div className="flex space-x-4">
-                {/* <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => closeSettlementForm()}
-                  disabled={loading}
-                  size="sm"
-                >
-                  <X className="mr-1 h-4 w-4" />
-                  닫기
-                </Button> */}
-                {isEditMode && (editingSalesBundle?.status === 'draft' 
-                              || editingSalesBundle?.status === 'issued' 
-                              || editingSalesBundle?.status === 'paid'
-                              ) 
-                ? (
-                  // 편집 모드: 수정 및 삭제 버튼                  
-                  <>
-                    <Button 
-                      type="button" 
-                      variant="destructive"
-                      onClick={() => setIsDeleteDialogOpen(true)}
-                      disabled={loading}
-                      size="sm"
-                      className="hover:cursor-pointer"
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                          삭제 중...
-                        </>
-                      ) : (
-                        <>
-                          <X className="mr-1 h-4 w-4" />
-                          삭제
-                        </>
-                      )}
-                    </Button>
-                    {form.watch('invoiceIssuedAt') && form.watch('depositReceivedAt') && (
-                      <Button 
-                        type="button" 
-                        variant="default"
-                        onClick={() => setIsCompleteDialogOpen(true)}
-                        disabled={loading}
-                        size="sm"
-                        className="bg-blue-500 hover:bg-blue-700 hover:cursor-pointer"
-                      >
-                        {loading ? (
-                          <>
-                            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                            완료 중...
-                          </>
-                        ) : (
-                          <>
-                            <X className="mr-1 h-4 w-4" />
-                            완료
-                          </>
-                        )}
-                      </Button>
-                    )}
-                  </>
-                ) : (
-                  <></>
-                )}
-              </div>
-              <div className="flex space-x-2">  
-                {isEditMode ? (
-                  // 편집 모드: 수정 및 삭제 버튼
-                  <>                  
-                    <Button 
-                      type="submit" 
-                      disabled={loading}
-                      size="sm"
-                      onClick={form.handleSubmit(handleSubmit)}
-                      className="hover:cursor-pointer"
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                          수정 중...
-                        </>
-                      ) : (
-                        <>
-                          <Save className="mr-1 h-4 w-4" />
-                          수정
-                        </>
-                      )}
-                    </Button>
-                  </>
-                ) : (
-                  // 생성 모드: 생성 버튼
-                  <Button 
-                    type="submit" 
-                    disabled={loading}
-                    size="sm"
-                    onClick={form.handleSubmit(handleSubmit)}
-                    className="hover:cursor-pointer"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                        처리 중...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="mr-1 h-4 w-4" />
-                        정산 생성
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
-            </div>
             
           
         </div>

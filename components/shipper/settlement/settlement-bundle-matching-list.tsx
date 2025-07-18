@@ -25,8 +25,7 @@ import {
 import { IIncome, IncomeStatusType } from "@/types/income";
 
 //store
-import { useIncomeDetailStore } from "@/store/income-store";
-import { useBrokerChargeStore } from "@/store/broker-charge-store";
+import { useShipperSettlementStore } from "@/store/shipper-settlement-store";
 
 //utils
 import { formatCurrency } from "@/lib/utils";
@@ -38,7 +37,6 @@ interface BundleMatchingListProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  //onStatusChange?: (incomeId: string, newStatus: IncomeStatusType) => void;
   onIssueInvoice?: (incomeId: string) => void;
   onExportExcel?: (incomeId: string) => void;
   currentTab?: IncomeStatusType; // 현재 선택된 탭
@@ -54,15 +52,13 @@ export function BundleMatchingList({
   onExportExcel,
   currentTab,// = "MATCHING", // 기본값은 정산대사
 }: BundleMatchingListProps) {
-  
-  // 상세 정보 모달을 위한 스토어 액세스
-  //const { openSheet } = useIncomeDetailStore();
-  
+
   // 정산 편집을 위한 broker charge store 액세스
-  const { openSettlementFormForEdit } = useBrokerChargeStore();
+  const { openSettlementFormForEdit } = useShipperSettlementStore();
   
   // 정산 상세 정보 열기 (기존 로직 - 참고용으로 유지)
   const handleIncomeClick = (incomeId: string) => {
+    console.log('incomeId:', incomeId);
     // 정산 편집 폼 열기로 변경
     openSettlementFormForEdit(incomeId);
   };
@@ -94,8 +90,7 @@ export function BundleMatchingList({
   // 정산 상태에 따른 배지 렌더링
   const renderStatusBadge = (status: IncomeStatusType) => {
     switch (status) {
-      case 'WAITING':
-        return <Badge variant="outline" className="bg-slate-100">대기</Badge>;
+      
       case 'MATCHING':
         return <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-100">진행중</Badge>;
       case 'COMPLETED':
@@ -130,21 +125,8 @@ export function BundleMatchingList({
     } else {
       return <Badge variant="outline" className="bg-green-100 text-green-700">완료</Badge>;
       
-    }
-    
+    }    
   };
-
-  // 현재 탭에 따른 상태 컬럼 이름 설정
-  // const getStatusColumnName = () => {
-  //   switch (currentTab) {
-  //     case "MATCHING":
-  //       return "정산대사 상태";
-  //     case "COMPLETED":
-  //       return "정산완료 상태";
-  //     default:
-  //       return "상태";
-  //   }
-  // };
 
   const getSchedule = (from: string, to: string,) => {
     const fromDateObj = format(from, "MM.dd", { locale: ko });
@@ -165,8 +147,8 @@ export function BundleMatchingList({
             <TableRow className="bg-slate-50">
               {/* <TableHead className="w-[80px] text-center">그룹 ID</TableHead> */}
               <TableHead className="w-[80px] text-center">상태</TableHead>
-              <TableHead>청구 화주</TableHead>
-              <TableHead>정산 기간</TableHead>
+              {/* <TableHead>청구 화주</TableHead> */}
+              <TableHead className="text-center">정산 기간</TableHead>
               <TableHead className="text-center">화물 건수</TableHead>
               <TableHead className="text-right">기본 운임</TableHead>
               <TableHead className="text-right">세금(10%)</TableHead>
@@ -200,12 +182,13 @@ export function BundleMatchingList({
                   <TableCell className="text-center">
                     {renderStatusBadge(income.status)}
                   </TableCell>
-                  <TableCell>
+                  {/* 화주 페이지 전용 탭 비활성화 */}
+                  {/* <TableCell>
                     <div className="flex flex-col">
                       <span className="font-medium">{income.shipperName}</span>
                       <span className="text-xs text-muted-foreground">{income.businessNumber}</span>
                     </div>
-                  </TableCell>                  
+                  </TableCell>                   */}
                   <TableCell className="font-medium">
                     <div className="flex flex-col items-center">
                       <span className="text-md ">{getSchedule(income.startDate, income.endDate)}</span>

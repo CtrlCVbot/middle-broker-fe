@@ -28,6 +28,7 @@ import { SettlementEditFormSheet } from "@/components/shipper/settlement/settlem
 
 //types
 import { SalesMode } from "@/types/broker-charge";
+import { getCurrentUser } from "@/utils/auth";
 
 export default function IncomePage() {
  
@@ -47,7 +48,8 @@ export default function IncomePage() {
     fetchSalesBundles,
     updateSalesBundlesPage,
     updateSalesBundlesFilter,
-    resetSalesBundlesFilter
+    resetSalesBundlesFilter,
+    
   } = useShipperSettlementStore();
 
   
@@ -56,6 +58,9 @@ export default function IncomePage() {
     console.log('useEffect 실행됨 - sales bundles 데이터 로드');
     const loadData = async () => {
       try {
+        const user = getCurrentUser();
+        console.log('user', user);
+        salesBundlesFilter.companyId = user?.companyId;
         await fetchSalesBundles();
         console.log('sales bundles 데이터 로드 완료');
       } catch (error) {
@@ -63,10 +68,8 @@ export default function IncomePage() {
       }
     };
     loadData();
-    //fetchSalesBundles();
-  }, [salesBundlesPage, salesBundlesPageSize, salesBundlesFilter, fetchSalesBundles]);
-
- 
+    
+  }, [salesBundlesPage, salesBundlesPageSize, salesBundlesFilter, fetchSalesBundles]); 
 
   // sales bundles 페이지 변경 처리 (정산 대사용)
   const handleSalesBundlesPageChange = (page: number) => {
@@ -87,7 +90,7 @@ export default function IncomePage() {
     
   // 상태별 탭 처리
   const handleTabChange = (value: string) => {
-    if (value === "WAITING" || value === "MATCHING" || value === "COMPLETED") {
+    if (value === "MATCHING" || value === "COMPLETED") {
       //setFilter({ status: value as IncomeStatusType });
       setTabMode({ mode: value as SalesMode });
       
@@ -101,6 +104,8 @@ export default function IncomePage() {
       } 
     }
   };  
+
+  
 
   return (
     <>
@@ -118,15 +123,10 @@ export default function IncomePage() {
                   홈
                 </BreadcrumbLink>
               </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="/broker">                  
-                  주선
-                </BreadcrumbLink>
-              </BreadcrumbItem>
+              
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>운송 정산 관리</BreadcrumbPage>
+                <BreadcrumbPage>운송 정산</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -192,7 +192,7 @@ export default function IncomePage() {
                         />
                         {salesBundlesAsIncomes.filter(income => income.status === 'MATCHING').length === 0 ? (
                           <div className="flex h-24 items-center justify-center flex-col">
-                            <p className="text-muted-foreground mb-2">정산 대사 데이터가 없습니다</p>
+                            <p className="text-muted-foreground mb-2">정산 진행 중인 데이터가 없습니다</p>
                             <Button variant="outline" onClick={resetSalesBundlesFilter}>
                               필터 초기화
                             </Button>
@@ -247,8 +247,7 @@ export default function IncomePage() {
                             incomes={salesBundlesAsIncomes.filter(income => income.status === 'COMPLETED')}
                             currentPage={salesBundlesPage}
                             totalPages={salesBundlesTotalPages}
-                            onPageChange={handleSalesBundlesPageChange}
-                            //onStatusChange={handleStatusChange}
+                            onPageChange={handleSalesBundlesPageChange}                            
                             onIssueInvoice={handleIssueInvoice}
                             onExportExcel={handleExportExcel}
                             currentTab="COMPLETED"

@@ -20,7 +20,7 @@ import {
   updateItemAdjustment,
   deleteItemAdjustment,
   getSalesBundleFreightList
-} from '@/services/broker-charge-service';
+} from '@/services/shipper/settlement-service';
 
 //utils
 import { 

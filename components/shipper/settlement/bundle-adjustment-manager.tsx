@@ -52,7 +52,7 @@ import {
 } from "@/types/broker-charge";
 
 // 스토어
-import { useBrokerChargeStore } from "@/store/broker-charge-store";
+import { useShipperSettlementStore } from "@/store/shipper-settlement-store";
 
 // 유틸
 import { formatCurrency } from "@/lib/utils";
@@ -95,7 +95,7 @@ export function BundleAdjustmentManager({
     addBundleAdjustment,
     editBundleAdjustment,
     removeBundleAdjustment
-  } = useBrokerChargeStore();
+  } = useShipperSettlementStore();
 
   // 정산 대사 모드에서 통합 추가금 로딩
   // useEffect(() => {
@@ -244,7 +244,8 @@ export function BundleAdjustmentManager({
                   <TableHead className="text-xs">설명</TableHead>
                   <TableHead className="text-right text-xs">금액</TableHead>
                   {/* <TableHead className="text-right text-xs">세금</TableHead> */}
-                  <TableHead className="text-center text-xs">작업</TableHead>
+                  {/* 화주 페이지 전용 탭 비활성화 */}
+                  {/* <TableHead className="text-center text-xs">작업</TableHead> */}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -270,7 +271,8 @@ export function BundleAdjustmentManager({
                       {/* <TableCell className="text-right text-xs">
                         {formatCurrency(adjustment.taxAmount)}
                       </TableCell> */}
-                      <TableCell className="text-center">
+                      {/* 화주 페이지 전용 탭 비활성화 */}
+                      {/* <TableCell className="text-center">
                         <div className="flex justify-center gap-1">
                           <Button
                             variant="ghost"
@@ -299,7 +301,7 @@ export function BundleAdjustmentManager({
                             <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>
-                      </TableCell>
+                      </TableCell> */}
                     </TableRow>
                   ))
                 ) : (
@@ -313,7 +315,8 @@ export function BundleAdjustmentManager({
             </Table>
           </ScrollArea>
           
-          {!completed ? (
+          {/* 화주 페이지 전용 탭 비활성화 */}
+          {/* {!completed ? (
             <Button 
             variant="ghost" 
             size="sm" 
@@ -332,7 +335,7 @@ export function BundleAdjustmentManager({
           </Button>
           ) : (
             <></>
-          )}
+          )} */}
           
           
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen} modal={true}>

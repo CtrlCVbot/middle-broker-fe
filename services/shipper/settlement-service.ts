@@ -25,7 +25,7 @@ import {
 } from '@/types/broker-charge';
 import { mapAdditionalFeeToChargeGroup, mapAdditionalFeeToChargeLine } from '@/utils/charge-mapper';
 
-import { IWaitingFilter } from '@/components/broker/sale/settlement-waiting-search';
+import { IWaitingFilter } from '@/components/shipper/settlement/settlement-waiting-search';
 
 /**
  * 주문 ID로 운임 그룹 목록 조회
@@ -375,7 +375,7 @@ export async function getSalesBundles(
 
     // 필터 파라미터 추가
     if (filter) {
-      if (filter.companyId) params.append('companyId', filter.companyId);
+      if (filter.companyId) params.append('companyId', filter.companyId); //화주 페이지 전용 파라미터 미터로 씀!
       if (filter.shipperName) params.append('shipperName', filter.shipperName);
       if (filter.shipperBusinessNumber) params.append('shipperBusinessNumber', filter.shipperBusinessNumber);
       if (filter.status) params.append('status', filter.status);
@@ -385,6 +385,9 @@ export async function getSalesBundles(
       if (filter.sortOrder) params.append('sortOrder', filter.sortOrder);
       if (filter.search) params.append('search', filter.search);
     }
+    
+    
+    
 
     const response = await fetch(`/api/charge/sales-bundles?${params.toString()}`, {
       method: 'GET',

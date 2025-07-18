@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
 
     // 검색 조건 구성
     let conditions = [];
+    
 
     if (companyId) {
       conditions.push(eq(salesBundles.companyId, companyId));
