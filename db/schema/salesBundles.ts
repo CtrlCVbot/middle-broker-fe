@@ -56,6 +56,7 @@ export const salesBundles = pgTable('sales_bundles', {
 
   companySnapshot: jsonb('company_snapshot').$type<ICompanySnapshot>(),
   companiesSnapshot: jsonb('companies_snapshot').$type<ICompanySnapshotForSales[]>(), //선택된 화물들의 회사 목록 정보
+  
   managerId: uuid('manager_id').references(() => users.id),
   managerSnapshot: jsonb('manager_snapshot').$type<IUserSnapshot>(),
   

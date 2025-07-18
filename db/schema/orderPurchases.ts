@@ -9,11 +9,13 @@ import {
   numeric
 } from "drizzle-orm/pg-core";
 import { orders } from "./orders";
-import { companies } from "./companies";
+//import { companies } from "./companies";
+import { drivers } from "./drivers";
 
 // 지불 상태 Enum 정의
 export const paymentStatusEnum = pgEnum('payment_status', [
-  'pending',    // 대기중
+  'draft',    // 대기중
+  'issued',     // 발행됨
   'paid',       // 지급됨
   'canceled',   // 취소됨
   'void'        // 무효
@@ -25,12 +27,12 @@ export const orderPurchases = pgTable('order_purchases', {
   
   // 관련 주문 및 운송사/기사 정보
   orderId: uuid('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
-  companyId: uuid('company_id').references(() => companies.id), // 운송사 ID (있는 경우)
-  driverId: uuid('driver_id'), // 기사 ID (있는 경우)
+  companyId: uuid('company_id').references(() => drivers.id), // 기사=> 개인사업자!
+  //driverId: uuid('driver_id'), // 기사 ID (있는 경우)
   
   // 지불 정보
-  paymentNumber: varchar('payment_number', { length: 100 }),
-  status: paymentStatusEnum('status').default('pending').notNull(),
+  invoiceNumber: varchar('invoice_number', { length: 100 }),
+  status: paymentStatusEnum('status').default('draft').notNull(),
   issueDate: timestamp('issue_date', { mode: 'string' }),
   paymentDate: timestamp('payment_date', { mode: 'string' }),
   
