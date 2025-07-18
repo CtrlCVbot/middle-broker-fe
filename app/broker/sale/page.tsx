@@ -58,6 +58,7 @@ export default function IncomePage() {
     // 정산 대기 화물 관련 추가
     waitingItems,
     selectedWaitingItemIds,
+    selectedWaitingItems, // 새로 추가된 선택된 항목 전체 데이터
     waitingItemsTotal,
     waitingItemsPage,
     waitingItemsPageSize,
@@ -407,8 +408,7 @@ export default function IncomePage() {
                       {/* 선택된 화물 요약 정보 */}
                       {selectedWaitingItemIds.length > 0 && settlementSummary && (
                         <WaitingSummary
-                          selectedOrders={waitingItems
-                            .filter(item => selectedWaitingItemIds.includes(item.id))
+                          selectedOrders={selectedWaitingItems
                             .map(item => ({
                               id: item.id,
                               company: item.companyName,

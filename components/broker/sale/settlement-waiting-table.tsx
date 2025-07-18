@@ -48,9 +48,11 @@ export function WaitingTable({
 }: IWaitingTableProps) {
 
   console.log("orders-->", orders);
-  // 전체 선택 상태 관리
-  const isAllSelected = orders.length > 0 && selectedOrders.length === orders.length;
-  const isPartiallySelected = selectedOrders.length > 0 && selectedOrders.length < orders.length;
+  // 전체 선택 상태 관리 - 현재 페이지의 항목들 중에서 선택된 항목 계산
+  const currentPageOrderIds = orders.map(order => order.id);
+  const selectedCurrentPageOrders = selectedOrders.filter(id => currentPageOrderIds.includes(id));
+  const isAllSelected = orders.length > 0 && selectedCurrentPageOrders.length === orders.length;
+  const isPartiallySelected = selectedCurrentPageOrders.length > 0 && selectedCurrentPageOrders.length < orders.length;
   
   // 행 선택 처리
   const handleRowSelect = (orderId: string) => {
