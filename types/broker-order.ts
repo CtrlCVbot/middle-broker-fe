@@ -2,6 +2,7 @@
 
 // Settlement 관련 타입 임포트
 import { SettlementStatus } from "./settlement";
+import { IAddressSnapshot } from "@/types/order";
 
 // 중개 화물 상태 타입 정의
 export type BrokerOrderStatusType = 
@@ -50,11 +51,17 @@ export interface IBrokerOrder {
   status: BrokerOrderStatusType;
   statusProgress: BrokerOrderStatusType;
   departureDateTime: string;
+  //departureDate: string;
+  pickupTime?: string;
   departureCity: string;
   departureLocation: string;
+  pickupAddressSnapshot?: IAddressSnapshot;
   arrivalDateTime: string;
+  //deliveryDate: string;
+  deliveryTime?: string;
   arrivalCity: string;
   arrivalLocation: string;
+  deliveryAddressSnapshot?: IAddressSnapshot;
   vehicle: {
     type: string;
     weight: string;

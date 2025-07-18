@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { IAddressSnapshot } from '@/types/order';
 
 // Enum 타입 정의
 export type ChargeStage = 'estimate' | 'progress' | 'completed';
@@ -159,8 +160,8 @@ export interface ISettlementWaitingItem {
   pickupTime: string;
   deliveryDate: string;
   deliveryTime: string;
-  pickupAddressSnapshot: string;
-  deliveryAddressSnapshot: string;
+  pickupAddressSnapshot: IAddressSnapshot | null;
+  deliveryAddressSnapshot: IAddressSnapshot | null;
   requestedVehicleWeight: number;
   requestedVehicleType: string;
   assignedDriverSnapshot: any;

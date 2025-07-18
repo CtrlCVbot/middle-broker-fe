@@ -113,11 +113,16 @@ export const getSchedule = (pickupDate: string, pickupTime: string, deliveryDate
   }
 }
 
-export const getTime = (pickupDate: string, pickupTime: string, deliveryDate: string, deliveryTime: string) => {
-  //console.log("pickupDate, pickupTime, deliveryDate, deliveryTime", pickupDate, pickupTime, deliveryDate, deliveryTime);
-  const pickupTimeObj = format(parseISO('1970-01-01T' + pickupTime), 'HH:mm', {locale: ko});
+export const getTime = (pickupDate: string, pickupTime: any, deliveryDate: string, deliveryTime: any) => {
+  console.log("pickupTime, deliveryTime", pickupTime, deliveryTime);
+  console.log("typeof pickupTime, typeof deliveryTime", typeof pickupTime, typeof deliveryTime);
+  console.log("pickupDate, deliveryDate", pickupDate, deliveryDate);
+  
+  let pickupTimeObj = format(parseISO('1970-01-01T' + pickupTime), 'HH:mm', {locale: ko});
   let deliveryTimeObj = format(parseISO('1970-01-01T' + deliveryTime), 'HH:mm', {locale: ko});
-  const deliveryDateObj = format(deliveryDate, "dd", { locale: ko });
+  let deliveryDateObj = format(deliveryDate, "dd", { locale: ko });
+
+  console.log("pickupTimeObj, deliveryTimeObj, deliveryDateObj", pickupTimeObj, deliveryTimeObj, deliveryDateObj);
   if (pickupDate === deliveryDate) {
     deliveryTimeObj = deliveryTimeObj;
   } else {
@@ -128,6 +133,18 @@ export const getTime = (pickupDate: string, pickupTime: string, deliveryDate: st
   } else {
     return pickupTimeObj + ' - ' + deliveryTimeObj;
   }
+}
+
+export const getTime1 = (pickupTime: any, deliveryTime: any) => {
+  console.log("pickupTime, deliveryTime", pickupTime, deliveryTime);
+
+  
+  let pickupTimeObj = format(parseISO('1970-01-01T' + pickupTime), 'HH:mm', {locale: ko});
+  let deliveryTimeObj = format(parseISO('1970-01-01T' + deliveryTime), 'HH:mm', {locale: ko});
+//  let deliveryDateObj = format(deliveryDate, "dd", { locale: ko });
+
+  console.log("pickupTimeObj, deliveryTimeObj", pickupTimeObj, deliveryTimeObj);
+  return pickupTimeObj + ' - ' + deliveryTimeObj;
 }
 
 

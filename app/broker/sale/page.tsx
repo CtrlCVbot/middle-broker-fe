@@ -81,8 +81,7 @@ export default function IncomePage() {
     salesBundlesPageSize,
     salesBundlesTotalPages,
     salesBundlesIsLoading,
-    salesBundlesFilter,
-    
+    salesBundlesFilter,    
     fetchSalesBundles,
     updateSalesBundlesPage,
     updateSalesBundlesFilter,

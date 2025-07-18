@@ -25,6 +25,7 @@ import { BrokerStatusBadge } from "@/components/broker/order/broker-status-badge
 import { Badge } from "@/components/ui/badge";
 import { getTime } from "@/components/order/order-table-ver01";
 import { getSchedule } from "@/components/order/order-table-ver01";
+import { IAddressSnapshot } from "@/types/order";
 
 interface IWaitingTableProps {
   orders: IBrokerOrder[];
@@ -46,7 +47,7 @@ export function WaitingTable({
   onSelectAll,
 }: IWaitingTableProps) {
 
-  console.log(orders);
+  console.log("orders-->", orders);
   // 전체 선택 상태 관리
   const isAllSelected = orders.length > 0 && selectedOrders.length === orders.length;
   const isPartiallySelected = selectedOrders.length > 0 && selectedOrders.length < orders.length;
@@ -84,6 +85,14 @@ export function WaitingTable({
   // 마지막 페이지로 이동
   const handleLastPage = () => {
     onPageChange(totalPages);
+  };
+
+  const getAddress = (address: any) => {
+    console.log("getAddress-->", address);
+    if (address) {
+      return address.roadAddress || address.jibunAddress || "-";
+    }
+    return "-";
   };
 
   return (
@@ -157,7 +166,7 @@ export function WaitingTable({
                     
                   </TableCell>
                   <TableCell className="font-medium text-muted-foreground">
-                    {getTime(order.departureDateTime, order.departureDateTime, order.arrivalDateTime, order.departureDateTime)}
+                    {getTime(order.departureDateTime, order.pickupTime, order.arrivalDateTime, order.deliveryTime)}
                   </TableCell>
 
                   <TableCell className="max-w-[100px] truncate" title={order.departureLocation}>
@@ -166,7 +175,7 @@ export function WaitingTable({
                         {order.departureLocation}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {order.departureLocation}
+                        {getAddress(order.pickupAddressSnapshot)}
                       </div>
                     </div>
                   </TableCell>
@@ -177,7 +186,7 @@ export function WaitingTable({
                         {order.arrivalLocation}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {order.arrivalLocation}
+                        {getAddress(order.deliveryAddressSnapshot)}
                       </div>
                     </div>
                   </TableCell>
