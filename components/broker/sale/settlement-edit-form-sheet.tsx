@@ -638,6 +638,7 @@ export function SettlementEditFormSheet() {
     
     orders.forEach(order => {
       const shipper = order.companyName || '미지정';
+      
         
       if (!groups[shipper]) {
         groups[shipper] = { 
@@ -895,17 +896,19 @@ export function SettlementEditFormSheet() {
                       setCompanySearchTerm={setCompanySearchTerm}
                       companies={companiesQuery.data?.data ?? []}
                       onSelectCompany={(company) => {
+                        console.log("onSelectCompany", company);
                         form.setValue("shipperName", company.name);
                         form.setValue("businessNumber", company.businessNumber);
                         form.setValue("shipperCeo", company.ceoName || company.ceo || company.companyCeo);
                         form.setValue("accountHolder", company.bankAccountHolder || company.accountHolder || '');
                         form.setValue("accountNumber", company.bankAccountNumber || company.accountNumber || '');
                         form.setValue("bankName", company.bankCode);
-                        
+                        console.log("company.id", company.id);
+
                         setSelectedCompanyId(company.id);
                         // 회사 선택 시 담당자 목록 로드
-                        if (company.id) {
-                          loadManagers(company.id);
+                        if (selectedCompanyId) {
+                          loadManagers(selectedCompanyId);
                         }
                       }}
                       selectedCompanyId={selectedCompanyId}

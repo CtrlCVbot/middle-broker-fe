@@ -81,6 +81,7 @@ export function CompanyInfoSection({
     { code: '092', name: '토스뱅크' },
   ];
 
+  console.log("displayShipperGroups", displayShipperGroups);
   console.log("editingSalesBundle", editingSalesBundle);
 
   return (
@@ -112,20 +113,23 @@ export function CompanyInfoSection({
               variant="outline"
               className="cursor-pointer hover:bg-secondary px-2 py-1 text-xs"
               onClick={() => {
-                if (isEditMode && editingSalesBundle) {
+                //console.log("displayShipperGroups[shipper].company", displayShipperGroups[shipper]);
+                if (isEditMode && displayShipperGroups[shipper]) {
                   // 편집 모드: editingSalesBundle의 회사 정보 사용
+                  console.log("displayShipperGroups", displayShipperGroups);
+                  console.log("편집 모드", displayShipperGroups[shipper].company);
                   onSelectCompany({
-                    id: editingSalesBundle.companyId || '',
-                    name: editingSalesBundle.companySnapshot?.name || '',
-                    businessNumber: editingSalesBundle.companySnapshot?.businessNumber || '',
-                    ceoName: editingSalesBundle.companySnapshot?.ceoName || '',
-                    bankCode: editingSalesBundle.companySnapshot?.bankCode || '',
-                    bankAccountHolder: editingSalesBundle.companySnapshot?.bankAccountHolder || '',
-                    bankAccount: editingSalesBundle.companySnapshot?.bankAccount || ''
+                    id: displayShipperGroups[shipper].company.id || '',
+                    name: displayShipperGroups[shipper].company.name || '',
+                    businessNumber: displayShipperGroups[shipper].company.businessNumber || '',
+                    ceoName: displayShipperGroups[shipper].company.ceo || '',
+                    bankCode: displayShipperGroups[shipper].company.bankCode || '',
+                    bankAccountHolder: displayShipperGroups[shipper].company.accountHolder || '',
+                    bankAccount: displayShipperGroups[shipper].company.accountNumber || ''
                   });
                 } else {
                   // 생성 모드: 기존 로직 유지
-                  console.log("displayShipperGroups[shipper].company", displayShipperGroups[shipper].company);
+                  console.log("생성", displayShipperGroups[shipper].company);
                   onSelectCompany(displayShipperGroups[shipper].company);
                 }
               }}
