@@ -69,6 +69,7 @@ interface IBrokerChargeState {
   waitingItemsTempFilter: IWaitingFilter;
   waitingItems: ISettlementWaitingItem[];
   selectedWaitingItemIds: string[];
+  selectedWaitingItems: ISettlementWaitingItem[]; // 새로 추가: 선택된 항목의 전체 데이터
   waitingItemsTotal: number;
   waitingItemsPage: number;
   waitingItemsPageSize: number;
@@ -232,6 +233,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   // 초기 상태 - 매출 정산 관련
   waitingItems: [],
   selectedWaitingItemIds: [],
+  selectedWaitingItems: [], // 초기 상태에 추가
   waitingItemsTotal: 0,
   waitingItemsPage: 1,
   waitingItemsPageSize: 10,
@@ -419,13 +421,21 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   
   // 정산 대기 항목 선택
   selectWaitingItem: (id: string, selected: boolean) => {
-    const { selectedWaitingItemIds } = get();
+    const { selectedWaitingItemIds, selectedWaitingItems, waitingItems } = get();
     
     if (selected && !selectedWaitingItemIds.includes(id)) {
-      set({ selectedWaitingItemIds: [...selectedWaitingItemIds, id] });
+      // 현재 페이지에서 해당 항목 찾기
+      const item = waitingItems.find(item => item.id === id);
+      if (item) {
+        set({ 
+          selectedWaitingItemIds: [...selectedWaitingItemIds, id],
+          selectedWaitingItems: [...selectedWaitingItems, item]
+        });
+      }
     } else if (!selected && selectedWaitingItemIds.includes(id)) {
       set({ 
-        selectedWaitingItemIds: selectedWaitingItemIds.filter(itemId => itemId !== id) 
+        selectedWaitingItemIds: selectedWaitingItemIds.filter(itemId => itemId !== id),
+        selectedWaitingItems: selectedWaitingItems.filter(item => item.id !== id)
       });
     }
     
@@ -435,15 +445,36 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   
   // 모든 정산 대기 항목 선택/해제
   selectAllWaitingItems: (selected: boolean) => {
-    const { waitingItems } = get();
+    const { waitingItems, selectedWaitingItems } = get();
     
     if (selected) {
-      // 모든 항목 선택
-      const allIds = waitingItems.map(item => item.id);
-      set({ selectedWaitingItemIds: allIds });
+      // 현재 페이지의 모든 항목을 기존 선택 항목에 추가
+      const newSelectedItems = [...selectedWaitingItems];
+      const newSelectedIds = [...get().selectedWaitingItemIds];
+      
+      waitingItems.forEach(item => {
+        if (!newSelectedIds.includes(item.id)) {
+          newSelectedItems.push(item);
+          newSelectedIds.push(item.id);
+        }
+      });
+      
+      set({ 
+        selectedWaitingItemIds: newSelectedIds,
+        selectedWaitingItems: newSelectedItems
+      });
     } else {
-      // 모든 항목 선택 해제
-      set({ selectedWaitingItemIds: [] });
+      // 현재 페이지의 항목들만 선택 해제
+      const currentPageIds = waitingItems.map(item => item.id);
+      const remainingItems = selectedWaitingItems.filter(item => 
+        !currentPageIds.includes(item.id)
+      );
+      const remainingIds = remainingItems.map(item => item.id);
+      
+      set({ 
+        selectedWaitingItemIds: remainingIds,
+        selectedWaitingItems: remainingItems
+      });
     }
     
     // 선택 항목이 변경되면 요약 정보 업데이트
@@ -460,25 +491,27 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   updateWaitingItemsFilter: (filter: Partial<IWaitingFilter>) => {
     set({ 
       waitingItemsFilter: { ...get().waitingItemsFilter, ...filter },
-      waitingItemsPage: 1 // 필터가 변경되면, 첫 페이지로 이동
+      waitingItemsPage: 1, // 필터가 변경되면, 첫 페이지로 이동
+      // 필터가 변경되면 선택 상태 초기화
+      selectedWaitingItemIds: [],
+      selectedWaitingItems: [],
+      settlementSummary: null
     });
     get().fetchWaitingItems();
   },
   
   // 선택한 정산 대기 항목의 요약 정보 계산
   calculateSettlementSummary: () => {
-    const { waitingItems, selectedWaitingItemIds } = get();
+    const { selectedWaitingItems } = get();
     
     // 선택된 항목이 없으면 요약 정보 초기화
-    if (selectedWaitingItemIds.length === 0) {
+    if (selectedWaitingItems.length === 0) {
       set({ settlementSummary: null });
       return;
     }
     
-    // 선택된 항목만 필터링
-    const selectedItems = waitingItems.filter(item => 
-      selectedWaitingItemIds.includes(item.id)
-    );
+    // selectedWaitingItems를 직접 사용 (이미 전체 데이터가 있음)
+    const selectedItems = selectedWaitingItems;
     
     // 회사별 요약 계산
     const companySummaries = new Map<string, {
@@ -527,19 +560,17 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   // 선택한 정산 대기 항목으로 매출 인보이스 생성
   createOrderSaleFromWaitingItems: async () => {
     try {
-      const { waitingItems, selectedWaitingItemIds } = get();
+      const { selectedWaitingItems } = get();
       
       // 선택된 항목이 없으면 취소
-      if (selectedWaitingItemIds.length === 0) {
+      if (selectedWaitingItems.length === 0) {
         return false;
       }
       
       set({ isLoading: true, error: null });
       
-      // 선택된 항목만 필터링
-      const selectedItems = waitingItems.filter(item => 
-        selectedWaitingItemIds.includes(item.id)
-      );
+      // selectedWaitingItems를 직접 사용
+      const selectedItems = selectedWaitingItems;
       
       // 각 항목에 대해 매출 인보이스 생성
       const promises = selectedItems.map(item => 
@@ -559,6 +590,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       // 선택 항목 초기화
       set({ 
         selectedWaitingItemIds: [],
+        selectedWaitingItems: [],
         settlementSummary: null,
         isLoading: false 
       });
@@ -579,6 +611,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
     set({
       waitingItems: [],
       selectedWaitingItemIds: [],
+      selectedWaitingItems: [], // 초기 상태에 추가
       waitingItemsTotal: 0,
       waitingItemsPage: 1,
       waitingItemsPageSize: 10,
@@ -596,18 +629,16 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   
   // 정산 폼 시트 열기
   openSettlementForm: () => {
-    const { waitingItems, selectedWaitingItemIds } = get();
+    const { selectedWaitingItems } = get();
     
     // 선택된 항목이 없으면 종료
-    if (selectedWaitingItemIds.length === 0) {
+    if (selectedWaitingItems.length === 0) {
       console.error('선택된 항목이 없습니다.');
       return;
     }
     
-    // 선택된 항목만 필터링
-    const selectedItems = waitingItems.filter(item => 
-      selectedWaitingItemIds.includes(item.id)
-    );
+    // selectedWaitingItems를 직접 사용
+    const selectedItems = selectedWaitingItems;
     
     // IBrokerOrder 형태로 변환
     const brokerOrders = mapWaitingItemsToBrokerOrders(selectedItems);
@@ -660,11 +691,11 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   // 선택한 정산 대기 항목으로 매출 번들(정산 묶음) 생성
   createSalesBundleFromWaitingItems: async (formData?: ISettlementFormData) => {
     try {
-      const { waitingItems, selectedWaitingItemIds } = get();
-      console.log("createSalesBundleFromWaitingItems:", waitingItems, selectedWaitingItemIds, formData);
-      if (selectedWaitingItemIds.length === 0) return false;
+      const { selectedWaitingItems } = get();
+      console.log("createSalesBundleFromWaitingItems:", selectedWaitingItems, formData);
+      if (selectedWaitingItems.length === 0) return false;
       
-      const selectedItems = waitingItems.filter(item => selectedWaitingItemIds.includes(item.id));
+      const selectedItems = selectedWaitingItems;
       
       // formData가 전달되지 않으면 store의 데이터 사용 (fallback)
       const actualFormData = formData || get().settlementForm.formData;
@@ -680,6 +711,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       set({
         settlementForm: { ...get().settlementForm, isOpen: false, selectedItems: [] },
         selectedWaitingItemIds: [],
+        selectedWaitingItems: [],
         isLoading: false
       });
       

@@ -1,7 +1,7 @@
 "use client";
 
 //use client
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 //ui
 import { Button } from "@/components/ui/button";
@@ -34,7 +34,7 @@ import { SettlementEditFormSheet } from "@/components/broker/sale/settlement-edi
 
 //types
 //import { IncomeStatusType } from "@/types/income";
-import { SalesMode } from "@/types/broker-charge";
+import { ISettlementWaitingItem, SalesMode } from "@/types/broker-charge";
 
 export default function IncomePage() {
   // 정산 데이터 스토어 접근
@@ -89,6 +89,9 @@ export default function IncomePage() {
   } = useBrokerChargeStore();
 
   console.log('waitingItems:', waitingItems);
+
+
+
 
   // 초기 정산 데이터 로드
   // useEffect(() => {
@@ -396,6 +399,7 @@ export default function IncomePage() {
                             selectedOrders={selectedWaitingItemIds}
                             onOrderSelect={handleWaitingItemSelect}
                             onSelectAll={handleSelectAllWaitingItems}
+                            
                           />
                         )}
                       </div>
