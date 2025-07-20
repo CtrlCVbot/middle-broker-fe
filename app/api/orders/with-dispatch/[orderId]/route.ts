@@ -98,7 +98,7 @@ export async function GET(
         date: order.deliveryDate?.toString().split('T')[0] || '',
         time: order.deliveryTime || '',
       },
-      estimatedDistance: order.estimatedDistance ? Number(order.estimatedDistance) : undefined,
+      estimatedDistance: order.estimatedDistanceKm ? Number(order.estimatedDistanceKm) : undefined,
       estimatedPriceAmount: order.estimatedPriceAmount ? Number(order.estimatedPriceAmount) : undefined,
       priceType: order.priceType || '',
       taxType: order.taxType || '',
@@ -140,6 +140,15 @@ export async function GET(
     const responseData: IOrderWithDispatchItem = {
       order: orderDetail as IOrderWithDispatchOrderDetail,
       dispatch: dispatchDetail as IOrderWithDispatchDispatchDetail,
+      charge: {
+        groups: [],
+        summary: {
+          totalAmount: 0,
+          salesAmount: 0,
+          purchaseAmount: 0,
+          profit: 0
+        }
+      },
     };
     
     // 응답 반환

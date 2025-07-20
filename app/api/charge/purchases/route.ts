@@ -40,9 +40,9 @@ export async function GET(request: NextRequest) {
       conditions.push(eq(orderPurchases.companyId, companyId));
     }
 
-    if (driverId) {
-      conditions.push(eq(orderPurchases.driverId, driverId));
-    }
+    // if (driverId) {
+    //   conditions.push(eq(orderPurchases.driverId, driverId));
+    // }
 
     if (status && paymentStatusEnum.enumValues.includes(status as any)) {
       conditions.push(eq(orderPurchases.status, status as any));
@@ -113,7 +113,7 @@ const CreateOrderPurchaseSchema = z.object({
   companyId: z.string().uuid().optional(),
   driverId: z.string().uuid().optional(),
   paymentNumber: z.string().optional(),
-  status: z.enum(paymentStatusEnum.enumValues).default('pending'),
+  status: z.enum(paymentStatusEnum.enumValues).default('draft'),
   issueDate: z.string().optional(),
   paymentDate: z.string().optional(),
   subtotalAmount: z.number().nonnegative(),

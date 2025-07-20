@@ -167,7 +167,16 @@ export function generateMockDispatchData(searchParams: URLSearchParams): IOrderW
     
     mockData.push({
       order: orderInfo as any,
-      dispatch: dispatchInfo as any
+      dispatch: dispatchInfo as any,
+      charge: {
+        groups: [],
+        summary: {
+          totalAmount: 0,
+          salesAmount: 0,
+          purchaseAmount: 0,
+          profit: 0
+        }
+      },
     });
   }
   

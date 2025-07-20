@@ -262,13 +262,13 @@ export function mapWaitingItemsToBrokerOrders(
   return waitingItems.map(item => ({    
     id: item.id,
     status: item.flowStatus,
-    
+    statusProgress: item.flowStatus,
     departureDateTime: item.pickupDate + " " + item.pickupTime,
     departureCity: item.pickupName,
-    departureLocation: item.pickupAddressSnapshot,
+    departureLocation: item.pickupAddressSnapshot?.name,
     arrivalDateTime: item.deliveryDate + " " + item.deliveryTime,
     arrivalCity: item.deliveryName,
-    arrivalLocation: item.deliveryAddressSnapshot,
+    arrivalLocation: item.deliveryAddressSnapshot?.name,
 
     shipperId: item.companyId,
     shipperName: item.companyName,
@@ -279,6 +279,12 @@ export function mapWaitingItemsToBrokerOrders(
     bankName: item.companyBankCode,
     accountHolder: item.companyBankAccountHolder,
     accountNumber: item.companyBankAccount,
+
+    pickupTime: item.pickupTime,
+    deliveryTime: item.deliveryTime,
+    //shipperCeo: item.companyCeo,
+    pickupAddressSnapshot: item.pickupAddressSnapshot,
+    deliveryAddressSnapshot: item.deliveryAddressSnapshot,
     
    
   } as IBrokerOrder));

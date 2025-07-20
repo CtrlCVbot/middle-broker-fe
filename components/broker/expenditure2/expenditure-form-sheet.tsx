@@ -46,8 +46,9 @@ import { IBrokerOrder } from "@/types/broker-order";
 import { ExpenditureAdditionalCost } from "./expenditure-additional-cost";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ko } from "date-fns/locale";
+
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -218,7 +219,7 @@ export function ExpenditureFormSheet() {
   useEffect(() => {
     if (!orders || orders.length === 0 || !isOpen) return;
     
-    let earliestLoadingDate = new Date(orders[0].departureDateTime);
+    let earliestLoadingDate = parseISO(orders[0].departureDateTime);
     let latestUnloadingDate = new Date(orders[0].arrivalDateTime);
 
     orders.forEach(order => {

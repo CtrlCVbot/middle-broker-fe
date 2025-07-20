@@ -38,9 +38,7 @@ export async function GET(request: NextRequest) {
       conditions.push(eq(purchaseBundles.companyId, companyId));
     }
 
-    if (driverId) {
-      conditions.push(eq(purchaseBundles.driverId, driverId));
-    }
+    
 
     if (status && purchaseBundleStatusEnum.enumValues.includes(status as any)) {
       conditions.push(eq(purchaseBundles.status, status as any));
@@ -171,17 +169,17 @@ export async function POST(request: NextRequest) {
     }
     
     // 기사 체크 (기사ID가 제공된 경우)
-    if (data.driverId) {
-      const allSameDriver = purchaseRecords.every(record => 
-        record.driverId === data.driverId);
+    // if (data.driverId) {
+    //   const allSameDriver = purchaseRecords.every(record => 
+    //     record.driverId === data.driverId);
       
-      if (!allSameDriver) {
-        return NextResponse.json(
-          { error: '모든 매입 전표는 동일한 기사에 속해야 합니다.' },
-          { status: 400 }
-        );
-      }
-    }
+    //   if (!allSameDriver) {
+    //     return NextResponse.json(
+    //       { error: '모든 매입 전표는 동일한 기사에 속해야 합니다.' },
+    //       { status: 400 }
+    //     );
+    //   }
+    // }
     
     // 트랜잭션으로 번들 및 항목 생성
     const result = await db.transaction(async (tx) => {

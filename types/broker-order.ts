@@ -49,30 +49,30 @@ export interface IBrokerOrderLog {
 export interface IBrokerOrder {
   id: string;
   status: BrokerOrderStatusType;
-  statusProgress: BrokerOrderStatusType;
+  statusProgress?: BrokerOrderStatusType;
   departureDateTime: string;
   //departureDate: string;
   pickupTime?: string;
-  departureCity: string;
+  departureCity?: string;
   departureLocation: string;
-  pickupAddressSnapshot?: IAddressSnapshot;
+  pickupAddressSnapshot?: IAddressSnapshot | null;
   arrivalDateTime: string;
   //deliveryDate: string;
   deliveryTime?: string;
-  arrivalCity: string;
+  arrivalCity?: string;
   arrivalLocation: string;
-  deliveryAddressSnapshot?: IAddressSnapshot;
+  deliveryAddressSnapshot?: IAddressSnapshot | null;
   vehicle: {
     type: string;
     weight: string;
   };
-  chargeAmount?: number;
+  chargeAmount: number;
   amount: number;
   fee: number;
   shipperId?: string;
   shipperBusinessNumber?: string;
-  shipperName: string;
-  shipperCeo: string;
+  shipperName?: string;
+  shipperCeo?: string;
   shipperContact?: string;
   shipperEmail?: string;
   manager?: string;
