@@ -5,12 +5,12 @@ import {
   getChargeGroupsByOrderId,
   createChargeFromAdditionalFee,  
   getSettlementWaitingItems,  
-  createOrderSale,
-  createSalesBundle,
-  getSalesBundles,  
-  getSalesBundleById,
-  updateSalesBundle,
-  deleteSalesBundle,
+  createOrderPurchase,
+  createPurchaseBundle,
+  getPurchaseBundles,  
+  getPurchaseBundleById,
+  updatePurchaseBundle,
+  deletePurchaseBundle,
   getBundleAdjustments,
   createBundleAdjustment,
   updateBundleAdjustment,
@@ -19,22 +19,22 @@ import {
   createItemAdjustment,
   updateItemAdjustment,
   deleteItemAdjustment,
-  getSalesBundleFreightList
-} from '@/services/broker-charge-service';
+  getPurchaseBundleFreightList
+} from '@/services/broker-charge-purchase-service';
 
 //utils
 import { 
   mapChargeDataToFinanceSummary,    
   mapWaitingItemsToBrokerOrders, 
-  mapSettlementFormToSalesBundleInput, 
-  mapSalesBundlesToIncomes  
-} from '@/utils/charge-mapper';
+  mapSettlementFormToPurchaseBundleInput, 
+  mapPurchaseBundlesToIncomes  
+} from '@/utils/charge-purchase-mapper';
 
 //types
-import { ISalesBundleFilter, ISalesBundleListItem, SalesBundleStatus, SalesMode } from '@/types/broker-charge';
+import { IPurchaseBundleFilter, IPurchaseBundleListItem, PurchaseBundleStatus, PurchaseMode } from '@/types/broker-charge-purchase';
 import { IIncome, IncomeStatusType } from '@/types/income';
 import { 
-  ISalesMode,
+  IPurchaseMode,
   IChargeGroupWithLines,
   IFinanceSummary,
   IAdditionalFeeInput,  
@@ -42,21 +42,21 @@ import {
   ISettlementSummary,  
   ISettlementFormState,
   ISettlementFormData,
-  ISalesBundleAdjustment,
-  ISalesItemAdjustment,
-  ISalesBundleItemWithDetails,
+  IPurchaseBundleAdjustment,
+  IPurchaseItemAdjustment,
+  IPurchaseBundleItemWithDetails,
   ICreateBundleAdjustmentInput,
   IUpdateBundleAdjustmentInput,
   ICreateItemAdjustmentInput,
   IUpdateItemAdjustmentInput
-} from '@/types/broker-charge';
+} from '@/types/broker-charge-purchase';
 import { IWaitingFilter } from '@/components/broker/sale/settlement-waiting-search';
 
 
 interface IBrokerChargeState {  
 
   // 필터 상태
-  tabMode: ISalesMode;
+  tabMode: IPurchaseMode;
 
   // 기존 운임 관련 상태
   isLoading: boolean;
@@ -82,31 +82,31 @@ interface IBrokerChargeState {
   settlementForm: ISettlementFormState;
   
   // 편집 중인 sales bundle 관련 상태 추가
-  selectedSalesBundleId: string | null;
-  editingSalesBundle: any | null;  
+  selectedPurchaseBundleId: string | null;
+  editingPurchaseBundle: any | null;  
   
 
-  // sales bundles 관련 상태 추가
-  salesBundles: ISalesBundleListItem[];
-  salesBundlesAsIncomes: IIncome[]; // IIncome 형태로 변환된 데이터
-  salesBundlesTotal: number;
-  salesBundlesPage: number;
-  salesBundlesPageSize: number;
-  salesBundlesTotalPages: number;
-  salesBundlesIsLoading: boolean;
-  salesBundlesError: string | null;
-  salesBundlesFilter: ISalesBundleFilter;
-  salesBundlesTempFilter: ISalesBundleFilter;
+  // purchase bundles 관련 상태 추가
+  purchaseBundles: IPurchaseBundleListItem[];
+  purchaseBundlesAsIncomes: IIncome[]; // IIncome 형태로 변환된 데이터
+  purchaseBundlesTotal: number;
+  purchaseBundlesPage: number;
+  purchaseBundlesPageSize: number;
+  purchaseBundlesTotalPages: number;
+  purchaseBundlesIsLoading: boolean;
+  purchaseBundlesError: string | null;
+  purchaseBundlesFilter: IPurchaseBundleFilter;
+  purchaseBundlesTempFilter: IPurchaseBundleFilter;
 
   // 새로 추가: 추가금 관련 상태
-  bundleFreightList: ISalesBundleItemWithDetails[];
-  bundleAdjustments: ISalesBundleAdjustment[];
-  itemAdjustments: Map<string, ISalesItemAdjustment[]>; // itemId -> adjustments
+  bundleFreightList: IPurchaseBundleItemWithDetails[];
+  bundleAdjustments: IPurchaseBundleAdjustment[];
+  itemAdjustments: Map<string, IPurchaseItemAdjustment[]>; // itemId -> adjustments
   adjustmentsLoading: boolean;
   adjustmentsError: string | null;
 
   //탭 모드
-  setTabMode: (mode: Partial<ISalesMode>) => void;
+  setTabMode: (mode: Partial<IPurchaseMode>) => void;
 
   //대기 화물 검색
   setFilter: (filter: Partial<IWaitingFilter>) => void;
@@ -127,7 +127,7 @@ interface IBrokerChargeState {
   updateWaitingItemsPage: (page: number) => void;
   updateWaitingItemsFilter: (filter: Partial<IBrokerChargeState['waitingItemsFilter']>) => void;
   calculateSettlementSummary: () => void;
-  createOrderSaleFromWaitingItems: () => Promise<boolean>;
+  createOrderPurchaseFromWaitingItems: () => Promise<boolean>;
   resetWaitingItemsState: () => void;
   
   // 정산 폼 시트 관련 액션
@@ -136,34 +136,34 @@ interface IBrokerChargeState {
   updateSettlementFormData: (data: Partial<ISettlementFormData>) => void;
 
   // 새로운 액션
-  createSalesBundleFromWaitingItems: (formData?: ISettlementFormData) => Promise<boolean>;
+  createPurchaseBundleFromWaitingItems: (formData?: ISettlementFormData) => Promise<boolean>;
 
   // sales bundles 관련 액션 추가
-  setSalesBundlesFilter: (filter: Partial<ISalesBundleFilter>) => void;
-  setSalesBundlesTempFilter: (filter: Partial<ISalesBundleFilter>) => void;
-  applySalesBundlesTempFilter: () => void;    
-  fetchSalesBundles: () => Promise<ISalesBundleListItem[]>;
-  updateSalesBundlesPage: (page: number) => void;
-  updateSalesBundlesFilter: (filter: Partial<ISalesBundleFilter>) => void;
-  resetSalesBundlesFilter: () => void;
-  resetSalesBundlesTempFilter: () => void;
-  resetSalesBundlesState: () => void;
+  setPurchaseBundlesFilter: (filter: Partial<IPurchaseBundleFilter>) => void;
+  setPurchaseBundlesTempFilter: (filter: Partial<IPurchaseBundleFilter>) => void;
+  applyPurchaseBundlesTempFilter: () => void;    
+  fetchPurchaseBundles: () => Promise<IPurchaseBundleListItem[]>;
+  updatePurchaseBundlesPage: (page: number) => void;
+  updatePurchaseBundlesFilter: (filter: Partial<IPurchaseBundleFilter>) => void;
+  resetPurchaseBundlesFilter: () => void;
+  resetPurchaseBundlesTempFilter: () => void;
+  resetPurchaseBundlesState: () => void;
   
   
   // sales bundle 편집 관련 액션 추가
   openSettlementFormForEdit: (bundleId: string) => Promise<void>;
-  updateSalesBundleData: (id: string, formData: ISettlementFormData, reason?: string) => Promise<boolean>;
-  deleteSalesBundleData: (id: string) => Promise<boolean>;
-  completeSalesBundleData: (id: string) => Promise<boolean>;
+  updatePurchaseBundleData: (id: string, formData: ISettlementFormData, reason?: string) => Promise<boolean>;
+  deletePurchaseBundleData: (id: string) => Promise<boolean>;
+  completePurchaseBundleData: (id: string) => Promise<boolean>;
 
   // 새로 추가: 추가금 관련 액션들
-  fetchBundleFreightList: (bundleId: string) => Promise<ISalesBundleItemWithDetails[]>;
-  fetchBundleAdjustments: (bundleId: string) => Promise<ISalesBundleAdjustment[]>;
+  fetchBundleFreightList: (bundleId: string) => Promise<IPurchaseBundleItemWithDetails[]>;
+  fetchBundleAdjustments: (bundleId: string) => Promise<IPurchaseBundleAdjustment[]>;
   addBundleAdjustment: (bundleId: string, data: ICreateBundleAdjustmentInput) => Promise<boolean>;
   editBundleAdjustment: (bundleId: string, adjustmentId: string, data: IUpdateBundleAdjustmentInput) => Promise<boolean>;
   removeBundleAdjustment: (bundleId: string, adjustmentId: string) => Promise<boolean>;
   
-  fetchItemAdjustments: (itemId: string) => Promise<ISalesItemAdjustment[]>;
+  fetchItemAdjustments: (itemId: string) => Promise<IPurchaseItemAdjustment[]>;
   addItemAdjustment: (itemId: string, data: ICreateItemAdjustmentInput) => Promise<boolean>;
   editItemAdjustment: (itemId: string, adjustmentId: string, data: IUpdateItemAdjustmentInput) => Promise<boolean>;
   removeItemAdjustment: (itemId: string, adjustmentId: string) => Promise<boolean>;
@@ -171,8 +171,8 @@ interface IBrokerChargeState {
   resetAdjustmentsState: () => void;
 }
 
-const initialTabMode: ISalesMode = {
-  mode: 'WAITING' as SalesMode,
+const initialTabMode: IPurchaseMode = {
+  mode: 'WAITING' as PurchaseMode,
 };
 
 const initialWaitingFilter: IWaitingFilter = {
@@ -188,7 +188,7 @@ const initialWaitingFilter: IWaitingFilter = {
   manager: undefined,
 };
 
-const initialSalesBundleFilter: ISalesBundleFilter = {
+const initialPurchaseBundleFilter: IPurchaseBundleFilter = {
   companyId: undefined,
   status: undefined,
   startDate: undefined,
@@ -255,25 +255,25 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   tabMode: initialTabMode,
 
   // 편집 중인 sales bundle 관련 상태 추가
-  selectedSalesBundleId: null,
-  editingSalesBundle: null,
+  selectedPurchaseBundleId: null,
+  editingPurchaseBundle: null,
   
   // 필터 초기 상태
   waitingItemsFilter: { ...initialWaitingFilter },
   waitingItemsTempFilter: { ...initialWaitingFilter },
   
   // sales bundles 초기 상태 추가
-  salesBundles: [],
-  salesBundlesAsIncomes: [],
-  salesBundlesTotal: 0,
-  salesBundlesPage: 1,
-  salesBundlesPageSize: 10,
-  salesBundlesTotalPages: 0,
-  salesBundlesIsLoading: false,
-  salesBundlesError: null,
+  purchaseBundles: [],
+  purchaseBundlesAsIncomes: [],
+  purchaseBundlesTotal: 0,
+  purchaseBundlesPage: 1,
+  purchaseBundlesPageSize: 10,
+  purchaseBundlesTotalPages: 0,
+  purchaseBundlesIsLoading: false,
+  purchaseBundlesError: null,
   
-  salesBundlesFilter: { ...initialSalesBundleFilter },
-  salesBundlesTempFilter: { ...initialSalesBundleFilter },
+  purchaseBundlesFilter: { ...initialPurchaseBundleFilter },
+  purchaseBundlesTempFilter: { ...initialPurchaseBundleFilter },
   
   
   // 새로 추가: 추가금 관련 초기 상태
@@ -283,7 +283,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   adjustmentsLoading: false,
   adjustmentsError: null,
 
-  setTabMode: (mode: Partial<ISalesMode>) => set((state) => ({
+  setTabMode: (mode: Partial<IPurchaseMode>) => set((state) => ({
     tabMode: { ...state.tabMode, ...mode },
   })),
 
@@ -558,7 +558,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   },
   
   // 선택한 정산 대기 항목으로 매출 인보이스 생성
-  createOrderSaleFromWaitingItems: async () => {
+  createOrderPurchaseFromWaitingItems: async () => {
     try {
       const { selectedWaitingItems } = get();
       
@@ -574,7 +574,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       
       // 각 항목에 대해 매출 인보이스 생성
       const promises = selectedItems.map(item => 
-        createOrderSale({
+        createOrderPurchase({
           orderId: item.orderId,
           companyId: item.companyId,
           totalAmount: item.chargeAmount,
@@ -670,8 +670,8 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
         selectedItems: []
       },
       // 편집 관련 상태 초기화
-      selectedSalesBundleId: null,
-      editingSalesBundle: null
+      selectedPurchaseBundleId: null,
+      editingPurchaseBundle: null
     });
   },
   
@@ -689,10 +689,10 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   },
 
   // 선택한 정산 대기 항목으로 매출 번들(정산 묶음) 생성
-  createSalesBundleFromWaitingItems: async (formData?: ISettlementFormData) => {
+  createPurchaseBundleFromWaitingItems: async (formData?: ISettlementFormData) => {
     try {
       const { selectedWaitingItems } = get();
-      console.log("createSalesBundleFromWaitingItems:", selectedWaitingItems, formData);
+      console.log("createPurchaseBundleFromWaitingItems:", selectedWaitingItems, formData);
       if (selectedWaitingItems.length === 0) return false;
       
       const selectedItems = selectedWaitingItems;
@@ -701,11 +701,11 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       const actualFormData = formData || get().settlementForm.formData;
       
       // 추가금 등은 추후 확장, 현재는 adjustments 없음
-      const bundleInput = mapSettlementFormToSalesBundleInput(actualFormData, selectedItems, []);
+      const bundleInput = mapSettlementFormToPurchaseBundleInput(actualFormData, selectedItems, []);
       
       console.log("bundleInput:", bundleInput);
       set({ isLoading: true, error: null });
-      await createSalesBundle(bundleInput);
+      await createPurchaseBundle(bundleInput);
       
       // 성공 시 폼 닫기 및 상태 초기화
       set({
@@ -728,114 +728,114 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
   },
 
   //
-  setSalesBundlesFilter: (filter: Partial<ISalesBundleFilter>) => set((state) => ({    
-      salesBundlesFilter: { ...state.salesBundlesFilter, ...filter },
-      salesBundlesTempFilter: { ...state.salesBundlesTempFilter, ...filter },
-      salesBundlesPage: 1
+  setPurchaseBundlesFilter: (filter: Partial<IPurchaseBundleFilter>) => set((state) => ({    
+      purchaseBundlesFilter: { ...state.purchaseBundlesFilter, ...filter },
+      purchaseBundlesTempFilter: { ...state.purchaseBundlesTempFilter, ...filter },
+      purchaseBundlesPage: 1
   })),
 
-  setSalesBundlesTempFilter: (filter: Partial<ISalesBundleFilter>) => set((state) => ({
-    salesBundlesTempFilter: { ...state.salesBundlesTempFilter, ...filter },
+  setPurchaseBundlesTempFilter: (filter: Partial<IPurchaseBundleFilter>) => set((state) => ({
+    purchaseBundlesTempFilter: { ...state.purchaseBundlesTempFilter, ...filter },
   })),
 
-  applySalesBundlesTempFilter: () => set((state) => ({
-    salesBundlesFilter: { ...state.salesBundlesTempFilter },
-    salesBundlesPage: 1
+  applyPurchaseBundlesTempFilter: () => set((state) => ({
+    purchaseBundlesFilter: { ...state.purchaseBundlesTempFilter },
+    purchaseBundlesPage: 1
   })),  
   
 
-  // sales bundles 관련 액션 추가
-  fetchSalesBundles: async () => {
+  // purchase bundles 관련 액션 추가
+  fetchPurchaseBundles: async () => {
     try {
-      set({ salesBundlesIsLoading: true, salesBundlesError: null });
+      set({ purchaseBundlesIsLoading: true, purchaseBundlesError: null });
       
-      const { salesBundlesPage, salesBundlesPageSize, salesBundlesFilter } = get();
+      const { purchaseBundlesPage, purchaseBundlesPageSize, purchaseBundlesFilter } = get();
       
-      const response = await getSalesBundles(
-        salesBundlesPage,
-        salesBundlesPageSize,
-        salesBundlesFilter
+      const response = await getPurchaseBundles(
+        purchaseBundlesPage,
+        purchaseBundlesPageSize,
+        purchaseBundlesFilter
       );
       
-      console.log('fetchSalesBundles:', response.data);
+      console.log('fetchPurchaseBundles:', response.data);
       // IIncome 형태로 변환
-      const salesBundlesAsIncomes = mapSalesBundlesToIncomes(response.data);
+      const purchaseBundlesAsIncomes = mapPurchaseBundlesToIncomes(response.data);
       
       set({ 
-        salesBundles: response.data,
-        salesBundlesAsIncomes,
-        salesBundlesTotal: response.total,
-        salesBundlesPage: response.page,
-        salesBundlesPageSize: response.pageSize,
-        salesBundlesTotalPages: response.totalPages,
-        salesBundlesIsLoading: false 
+        purchaseBundles: response.data,
+        purchaseBundlesAsIncomes,
+        purchaseBundlesTotal: response.total,
+        purchaseBundlesPage: response.page,
+        purchaseBundlesPageSize: response.pageSize,
+        purchaseBundlesTotalPages: response.totalPages,
+        purchaseBundlesIsLoading: false 
       });
 
-      console.log('fetchSalesBundles:', response.data);
+      console.log('fetchPurchaseBundles:', response.data);
       
       return response.data;
     } catch (error) {
       console.error('매출 번들 조회 중 오류 발생:', error);
       set({ 
-        salesBundlesError: error instanceof Error ? error.message : '매출 번들 조회에 실패했습니다.',
-        salesBundlesIsLoading: false 
+        purchaseBundlesError: error instanceof Error ? error.message : '매출 번들 조회에 실패했습니다.',
+        purchaseBundlesIsLoading: false 
       });
       return [];
     }
   },
   
   // 매출 번들 페이지 변경
-  updateSalesBundlesPage: (page: number) => {
-    set({ salesBundlesPage: page });
-    get().fetchSalesBundles();
+  updatePurchaseBundlesPage: (page: number) => {
+    set({ purchaseBundlesPage: page });
+    get().fetchPurchaseBundles();
   },
   
   // 매출 번들 필터 변경
-  updateSalesBundlesFilter: (filter: Partial<ISalesBundleFilter>) => {
+  updatePurchaseBundlesFilter: (filter: Partial<IPurchaseBundleFilter>) => {
     set({ 
-      salesBundlesFilter: { ...get().salesBundlesFilter, ...filter },
-      salesBundlesPage: 1 // 필터가 변경되면, 첫 페이지로 이동
+      purchaseBundlesFilter: { ...get().purchaseBundlesFilter, ...filter },
+      purchaseBundlesPage: 1 // 필터가 변경되면, 첫 페이지로 이동
     });
-    get().fetchSalesBundles();
+    get().fetchPurchaseBundles();
   },
   
   // 매출 번들 필터 초기화
-  resetSalesBundlesFilter: () => {
+  resetPurchaseBundlesFilter: () => {
     set({
-      salesBundlesFilter: { ...initialSalesBundleFilter },
-      salesBundlesTempFilter: { ...initialSalesBundleFilter },
-      salesBundlesPage: 1
+      purchaseBundlesFilter: { ...initialPurchaseBundleFilter },
+      purchaseBundlesTempFilter: { ...initialPurchaseBundleFilter },
+      purchaseBundlesPage: 1
     });
-    get().fetchSalesBundles();
+    get().fetchPurchaseBundles();
   },
-  resetSalesBundlesTempFilter: () => set((state) => ({    
-    salesBundlesTempFilter: { ...initialSalesBundleFilter },    
+  resetPurchaseBundlesTempFilter: () => set((state) => ({    
+    purchaseBundlesTempFilter: { ...initialPurchaseBundleFilter },    
   })),
   
   // 매출 번들 상태 초기화
-  resetSalesBundlesState: () => {
+  resetPurchaseBundlesState: () => {
     set({
-      salesBundles: [],
-      salesBundlesTotal: 0,
-      salesBundlesPage: 1,
-      salesBundlesPageSize: 10,
-      salesBundlesTotalPages: 0,
-      salesBundlesIsLoading: false,
-      salesBundlesError: null,
-      salesBundlesFilter: { ...initialSalesBundleFilter },
-      salesBundlesTempFilter: { ...initialSalesBundleFilter },
+      purchaseBundles: [],
+      purchaseBundlesTotal: 0,
+      purchaseBundlesPage: 1,
+      purchaseBundlesPageSize: 10,
+      purchaseBundlesTotalPages: 0,
+      purchaseBundlesIsLoading: false,
+      purchaseBundlesError: null,
+      purchaseBundlesFilter: { ...initialPurchaseBundleFilter },
+      purchaseBundlesTempFilter: { ...initialPurchaseBundleFilter },
     });
   },
   
 
-  // sales bundle 편집 관련 액션 추가
+  // purchase bundle 편집 관련 액션 추가
   openSettlementFormForEdit: async (bundleId: string) => {
     try {
-      set({ selectedSalesBundleId: bundleId });
-      const bundle = await getSalesBundleById(bundleId);
+      set({ selectedPurchaseBundleId: bundleId });
+      const bundle = await getPurchaseBundleById(bundleId);
       console.log("openSettlementFormForEdit:", bundle);
       set({ 
-        editingSalesBundle: bundle,
+        editingPurchaseBundle: bundle,
         settlementForm: {
           ...get().settlementForm,
           isOpen: true,
@@ -843,15 +843,15 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
         }
       });
     } catch (error) {
-      console.error('sales bundle 편집 중 오류 발생:', error);
+      console.error('purchase bundle 편집 중 오류 발생:', error);
     }
   },
 
-  updateSalesBundleData: async (id: string, formData: ISettlementFormData, reason?: string) => {
+  updatePurchaseBundleData: async (id: string, formData: ISettlementFormData, reason?: string) => {
     try {
       set({ isLoading: true, error: null });
 
-      // ISettlementFormData → sales bundle update input 변환
+      // ISettlementFormData → purchase bundle update input 변환
       const updateInput = {
         //companyName: formData.shipperName,
         //businessNumber: formData.businessNumber,
@@ -884,14 +884,14 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
         // 필요시 추가 필드 변환
       };
 
-      console.log('updateSalesBundleData-before:', updateInput);
-      await updateSalesBundle(id, updateInput, reason);
+      console.log('updatePurchaseBundleData-before:', updateInput);
+      await updatePurchaseBundle(id, updateInput, reason);
       set({ isLoading: false });
       // 성공 시 sales bundles 목록 새로고침
-      await get().fetchSalesBundles();
+      await get().fetchPurchaseBundles();
       return true;
     } catch (error) {
-      console.error('sales bundle 업데이트 중 오류 발생:', error);
+      console.error('purchase bundle 업데이트 중 오류 발생:', error);
       set({ 
         error: error instanceof Error ? error.message : 'sales bundle 업데이트에 실패했습니다.',
         isLoading: false 
@@ -900,39 +900,39 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
     }
   },
 
-  completeSalesBundleData: async (id: string, reason?: string) => {
+  completePurchaseBundleData: async (id: string, reason?: string) => {
     try {
       set({ isLoading: true, error: null });
 
-      // ISettlementFormData → sales bundle update input 변환
+      // ISettlementFormData → purchase bundle update input 변환
       const updateInput = {
         status: 'paid'
         // 필요시 추가 필드 변환
       };
       
-      await updateSalesBundle(id, updateInput, reason);
+      await updatePurchaseBundle(id, updateInput, reason);
       set({ isLoading: false });
       // 성공 시 sales bundles 목록 새로고침
-      await get().fetchSalesBundles();
+      await get().fetchPurchaseBundles();
       return true;
     } catch (error) {
-      console.error('sales bundle 업데이트 중 오류 발생:', error);
+      console.error('purchase bundle 업데이트 중 오류 발생:', error);
       set({ 
-        error: error instanceof Error ? error.message : 'sales bundle 업데이트에 실패했습니다.',
+        error: error instanceof Error ? error.message : 'purchase bundle 업데이트에 실패했습니다.',
         isLoading: false 
       });
       return false;
     }
   },
 
-  deleteSalesBundleData: async (id: string) => {
+  deletePurchaseBundleData: async (id: string) => {
     try {
       set({ isLoading: true, error: null });
-      await deleteSalesBundle(id);
+      await deletePurchaseBundle(id);
       set({ isLoading: false });
       
       // 성공 시 sales bundles 목록 새로고침
-      await get().fetchSalesBundles();
+      await get().fetchPurchaseBundles();
       
       return true;
     } catch (error) {
@@ -954,7 +954,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
     try {
       set({ adjustmentsLoading: true, adjustmentsError: null });
       
-      const freightList = await getSalesBundleFreightList(bundleId);
+      const freightList = await getPurchaseBundleFreightList(bundleId);
       
       set({ 
         bundleFreightList: freightList,
