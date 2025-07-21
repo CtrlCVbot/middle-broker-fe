@@ -6,23 +6,23 @@ import {
   CreateChargeLineInput,
   IAdditionalFeeInput,
   IApiResponse,
-  IOrderSale,
+  IOrderPurchase,
   ISettlementWaitingItem,
   ISettlementWaitingResponse,
   ISettlementSummary,
-  CreateSalesBundleInput,
-  ISalesBundle,
-  ISalesBundleListResponse,
-  ISalesBundleFilter,
-  ISalesBundleItem,
-  ISalesBundleAdjustment,
-  ISalesItemAdjustment,
-  ISalesBundleItemWithDetails,
+  CreatePurchaseBundleInput,
+  IPurchaseBundle,
+  IPurchaseBundleListResponse,
+  IPurchaseBundleFilter,
+  IPurchaseBundleItem,
+  IPurchaseBundleAdjustment,
+  IPurchaseItemAdjustment,
+  IPurchaseBundleItemWithDetails,
   ICreateBundleAdjustmentInput,
   IUpdateBundleAdjustmentInput,
   ICreateItemAdjustmentInput,
   IUpdateItemAdjustmentInput
-} from '@/types/broker-charge';
+} from '@/types/broker-charge-purchase';
 import { mapAdditionalFeeToChargeGroup, mapAdditionalFeeToChargeLine } from '@/utils/charge-mapper';
 
 import { IWaitingFilter } from '@/components/broker/sale/settlement-waiting-search';
@@ -196,7 +196,7 @@ export async function getOrderPurchases(params: {
   endDate?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
-}): Promise<IApiResponse<IOrderSale[]>> {
+}): Promise<IApiResponse<IOrderPurchase[]>> {
   try {
     const queryParams = new URLSearchParams();
     
@@ -301,17 +301,17 @@ export async function calculateSettlementSummary(
 }
 
 /**
- * 매출 인보이스 생성
+ * 매입  인보이스 생성
  */
-export async function createOrderSale(data: {
+export async function createOrderPurchase(data: {
   orderId: string;
   companyId: string;
   totalAmount: number;
   taxAmount?: number;
   memo?: string;
-}): Promise<IApiResponse<IOrderSale>> {
+}): Promise<IApiResponse<IOrderPurchase>> {
   try {
-    const response = await fetch('/api/charge/sales', {
+    const response = await fetch('/api/charge/purchase', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -325,22 +325,22 @@ export async function createOrderSale(data: {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || '매출 인보이스 생성에 실패했습니다.');
+      throw new Error(error.error || '매입   인보이스 생성에 실패했습니다.');
     }
 
     return await response.json();
   } catch (error) {
-    console.error('매출 인보이스 생성 중 오류 발생:', error);
+    console.error('매입 인보이스 생성 중 오류 발생:', error);
     throw error;
   }
 }
 
 /**
- * 매출 번들(정산 묶음) 생성
+ * 매입 번들(정산 묶음) 생성
  */
-export async function createSalesBundle(data: CreateSalesBundleInput): Promise<ISalesBundle> {
+export async function createPurchaseBundle(data: CreatePurchaseBundleInput): Promise<IPurchaseBundle> {
   try {
-    const response = await fetch('/api/charge/sales-bundles', {
+    const response = await fetch('/api/charge/purchase-bundles', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -360,13 +360,13 @@ export async function createSalesBundle(data: CreateSalesBundleInput): Promise<I
 }
 
 /**
- * 매출 번들(정산 묶음) 목록 조회
+ * 매입 번들(정산 묶음) 목록 조회
  */
-export async function getSalesBundles(
+export async function getPurchaseBundles(
   page: number = 1,
   pageSize: number = 10,
-  filter?: ISalesBundleFilter
-): Promise<ISalesBundleListResponse> {
+  filter?: IPurchaseBundleFilter
+): Promise<IPurchaseBundleListResponse> {
   try {
     const params = new URLSearchParams({
       page: page.toString(),
@@ -407,11 +407,11 @@ export async function getSalesBundles(
 } 
 
 /**
- * 매출 번들(정산 묶음) 상세 조회
- */
-export async function getSalesBundleItems(salesBundleId: string): Promise<ISalesBundleItem[]> {
+ * 매입 번들(정산 묶음) 상세 조회
+  */
+export async function getPurchaseBundleItems(purchaseBundleId: string): Promise<IPurchaseBundleItem[]> {
   try {
-    const response = await fetch(`/api/charge/sales-bundles/items?salesBundleId=${salesBundleId}`, {
+    const response = await fetch(`/api/charge/purchase-bundles/items?purchaseBundleId=${purchaseBundleId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -432,11 +432,11 @@ export async function getSalesBundleItems(salesBundleId: string): Promise<ISales
 }
 
 /**
- * 특정 매출 번들 상세 조회
+ * 특정 매입 번들 상세 조회
  */
-export async function getSalesBundleById(id: string): Promise<ISalesBundle> {
+export async function getPurchaseBundleById(id: string): Promise<IPurchaseBundle> {
   try {
-    const response = await fetch(`/api/charge/sales-bundles/${id}`, {
+    const response = await fetch(`/api/charge/purchase-bundles/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -457,15 +457,15 @@ export async function getSalesBundleById(id: string): Promise<ISalesBundle> {
 }
 
 /**
- * 매출 번들 필드 업데이트
+ * 매입 번들 필드 업데이트
  */
-export async function updateSalesBundle(
+export async function updatePurchaseBundle(
   id: string, 
   fields: Record<string, any>, 
   reason?: string
-): Promise<ISalesBundle> {
+): Promise<IPurchaseBundle> {
   try {
-    const response = await fetch(`/api/charge/sales-bundles/${id}`, {
+    const response = await fetch(`/api/charge/purchase-bundles/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -490,11 +490,11 @@ export async function updateSalesBundle(
 
 
 /**
- * 매출 번들 삭제
+ * 매입 번들 삭제
  */
-export async function deleteSalesBundle(id: string): Promise<void> {
+export async function deletePurchaseBundle(id: string): Promise<void> {
   try {
-    const response = await fetch(`/api/charge/sales-bundles/${id}`, {
+    const response = await fetch(`/api/charge/purchase-bundles/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -514,9 +514,9 @@ export async function deleteSalesBundle(id: string): Promise<void> {
 /**
  * 통합 추가금 목록 조회
  */
-export async function getBundleAdjustments(bundleId: string): Promise<ISalesBundleAdjustment[]> {
+export async function getBundleAdjustments(bundleId: string): Promise<IPurchaseBundleAdjustment[]> {
   try {
-    const response = await fetch(`/api/charge/sales-bundles/${bundleId}/adjustments`, {
+    const response = await fetch(`/api/charge/purchase-bundles/${bundleId}/adjustments`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -541,9 +541,9 @@ export async function getBundleAdjustments(bundleId: string): Promise<ISalesBund
 export async function createBundleAdjustment(
   bundleId: string, 
   data: ICreateBundleAdjustmentInput
-): Promise<ISalesBundleAdjustment> {
+): Promise<IPurchaseBundleAdjustment> {
   try {
-    const response = await fetch(`/api/charge/sales-bundles/${bundleId}/adjustments`, {
+    const response = await fetch(`/api/charge/purchase-bundles/${bundleId}/adjustments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -571,9 +571,9 @@ export async function updateBundleAdjustment(
   bundleId: string,
   adjustmentId: string,
   data: IUpdateBundleAdjustmentInput
-): Promise<ISalesBundleAdjustment> {
+): Promise<IPurchaseBundleAdjustment> {
   try {
-    const response = await fetch(`/api/charge/sales-bundles/${bundleId}/adjustments`, {
+    const response = await fetch(`/api/charge/purchase-bundles/${bundleId}/adjustments`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -599,7 +599,7 @@ export async function updateBundleAdjustment(
  */
 export async function deleteBundleAdjustment(bundleId: string, adjustmentId: string): Promise<void> {
   try {
-    const response = await fetch(`/api/charge/sales-bundles/${bundleId}/adjustments?adjustmentId=${adjustmentId}`, {
+    const response = await fetch(`/api/charge/purchase-bundles/${bundleId}/adjustments?adjustmentId=${adjustmentId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -621,9 +621,9 @@ export async function deleteBundleAdjustment(bundleId: string, adjustmentId: str
 /**
  * 개별 화물 추가금 목록 조회
  */
-export async function getItemAdjustments(itemId: string): Promise<ISalesItemAdjustment[]> {
+export async function getItemAdjustments(itemId: string): Promise<IPurchaseItemAdjustment[]> {
   try {
-    const response = await fetch(`/api/charge/sales-bundles/items/${itemId}/adjustments`, {
+    const response = await fetch(`/api/charge/purchase-bundles/items/${itemId}/adjustments`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -648,9 +648,9 @@ export async function getItemAdjustments(itemId: string): Promise<ISalesItemAdju
 export async function createItemAdjustment(
   itemId: string, 
   data: ICreateItemAdjustmentInput
-): Promise<ISalesItemAdjustment> {
+): Promise<IPurchaseItemAdjustment> {
   try {
-    const response = await fetch(`/api/charge/sales-bundles/items/${itemId}/adjustments`, {
+    const response = await fetch(`/api/charge/purchase-bundles/items/${itemId}/adjustments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -678,9 +678,9 @@ export async function updateItemAdjustment(
   itemId: string,
   adjustmentId: string,
   data: IUpdateItemAdjustmentInput
-): Promise<ISalesItemAdjustment> {
+): Promise<IPurchaseItemAdjustment> {
   try {
-    const response = await fetch(`/api/charge/sales-bundles/items/${itemId}/adjustments`, {
+    const response = await fetch(`/api/charge/purchase-bundles/items/${itemId}/adjustments`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -706,7 +706,7 @@ export async function updateItemAdjustment(
  */
 export async function deleteItemAdjustment(itemId: string, adjustmentId: string): Promise<void> {
   try {
-    const response = await fetch(`/api/charge/sales-bundles/items/${itemId}/adjustments?adjustmentId=${adjustmentId}`, {
+    const response = await fetch(`/api/charge/purchase-bundles/items/${itemId}/adjustments?adjustmentId=${adjustmentId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -726,9 +726,9 @@ export async function deleteItemAdjustment(itemId: string, adjustmentId: string)
 /**
  * 정산 그룹의 화물 목록 조회 (상세 정보 포함)
  */
-export async function getSalesBundleFreightList(bundleId: string): Promise<ISalesBundleItemWithDetails[]> {
+export async function getPurchaseBundleFreightList(bundleId: string): Promise<IPurchaseBundleItemWithDetails[]> {
   try {
-    const response = await fetch(`/api/charge/sales-bundles/${bundleId}/order-list`, {
+    const response = await fetch(`/api/charge/purchase-bundles/${bundleId}/order-list`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
