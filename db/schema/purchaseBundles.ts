@@ -13,7 +13,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { bankCodeEnum, companies } from "./companies";
 import { orderPurchases } from "./orderPurchases";
-import { ICompanySnapshot, ICompanySnapshotForSales, IUserSnapshot } from "@/types/order";
+import { ICompanySnapshot, ICompanySnapshotForSales, IDriverSnapshotForPurchase, IUserSnapshot } from "@/types/order";
 import { users } from "./users";
 import { bundleAdjTypeEnum, paymentMethodEnum,  bundlePeriodTypeEnum, salesBundleStatusEnum} from "./salesBundles";
 import { drivers } from "./drivers";
@@ -31,12 +31,12 @@ export const purchaseBundles = pgTable('purchase_bundles', {
   id: uuid('id').defaultRandom().primaryKey(),
   
   // 대상 정보 (운송사 또는 기사)
-  companyId: uuid('company_id').references(() => drivers.id), // 기사=> 개인사업자! ID (있는 경우)
+  companyId: uuid('company_id').notNull().references(() => companies.id), // 기사=> 개인사업자! ID (있는 경우)
   companyName: varchar('company_name', { length: 50 }),
   companyBusinessNumber: varchar('company_business_number', { length: 20 }),
 
   companySnapshot: jsonb('company_snapshot').$type<ICompanySnapshot>(),
-  companiesSnapshot: jsonb('companies_snapshot').$type<ICompanySnapshotForSales[]>(), //선택된 화물들의 회사 목록 정보
+  companiesSnapshot: jsonb('companies_snapshot').$type<IDriverSnapshotForPurchase[]>(), //선택된 화물들의 회사 목록 정보
   
   //운송사 정산 담당자 또는 기사 정보
   managerId: uuid('manager_id'),

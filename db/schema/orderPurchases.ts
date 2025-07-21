@@ -9,7 +9,7 @@ import {
   numeric
 } from "drizzle-orm/pg-core";
 import { orders } from "./orders";
-//import { companies } from "./companies";
+import { companies } from "./companies";
 import { drivers } from "./drivers";
 
 // 지불 상태 Enum 정의
@@ -27,7 +27,7 @@ export const orderPurchases = pgTable('order_purchases', {
   
   // 관련 주문 및 운송사/기사 정보
   orderId: uuid('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
-  companyId: uuid('company_id').references(() => drivers.id), // 기사=> 개인사업자!
+  companyId: uuid('company_id').notNull().references(() => companies.id), // 기사=> 개인사업자!
   //driverId: uuid('driver_id'), // 기사 ID (있는 경우)
   
   // 지불 정보
