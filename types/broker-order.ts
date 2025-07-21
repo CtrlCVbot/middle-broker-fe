@@ -77,6 +77,7 @@ export interface IBrokerOrder {
   shipperEmail?: string;
   manager?: string;
   driver: {
+    id?: string;
     name: string;
     contact: string;
   };

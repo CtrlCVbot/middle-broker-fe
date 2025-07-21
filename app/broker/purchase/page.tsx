@@ -168,6 +168,7 @@ export default function IncomePage() {
   const handleCreateOrderPurchase = () => {
     openSettlementForm();
   };
+  console.log("selectedWaitingItems:", selectedWaitingItems);
 
   return (
     <>
@@ -331,7 +332,7 @@ export default function IncomePage() {
                               departureCity: "-", 
                               arrivalCity: "-",
                               vehicle: { type: "-", weight: "-" },
-                              driver: { name: "-" },
+                              driver: { id: item.assignedDriverId || "-", name: item.assignedDriverSnapshot?.name || "-" },
                               paymentMethod: "bank_transfer",
                               manager: "-",
                               chargeAmount: item.chargeAmount

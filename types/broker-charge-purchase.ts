@@ -164,6 +164,7 @@ export interface ISettlementWaitingItem {
   deliveryAddressSnapshot: IAddressSnapshot | null;
   requestedVehicleWeight: number;
   requestedVehicleType: string;
+  assignedDriverId?: string;
   assignedDriverSnapshot: any;
   chargeAmount: number; // 청구액 (운송비)
   dispatchAmount: number; // 배차비

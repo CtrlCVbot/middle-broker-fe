@@ -42,6 +42,7 @@ export const orderDispatches = pgTable('order_dispatches', {
   assignedDriverId: uuid('assigned_driver_id').references(() => drivers.id), // 할당된 기사 ID (FK, Nullable)
   assignedDriverSnapshot: json('assigned_driver_snapshot').$type<IDriverSnapshot>(), // 할당된 기사 스냅샷
   assignedDriverPhone: varchar('assigned_driver_phone', { length: 100 }), // 할당된 기사 전화번호
+  assignedDriverName: varchar('assigned_driver_name', { length: 100 }), // 할당된 기사 이름
   
 
   // 할당된 차량 정보 (배차가 된 경우)  

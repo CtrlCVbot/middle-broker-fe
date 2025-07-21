@@ -56,6 +56,7 @@ export async function GET(request: NextRequest) {
         //ilike(companies.ceoName, `%${searchTerm}%`),
         ilike(orders.pickupName, `%${searchTerm}%`),
         ilike(orders.deliveryName, `%${searchTerm}%`),
+        ilike(orderDispatches.assignedVehicleNumber, `%${searchTerm}%`),
       ));
     }
     
@@ -102,6 +103,7 @@ export async function GET(request: NextRequest) {
         flowStatus: orderDispatches.brokerFlowStatus,
         amount: orderPurchases.subtotalAmount,
         amountWithTax: orderPurchases.totalAmount,
+        assignedDriverId: orderDispatches.assignedDriverId,
       })
       .from(orders)
       .leftJoin(companies, eq(orders.companyId, companies.id))

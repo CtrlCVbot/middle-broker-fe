@@ -24,6 +24,17 @@ interface IShipperGroup {
   totalProfit: number;
 }
 
+interface IDriverGroup {  
+  driverId: string;
+  driverName: string;
+  orders: IBrokerOrder[];
+  count: number;
+  totalFreight: number;
+  totalTax: number;
+  totalDispatch: number;
+  totalProfit: number;
+}
+
 interface WaitingSummaryProps {
   selectedOrders: IBrokerOrder[];
   onCreateIncome: () => void;
@@ -40,16 +51,16 @@ const WaitingSummary: React.FC<WaitingSummaryProps> = ({
 
   // 화주별 그룹화된 데이터 계산
   const shipperGroups = useMemo(() => {
-    const groups: Record<string, IShipperGroup> = {};
+    const groups: Record<string, IDriverGroup> = {};
 
     selectedOrders.forEach((order) => {
-      const companyId = order.company || "미지정";
-      const companyName = order.company || "미지정";
+      const driverId = order.driver.id || "미지정";
+      const driverName = order.driver.name || "미지정";
 
-      if (!groups[companyId]) {
-        groups[companyId] = {
-          companyId,
-          companyName,
+      if (!groups[driverId]) {
+        groups[driverId] = {
+          driverId,
+          driverName,
           orders: [],
           count: 0,
           totalFreight: 0,
@@ -64,13 +75,13 @@ const WaitingSummary: React.FC<WaitingSummaryProps> = ({
       const tax = Number(order.amount * 0.1) || 0;
       const profit = freight - dispatch - tax;
 
-      groups[companyId].orders.push(order);
-      groups[companyId].count += 1;
-      groups[companyId].totalFreight += freight;
-      console.log("groups[companyId].totalFreight", groups[companyId].totalFreight);
-      groups[companyId].totalTax += tax;
-      groups[companyId].totalDispatch += dispatch;
-      groups[companyId].totalProfit += profit;
+      groups[driverId].orders.push(order);
+      groups[driverId].count += 1;
+      groups[driverId].totalFreight += freight;
+      console.log("groups[driverId].totalFreight", groups[driverId].totalFreight);
+      groups[driverId].totalTax += tax;
+      groups[driverId].totalDispatch += dispatch;
+      groups[driverId].totalProfit += profit;
     });
 
     return Object.values(groups);
@@ -115,18 +126,18 @@ const WaitingSummary: React.FC<WaitingSummaryProps> = ({
             <div className="flex gap-2 min-w-max pb-0.5">
               {shipperGroups.map((group) => (
                 <div 
-                  key={group.companyId} 
+                  key={group.driverId} 
                   className="border-dashed border-2 border-gray-400 rounded-md flex-shrink-0 w-[170px] sm:w-[190px] md:w-[200px] bg-card p-2.5 hover:shadow transition-shadow duration-150"
                 >
                   <div className="flex items-center gap-1 mb-1.5">
                     <Building className="h-3 w-3 text-gray-500" />
-                    <span className="font-medium text-xs sm:text-sm truncate">{group.companyName}</span>
+                    <span className="font-medium text-xs sm:text-sm truncate">{group.driverName}</span>
                     <span className="text-xs text-muted-foreground whitespace-nowrap">
                       ({group.count})
                     </span>
                   </div>
                   <div className="grid grid-cols-2 gap-y-1 gap-x-2 text-xs">
-                    <div className="text-muted-foreground font-medium">주선</div>
+                    <div className="text-muted-foreground font-medium">배차</div>
                     <div className="text-right font-medium">
                       {formatCurrency(group.totalFreight)}원
                     </div>
@@ -134,7 +145,7 @@ const WaitingSummary: React.FC<WaitingSummaryProps> = ({
                     <div className="text-right text-muted-foreground">
                       {formatCurrency(group.totalTax)}원
                     </div>
-                    <div className="text-muted-foreground font-semibold">청구</div>
+                    <div className="text-muted-foreground font-semibold">지급</div>
                     <div className="text-right font-semibold text-blue-800">
                       {formatCurrency(group.totalFreight + group.totalTax)}원
                     </div>
@@ -152,7 +163,7 @@ const WaitingSummary: React.FC<WaitingSummaryProps> = ({
               </div>
               <div className="grid grid-cols-3 gap-x-1 sm:gap-x-2 md:gap-x-3 gap-y-1 text-xs sm:text-sm">
                 <div>
-                  <div className="text-xs text-muted-foreground font-medium">주선</div>
+                  <div className="text-xs text-muted-foreground font-medium">배차</div>
                   <div className="font-medium">{formatCurrency(totals.totalFreight)}원</div>
                 </div>
                 <div>
@@ -160,7 +171,7 @@ const WaitingSummary: React.FC<WaitingSummaryProps> = ({
                   <div className="font-normal text-muted-foreground">{formatCurrency(totals.totalTax)}원</div>
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground font-semibold">청구</div>
+                  <div className="text-xs text-muted-foreground font-semibold">지급</div>
                   <div className="font-semibold text-blue-700">{formatCurrency(totals.totalFreight + totals.totalTax)}원</div>
                 </div>
               </div>
