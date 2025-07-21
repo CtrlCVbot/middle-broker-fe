@@ -1,28 +1,17 @@
 "use client";
 
+//react
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { 
-  AlertTriangle, 
-  Truck, 
-  MapPin, 
-  Star, 
-  Clock,
-  Pin,
-  Building,
-  ChevronDown,
-  ChevronUp,
-  Navigation,
-  Circle,
-  AlertCircle
-} from "lucide-react";
-import { BrokerOrderStatusType } from "@/types/broker-order";
-import { formatCurrency } from "@/lib/utils";
-import { VehicleCard } from "./broker-dispatch-info-vehicle-card";
-import { VehicleCard as VehicleCardVer01 } from "./broker-dispatch-info-vehicle-card-ver01";
+
+//ui
 import { toast } from "@/components/ui/use-toast";
+
+//types
+import { BrokerOrderStatusType } from "@/types/broker-order";
+
+//component
+import { VehicleCard } from "./broker-dispatch-info-vehicle-card-ver01";
+
 
 interface VehicleInfo {
   id?: string;
@@ -170,7 +159,7 @@ export function BrokerOrderDriverInfoCard({
       {/* 차주 및 차량 정보 */}          
       <div className="space-y-2 rounded-lg border border-gray-100 shadow-sm">
             {/* 차주 정보 */}
-            <VehicleCardVer01
+            <VehicleCard
               dispatchId={dispatchId}
               vehicleInfo={{
                 id: dispatchVehicleInfo.id, // id 필드 추가

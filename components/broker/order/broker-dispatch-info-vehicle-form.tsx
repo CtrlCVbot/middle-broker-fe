@@ -66,6 +66,7 @@ import { updateDispatchFields } from "@/services/broker-dispatch-service";
 
 //types
 import { BROKER_VEHICLE_TYPES, BROKER_WEIGHT_TYPES } from "@/types/broker-order";
+
 // 중요도 옵션
 const SEVERITY_OPTIONS = [
   { value: 'low', label: '낮음', color: 'bg-blue-50 text-blue-700' },

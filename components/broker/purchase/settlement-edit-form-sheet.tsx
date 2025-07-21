@@ -1,7 +1,7 @@
 "use client";
 
 //react
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 //ui
@@ -221,7 +221,7 @@ export function SettlementEditFormSheet() {
   const [driverSearchTerm, setDriverSearchTerm] = useState('');
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
   //const driversQuery = useBrokerDriverStore.getState().searchDrivers(driverSearchTerm);
-  const { searchDrivers, searchResults, isSearching, searchError, clearSearchResults, setFilter: setDriverFilter } = useBrokerDriverStore();
+  const { searchDrivers, searchResults, isSearching, searchError, clearSearchResults  } = useBrokerDriverStore();
     
   
   // 담당자 관리 store 사용
@@ -886,9 +886,38 @@ export function SettlementEditFormSheet() {
     setFilter({ keyword: companySearchTerm });
   };
 
+
+  // 디바운스 적용된 검색어 변경 핸들러
+  const debouncedSearch = useCallback(
+    (value: string) => {
+      const timeoutId = setTimeout(() => {
+        if (value.trim()) {
+          searchDrivers(value);
+        }
+      }, 300);
+      
+      return () => clearTimeout(timeoutId);
+    },
+    [searchDrivers]
+  );
+  
+  // 검색어 변경 시 디바운스 적용 검색 실행
+  useEffect(() => {
+    const cleanup = debouncedSearch(driverSearchTerm);
+    return cleanup;
+  }, [driverSearchTerm, debouncedSearch]);
+  
+  // 팝오버가 닫힐 때 검색 결과 초기화
+  useEffect(() => {
+    if (!isOpen) {
+      clearSearchResults();
+      setDriverSearchTerm('');
+    }
+  }, [isOpen, clearSearchResults]);
+
   // 차량 검색 함수
-  const handleDriverSearch = () => {
-    setDriverFilter({ searchTerm: driverSearchTerm });
+  const handleDriverSearch = (value: string) => {
+    setDriverSearchTerm(value); //setDriverFilter({ searchTerm: driverSearchTerm });
     console.log("handleDriverSearch", driverSearchTerm);
     console.log("searchResults", searchResults);
   };

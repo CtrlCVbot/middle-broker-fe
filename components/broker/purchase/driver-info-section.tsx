@@ -27,7 +27,7 @@ export interface IDriverInfoSectionProps {
   onSelectDriver: (driver: any) => void;
   selectedDriverId: string | null;
   onReset: () => void;
-  onDriverSearch: () => void;
+  onDriverSearch: (value: string) => void;
   isEditMode?: boolean;
   editingBundle?: any;
   displayDriverGroups?: Record<string, any>;
@@ -169,14 +169,15 @@ export function DriverInfoSection({
                             className="h-8"
                             type="search"
                             value={driverSearchTerm}
-                            onChange={e => setDriverSearchTerm(e.target.value)}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter') {
-                                onDriverSearch();
-                              }
-                            }}
+                            //onChange={e => setDriverSearchTerm(e.target.value)}
+                            onChange={e => onDriverSearch(e.target.value)}
+                            // onKeyDown={e => {
+                            //   if (e.key === 'Enter') {
+                            //     onDriverSearch(driverSearchTerm);
+                            //   }
+                            // }}
                           />
-                          <Button size="sm" className="h-8 px-2" onClick={onDriverSearch}>검색</Button>
+                          <Button size="sm" className="h-8 px-2" onClick={() => onDriverSearch(driverSearchTerm)}>검색</Button>
                         </div>
                       </div>
                       <ScrollArea className="h-60">
