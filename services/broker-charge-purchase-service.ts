@@ -241,7 +241,7 @@ export async function getSettlementWaitingItems(params: {
     const queryParams = new URLSearchParams();
     if (params.page) queryParams.append('page', params.page.toString());
     if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString());
-    //if (params.companyId) queryParams.append('companyId', params.companyId);
+    
     if (params.filter?.startDate) queryParams.append('startDate', params.filter.startDate);
     if (params.filter?.endDate) queryParams.append('endDate', params.filter.endDate);
     if (params.filter?.searchTerm) queryParams.append('searchTerm', params.filter.searchTerm);
@@ -250,7 +250,7 @@ export async function getSettlementWaitingItems(params: {
     
     // 임시 구현: 완료된 주문을 조회한 후 정산 대기 항목으로 변환
     // 실제 API가 구현되면 아래 코드는 수정해야 함
-    const response = await fetch(`/api/charge/sales/waiting?${queryParams.toString()}`, {
+    const response = await fetch(`/api/charge/purchase/waiting?${queryParams.toString()}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'

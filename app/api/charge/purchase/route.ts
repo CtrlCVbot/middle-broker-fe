@@ -8,6 +8,7 @@ import { orderPurchases, paymentStatusEnum } from '@/db/schema/orderPurchases';
 import { invoiceStatusEnum } from '@/db/schema/orderSales';
 
 
+
 //utils
 import { z } from 'zod';
 
@@ -108,7 +109,7 @@ const PurchaseChargeItemSchema = z.object({
 });
 
 // 매입 인보이스 생성 스키마
-const CreateOrderSaleSchema = z.object({
+const CreateOrderPurchaseSchema = z.object({
   orderId: z.string().uuid(),
   companyId: z.string().uuid(),
   invoiceNumber: z.string().optional(),
@@ -132,7 +133,7 @@ export async function POST(request: NextRequest) {
     console.log("body:", body);
 
     // 요청 데이터 검증
-    const validationResult = CreateOrderSaleSchema.safeParse(body);
+    const validationResult = CreateOrderPurchaseSchema.safeParse(body);
     if (!validationResult.success) {
       return NextResponse.json(
         { error: '잘못된 요청 데이터입니다.', details: validationResult.error.format() },
@@ -142,14 +143,14 @@ export async function POST(request: NextRequest) {
 
     console.log("validationResult:", validationResult);
     const data = validationResult.data;
-    const { ...saleData } = data;
-    console.log("saleData:", saleData);
+    const { ...purchaseData } = data;
+    console.log("purchaseData:", purchaseData);
     
     // 트랜잭션으로 인보이스 및 항목 생성
     const result = await db.transaction(async (tx) => {
       // 매입 인보이스 생성
       const newSale = await tx.insert(orderPurchases).values({
-        ...saleData,
+        ...purchaseData,
         createdBy: userId,
         updatedBy: userId
       }as any).returning();

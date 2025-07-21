@@ -149,11 +149,13 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     error: settlementError,
     isSaleClosed,
     createSale,
+    createPurchase,
     checkOrderClosed
   } = useBrokerSettlementStore();
     
   // AlertDialog 상태 추가
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [isConfirmPurchaseDialogOpen, setIsConfirmPurchaseDialogOpen] = useState(false);
 
   // 주문 데이터 저장
   const orderData = orderDetail;
@@ -458,6 +460,11 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
   const handleOpenConfirmDialog = () => {
     setIsConfirmDialogOpen(true);
   };
+
+  // 배차 정산 생성 확인 다이얼로그 열기
+  const handleOpenConfirmPurchaseDialog = () => {
+    setIsConfirmPurchaseDialogOpen(true);
+  };
   
   // 매출 정산 생성 실행
   const handleConfirmCreateSales = async () => {
@@ -497,6 +504,47 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     } finally {
       // 다이얼로그 닫기
       setIsConfirmDialogOpen(false);
+    }
+  };
+
+  // 배차 정산 마감 실행
+  const handleConfirmCreatePurchase = async () => {
+    if (!orderData || !selectedOrderId || !orderData.dispatchId) {
+      toast({
+        title: "오류",
+        description: "주문 정보가 없습니다.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      const result = await createPurchase(selectedOrderId, orderData.dispatchId);
+      
+      if (result) {
+        toast({
+          title: "배차 정산 생성 완료",
+          description: "배차 정산이 성공적으로 생성되었습니다.",
+          variant: "default"
+        });
+        
+        // 상태 변경 플래그 설정 (목록 새로고침을 위해)
+        setHasStatusChanged(true);
+        
+        // 주문 정보 다시 조회
+        fetchOrderDetail(selectedOrderId);
+      }
+    } catch (error) {
+      console.error("배차 정산 생성 오류:", error);
+      
+      toast({
+        title: "배차 정산 생성 실패",
+        description: error instanceof Error ? error.message : "배차 정산 생성 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    } finally {
+      // 다이얼로그 닫기
+      setIsConfirmPurchaseDialogOpen(false);
     }
   };
 
@@ -559,6 +607,16 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                     운송 마감됨
                   </Badge>
                 )}
+
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  className={cn("bg-purple-700 hover:bg-purple-500", "cursor-pointer")}
+                  onClick={handleOpenConfirmPurchaseDialog}
+                  disabled={isSettlementLoading}
+                >
+                  {isSettlementLoading ? "처리 중..." : "배차 마감하기"}
+                </Button>
               </div>              
               
             </SheetHeader>
@@ -854,6 +912,27 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
               className="bg-purple-700 hover:bg-purple-600"
             >
               매출 정산 생성
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* AlertDialog 추가 */}
+      <AlertDialog open={isConfirmPurchaseDialogOpen} onOpenChange={setIsConfirmPurchaseDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>배차 정산 마감</AlertDialogTitle>
+            <AlertDialogDescription>
+              배차 정산을 마감하시겠습니까? 이 작업은 되돌릴 수 없으며, 이후 배차 운임 정보를 수정할 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmCreatePurchase}
+              className="bg-purple-700 hover:bg-purple-600"
+            >
+              배차 정산 마감
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

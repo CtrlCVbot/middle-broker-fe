@@ -391,9 +391,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       const response = await getSettlementWaitingItems({
         page: waitingItemsPage,
         pageSize: waitingItemsPageSize,
-        //companyId: waitingItemsFilter.company?.,
-        //startDate: waitingItemsFilter.startDate,
-        //endDate: waitingItemsFilter.endDate
+       
         filter: waitingItemsFilter
       });
       
