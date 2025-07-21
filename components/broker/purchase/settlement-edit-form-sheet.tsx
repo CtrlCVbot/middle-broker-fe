@@ -60,6 +60,7 @@ import { ISettlementFormData, ISettlementWaitingItem } from "@/types/broker-char
 
 //store
 import { useCompanies, useCompanyStore } from '@/store/company-store';
+import { useBrokerDriverStore } from '@/store/broker-driver-store';
 import { useBrokerCompanyManagerStore } from '@/store/broker-company-manager-store';
 import { useBrokerChargeStore } from '@/store/broker-charge-purchase-store';
 
@@ -69,6 +70,8 @@ import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { DriverInfoSection } from "./driver-info-section";
+//import { useDrivers } from "@/hooks/use-drivers";
 
 const PaymentMethod = [
   { key: 'bank_transfer', name: '계좌이체' },
@@ -80,17 +83,24 @@ const PaymentMethod = [
 const formSchema = z.object({
   shipperName: z.string({
     required_error: "화주명은 필수 입력 항목입니다.",
-  }),
+  }).optional(),
+  shipperCeo: z.string().optional(),
   businessNumber: z.string({
     required_error: "사업자번호는 필수 입력 항목입니다.",
+  }).optional(),
+  driverName: z.string({
+    required_error: "차량명은 필수 입력 항목입니다.",
   }),
-  shipperCeo: z.string().optional(),
+  driverBusinessNumber: z.string({
+    required_error: "차량 사업자번호는 필수 입력 항목입니다.",
+  }),
+  driverCeo: z.string().optional(),
   manager: z.string({
     required_error: "담당자명은 필수 입력 항목입니다.",
-  }),
+  }).optional(),
   managerContact: z.string({
     required_error: "담당자 연락처는 필수 입력 항목입니다.",
-  }),
+  }).optional(),
   managerEmail: z.string().email({
     message: "유효한 이메일 주소를 입력해 주세요.",
   }).optional(),
@@ -117,6 +127,8 @@ const formSchema = z.object({
   invoiceIssuedAt: z.date().optional(),
   depositReceivedAt: z.date().optional(),
 });
+
+
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -148,6 +160,10 @@ export function SettlementEditFormSheet() {
     defaultValues: {
       shipperName: "",
       businessNumber: "",
+      shipperCeo: "",
+      driverName: "",
+      driverBusinessNumber: "",
+      driverCeo: "",
       manager: "",
       managerContact: "",
       managerEmail: "",
@@ -201,6 +217,11 @@ export function SettlementEditFormSheet() {
   const [selectedManagerId, setSelectedManagerId] = useState<string | null>(null);
   const { setFilter } = useCompanyStore();
   const companiesQuery = useCompanies();
+
+  const [driverSearchTerm, setDriverSearchTerm] = useState('');
+  const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
+  //const driversQuery = useBrokerDriverStore.getState().searchDrivers(driverSearchTerm);
+  const { searchDrivers, searchResults, isSearching, searchError, clearSearchResults, setFilter: setDriverFilter } = useBrokerDriverStore();
     
   
   // 담당자 관리 store 사용
@@ -279,9 +300,9 @@ export function SettlementEditFormSheet() {
       
       //화주 데이터 로드
       setSelectedCompanyId(editingPurchaseBundle.companyId || '');
-      form.setValue('shipperName', editingPurchaseBundle.companySnapshot?.name || '');
+      form.setValue('driverName', editingPurchaseBundle.companySnapshot?.name || '');
       form.setValue('businessNumber', editingPurchaseBundle.companySnapshot?.businessNumber || '');
-      form.setValue('shipperCeo', editingPurchaseBundle.companySnapshot?.ceoName || '');
+      form.setValue('driverCeo', editingPurchaseBundle.companySnapshot?.ceoName || '');
       console.log('selectedCompanyId:', selectedCompanyId);
       // 담당자 데이터 로드
       form.setValue('manager', editingPurchaseBundle.managerSnapshot?.name || '');
@@ -491,10 +512,10 @@ export function SettlementEditFormSheet() {
         // 편집 모드: 기존 sales bundle 수정
         const updateFields: ISettlementFormData = {
           shipperId: selectedCompanyId || '',
-          shipperName: formValues.shipperName,
+          shipperName: formValues.shipperName || '',
           shipperCeo: formValues.shipperCeo || '',
-          businessNumber: formValues.businessNumber,
-          billingCompany: formValues.shipperName, // shipperName을 billingCompany로 사용
+          businessNumber: formValues.businessNumber || '',
+          billingCompany: formValues.shipperName || '', // shipperName을 billingCompany로 사용
           managerId: selectedManagerId || '',
           manager: formValues.manager,
           managerContact: formValues.managerContact,
@@ -534,10 +555,10 @@ export function SettlementEditFormSheet() {
         const formData: ISettlementFormData = {
           shipperId: selectedCompanyId || '',
           managerId: selectedManagerId || '',
-          shipperName: formValues.shipperName,
+          shipperName: formValues.shipperName || '',
           shipperCeo: formValues.shipperCeo || '', // FormValues에는 없지만 ISettlementFormData에는 있음
-          businessNumber: formValues.businessNumber,
-          billingCompany: formValues.shipperName, // shipperName을 billingCompany로 사용
+          businessNumber: formValues.businessNumber || '',
+          billingCompany: formValues.shipperName || '', // shipperName을 billingCompany로 사용
           manager: formValues.manager,
           managerContact: formValues.managerContact,
           managerEmail: formValues.managerEmail || '',
@@ -687,6 +708,73 @@ export function SettlementEditFormSheet() {
   const displayShipperGroups = isEditMode ? editModeShipperGroups : shipperGroups;
   const hasShipperGroups = Object.keys(displayShipperGroups).length > 0;
 
+  const driverGroups = useMemo(() => {
+    if (!orders || orders.length === 0) return {};
+    
+    const groups: Record<string, { 
+      orders: ISettlementWaitingItem[], 
+      total: number, 
+      driver: { id: string, name: string, businessNumber: string} 
+    }> = {};
+
+    console.log("화주별 그룹화 orders", orders);
+    
+    orders.forEach(order => {
+      const driver = order.assignedDriverId || '미지정';
+      
+        
+      if (!groups[driver]) {
+        groups[driver] = { 
+          orders: [], 
+          total: 0, 
+          driver: { 
+            id: order.assignedDriverId || '', 
+            name: order.assignedDriverSnapshot?.name || '', 
+            businessNumber: order.assignedDriverSnapshot?.businessNumber || '', 
+          } 
+        };
+      }
+      groups[driver].orders.push(order);
+      groups[driver].total += order.amount || 0;
+    });
+    console.log("차량별 그룹화 groups", groups);
+    return groups;
+    
+  }, [orders]);
+
+  const editModeDriverGroups = useMemo(() => {
+    if (!isEditMode || !bundleFreightList || bundleFreightList.length === 0) return {};
+    
+    const groups: Record<string, { orders: any[], total: number, 
+      driver: { id: string, name: string, businessNumber: string} }> = {};
+
+    console.log("수정 모드 차량별 그룹화 bundleFreightList", bundleFreightList);
+    
+    bundleFreightList.forEach(item => {
+      const driver = item.orderDetails.assignedDriverId || '미지정';
+        
+      if (!groups[driver]) {
+        groups[driver] = { 
+          orders: [], 
+          total: 0, 
+          driver: { 
+            id: item.orderDetails.assignedDriverId || '', 
+            name: item.orderDetails.assignedDriverSnapshot?.name || '', 
+            businessNumber: item.orderDetails.assignedDriverSnapshot?.businessNumber || '', 
+          } 
+        };
+      }
+      groups[driver].orders.push(item);
+      groups[driver].total += item.orderDetails.amount || 0;
+    });
+    console.log("수정 모드 화주별 그룹화 groups", groups);
+    return groups;
+      
+  }, [isEditMode, bundleFreightList, editingPurchaseBundle]);
+
+  const displayDriverGroups = isEditMode ? editModeDriverGroups : driverGroups;
+  const hasDriverGroups = Object.keys(displayDriverGroups).length > 0;
+
   // 선택된 화물의 운임 및 금액 계산
   const hasTax = useWatch({ control: form.control, name: 'hasTax' });
   const calculatedTotals = useMemo(() => {    
@@ -798,6 +886,13 @@ export function SettlementEditFormSheet() {
     setFilter({ keyword: companySearchTerm });
   };
 
+  // 차량 검색 함수
+  const handleDriverSearch = () => {
+    setDriverFilter({ searchTerm: driverSearchTerm });
+    console.log("handleDriverSearch", driverSearchTerm);
+    console.log("searchResults", searchResults);
+  };
+
   
 
   // 회사 선택 시 담당자 목록 로드
@@ -878,7 +973,7 @@ export function SettlementEditFormSheet() {
                 {/* 기본 정보 탭 */}
                 <TabsContent value="settlement">
              
-                {/* 회사 정보와 담당자 정보 섹션을 그리드로 감싸기 */}
+                  {/* 회사 정보와 담당자 정보 섹션을 그리드로 감싸기 */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-2">
 
                     {/* 회사 정보 섹션 */}
@@ -960,6 +1055,57 @@ export function SettlementEditFormSheet() {
                       isLoadingManagers={isLoadingManagers}
                       companySelected={!!selectedCompanyId}
                     />                
+
+                  </div>
+
+                  {/* 지급 차량 정보 섹션을 그리드로 감싸기 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-2">
+
+                    {/* 지급 차량 정보 섹션 */}
+                    <DriverInfoSection
+                      form={form}
+                      driverSearchTerm={driverSearchTerm}
+                      setDriverSearchTerm={setDriverSearchTerm}
+                      drivers={searchResults ?? []}
+                      onSelectDriver={(driver) => {
+                        console.log("onSelectDriver", driver);
+                        form.setValue("driverName", driver.name);
+                        form.setValue("businessNumber", driver.businessNumber);
+                        //form.setValue("driverCeo", driver.ceoName || driver.ceo || driver.companyCeo);
+                        //form.setValue("accountHolder", driver.bankAccountHolder || driver.accountHolder || '');
+                        //form.setValue("accountNumber", driver.bankAccountNumber || driver.accountNumber || '');
+                        //form.setValue("bankName", driver.bankCode);
+                        console.log("driver.id", driver.id);
+
+                        setSelectedDriverId(driver.id);
+                        // // 회사 선택 시 담당자 목록 로드
+                        // if (selectedCompanyId) {
+                        //   loadManagers(selectedCompanyId);
+                        // }
+                      }}
+                      selectedDriverId={selectedDriverId}
+                      onReset={() => {
+                        form.reset({
+                          ...form.getValues(),
+                          driverName: "",
+                          driverBusinessNumber: "",
+                          driverCeo: "",
+                          bankName: "",
+                          accountHolder: "",
+                          accountNumber: "",
+                        });
+                        setSelectedDriverId(null);
+                      }}
+                      onDriverSearch={handleDriverSearch}
+                      isEditMode={isEditMode}
+                      editingBundle={editingPurchaseBundle}
+                      displayDriverGroups={displayDriverGroups}
+                      hasDriverGroups={hasDriverGroups}
+                      loading={loading}
+                      //isLoadingDrivers={useBrokerDriverStore.isSearching}
+                    />
+
+                           
 
                   </div>
 

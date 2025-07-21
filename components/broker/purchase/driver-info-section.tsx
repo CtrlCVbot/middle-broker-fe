@@ -89,7 +89,7 @@ export function DriverInfoSection({
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2 text-primary">
           <Building2 className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-bold">회사 정보</h3>
+          <h3 className="text-lg font-bold">지급 차량 정보</h3>
         </div>
         <div className="flex gap-2">
           <Button
@@ -117,24 +117,24 @@ export function DriverInfoSection({
                 if (isEditMode && displayDriverGroups[driver]) {
                   // 편집 모드: editingSalesBundle의 회사 정보 사용
                   console.log("displayDriverGroups", displayDriverGroups);
-                  console.log("편집 모드", displayDriverGroups[driver].company);
+                  console.log("편집 모드", displayDriverGroups[driver]);
                   onSelectDriver({
-                    id: displayDriverGroups[driver].company.id || '',
-                    name: displayDriverGroups[driver].company.name || '',
-                    businessNumber: displayDriverGroups[driver].company.businessNumber || '',
-                    ceoName: displayDriverGroups[driver].company.ceo || '',
-                    bankCode: displayDriverGroups[driver].company.bankCode || '',
-                    bankAccountHolder: displayDriverGroups[driver].company.accountHolder || '',
-                    bankAccount: displayDriverGroups[driver].company.accountNumber || ''
+                    id: displayDriverGroups[driver].driver.id || '',
+                    name: displayDriverGroups[driver].driver.name || '',
+                    businessNumber: displayDriverGroups[driver].driver.businessNumber || '',
+                    //ceoName: displayDriverGroups[driver].driver.ceo || '',
+                    //bankCode: displayDriverGroups[driver].company.bankCode || '',
+                    //bankAccountHolder: displayDriverGroups[driver].company.accountHolder || '',
+                    //bankAccount: displayDriverGroups[driver].company.accountNumber || ''
                   });
                 } else {
                   // 생성 모드: 기존 로직 유지
-                  console.log("생성", displayDriverGroups[driver].company);
-                  onSelectDriver(displayDriverGroups[driver].company);
+                  console.log("정산 생성 - 차량 정보 폼 설정", displayDriverGroups[driver].driver);
+                  onSelectDriver(displayDriverGroups[driver].driver);
                 }
               }}
             >                          
-              {driver} ({displayDriverGroups[driver].orders.length}건)
+              {displayDriverGroups[driver].driver.name} ({displayDriverGroups[driver].orders.length}건)
             </Badge>
           ))}
         </div>
@@ -144,14 +144,14 @@ export function DriverInfoSection({
         </p>
       )}    
 
-      {form.watch("shipperName") === "기본 화주" || form.watch("shipperName") === "" ? (
+      {form.watch("driverName") === "" ? (
         <div className="flex flex-col items-center justify-center py-4 border-5 border-dashed border-gray-300 rounded-md bg-gray-100 mb-2">
           <Building2 className="h-8 w-8 text-muted-foreground mb-2" />
           <p className="text-sm text-muted-foreground mb-4">지급 차량 정보를 검색해주세요</p>
           <div className="flex gap-2">
             <FormField
               control={form.control}
-              name="shipperName"
+              name="driverName"
               render={({ field }) => (
                 <FormItem>
                   <Popover>
@@ -165,7 +165,7 @@ export function DriverInfoSection({
                       <div className="border-b p-2">
                         <div className="flex items-center gap-2">
                           <Input
-                            placeholder="회사명 검색"
+                            placeholder="차량 검색"
                             className="h-8"
                             type="search"
                             value={driverSearchTerm}
@@ -221,13 +221,13 @@ export function DriverInfoSection({
           <div className="border p-4 rounded-md bg-background bg-muted/30 flex flex-col gap-4">
             {/* 차량 정보 영역: 한 줄 정보 표시 */}
             <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-foreground/90 min-h-[32px]">
-              {form.watch("shipperName") || form.watch("businessNumber") || form.watch("shipperCeo") ? (
+              {form.watch("driverName") || form.watch("driverBusinessNumber") || form.watch("shipperCeo") ? (
                 <>
                   <Building2 className="inline-block mr-1 h-4 w-4 text-muted-foreground" />
-                  <span>{form.watch("shipperName") || <span className="text-muted-foreground">차량명 없음</span>}</span>
+                  <span>{form.watch("driverName") || <span className="text-muted-foreground">차량명 없음</span>}</span>
                   <span className="mx-2 text-muted-foreground">|</span>
                   <Hash className="inline-block mr-1 h-4 w-4 text-muted-foreground" />
-                  <span>{form.watch("businessNumber") || <span className="text-muted-foreground">사업자번호 없음</span>}</span>
+                  <span>{form.watch("driverBusinessNumber") || <span className="text-muted-foreground">사업자번호 없음</span>}</span>
                   {/* <span className="mx-2 text-muted-foreground">|</span>
                   <User className="inline-block mr-1 h-4 w-4 text-muted-foreground" />
                   <span>{form.watch("shipperCeo") || <span className="text-muted-foreground">대표자 없음</span>}</span> */}

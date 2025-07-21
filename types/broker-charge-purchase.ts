@@ -239,6 +239,9 @@ export interface ISettlementFormData {
   invoiceIssuedAt?: string | null;
   depositReceivedAt?: string | null;
   status?: PurchaseBundleStatus;
+  driverName?: string;
+  driverBusinessNumber?: string;
+  driverCeo?: string;
 }
 
 // 정산 폼 시트 상태 타입
@@ -338,6 +341,8 @@ export interface IPurchaseBundleItemWithDetails extends IPurchaseBundleItem {
     pickupDate: string;
     deliveryDate: string;
     amount: number;
+    assignedDriverId?: string;
+    assignedDriverSnapshot?: any;
   };
   adjustments: IPurchaseItemAdjustment[];
 }

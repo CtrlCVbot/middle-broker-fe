@@ -1,10 +1,13 @@
+import React from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { DriverStatus, IBrokerDriver, IBrokerDriverFilter, TonnageType, VehicleType, IDriverNote } from '@/types/broker-driver';
 import { DRIVER_STATUS, DISPATCH_COUNT_OPTIONS, TONNAGE_TYPES, VEHICLE_TYPES, getBrokerDriverById, updateBrokerDriver } from '@/utils/mockdata/mock-broker-drivers';
 import { registerDriver, updateDriver as updateDriverApi, deleteDriver, getDriverNotes, addDriverNote, updateDriverNote, deleteDriverNote, searchDrivers } from '@/services/driver-service';
+import * as driverService from '@/services/driver-service';
 import { toast } from 'sonner';
 import { mapApiResponseToNotesList } from '@/utils/driver-mapper';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 // 필터 요약 문구 생성 함수
 export const getFilterSummaryText = (filter: IBrokerDriverFilter): string => {
@@ -582,3 +585,4 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
     }
   )
 ); 
+
