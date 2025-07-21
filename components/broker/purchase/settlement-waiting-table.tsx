@@ -1,5 +1,6 @@
 "use client";
 
+//react
 import React from "react";
 import {
   Table,
@@ -10,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   ChevronLeft,
   ChevronRight,
@@ -18,14 +20,18 @@ import {
   SquareCheckBig,
   Ban,
 } from "lucide-react";
+
+//types
 import { IBrokerOrder } from "@/types/broker-order";
+
+//utils
 import { formatCurrency } from "@/lib/utils";
-import { Checkbox } from "@/components/ui/checkbox";
-import { BrokerStatusBadge } from "@/components/broker/order/broker-status-badge";
-import { Badge } from "@/components/ui/badge";
+
+//component
 import { getTime } from "@/components/order/order-table-ver01";
 import { getSchedule } from "@/components/order/order-table-ver01";
-import { IAddressSnapshot } from "@/types/order";
+
+
 
 interface IWaitingTableProps {
   orders: IBrokerOrder[];

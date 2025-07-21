@@ -1,6 +1,9 @@
 "use client";
 
+//react
 import React, { useState } from "react";
+
+//ui
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,10 +23,16 @@ import { Search, Filter, X, CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
+
+//utils
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+
+//types
 import { BrokerOrderStatusType } from "@/types/broker-order";
-import { useBrokerChargeStore } from "@/store/broker-charge-store";
+
+//store
+import { useBrokerChargeStore } from "@/store/broker-charge-purchase-store";
 
 
 // 필터 옵션 타입 정의

@@ -60,7 +60,7 @@ export default function IncomePage() {
     createOrderPurchaseFromWaitingItems,
     openSettlementForm,
 
-    // sales bundles 관련 추가
+    // purchase bundles 관련 추가
     purchaseBundlesAsIncomes,
     purchaseBundlesTotal,
     purchaseBundlesPage,

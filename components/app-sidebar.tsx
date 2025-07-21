@@ -201,6 +201,22 @@ export const data = {
         }
       ],
     },
+
+    {
+      title: "매입 정산-ver01",
+      url: "/broker/purchase",
+      icon: DollarSign,
+      items: [
+        {
+          title: "정산 목록",
+          url: "/broker/purchase",
+        },
+        {
+          title: "정산 대기 화물",
+          url: "/broker/purchase/waiting",
+        }
+      ],
+    },
     // {
     //   title: "매입 정산",
     //   url: "/broker/expenditure",

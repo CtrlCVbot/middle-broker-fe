@@ -386,7 +386,7 @@ export async function getPurchaseBundles(
       if (filter.search) params.append('search', filter.search);
     }
 
-    const response = await fetch(`/api/charge/sales-bundles?${params.toString()}`, {
+    const response = await fetch(`/api/charge/purchase-bundles?${params.toString()}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
