@@ -866,7 +866,8 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
             initialData={{
               driver: {
                 name: orderData?.vehicle?.driver?.name || "",
-                contact: orderData?.vehicle?.driver?.contact || ""
+                contact: orderData?.vehicle?.driver?.contact || "",
+                businessNumber: orderData?.vehicle?.driver?.businessNumber || ""
               },
               vehicle: {
                 id: orderData?.vehicle?.id || "",
@@ -904,9 +905,9 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
       <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>매출 정산 생성 확인</AlertDialogTitle>
+            <AlertDialogTitle>청구 정산 마감</AlertDialogTitle>
             <AlertDialogDescription>
-              매출 정산을 생성하시겠습니까? 이 작업은 되돌릴 수 없으며, 이후 주문 정보와 운임 정보를 수정할 수 없습니다.
+              청구 정산을 마감하시겠습니까? 이 작업은 되돌릴 수 없으며, 이후 주문 정보와 운임 정보를 수정할 수 없습니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

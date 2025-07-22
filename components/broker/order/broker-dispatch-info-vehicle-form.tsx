@@ -108,6 +108,7 @@ interface BrokerOrderDriverInfoEditFormProps {
     driver: {
       name: string;
       contact: string;
+      businessNumber: string;
     };
     vehicle: {
       id: string;
@@ -309,6 +310,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
       });
   
       console.log("selectedDriver : ", selectedDriver);
+      //return;
       
       // 처리에 사용할 최종 차주 정보
       let finalDriver = selectedDriver;
@@ -326,6 +328,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
       const assignedDriverSnapshot = {
         name: data.driver.name,
         contact: data.driver.contact,
+        businessNumber: finalDriver.businessNumber,
         vehicle: {
           type: data.vehicle.type,
           weight: data.vehicle.weight,
@@ -347,7 +350,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
         assignedVehicleNumber: data.vehicle.licensePlate,
         assignedVehicleType: data.vehicle.type,
         assignedVehicleWeight: data.vehicle.weight,
-        assignedVehicleConnection: data.callCenter || "기타"
+        assignedVehicleConnection: data.callCenter || "기타",
       };
       
       console.log("업데이트할 필드:", fields);

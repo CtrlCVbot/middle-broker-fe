@@ -53,6 +53,7 @@ export interface IBrokerOrderDetail {
     driver?: {
       name: string;
       contact: string;
+      businessNumber: string;
     };
   };
   logs: IBrokerOrderLog[];
@@ -171,7 +172,8 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
       licensePlate: "12가 3456",
       driver: {
         name: "홍길동",
-        contact: "010-5678-9012"
+        contact: "010-5678-9012",
+        businessNumber: "123-45-67890"
       }
     },
     logs: [
@@ -242,7 +244,8 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
       licensePlate: "34나 5678",
       driver: {
         name: "이운송",
-        contact: "010-6789-0123"
+        contact: "010-6789-0123",
+        businessNumber: "123-45-67890"
       }
     },
     logs: [
