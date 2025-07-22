@@ -277,10 +277,24 @@ export interface ICompanySnapshotForSales extends ICompanySnapshot {
   ceoName: string;
 }
 
-export interface IDriverSnapshotForPurchase extends IDriverSnapshot {
+export interface ICompanySnapshotForPurchase extends ICompanySnapshot {
   id: string;
   businessNumber: string;
   ceoName: string;
+}
+
+export interface IDriverSnapshotForPurchase extends IDriverSnapshot {
+  id: string;
+  name: string;
+  contact: string;
+  businessNumber: string;  
+  vehicle: {
+    type: string;
+    weight: string;
+    licensePlate: string;
+  };
+
+
 }
 
 // 사용자 스냅샷 인터페이스

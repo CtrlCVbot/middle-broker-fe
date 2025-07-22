@@ -131,11 +131,12 @@ export function FreightListTable({
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[40px] text-xs">번호</TableHead>
+                <TableHead className="text-xs">차주</TableHead>
                 <TableHead className="text-xs">업체</TableHead>
                 <TableHead className="text-xs">일정</TableHead>
                 <TableHead className="text-xs">출발지</TableHead>
                 <TableHead className="text-xs">도착지</TableHead>
-                <TableHead className="text-right text-xs">청구</TableHead>
+                <TableHead className="text-right text-xs">지급</TableHead>
                 {/* <TableHead className="text-right text-xs">세금</TableHead> */}
                 {mode === 'reconciliation' && !completed && (
                   <TableHead className="text-center text-xs">개별 추가금</TableHead>
@@ -161,6 +162,7 @@ export function FreightListTable({
                     displayItem = {
                       id: waitingItem.id,
                       companyName: waitingItem.companyName,
+                      driverName: waitingItem.assignedDriverSnapshot?.name,
                       pickupName: waitingItem.pickupName,
                       deliveryName: waitingItem.deliveryName,
                       pickupDate: waitingItem.pickupDate,
@@ -174,6 +176,7 @@ export function FreightListTable({
                     displayItem = {
                       id: freightItem.id,
                       companyName: freightItem.orderDetails.companyName,
+                      driverName: freightItem.orderDetails.assignedDriverSnapshot?.name,
                       pickupName: freightItem.orderDetails.pickupName,
                       deliveryName: freightItem.orderDetails.deliveryName,
                       pickupDate: freightItem.orderDetails.pickupDate,
@@ -189,6 +192,7 @@ export function FreightListTable({
                   return (
                     <TableRow key={displayItem.id}>
                       <TableCell className="text-xs">{index + 1}</TableCell>
+                      <TableCell className="text-xs">{displayItem.driverName}</TableCell>
                       <TableCell className="text-xs">{displayItem.companyName}</TableCell>
                       <TableCell className="text-xs">
                         {getSchedule(

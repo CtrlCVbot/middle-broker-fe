@@ -30,17 +30,23 @@ export const purchaseBundleStatusEnum = pgEnum('purchase_bundle_status', [
 export const purchaseBundles = pgTable('purchase_bundles', {
   id: uuid('id').defaultRandom().primaryKey(),
   
-  // 대상 정보 (운송사 또는 기사)
-  companyId: uuid('company_id').notNull().references(() => companies.id), // 기사=> 개인사업자! ID (있는 경우)
+  // 대상 정보 (운송사)
+  companyId: uuid('company_id').references(() => companies.id), 
   companyName: varchar('company_name', { length: 50 }),
   companyBusinessNumber: varchar('company_business_number', { length: 20 }),
 
   companySnapshot: jsonb('company_snapshot').$type<ICompanySnapshot>(),
   companiesSnapshot: jsonb('companies_snapshot').$type<IDriverSnapshotForPurchase[]>(), //선택된 화물들의 회사 목록 정보
   
-  //운송사 정산 담당자 또는 기사 정보
+  //운송사 정산 담당자\
   managerId: uuid('manager_id'),
   managerSnapshot: jsonb('manager_snapshot').$type<IUserSnapshot>(),
+
+  //기사 정보
+  driverId: uuid('driver_id').references(() => drivers.id),
+  driverName: varchar('driver_name', { length: 50 }),
+  driverBusinessNumber: varchar('driver_business_number', { length: 20 }),
+  driverSnapshot: jsonb('driver_snapshot').$type<IDriverSnapshotForPurchase>(),
 
   //화물 정보
   orderCount: integer('order_count').notNull().default(0),

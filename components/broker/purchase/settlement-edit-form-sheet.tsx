@@ -1005,8 +1005,8 @@ export function SettlementEditFormSheet() {
                   {/* 회사 정보와 담당자 정보 섹션을 그리드로 감싸기 */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-2">
 
-                    {/* 회사 정보 섹션 */}
-                    <CompanyInfoSection
+                    {/* 회사 정보 섹션 - 추후 운송사 기능 - 삭제 금지*/}
+                    {/* <CompanyInfoSection
                       form={form}
                       companySearchTerm={companySearchTerm}
                       setCompanySearchTerm={setCompanySearchTerm}
@@ -1051,10 +1051,10 @@ export function SettlementEditFormSheet() {
                       hasShipperGroups={hasShipperGroups}
                       loading={loading}
                       isLoadingCompanies={companiesQuery.isLoading}
-                    />
+                    /> */}
 
-                    {/* 담당자 정보 섹션 */}
-                    <ManagerInfoSection
+                    {/* 담당자 정보 섹션 - 추후 운송사 기능 - 삭제 금지*/}
+                    {/* <ManagerInfoSection
                       form={form}
                       managerSearchTerm={managerSearchTerm}
                       setManagerSearchTerm={setManagerSearchTerm}
@@ -1083,7 +1083,7 @@ export function SettlementEditFormSheet() {
                       loading={loading}
                       isLoadingManagers={isLoadingManagers}
                       companySelected={!!selectedCompanyId}
-                    />                
+                    />                 */}
 
                   </div>
 

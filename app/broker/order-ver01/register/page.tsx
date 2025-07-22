@@ -10,7 +10,8 @@ import {
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
 
-import { OrderRegisterForm } from "@/components/broker/order/register-form";
+//import { OrderRegisterForm } from "@/components/broker/order/register-form";
+import { OrderRegisterForm } from "@/components/order/register-form";
 import { OrderRegisterSummary } from "@/components/order/register-summary";
 
 import { useToast } from "@/components/ui/use-toast";
