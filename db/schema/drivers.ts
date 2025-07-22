@@ -10,7 +10,7 @@ import {
   decimal,
   foreignKey
 } from 'drizzle-orm/pg-core';
-import { companies } from './companies';
+import { bankCodeEnum, companies } from './companies';
 import { users } from './users';
 import { IAddressSnapshot, IUserSnapshot } from '@/types/order';
 import { vehicleWeightEnum, vehicleTypeEnum } from './orders';
@@ -37,6 +37,11 @@ export const drivers = pgTable('drivers', {
   companyType: drivercompanyTypeEnum('company_type').notNull().default('개인'),
   companyId: uuid('company_id').references(() => companies.id),
   businessNumber: varchar('business_number', { length: 20 }).notNull(),  
+
+  // 계좌 정보
+  bankCode: bankCodeEnum('bank_code'),//은행코드    
+  bankAccountNumber: varchar('bank_account_number', { length: 30 }),//계좌번호
+  bankAccountHolder: varchar('bank_account_holder', { length: 50 }),//예금주
 
   manufactureYear: varchar('manufacture_year', { length: 10 }),
   isActive: boolean('is_active').default(true),

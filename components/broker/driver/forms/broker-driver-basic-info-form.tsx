@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { DriverStatus } from "@/types/broker-driver"
+import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 
 // 차주 기본 정보 스키마
 const basicInfoSchema = z.object({
@@ -142,6 +143,13 @@ export function BrokerDriverBasicInfoForm({
           </FormItem>
         )}
       />
+
+      {/* 은행 정보 카드 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>은행 정보</CardTitle>
+        </CardHeader>
+      </Card>
       
       <FormField
         control={form.control}

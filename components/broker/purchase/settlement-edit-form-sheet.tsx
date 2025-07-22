@@ -1099,7 +1099,7 @@ export function SettlementEditFormSheet() {
                       onSelectDriver={(driver) => {
                         console.log("onSelectDriver", driver);
                         form.setValue("driverName", driver.name);
-                        form.setValue("businessNumber", driver.businessNumber);
+                        form.setValue("driverBusinessNumber", driver.businessNumber);
                         //form.setValue("driverCeo", driver.ceoName || driver.ceo || driver.companyCeo);
                         //form.setValue("accountHolder", driver.bankAccountHolder || driver.accountHolder || '');
                         //form.setValue("accountNumber", driver.bankAccountNumber || driver.accountNumber || '');

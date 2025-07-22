@@ -30,7 +30,11 @@ import {
   DriverStatus,
   PermissionType 
 } from "@/types/broker-driver";
+
+//store
 import { useBrokerDriverStore } from "@/store/broker-driver-store";
+
+//service
 import { registerDriver } from "@/services/driver-service";
 
 // 차주 기본 정보 스키마
