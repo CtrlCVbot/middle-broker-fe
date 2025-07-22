@@ -537,7 +537,8 @@ export function mapApiResponseToBrokerOrderDetail(
       licensePlate: dispatch?.assignedVehicleNumber || '',
       driver: dispatch ? {
         name: dispatch.assignedDriverSnapshot?.name || '',
-        contact: dispatch.assignedDriverPhone || ''
+        contact: dispatch.assignedDriverPhone || '',
+        businessNumber: dispatch.assignedDriverSnapshot?.businessNumber || ''
       } : undefined
     },
     

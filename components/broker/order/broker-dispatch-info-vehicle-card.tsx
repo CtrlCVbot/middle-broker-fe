@@ -202,7 +202,8 @@ export function VehicleCard({
             initialData={{
               driver: {
                 name: driverInfo.name || "",
-                contact: driverInfo.contact || ""
+                contact: driverInfo.contact || "",
+                businessNumber:  ""
               },
               vehicle: {
                 id: vehicleInfo.id || "",

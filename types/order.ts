@@ -304,6 +304,7 @@ export interface IUserSnapshot {
   mobile?: string;
   department?: string;
   position?: string;
+  businessNumber?: string;
 }
 //
 export interface IDriverSnapshot {
