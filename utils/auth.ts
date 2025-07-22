@@ -120,6 +120,8 @@ export const loginWithEmail = async (
 
     const data = await response.json();
 
+    console.log("loginWithEmail data", data);
+
     // 성공적으로 로그인한 경우
     if (response.ok && data.success) {
       // auth-store에 사용자 정보 저장

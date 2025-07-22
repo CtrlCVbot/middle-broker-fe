@@ -94,6 +94,7 @@ export async function POST(req: NextRequest) {
       createdAt: loginUser.created_at,
       updatedAt: loginUser.updated_at,
       companyType: loginUser.company?.type || '',
+      companyName: loginUser.company?.name || '',
     };
 
     // 토큰 ID 생성
