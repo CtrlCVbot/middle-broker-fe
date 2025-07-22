@@ -165,6 +165,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
         id: initialData.vehicle.id, 
         name: initialData.driver.name,
         contact: initialData.driver.contact,
+        businessNumber: initialData.driver.businessNumber,
         vehicle: {
           type: initialData.vehicle.type,
           weight: initialData.vehicle.weight,
@@ -310,10 +311,11 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
       });
   
       console.log("selectedDriver : ", selectedDriver);
-      //return;
+      
       
       // 처리에 사용할 최종 차주 정보
       let finalDriver = selectedDriver;
+      
       
       // 선택된 차주가 없으면 폼 데이터로 생성
       if (!finalDriver) {
@@ -333,6 +335,11 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
           type: data.vehicle.type,
           weight: data.vehicle.weight,
           licensePlate: data.vehicle.licensePlate
+        },
+        bank: {
+          bankCode: finalDriver.bankCode,
+          bankAccountNumber: finalDriver.bankAccountNumber,
+          bankAccountHolder: finalDriver.bankAccountHolder
         }
       };
       
@@ -448,7 +455,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
                               value={driver.name}
                               onSelect={() => selectDriver(driver)}
                             >
-                              {driver.name} ({driver.contact})
+                              {driver.name} ({driver.vehicle.licensePlate})/{driver.vehicle.weight}/{driver.vehicle.type}
                             </CommandItem>
                           ))}
                         </CommandList>

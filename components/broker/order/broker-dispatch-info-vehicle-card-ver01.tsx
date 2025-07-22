@@ -27,6 +27,7 @@ interface IVehicleCardProps {
   driverInfo: {
     name: string;
     contact?: string;
+    businessNumber?: string;
     role?: string;
     avatar?: string;
   };
@@ -216,7 +217,8 @@ export function VehicleCard({
             initialData={{
               driver: {
                 name: driverInfo.name || "",
-                contact: driverInfo.contact || ""
+                contact: driverInfo.contact || "",
+                businessNumber: driverInfo.businessNumber || ""
               },
               vehicle: {
                 id: vehicleInfo.id || "",
