@@ -79,7 +79,7 @@ export function FreightListTable({
   } = useBrokerChargeStore();
 
   
-
+  console.log("bundleFreightList /", bundleFreightList);
   // 표시할 데이터 결정
   const displayData = mode === 'waiting' ? orders : bundleFreightList;
   const itemCount = displayData.length;
@@ -155,6 +155,8 @@ export function FreightListTable({
                   // 정산 대기 모드와 정산 대사 모드의 데이터 구조가 다름
                   let displayItem;
                   let itemAdjustmentList: any[] = [];
+
+                  console.log("item /" +index, item);
                   
                   if (mode === 'waiting') {
                     // ISettlementWaitingItem 구조

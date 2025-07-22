@@ -662,80 +662,81 @@ export function SettlementEditFormSheet() {
     }
   };
 
-  // 화주별 그룹화
-  const shipperGroups = useMemo(() => {
-    if (!orders || orders.length === 0) return {};
+  //운송사 기능 추가 이후 사용 예정
+  // // 화주별 그룹화
+  // const shipperGroups = useMemo(() => {
+  //   if (!orders || orders.length === 0) return {};
     
-    const groups: Record<string, { 
-      orders: ISettlementWaitingItem[], 
-      total: number, 
-      company: { id: string, name: string, businessNumber: string, ceo: string, bankCode: string, accountHolder: string, accountNumber: string } 
-    }> = {};
+  //   const groups: Record<string, { 
+  //     orders: ISettlementWaitingItem[], 
+  //     total: number, 
+  //     company: { id: string, name: string, businessNumber: string, ceo: string, bankCode: string, accountHolder: string, accountNumber: string } 
+  //   }> = {};
 
-    console.log("화주별 그룹화 orders", orders);
+  //   console.log("화주별 그룹화 orders", orders);
     
-    orders.forEach(order => {
-      const shipper = order.companyName || '미지정';
+  //   orders.forEach(order => {
+  //     const shipper = order.companyName || '미지정';
       
         
-      if (!groups[shipper]) {
-        groups[shipper] = { 
-          orders: [], 
-          total: 0, 
-          company: { 
-            id: order.companyId || '', 
-            name: order.companyName || '', 
-            businessNumber: order.companyBusinessNumber || '', 
-            ceo: order.companyCeo || '', 
-            bankCode: order.companyBankCode || '', 
-            accountHolder: order.companyBankAccountHolder || '', 
-            accountNumber: order.companyBankAccount || '' 
-          } 
-        };
-      }
-      groups[shipper].orders.push(order);
-      groups[shipper].total += order.amount || 0;
-    });
-    console.log("화주별 그룹화 groups", groups);
-    return groups;
-  }, [orders]);
+  //     if (!groups[shipper]) {
+  //       groups[shipper] = { 
+  //         orders: [], 
+  //         total: 0, 
+  //         company: { 
+  //           id: order.companyId || '', 
+  //           name: order.companyName || '', 
+  //           businessNumber: order.companyBusinessNumber || '', 
+  //           ceo: order.companyCeo || '', 
+  //           bankCode: order.companyBankCode || '', 
+  //           accountHolder: order.companyBankAccountHolder || '', 
+  //           accountNumber: order.companyBankAccount || '' 
+  //         } 
+  //       };
+  //     }
+  //     groups[shipper].orders.push(order);
+  //     groups[shipper].total += order.amount || 0;
+  //   });
+  //   console.log("화주별 그룹화 groups", groups);
+  //   return groups;
+  // }, [orders]);
 
-  // 수정 모드용 화주별 그룹화 (bundleFreightList 기반)
-  const editModeShipperGroups = useMemo(() => {
-    if (!isEditMode || !bundleFreightList || bundleFreightList.length === 0) return {};
+  // // 수정 모드용 화주별 그룹화 (bundleFreightList 기반)
+  // const editModeShipperGroups = useMemo(() => {
+  //   if (!isEditMode || !bundleFreightList || bundleFreightList.length === 0) return {};
     
-    const groups: Record<string, { orders: any[], total: number, 
-      company: { id: string, name: string, businessNumber: string, ceo: string } }> = {};
+  //   const groups: Record<string, { orders: any[], total: number, 
+  //     company: { id: string, name: string, businessNumber: string, ceo: string } }> = {};
 
-    console.log("수정 모드 화주별 그룹화 bundleFreightList", bundleFreightList);
+  //   console.log("수정 모드 화주별 그룹화 bundleFreightList", bundleFreightList);
     
-    bundleFreightList.forEach(item => {
-      const shipper = item.orderDetails.companyName || '미지정';
+  //   bundleFreightList.forEach(item => {
+  //     const shipper = item.orderDetails.companyName || '미지정';
         
-      if (!groups[shipper]) {
-        groups[shipper] = { 
-          orders: [], 
-          total: 0, 
-          company: { 
-            id: item.orderDetails.companyId || '', 
-            name: item.orderDetails.companyName || '', 
-            businessNumber: editingPurchaseBundle?.companySnapshot?.businessNumber || '', 
-            ceo: editingPurchaseBundle?.companySnapshot?.ceoName || ''
-          } 
-        };
-      }
-      groups[shipper].orders.push(item);
-      groups[shipper].total += item.orderDetails.amount || 0;
-    });
-    console.log("수정 모드 화주별 그룹화 groups", groups);
-    return groups;
-  }, [isEditMode, bundleFreightList, editingPurchaseBundle]);
+  //     if (!groups[shipper]) {
+  //       groups[shipper] = { 
+  //         orders: [], 
+  //         total: 0, 
+  //         company: { 
+  //           id: item.orderDetails.companyId || '', 
+  //           name: item.orderDetails.companyName || '', 
+  //           businessNumber: editingPurchaseBundle?.companySnapshot?.businessNumber || '', 
+  //           ceo: editingPurchaseBundle?.companySnapshot?.ceoName || ''
+  //         } 
+  //       };
+  //     }
+  //     groups[shipper].orders.push(item);
+  //     groups[shipper].total += item.orderDetails.amount || 0;
+  //   });
+  //   console.log("수정 모드 화주별 그룹화 groups", groups);
+  //   return groups;
+  // }, [isEditMode, bundleFreightList, editingPurchaseBundle]);
 
-  // 표시할 shipperGroups 결정
-  console.log("shipperGroups:", shipperGroups);
-  console.log("editModeShipperGroups:", editModeShipperGroups);
-  const displayShipperGroups = isEditMode ? editModeShipperGroups : shipperGroups;
-  const hasShipperGroups = Object.keys(displayShipperGroups).length > 0;
+  // // 표시할 shipperGroups 결정
+  // console.log("shipperGroups:", shipperGroups);
+  // console.log("editModeShipperGroups:", editModeShipperGroups);
+  // const displayShipperGroups = isEditMode ? editModeShipperGroups : shipperGroups;
+  // const hasShipperGroups = Object.keys(displayShipperGroups).length > 0;
 
   const driverGroups = useMemo(() => {
     if (!orders || orders.length === 0) return {};

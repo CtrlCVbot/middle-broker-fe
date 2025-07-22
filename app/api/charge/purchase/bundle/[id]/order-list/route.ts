@@ -72,6 +72,8 @@ export async function GET(
         // Dispatch 정보 (필요에 따라)
         dispatchAmount: orderPurchases.subtotalAmount,
         // dispatchDriverSnapshot: orderDispatches.driverSnapshot,
+        assignedDriverId: orderDispatches.assignedDriverId,
+        assignedDriverSnapshot: orderDispatches.assignedDriverSnapshot,
       })
       .from(purchaseBundleItems)
       .leftJoin(orderPurchases, eq(purchaseBundleItems.orderPurchaseId, orderPurchases.id))
@@ -112,6 +114,8 @@ export async function GET(
         pickupDate: item.pickupDate?.toString().split('T')[0] || '',
         deliveryDate: item.deliveryDate?.toString().split('T')[0] || '',
         amount: parseFloat(item.orderPurchaseAmount?.toString() || '0'),
+        assignedDriverId: item.assignedDriverId || '',
+        assignedDriverSnapshot: item.assignedDriverSnapshot || '',
       },
       
       // 해당 화물의 개별 추가금 목록 (실제로는 화물별로 필터링 필요)
