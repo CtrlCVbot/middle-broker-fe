@@ -15,6 +15,7 @@ import { z } from 'zod';
 
 import { companies } from '@/db/schema/companies';
 import { users } from '@/db/schema/users';
+import { drivers } from '@/db/schema/drivers';
 import { orderPurchases } from '@/db/schema/orderPurchases';
 
 // 매출 번들 목록 조회
@@ -84,7 +85,7 @@ export async function GET(request: NextRequest) {
       : sortOrder === 'desc' ? desc(purchaseBundles.periodFrom) : asc(purchaseBundles.periodFrom);
 
     // 데이터 조회 및 총 개수 카운트
-    const [salesBundlesResult, total] = await Promise.all([
+    const [purchaseBundlesResult, total] = await Promise.all([
       db
         .select()
         .from(purchaseBundles)
@@ -121,7 +122,7 @@ export async function GET(request: NextRequest) {
     // };
     
     return NextResponse.json({
-      data: salesBundlesResult,      
+      data: purchaseBundlesResult,      
       total,
       page,
       pageSize,
@@ -151,8 +152,8 @@ const PurchaseBundleAdjustmentSchema = z.object({
 
 // 매출 번들 생성 스키마
 const CreateSalesBundleSchema = z.object({
-  companyId: z.string().uuid(),
-  managerId: z.string().uuid(),
+  //companyId: z.string().uuid().optional().nullable(),
+  //managerId: z.string().uuid().optional().nullable(),
   periodFrom: z.string().optional(),
   periodTo: z.string().optional(),
   invoiceNo: z.string().optional(),
@@ -171,6 +172,10 @@ const CreateSalesBundleSchema = z.object({
   orderCount: z.number().nonnegative(),
   invoiceIssuedAt: z.string().optional().nullable(),
   depositReceivedAt: z.string().optional().nullable(),
+  driverId: z.string().uuid().optional().nullable(),
+  driverName: z.string().optional(),
+  driverBusinessNumber: z.string().optional(),
+  //driverCeo: z.string().optional(),
 });
 
 // 매출 번들 생성
@@ -209,36 +214,42 @@ export async function POST(request: NextRequest) {
       .from(orderPurchases)
       .where(sql`${orderPurchases.id} IN ${orderPurchaseIds}`);
 
-    //청구 업체 조회
-    const selectedCompany = await db.query.companies.findFirst({
-      where: eq(companies.id, data.companyId)
-    });
+    //청구 업체 조회 - 운송사 기능 추가 시 사용
+    // const selectedCompany = await db.query.companies.findFirst({
+    //   where: eq(companies.id, data.companyId)
+    // });
 
-    if (!selectedCompany) {
-      return NextResponse.json(
-        { error: '회사 정보를 찾을 수 없습니다.' },
-        { status: 404 }
-      );
-    }
-
-    //청구 업체 담당자 조회
-    const selectedManager = await db.query.users.findFirst({
-      where: eq(users.id, data.managerId)
-    });
-
-    if (!selectedManager) {
-      return NextResponse.json(
-        { error: '관리자 정보를 찾을 수 없습니다.' },
-        { status: 404 }
-      );
-    }
-    // const allSameCompany = salesRecords.every(record => record.companyId === data.companyId);
-    // if (!allSameCompany) {
+    // if (!selectedCompany) {
     //   return NextResponse.json(
-    //     { error: '모든 매출 인보이스는 동일한 회사에 속해야 합니다.' },
-    //     { status: 400 }
+    //     { error: '회사 정보를 찾을 수 없습니다.' },
+    //     { status: 404 }
     //   );
     // }
+
+    //청구 업체 담당자 조회 - 운송사 기능 추가 시 사용
+    // const selectedManager = await db.query.users.findFirst({
+    //   where: eq(users.id, data.managerId)
+    // });
+
+    // if (!selectedManager) {
+    //   return NextResponse.json(
+    //     { error: '관리자 정보를 찾을 수 없습니다.' },
+    //     { status: 404 }
+    //   );
+    // }
+
+    //지급 차량 조회
+    const selectedDriver = await db.query.drivers.findFirst({
+      where: eq(drivers.id, data.driverId || '')
+    });
+
+    if (!selectedDriver) {
+      return NextResponse.json(
+        { error: '지급 차량 정보를 찾을 수 없습니다.' },
+        { status: 404 }
+      );
+    }
+   
     console.log("bundleData!!!:", bundleData);
 
     // 트랜잭션으로 번들 및 항목 생성
@@ -247,17 +258,33 @@ export async function POST(request: NextRequest) {
       const newBundle = await tx.insert(purchaseBundles).values({
         ...bundleData,
         settlementMemo: bundleData.memo,
-        companyName: selectedCompany.name,
-        companyBusinessNumber: selectedCompany.businessNumber,
-        companySnapshot: {
-          name: selectedCompany.name,
-          businessNumber: selectedCompany.businessNumber,
-          ceoName: selectedCompany.ceoName,
-        },
-        managerSnapshot: {
-          name: selectedManager.name,
-          email: selectedManager.email,
-          mobile: selectedManager.phone_number,
+        // 운송사 기능 추가 시 사용
+        // companyName: selectedCompany.name,
+        // companyBusinessNumber: selectedCompany.businessNumber,
+        // companySnapshot: {
+        //   name: selectedCompany.name,
+        //   businessNumber: selectedCompany.businessNumber,
+        //   ceoName: selectedCompany.ceoName,
+        // },
+        // managerSnapshot: {
+        //   name: selectedManager.name,
+        //   email: selectedManager.email,
+        //   mobile: selectedManager.phone_number,
+        // },
+        driverSnapshot: {
+          name: selectedDriver.name,
+          businessNumber: selectedDriver.businessNumber,
+          contact: selectedDriver.phoneNumber,
+          vehicle : {
+            type: selectedDriver.vehicleType,
+            weight: selectedDriver.vehicleWeight,            
+            licensePlate: selectedDriver.vehicleNumber,            
+          },
+          bank: {
+            bankCode: selectedDriver.bankCode,
+            bankAccount: selectedDriver.bankAccountNumber,
+            bankAccountHolder: selectedDriver.bankAccountHolder,
+          },          
         },
         createdBy: userId,
         updatedBy: userId

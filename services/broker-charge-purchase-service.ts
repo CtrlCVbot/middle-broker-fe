@@ -340,7 +340,8 @@ export async function createOrderPurchase(data: {
  */
 export async function createPurchaseBundle(data: CreatePurchaseBundleInput): Promise<IPurchaseBundle> {
   try {
-    const response = await fetch('/api/charge/purchase-bundles', {
+    //const response = await fetch('/api/charge/purchase-bundles', {
+    const response = await fetch('/api/charge/purchase/bundle', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -349,12 +350,12 @@ export async function createPurchaseBundle(data: CreatePurchaseBundleInput): Pro
     });
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || '매출 번들 생성에 실패했습니다.');
+      throw new Error(error.error || '매입 번들 생성에 실패했습니다.');
     }
     const result = await response.json();
     return result.data;
   } catch (error) {
-    console.error('매출 번들 생성 중 오류 발생:', error);
+    console.error('매입 번들 생성 중 오류 발생:', error);
     throw error;
   }
 }
@@ -395,13 +396,13 @@ export async function getPurchaseBundles(
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || '매출 번들 목록 조회에 실패했습니다.');
+      throw new Error(error.error || '매입 번들 목록 조회에 실패했습니다.');
     }
 
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error('매출 번들 목록 조회 중 오류 발생:', error);
+    console.error('매입 번들 목록 조회 중 오류 발생:', error);
     throw error;
   }
 } 
@@ -411,7 +412,7 @@ export async function getPurchaseBundles(
   */
 export async function getPurchaseBundleItems(purchaseBundleId: string): Promise<IPurchaseBundleItem[]> {
   try {
-    const response = await fetch(`/api/charge/purchase-bundles/items?purchaseBundleId=${purchaseBundleId}`, {
+    const response = await fetch(`/api/charge/purchase/bundle/items?purchaseBundleId=${purchaseBundleId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -436,7 +437,7 @@ export async function getPurchaseBundleItems(purchaseBundleId: string): Promise<
  */
 export async function getPurchaseBundleById(id: string): Promise<IPurchaseBundle> {
   try {
-    const response = await fetch(`/api/charge/purchase-bundles/${id}`, {
+    const response = await fetch(`/api/charge/purchase/bundle/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -445,13 +446,13 @@ export async function getPurchaseBundleById(id: string): Promise<IPurchaseBundle
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || '매출 번들 조회에 실패했습니다.');
+      throw new Error(error.error || '매입 번들 조회에 실패했습니다.');
     }
 
     const result = await response.json();
     return result.data;
   } catch (error) {
-    console.error('매출 번들 조회 중 오류 발생:', error);
+    console.error('매입 번들 조회 중 오류 발생:', error);
     throw error;
   }
 }
@@ -465,7 +466,7 @@ export async function updatePurchaseBundle(
   reason?: string
 ): Promise<IPurchaseBundle> {
   try {
-    const response = await fetch(`/api/charge/purchase-bundles/${id}`, {
+    const response = await fetch(`/api/charge/purchase/bundle/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -476,13 +477,13 @@ export async function updatePurchaseBundle(
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || '매출 번들 수정에 실패했습니다.');
+      throw new Error(error.error || '매입 번들 수정에 실패했습니다.');
     }
 
     const result = await response.json();
     return result.data;
   } catch (error) {
-    console.error('매출 번들 수정 중 오류 발생:', error);
+    console.error('매입 번들 수정 중 오류 발생:', error);
     throw error;
   }
 }
@@ -494,7 +495,7 @@ export async function updatePurchaseBundle(
  */
 export async function deletePurchaseBundle(id: string): Promise<void> {
   try {
-    const response = await fetch(`/api/charge/purchase-bundles/${id}`, {
+    const response = await fetch(`/api/charge/purchase/bundle/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -516,7 +517,7 @@ export async function deletePurchaseBundle(id: string): Promise<void> {
  */
 export async function getBundleAdjustments(bundleId: string): Promise<IPurchaseBundleAdjustment[]> {
   try {
-    const response = await fetch(`/api/charge/purchase-bundles/${bundleId}/adjustments`, {
+    const response = await fetch(`/api/charge/purchase/bundle/${bundleId}/adjustments`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -543,7 +544,7 @@ export async function createBundleAdjustment(
   data: ICreateBundleAdjustmentInput
 ): Promise<IPurchaseBundleAdjustment> {
   try {
-    const response = await fetch(`/api/charge/purchase-bundles/${bundleId}/adjustments`, {
+    const response = await fetch(`/api/charge/purchase/bundle/${bundleId}/adjustments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -573,7 +574,7 @@ export async function updateBundleAdjustment(
   data: IUpdateBundleAdjustmentInput
 ): Promise<IPurchaseBundleAdjustment> {
   try {
-    const response = await fetch(`/api/charge/purchase-bundles/${bundleId}/adjustments`, {
+    const response = await fetch(`/api/charge/purchase/bundle/${bundleId}/adjustments`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -599,7 +600,7 @@ export async function updateBundleAdjustment(
  */
 export async function deleteBundleAdjustment(bundleId: string, adjustmentId: string): Promise<void> {
   try {
-    const response = await fetch(`/api/charge/purchase-bundles/${bundleId}/adjustments?adjustmentId=${adjustmentId}`, {
+    const response = await fetch(`/api/charge/purchase/bundle/${bundleId}/adjustments?adjustmentId=${adjustmentId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -623,7 +624,7 @@ export async function deleteBundleAdjustment(bundleId: string, adjustmentId: str
  */
 export async function getItemAdjustments(itemId: string): Promise<IPurchaseItemAdjustment[]> {
   try {
-    const response = await fetch(`/api/charge/purchase-bundles/items/${itemId}/adjustments`, {
+    const response = await fetch(`/api/charge/purchase/bundle/items/${itemId}/adjustments`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -650,7 +651,7 @@ export async function createItemAdjustment(
   data: ICreateItemAdjustmentInput
 ): Promise<IPurchaseItemAdjustment> {
   try {
-    const response = await fetch(`/api/charge/purchase-bundles/items/${itemId}/adjustments`, {
+    const response = await fetch(`/api/charge/purchase/bundle/items/${itemId}/adjustments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -680,7 +681,7 @@ export async function updateItemAdjustment(
   data: IUpdateItemAdjustmentInput
 ): Promise<IPurchaseItemAdjustment> {
   try {
-    const response = await fetch(`/api/charge/purchase-bundles/items/${itemId}/adjustments`, {
+    const response = await fetch(`/api/charge/purchase/bundle/items/${itemId}/adjustments`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -706,7 +707,7 @@ export async function updateItemAdjustment(
  */
 export async function deleteItemAdjustment(itemId: string, adjustmentId: string): Promise<void> {
   try {
-    const response = await fetch(`/api/charge/purchase-bundles/items/${itemId}/adjustments?adjustmentId=${adjustmentId}`, {
+    const response = await fetch(`/api/charge/purchase/bundle/items/${itemId}/adjustments?adjustmentId=${adjustmentId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -728,7 +729,7 @@ export async function deleteItemAdjustment(itemId: string, adjustmentId: string)
  */
 export async function getPurchaseBundleFreightList(bundleId: string): Promise<IPurchaseBundleItemWithDetails[]> {
   try {
-    const response = await fetch(`/api/charge/purchase-bundles/${bundleId}/order-list`, {
+    const response = await fetch(`/api/charge/purchase/bundle/${bundleId}/order-list`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'

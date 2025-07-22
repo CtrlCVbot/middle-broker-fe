@@ -22,7 +22,8 @@ import {
 } from "lucide-react";
 
 //types
-import { IIncome, IncomeStatusType } from "@/types/income";
+import { IPurchase, PurchaseStatusType } from "@/types/purchase";
+
 
 //store
 import { useBrokerChargeStore } from "@/store/broker-charge-purchase-store";
@@ -33,18 +34,18 @@ import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 
 interface BundleMatchingListProps {
-  incomes: IIncome[];
+  purchases: IPurchase[];
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
   //onStatusChange?: (incomeId: string, newStatus: IncomeStatusType) => void;
   onIssueInvoice?: (incomeId: string) => void;
   onExportExcel?: (incomeId: string) => void;
-  currentTab?: IncomeStatusType; // 현재 선택된 탭
+  currentTab?: PurchaseStatusType; // 현재 선택된 탭
 }
 
 export function BundleMatchingList({
-  incomes,
+  purchases,
   currentPage,
   totalPages,
   onPageChange,
@@ -89,7 +90,7 @@ export function BundleMatchingList({
   };
 
   // 정산 상태에 따른 배지 렌더링
-  const renderStatusBadge = (status: IncomeStatusType) => {
+  const renderStatusBadge = (status: PurchaseStatusType) => {
     switch (status) {
       case 'WAITING':
         return <Badge variant="outline" className="bg-slate-100">대기</Badge>;
@@ -142,7 +143,7 @@ export function BundleMatchingList({
     }
   }
 
-  console.log('incomes:', incomes);
+  console.log('purchases:', purchases);
   return (
     <div className="space-y-4">
       <div className="rounded-md border">
@@ -151,7 +152,7 @@ export function BundleMatchingList({
             <TableRow className="bg-slate-50">
               {/* <TableHead className="w-[80px] text-center">그룹 ID</TableHead> */}
               <TableHead className="w-[80px] text-center">상태</TableHead>
-              <TableHead>청구 화주</TableHead>
+              <TableHead>지급 차량</TableHead>
               <TableHead>정산 기간</TableHead>
               <TableHead className="text-center">화물 건수</TableHead>
               <TableHead className="text-right">기본 운임</TableHead>
@@ -164,7 +165,7 @@ export function BundleMatchingList({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {incomes.length === 0 ? (
+            {purchases.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={11}
@@ -174,60 +175,60 @@ export function BundleMatchingList({
                 </TableCell>
               </TableRow>
             ) : (
-              incomes.map((income) => (
+              purchases.map((purchase) => (
                 <TableRow 
-                  key={income.id} 
+                  key={purchase.id} 
                   className="cursor-pointer hover:bg-secondary/20"
-                  onClick={() => handleIncomeClick(income.id)}
+                  onClick={() => handleIncomeClick(purchase.id)}
                 >
                   {/* <TableCell className="font-medium text-primary underline">
                     {income.id.slice(0, 8)}
                   </TableCell> */}
                   <TableCell className="text-center">
-                    {renderStatusBadge(income.status)}
+                    {renderStatusBadge(purchase.status)}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-medium">{income.shipperName}</span>
-                      <span className="text-xs text-muted-foreground">{income.businessNumber}</span>
+                      <span className="font-medium">{purchase.driverName}</span>
+                      <span className="text-xs text-muted-foreground">{purchase.driverBusinessNumber}</span>
                     </div>
                   </TableCell>                  
                   <TableCell className="font-medium">
                     <div className="flex flex-col items-center">
-                      <span className="text-md ">{getSchedule(income.startDate, income.endDate)}</span>
-                      <span className="text-xs text-muted-foreground">{format(income.startDate, "(E)", { locale: ko })} - {format(income.endDate, "(E)", { locale: ko })}</span>
+                      <span className="text-md ">{getSchedule(purchase.startDate, purchase.endDate)}</span>
+                      <span className="text-xs text-muted-foreground">{format(purchase.startDate, "(E)", { locale: ko })} - {format(purchase.endDate, "(E)", { locale: ko })}</span>
                     </div>
                   </TableCell>
                   <TableCell className="text-center">
-                    {income.orderCount}건
+                    {purchase.orderCount}건
                   </TableCell>
                   <TableCell className="text-right">
-                    {formatCurrency(income.totalBaseAmount)}원
+                    {formatCurrency(purchase.totalBaseAmount)}원
                   </TableCell>
                   <TableCell className="text-right text-muted-foreground">
-                    {income.isTaxFree ? (
+                    {purchase.isTaxFree ? (
                       <Badge variant="outline" className="bg-gray-100">면세</Badge>
                     ) : (
-                      `${formatCurrency(income.tax)}원`
+                      `${formatCurrency(purchase.tax)}원`
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <span className={income.totalAdditionalAmount >= 0 ? "text-blue-600" : "text-red-600"}>
-                      {income.totalAdditionalAmount >= 0 ? "+" : ""}{formatCurrency(income.totalAdditionalAmount)}원
+                    <span className={purchase.totalAdditionalAmount >= 0 ? "text-blue-600" : "text-red-600"}>
+                      {purchase.totalAdditionalAmount >= 0 ? "+" : ""}{formatCurrency(purchase.totalAdditionalAmount)}원
                     </span>
                   </TableCell>
                   
                   <TableCell className="text-right font-semibold">
-                    {formatCurrency(income.finalAmount)}원
+                    {formatCurrency(purchase.finalAmount)}원
                   </TableCell>
                   <TableCell className="text-center">
-                    {renderInvoiceStatusBadge(income.invoiceStatus)}
+                    {renderInvoiceStatusBadge(purchase.invoiceStatus)}
                   </TableCell>
                   <TableCell className="text-center">
-                    {renderDepositStatusBadge(income.depositReceivedAt)}
+                    {renderDepositStatusBadge(purchase.depositReceivedAt)}
                   </TableCell>
                   <TableCell>
-                    {income.manager}
+                    {purchase.manager}
                   </TableCell>
                 </TableRow>
               ))
@@ -237,7 +238,7 @@ export function BundleMatchingList({
       </div>
 
       {/* 페이지네이션 */}
-      {incomes.length > 0 && (
+      {purchases.length > 0 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
             {totalPages > 0

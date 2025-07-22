@@ -41,7 +41,6 @@ export async function GET(request: NextRequest) {
     if (companyId) {
       conditions.push(eq(purchaseBundles.companyId, companyId));
     }
-
     
 
     if (status && purchaseBundleStatusEnum.enumValues.includes(status as any)) {
@@ -173,7 +172,7 @@ export async function POST(request: NextRequest) {
     }
     
     // 기사 체크 (기사ID가 제공된 경우)
-    // if (data.driverId) {
+    // if (data.driverId) {purchaseRecords
     //   const allSameDriver = purchaseRecords.every(record => 
     //     record.driverId === data.driverId);
       

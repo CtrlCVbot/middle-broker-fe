@@ -16,6 +16,7 @@ import {
 } from '@/types/broker-charge-purchase';
 import { IBrokerOrder } from '@/types/broker-order';
 import { IIncome, IncomeStatusType } from '@/types/income';
+import { IPurchase } from '@/types/purchase';
 
 /**
  * 프론트엔드 추가 비용 입력을 백엔드 운임 그룹 요청으로 변환
@@ -317,8 +318,8 @@ export function mapSettlementFormToPurchaseBundleInput(
   console.log('Period dates - from:', periodFrom, 'to:', periodTo);
   
   const result = {
-    companyId: formData.shipperId,
-    managerId: formData.managerId,
+    companyId: formData.shipperId || '',
+    managerId: formData.managerId || '',
     bankCode: formData.bankName || '',
     bankAccount: formData.accountNumber || '',
     bankAccountHolder: formData.accountHolder || '',
@@ -340,6 +341,10 @@ export function mapSettlementFormToPurchaseBundleInput(
     orderCount: selectedWaitingItems.length,
     invoiceIssuedAt: formData.invoiceIssuedAt || null,
     depositReceivedAt: formData.depositReceivedAt || null,
+    driverId: formData.driverId || '',
+    driverName: formData.driverName || '',
+    driverBusinessNumber: formData.driverBusinessNumber || '',
+    //driverCeo: formData.driverCeo || '',
   };
   
   console.log('Final CreatePurchaseBundleInput:', result);
@@ -367,7 +372,7 @@ function mapPurchaseBundleStatusToIncomeStatus(status: string): IncomeStatusType
  * Purchase Bundle 목록을 Income 목록으로 변환
  * @param purchaseBundles Purchase Bundle 목록
  */
-export function mapPurchaseBundlesToIncomes(purchaseBundles: IPurchaseBundleListItem[]): IIncome[] {
+export function mapPurchaseBundlesToIncomes(purchaseBundles: IPurchaseBundleListItem[]): IPurchase[] {
   return purchaseBundles.map(bundle => {
     const totalAmount = Number(bundle.totalAmount) || 0;
     const totalTaxAmount = Number(bundle.totalTaxAmount) || 0;
@@ -422,7 +427,14 @@ export function mapPurchaseBundlesToIncomes(purchaseBundles: IPurchaseBundleList
       createdAt: bundle.createdAt,
       updatedAt: bundle.updatedAt,
       memo: bundle.settlementMemo,
+
+      driverId: bundle.driverId,
+      driverName: bundle.driverName,
+      driverBusinessNumber: bundle.driverBusinessNumber,
+      driverBankCode: bundle.driverSnapshot?.bank.bankCode,
+      driverBankAccountHolder: bundle.driverSnapshot?.bank.bankAccountHolder,
+      driverBankAccountNumber: bundle.driverSnapshot?.bank.bankAccountNumber,
       
-    } as IIncome;
+    } as IPurchase;
   });
 }

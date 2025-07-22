@@ -209,15 +209,15 @@ export type SettlementPeriodType = 'departure' | 'arrival';
 
 // 정산 폼 데이터 타입
 export interface ISettlementFormData {
-  shipperId: string;
-  shipperName: string;
-  shipperCeo: string;
-  businessNumber: string;
-  billingCompany: string;
-  managerId: string;
+  shipperId?: string;
+  shipperName?: string;
+  shipperCeo?: string;
+  businessNumber?: string;
+  billingCompany?: string;
+  managerId?: string;
   manager?: string;
-  managerContact?: string;
-  managerEmail?: string;
+  managerContact?: string | null;
+  managerEmail?: string | null;
   periodType: SettlementPeriodType;
   startDate: string;
   endDate: string;
@@ -239,6 +239,7 @@ export interface ISettlementFormData {
   invoiceIssuedAt?: string | null;
   depositReceivedAt?: string | null;
   status?: PurchaseBundleStatus;
+  driverId?: string;
   driverName?: string;
   driverBusinessNumber?: string;
   driverCeo?: string;
@@ -397,6 +398,10 @@ export interface CreatePurchaseBundleInput {
   items: { orderPurchaseId: string; baseAmount: number }[];
   adjustments?: { type: BundleAdjType; description?: string; amount: number }[];
   orderCount?: number;
+  driverId?: string;
+  driverName?: string;
+  driverBusinessNumber?: string;
+  //driverCeo?: string;
 }
 
 // purchase bundle 목록 조회 관련 타입
@@ -438,6 +443,24 @@ export interface IPurchaseBundleListItem {
   createdAt: string;
   updatedAt: string;
   orderCount?: number;
+  driverId?: string;
+  driverName?: string;
+  driverBusinessNumber?: string;
+  driverSnapshot?: {
+    name: string;
+    businessNumber: string;
+    vehicle: {
+      type: string;
+      weight: number;
+      licensePlate: string;
+    }
+    bank: {
+      bankCode: string;
+      bankAccountNumber: string;
+      bankAccountHolder: string;
+    }
+  };
+  
 }
 
 // purchase bundle 목록 응답 타입

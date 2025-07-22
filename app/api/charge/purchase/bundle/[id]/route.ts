@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { eq, and } from 'drizzle-orm';
 import { db } from '@/db';
-import { salesBundles } from '@/db/schema/salesBundles';
-import { salesBundleItems } from '@/db/schema/salesBundles';
-import { salesBundleAdjustments } from '@/db/schema/salesBundles';
+import { purchaseBundles } from '@/db/schema/purchaseBundles';
+import { purchaseBundleItems } from '@/db/schema/purchaseBundles';
+import { purchaseBundleAdjustments } from '@/db/schema/purchaseBundles';
 import { z } from 'zod';
 import { validate as isValidUUID } from 'uuid';
-import { orderSales } from '@/db/schema/orderSales';
+import { orderPurchases } from '@/db/schema/orderPurchases';
 
 // 필드 업데이트 스키마
-const UpdateSalesBundleFieldsSchema = z.object({
+const UpdatePurchaseBundleFieldsSchema = z.object({
   fields: z.record(z.string(), z.any()),
   reason: z.string().optional(),
 });
 
-// 개별 매출 번들 조회
+// 개별 매입 번들 조회
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -25,38 +25,38 @@ export async function GET(
     // UUID 검증
     if (!isValidUUID(id)) {
       return NextResponse.json(
-        { error: '유효하지 않은 매출 번들 ID입니다.' },
+        { error: '유효하지 않은 매입 번들 ID입니다.' },
         { status: 400 }
       );
     }
 
-    // 매출 번들 조회
-    const salesBundle = await db.query.salesBundles.findFirst({
-      where: eq(salesBundles.id, id),
+    // 매입 번들 조회
+    const purchaseBundle = await db.query.purchaseBundles.findFirst({
+      where: eq(purchaseBundles.id, id),
       with: {
         items: {
           with: {
-            orderSale: true
+            orderPurchase: true
           }
         },
         adjustments: true
       }
     });
 
-    if (!salesBundle) {
+    if (!purchaseBundle) {
       return NextResponse.json(
-        { error: '매출 번들을 찾을 수 없습니다.' },
+        { error: '매입 번들을 찾을 수 없습니다.' },
         { status: 404 }
       );
     }
 
-    console.log('salesBundle', salesBundle);
+    console.log('purchaseBundle', purchaseBundle);
 
     return NextResponse.json({
-      data: salesBundle
+      data: purchaseBundle
     });
   } catch (error) {
-    console.error('매출 번들 조회 중 오류 발생:', error);
+    console.error('매입 번들 조회 중 오류 발생:', error);
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }
@@ -64,7 +64,7 @@ export async function GET(
   }
 }
 
-// 매출 번들 필드 업데이트
+// 매입 번들 필드 업데이트
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -76,7 +76,7 @@ export async function PATCH(
     // UUID 검증
     if (!isValidUUID(id)) {
       return NextResponse.json(
-        { error: '유효하지 않은 매출 번들 ID입니다.', id: id },
+        { error: '유효하지 않은 매입 번들 ID입니다.', id: id },
         { status: 400 }
       );
     }
@@ -91,7 +91,7 @@ export async function PATCH(
 
     // 요청 데이터 파싱
     const body = await request.json();
-    const result = UpdateSalesBundleFieldsSchema.safeParse(body);
+    const result = UpdatePurchaseBundleFieldsSchema.safeParse(body);
 
     if (!result.success) {
       return NextResponse.json(
@@ -103,8 +103,8 @@ export async function PATCH(
     const { fields, reason } = result.data;
 
     // 매출 번들 존재 여부 확인
-    const existingSalesBundle = await db.query.salesBundles.findFirst({
-      where: eq(salesBundles.id, id),
+    const existingSalesBundle = await db.query.purchaseBundles.findFirst({
+      where: eq(purchaseBundles.id, id),
     });
 
     if (!existingSalesBundle) {
@@ -142,7 +142,12 @@ export async function PATCH(
       'bundleExtraAmount',
       'status',      
       'invoiceIssuedAt',
-      'depositReceivedAt'
+      'depositReceivedAt',
+      'driverId',
+      'driverSnapshot',
+      'driverName',
+      'driverBusinessNumber',
+      
     ];
 
     // 업데이트할 필드 검증
@@ -167,20 +172,20 @@ export async function PATCH(
     };
 
     // 매출 번들 업데이트
-    const [updatedSalesBundle] = await db
-      .update(salesBundles)
+    const [updatedPurchaseBundle] = await db
+      .update(purchaseBundles)
       .set(updateData)
-      .where(eq(salesBundles.id, id))
+      .where(eq(purchaseBundles.id, id))
       .returning();
 
     return NextResponse.json({
-      message: '매출 번들이 성공적으로 업데이트되었습니다.',
-      data: updatedSalesBundle,
+      message: '매입 번들이 성공적으로 업데이트되었습니다.',
+      data: updatedPurchaseBundle,
     });
   } catch (error) {
-    console.error('매출 번들 업데이트 중 오류 발생:', error);
+    console.error('매입 번들 업데이트 중 오류 발생:', error);
     return NextResponse.json(
-      { error: '매출 번들 업데이트 중 오류가 발생했습니다.' },
+      { error: '매입 번들 업데이트 중 오류가 발생했습니다.' },
       { status: 500 }
     );
   }
@@ -197,30 +202,30 @@ export async function DELETE(
     // UUID 검증
     if (!isValidUUID(id)) {
       return NextResponse.json(
-        { error: '유효하지 않은 매출 번들 ID입니다.' },
+        { error: '유효하지 않은 매입 번들 ID입니다.' },
         { status: 400 }
       );
     }
 
     // 매출 번들 존재 여부 확인
-    const existingSalesBundle = await db.query.salesBundles.findFirst({
-      where: eq(salesBundles.id, id),
+    const existingPurchaseBundle = await db.query.purchaseBundles.findFirst({
+      where: eq(purchaseBundles.id, id),
     });
 
-    if (!existingSalesBundle) {
+    if (!existingPurchaseBundle) {
       return NextResponse.json(
-        { error: '존재하지 않는 매출 번들입니다.' },
+        { error: '존재하지 않는 매입 번들입니다.' },
         { status: 404 }
       );
     }
 
-    const existingSalesBundleItems = await db.query.salesBundleItems.findMany({
-      where: eq(salesBundleItems.bundleId, id),
+    const existingPurchaseBundleItems = await db.query.purchaseBundleItems.findMany({
+      where: eq(purchaseBundleItems.bundleId, id),
     });
 
-    if (!existingSalesBundleItems || existingSalesBundleItems.length === 0) {
+    if (!existingPurchaseBundleItems || existingPurchaseBundleItems.length === 0) {
       return NextResponse.json(
-        { error: '매출 번들에 관련 주문이 존재하지 않습니다.' },
+        { error: '매입 번들에 관련 주문이 존재하지 않습니다.' },
         { status: 400 }
       );
     }
@@ -229,39 +234,39 @@ export async function DELETE(
     await db.transaction(async (tx) => {
       // 1. 매출 번들 조정 항목 삭제
       await tx
-        .delete(salesBundleAdjustments)
-        .where(eq(salesBundleAdjustments.bundleId, id));
+        .delete(purchaseBundleAdjustments)
+        .where(eq(purchaseBundleAdjustments.bundleId, id));
 
       // 2. 매출 번들 항목 삭제
       await tx
-        .delete(salesBundleItems)
-        .where(eq(salesBundleItems.bundleId, id));
+        .delete(purchaseBundleItems)
+        .where(eq(purchaseBundleItems.bundleId, id));
 
       // 3. 매출 번들 삭제
       await tx
-        .delete(salesBundles)
-        .where(eq(salesBundles.id, id));
+        .delete(purchaseBundles)
+        .where(eq(purchaseBundles.id, id));
 
-      // 4. 관련된 모든 orderSales의 상태를 draft로 업데이트
-      const uniqueOrderSalesIds = [
-        ...new Set(existingSalesBundleItems.map((item) => item.orderSalesId)),
+      // 4. 관련된 모든 orderPurchase의 상태를 draft로 업데이트
+      const uniqueOrderPurchaseIds = [
+        ...new Set(existingPurchaseBundleItems.map((item) => item.orderPurchaseId)),
       ];
 
-      for (const orderSalesId of uniqueOrderSalesIds) {
+      for (const orderPurchaseId of uniqueOrderPurchaseIds) {
         await tx
-          .update(orderSales)
+          .update(orderPurchases)
           .set({ status: 'draft' })
-          .where(eq(orderSales.id, orderSalesId));
+          .where(eq(orderPurchases.id, orderPurchaseId));
       }
     });
 
     return NextResponse.json({
-      message: '매출 번들이 성공적으로 삭제되었습니다.',
+      message: '매입 번들이 성공적으로 삭제되었습니다.',
     });
   } catch (error) {
-    console.error('매출 번들 삭제 중 오류 발생:', error);
+    console.error('매입 번들 삭제 중 오류 발생:', error);
     return NextResponse.json(
-      { error: '매출 번들 삭제 중 오류가 발생했습니다.' },
+      { error: '매입 번들 삭제 중 오류가 발생했습니다.' },
       { status: 500 }
     );
   }

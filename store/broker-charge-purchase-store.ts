@@ -51,6 +51,7 @@ import {
   IUpdateItemAdjustmentInput
 } from '@/types/broker-charge-purchase';
 import { IWaitingFilter } from '@/components/broker/sale/settlement-waiting-search';
+import { IPurchase } from '@/types/purchase';
 
 
 interface IBrokerChargeState {  
@@ -88,7 +89,7 @@ interface IBrokerChargeState {
 
   // purchase bundles 관련 상태 추가
   purchaseBundles: IPurchaseBundleListItem[];
-  purchaseBundlesAsIncomes: IIncome[]; // IIncome 형태로 변환된 데이터
+  purchaseBundlesAsIncomes: IPurchase[]; // IIncome 형태로 변환된 데이터
   purchaseBundlesTotal: number;
   purchaseBundlesPage: number;
   purchaseBundlesPageSize: number;
@@ -697,6 +698,7 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
       
       // formData가 전달되지 않으면 store의 데이터 사용 (fallback)
       const actualFormData = formData || get().settlementForm.formData;
+      console.log("actualFormData:", actualFormData);
       
       // 추가금 등은 추후 확장, 현재는 adjustments 없음
       const bundleInput = mapSettlementFormToPurchaseBundleInput(actualFormData, selectedItems, []);

@@ -123,9 +123,9 @@ export function DriverInfoSection({
                     name: displayDriverGroups[driver].driver.name || '',
                     businessNumber: displayDriverGroups[driver].driver.businessNumber || '',
                     //ceoName: displayDriverGroups[driver].driver.ceo || '',
-                    //bankCode: displayDriverGroups[driver].company.bankCode || '',
-                    //bankAccountHolder: displayDriverGroups[driver].company.accountHolder || '',
-                    //bankAccount: displayDriverGroups[driver].company.accountNumber || ''
+                    bankCode: displayDriverGroups[driver].driver.bankCode || '',
+                    bankAccountHolder: displayDriverGroups[driver].driver.bankAccountHolder || '',
+                    bankAccountNumber: displayDriverGroups[driver].driver.bankAccountNumber || ''
                   });
                 } else {
                   // 생성 모드: 기존 로직 유지
@@ -243,7 +243,7 @@ export function DriverInfoSection({
               <div>
                 <FormField
                   control={form.control}
-                  name="bankName"
+                  name="driverBankCode"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
@@ -275,7 +275,7 @@ export function DriverInfoSection({
               <div>
                 <FormField
                   control={form.control}
-                  name="accountHolder"
+                  name="driverBankAccountHolder"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
@@ -297,7 +297,7 @@ export function DriverInfoSection({
               <div className="md:col-span-2">
                 <FormField
                   control={form.control}
-                  name="accountNumber"
+                  name="driverBankAccountNumber"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>

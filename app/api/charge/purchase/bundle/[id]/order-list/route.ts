@@ -10,7 +10,7 @@ import { orderSales } from '@/db/schema/orderSales';
 import { orderDispatches } from '@/db/schema/orderDispatches';
 import { orders } from '@/db/schema/orders';
 import { companies } from '@/db/schema/companies';
-import { ISalesBundleItemWithDetails } from '@/types/broker-charge';
+import { IPurchaseBundleItemWithDetails } from '@/types/broker-charge-purchase';
 import { orderPurchases } from '@/db/schema/orderPurchases';
 
 /**
@@ -21,6 +21,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    console.log('GET: 정산 그룹에 연결된 화물 목록 조회 (상세 정보 포함)');
     const { id } = await params;
 
     // 정산 그룹 존재 확인
@@ -69,7 +70,7 @@ export async function GET(
         companyCeo: companies.ceoName,
         
         // Dispatch 정보 (필요에 따라)
-        dispatchAmount: orderSales.subtotalAmount,
+        dispatchAmount: orderPurchases.subtotalAmount,
         // dispatchDriverSnapshot: orderDispatches.driverSnapshot,
       })
       .from(purchaseBundleItems)
@@ -93,7 +94,7 @@ export async function GET(
     }
 
     // 결과 데이터 구성
-    const result: ISalesBundleItemWithDetails[] = bundleItemsQuery.map(item => ({
+    const result: IPurchaseBundleItemWithDetails[] = bundleItemsQuery.map(item => ({
       // ISalesBundleItem 기본 정보
       id: item.id,
       bundleId: item.bundleId,

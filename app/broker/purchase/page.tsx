@@ -373,7 +373,7 @@ export default function IncomePage() {
                           </div>
                         ) : (
                           <BundleMatchingList
-                            incomes={purchaseBundlesAsIncomes.filter(income => income.status === 'MATCHING')}
+                            purchases={purchaseBundlesAsIncomes.filter(purchase => purchase.status === 'MATCHING')}
                             currentPage={purchaseBundlesPage}
                             totalPages={purchaseBundlesTotalPages}
                             onPageChange={handlePurchaseBundlesPageChange}
@@ -417,7 +417,7 @@ export default function IncomePage() {
                           </div>
                         ) : (
                           <BundleMatchingList
-                            incomes={purchaseBundlesAsIncomes.filter(income => income.status === 'COMPLETED')}
+                            purchases={purchaseBundlesAsIncomes.filter(purchase => purchase.status === 'COMPLETED')}
                             currentPage={purchaseBundlesPage}
                             totalPages={purchaseBundlesTotalPages}
                             onPageChange={handlePurchaseBundlesPageChange}

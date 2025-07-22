@@ -81,13 +81,13 @@ const PaymentMethod = [
 
 // 정산 생성 폼 스키마
 const formSchema = z.object({
-  shipperName: z.string({
-    required_error: "화주명은 필수 입력 항목입니다.",
-  }).optional(),
-  shipperCeo: z.string().optional(),
-  businessNumber: z.string({
-    required_error: "사업자번호는 필수 입력 항목입니다.",
-  }).optional(),
+  // shipperName: z.string({
+  //   required_error: "화주명은 필수 입력 항목입니다.",
+  // }).optional(),
+  // shipperCeo: z.string().optional(),
+  // businessNumber: z.string({
+  //   required_error: "사업자번호는 필수 입력 항목입니다.",
+  // }).optional(),
   driverName: z.string({
     required_error: "차량명은 필수 입력 항목입니다.",
   }),
@@ -95,27 +95,27 @@ const formSchema = z.object({
     required_error: "차량 사업자번호는 필수 입력 항목입니다.",
   }),
   driverCeo: z.string().optional(),
-  manager: z.string({
-    required_error: "담당자명은 필수 입력 항목입니다.",
-  }).optional(),
-  managerContact: z.string({
-    required_error: "담당자 연락처는 필수 입력 항목입니다.",
-  }).optional(),
-  managerEmail: z.string().email({
-    message: "유효한 이메일 주소를 입력해 주세요.",
-  }).optional(),
+  // manager: z.string({
+  //   required_error: "담당자명은 필수 입력 항목입니다.",
+  // }).optional(),
+  // managerContact: z.string({
+  //   required_error: "담당자 연락처는 필수 입력 항목입니다.",
+  // }).optional(),
+  // managerEmail: z.string().email({
+  //   message: "유효한 이메일 주소를 입력해 주세요.",
+  // }).optional(),
   periodType: z.enum(["departure", "arrival"], {
     required_error: "정산 구분을 선택해 주세요.",
-  }),
+  }).optional(),
   startDate: z.string({
     required_error: "시작일은 필수 입력 항목입니다.",
-  }),
+  }).optional(),
   endDate: z.string({
     required_error: "종료일은 필수 입력 항목입니다.",
   }),
   dueDate: z.date({
     required_error: "정산 만료일은 필수 입력 항목입니다.",
-  }),
+  }).optional(),
   memo: z.string().optional(),
   taxFree: z.boolean().default(false),
   hasTax: z.boolean().default(true),
@@ -126,6 +126,9 @@ const formSchema = z.object({
   accountNumber: z.string().optional(),
   invoiceIssuedAt: z.date().optional(),
   depositReceivedAt: z.date().optional(),
+  driverBankCode: z.string().optional(),
+  driverBankAccountHolder: z.string().optional(),
+  driverBankAccountNumber: z.string().optional(),
 });
 
 
@@ -158,15 +161,15 @@ export function SettlementEditFormSheet() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      shipperName: "",
-      businessNumber: "",
-      shipperCeo: "",
+      //shipperName: "",
+      //businessNumber: "",
+      //shipperCeo: "",
       driverName: "",
       driverBusinessNumber: "",
       driverCeo: "",
-      manager: "",
-      managerContact: "",
-      managerEmail: "",
+      //manager: "",
+      //managerContact: "",
+      //managerEmail: "",
       periodType: "departure",
       startDate: format(new Date(), 'yyyy-MM-dd'),
       endDate: format(new Date(), 'yyyy-MM-dd'),
@@ -176,11 +179,15 @@ export function SettlementEditFormSheet() {
       hasTax: true,
       issueInvoice: false,
       paymentMethod: "bank_transfer",
-      bankName: "",
-      accountHolder: "",
-      accountNumber: "",
+      // bankName: "",
+      // accountHolder: "",
+      // accountNumber: "",
       invoiceIssuedAt: undefined,
       depositReceivedAt: undefined,
+      driverBankCode: "",
+      driverBankAccountHolder: "",
+      driverBankAccountNumber: "",
+
     },
   });
 
@@ -300,21 +307,21 @@ export function SettlementEditFormSheet() {
       
       //화주 데이터 로드
       setSelectedCompanyId(editingPurchaseBundle.companyId || '');
-      form.setValue('driverName', editingPurchaseBundle.companySnapshot?.name || '');
-      form.setValue('businessNumber', editingPurchaseBundle.companySnapshot?.businessNumber || '');
-      form.setValue('driverCeo', editingPurchaseBundle.companySnapshot?.ceoName || '');
-      console.log('selectedCompanyId:', selectedCompanyId);
+      //form.setValue('shipperName', editingPurchaseBundle.companySnapshot?.name || '');
+      //form.setValue('businessNumber', editingPurchaseBundle.companySnapshot?.businessNumber || '');
+      //form.setValue('shipperCeo', editingPurchaseBundle.companySnapshot?.ceoName || '');
+      //console.log('selectedCompanyId:', selectedCompanyId);
       // 담당자 데이터 로드
-      form.setValue('manager', editingPurchaseBundle.managerSnapshot?.name || '');
-      form.setValue(
-        'managerContact',
-        editingPurchaseBundle.managerSnapshot?.contact ||
-        editingPurchaseBundle.managerSnapshot?.phoneNumber ||
-        editingPurchaseBundle.managerSnapshot?.phone ||
-        editingPurchaseBundle.managerSnapshot?.mobile ||
-        ''
-      );
-      form.setValue('managerEmail', editingPurchaseBundle.managerSnapshot?.email || '');
+      //form.setValue('manager', editingPurchaseBundle.managerSnapshot?.name || '');
+      //form.setValue(
+      //  'managerContact',
+      //  editingPurchaseBundle.managerSnapshot?.contact ||
+      //  editingPurchaseBundle.managerSnapshot?.phoneNumber ||
+      //  editingPurchaseBundle.managerSnapshot?.phone ||
+      //  editingPurchaseBundle.managerSnapshot?.mobile ||
+      //  ''
+      //);
+      //form.setValue('managerEmail', editingPurchaseBundle.managerSnapshot?.email || '');
 
 
       form.setValue('periodType', editingPurchaseBundle.periodType || 'departure');
@@ -323,9 +330,15 @@ export function SettlementEditFormSheet() {
       form.setValue('memo', editingPurchaseBundle.settlementMemo || '');
       form.setValue('taxFree', editingPurchaseBundle.totalTaxAmount === 0);
       form.setValue('paymentMethod', mapPaymentMethodToSelectValue(editingPurchaseBundle.paymentMethod));
-      form.setValue('bankName', editingPurchaseBundle.bankCode || '');
-      form.setValue('accountHolder', editingPurchaseBundle.bankAccountHolder || '');
-      form.setValue('accountNumber', editingPurchaseBundle.bankAccount || '');
+      //form.setValue('bankName', editingPurchaseBundle.bankCode || '');
+      //form.setValue('accountHolder', editingPurchaseBundle.bankAccountHolder || '');
+      //form.setValue('accountNumber', editingPurchaseBundle.bankAccount || '');
+      form.setValue('driverName', editingPurchaseBundle.driverName || '');
+      form.setValue('driverBusinessNumber', editingPurchaseBundle.driverBusinessNumber || '');
+      //form.setValue('driverCeo', editingPurchaseBundle.driverCeo || '');
+      form.setValue('driverBankCode', editingPurchaseBundle.bankCode || editingPurchaseBundle.driverBankCode || '');
+      form.setValue('driverBankAccountHolder', editingPurchaseBundle.bankAccountHolder || editingPurchaseBundle.driverBankAccountHolder || '');
+      form.setValue('driverBankAccountNumber', editingPurchaseBundle.bankAccount || editingPurchaseBundle.driverBankAccountNumber || '');
       
       // 만료일 설정 (있는 경우)
       if (editingPurchaseBundle.settledAt) {
@@ -433,41 +446,43 @@ export function SettlementEditFormSheet() {
 
   
 
-  // 화주 데이터 - 대부분의 화물이 같은 화주일 경우 해당 화주를 기본값으로 설정
-  useEffect(() => {
-    if (!orders || orders.length === 0 || !isOpen) return;
+  // 화주 데이터 - 대부분의 화물이 같은 화주일 경우 해당 화주를 기본값으로 설정 -- 나중에 운송사 기능추가 삭제 금지
+  // useEffect(() => {
+  //   if (!orders || orders.length === 0 || !isOpen) return;
     
-    const shipperCounts: Record<string, { count: number, businessNumber: string, ceo: string }> = {};
+  //   const shipperCounts: Record<string, { count: number, businessNumber: string, ceo: string }> = {};
     
-    orders.forEach(order => {
-      if (order.companyName) {
-        if (!shipperCounts[order.companyName]) {
-          shipperCounts[order.companyName] = { 
-            count: 1,
-            businessNumber: order.companyBusinessNumber || '',
-            ceo: order.companyCeo || ''            
-          };
-        } else {
-          shipperCounts[order.companyName].count++;
-        }
-      }
-    });
+  //   orders.forEach(order => {
+  //     if (order.companyName) {
+  //       if (!shipperCounts[order.companyName]) {
+  //         shipperCounts[order.companyName] = { 
+  //           count: 1,
+  //           businessNumber: order.companyBusinessNumber || '',
+  //           ceo: order.companyCeo || ''            
+  //         };
+  //       } else {
+  //         shipperCounts[order.companyName].count++;
+  //       }
+  //     }
+  //   });
     
-    let maxCount = 0;
-    let mainShipper = '';
-    let mainBusinessNumber = '';
-    let mainShipperCeo = '';
+  //   let maxCount = 0;
+  //   let mainShipper = '';
+  //   let mainBusinessNumber = '';
+  //   let mainShipperCeo = '';
 
-    for (const shipper in shipperCounts) {
-      if (shipperCounts[shipper].count > maxCount) {
-        maxCount = shipperCounts[shipper].count;
-        mainShipper = shipper;
-        mainBusinessNumber = shipperCounts[shipper].businessNumber;
-        mainShipperCeo = shipperCounts[shipper].ceo;
-      }
-    }
+  //   for (const shipper in shipperCounts) {
+  //     if (shipperCounts[shipper].count > maxCount) {
+  //       maxCount = shipperCounts[shipper].count;
+  //       mainShipper = shipper;
+  //       mainBusinessNumber = shipperCounts[shipper].businessNumber;
+  //       mainShipperCeo = shipperCounts[shipper].ceo;
+  //     }
+  //   }
     
-  }, [orders, isOpen, form]);
+  // }, [orders, isOpen, form]);
+
+  
 
   // 정산 대상 화물 요약 계산
   const ordersSummary = useMemo(() => {
@@ -511,27 +526,31 @@ export function SettlementEditFormSheet() {
         console.log("편집 모드: 기존 sales bundle 수정", selectedPurchaseBundleId);
         // 편집 모드: 기존 sales bundle 수정
         const updateFields: ISettlementFormData = {
-          shipperId: selectedCompanyId || '',
-          shipperName: formValues.shipperName || '',
-          shipperCeo: formValues.shipperCeo || '',
-          businessNumber: formValues.businessNumber || '',
-          billingCompany: formValues.shipperName || '', // shipperName을 billingCompany로 사용
-          managerId: selectedManagerId || '',
-          manager: formValues.manager,
-          managerContact: formValues.managerContact,
-          managerEmail: formValues.managerEmail || '',
-          periodType: formValues.periodType,
-          startDate: formValues.startDate,
-          endDate: formValues.endDate,
+          //shipperId: selectedCompanyId || '',
+          //shipperName: formValues.shipperName || '',
+          //shipperCeo: formValues.shipperCeo || '',
+          //businessNumber: formValues.businessNumber || '',
+          //billingCompany: formValues.shipperName || '', // shipperName을 billingCompany로 사용
+          //managerId: selectedManagerId || '',
+          //manager: formValues.manager,
+          //managerContact: formValues.managerContact,
+          //managerEmail: formValues.managerEmail || '',
+          periodType: formValues.periodType || 'departure',
+          startDate: formValues.startDate || '',
+          endDate: formValues.endDate || '',
           dueDate: formValues.dueDate ? format(formValues.dueDate, 'yyyy-MM-dd') : '',
           memo: formValues.memo || '',
           taxFree: formValues.taxFree,
           hasTax: formValues.hasTax,
           issueInvoice: formValues.issueInvoice,
           paymentMethod: formValues.paymentMethod,
-          bankName: formValues.bankName || '',
-          accountHolder: formValues.accountHolder || '',
-          accountNumber: formValues.accountNumber || '',
+          bankName: formValues.bankName || formValues.driverBankCode || '',
+          accountHolder: formValues.accountHolder || formValues.driverBankAccountHolder || '',
+          accountNumber: formValues.accountNumber || formValues.driverBankAccountNumber || '',
+          // driverBankCode: formValues.driverBankCode || '',
+          // driverBankAccountHolder: formValues.driverBankAccountHolder || '',
+          // driverBankAccountNumber: formValues.driverBankAccountNumber || '',
+          
           totalAmount: calculatedTotals.totalFreight,
           totalTaxAmount: calculatedTotals.tax,          
           totalAmountWithTax: calculatedTotals.totalAmount,
@@ -540,6 +559,10 @@ export function SettlementEditFormSheet() {
           //orderCount: orders.length,
           invoiceIssuedAt: formValues.invoiceIssuedAt ? format(formValues.invoiceIssuedAt, 'yyyy-MM-dd') : null,
           depositReceivedAt: formValues.depositReceivedAt ? format(formValues.depositReceivedAt, 'yyyy-MM-dd') : null,
+          driverId: selectedDriverId || '',
+          driverName: formValues.driverName || '',
+          driverBusinessNumber: formValues.driverBusinessNumber || '',
+          
         };
         console.log('updateFields:', updateFields);
 
@@ -555,31 +578,37 @@ export function SettlementEditFormSheet() {
         const formData: ISettlementFormData = {
           shipperId: selectedCompanyId || '',
           managerId: selectedManagerId || '',
-          shipperName: formValues.shipperName || '',
-          shipperCeo: formValues.shipperCeo || '', // FormValues에는 없지만 ISettlementFormData에는 있음
-          businessNumber: formValues.businessNumber || '',
-          billingCompany: formValues.shipperName || '', // shipperName을 billingCompany로 사용
-          manager: formValues.manager,
-          managerContact: formValues.managerContact,
-          managerEmail: formValues.managerEmail || '',
-          periodType: formValues.periodType,
-          startDate: formValues.startDate,
-          endDate: formValues.endDate,
+          //shipperName: formValues.shipperName || '',
+          //shipperCeo: formValues.shipperCeo || '', // FormValues에는 없지만 ISettlementFormData에는 있음
+          //businessNumber: formValues.businessNumber || '',
+          //billingCompany: formValues.shipperName || '', // shipperName을 billingCompany로 사용
+          //manager: formValues.manager,
+          //managerContact: formValues.managerContact,
+          //managerEmail: formValues.managerEmail || '',
+          periodType: formValues.periodType || 'departure',
+          startDate: formValues.startDate || '',
+          endDate: formValues.endDate || '',
           dueDate: formValues.dueDate ? format(formValues.dueDate, 'yyyy-MM-dd') : '',
           memo: formValues.memo || '',
           taxFree: formValues.taxFree,
           hasTax: formValues.hasTax,
           issueInvoice: formValues.issueInvoice,
           paymentMethod: formValues.paymentMethod,
-          bankName: formValues.bankName || '',
-          accountHolder: formValues.accountHolder || '',
-          accountNumber: formValues.accountNumber || '',
+          bankName: formValues.bankName || formValues.driverBankCode || '',
+          accountHolder: formValues.accountHolder || formValues.driverBankAccountHolder || '',
+          accountNumber: formValues.accountNumber || formValues.driverBankAccountNumber || '',
+          // driverBankCode: formValues.driverBankCode || '',
+          // driverBankAccountHolder: formValues.driverBankAccountHolder || '',
+          // driverBankAccountNumber: formValues.driverBankAccountNumber || '',
           totalAmount: ordersSummary.totalFreight,
           totalTaxAmount: taxAmount,
           totalAmountWithTax: finalAmount + taxAmount,
           orderCount: orders.length,
           invoiceIssuedAt: formValues.invoiceIssuedAt ? format(formValues.invoiceIssuedAt, 'yyyy-MM-dd') : null,
           depositReceivedAt: formValues.depositReceivedAt ? format(formValues.depositReceivedAt, 'yyyy-MM-dd') : null,
+          driverId: selectedDriverId || '',
+          driverName: formValues.driverName || '',
+          driverBusinessNumber: formValues.driverBusinessNumber || '',
         };
         
         console.log("handleSubmit formData:", formData);
@@ -714,7 +743,7 @@ export function SettlementEditFormSheet() {
     const groups: Record<string, { 
       orders: ISettlementWaitingItem[], 
       total: number, 
-      driver: { id: string, name: string, businessNumber: string} 
+      driver: { id: string, name: string, businessNumber: string, bankCode: string, bankAccountHolder: string, bankAccountNumber: string} 
     }> = {};
 
     console.log("화주별 그룹화 orders", orders);
@@ -731,6 +760,9 @@ export function SettlementEditFormSheet() {
             id: order.assignedDriverId || '', 
             name: order.assignedDriverSnapshot?.name || '', 
             businessNumber: order.assignedDriverSnapshot?.businessNumber || '', 
+            bankCode: order.assignedDriverSnapshot?.bank?.bankCode || '',
+            bankAccountHolder: order.assignedDriverSnapshot?.bank?.bankAccountHolder || '',
+            bankAccountNumber: order.assignedDriverSnapshot?.bank?.bankAccountNumber || ''
           } 
         };
       }
@@ -1101,9 +1133,9 @@ export function SettlementEditFormSheet() {
                         form.setValue("driverName", driver.name);
                         form.setValue("driverBusinessNumber", driver.businessNumber);
                         //form.setValue("driverCeo", driver.ceoName || driver.ceo || driver.companyCeo);
-                        //form.setValue("accountHolder", driver.bankAccountHolder || driver.accountHolder || '');
-                        //form.setValue("accountNumber", driver.bankAccountNumber || driver.accountNumber || '');
-                        //form.setValue("bankName", driver.bankCode);
+                        form.setValue("driverBankAccountHolder", driver.bankAccountHolder || driver.accountHolder || '');
+                        form.setValue("driverBankAccountNumber", driver.bankAccountNumber || driver.accountNumber || '');
+                        form.setValue("driverBankCode", driver.bankCode);
                         console.log("driver.id", driver.id);
 
                         setSelectedDriverId(driver.id);
