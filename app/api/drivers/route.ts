@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { and, eq, ilike, or, sql } from 'drizzle-orm';
+import { and, eq, ilike, or, sql, desc } from 'drizzle-orm';
 import { db } from '@/db';
 import { drivers, drivercompanyTypeEnum } from '@/db/schema/drivers';
 import { users } from '@/db/schema/users';
@@ -75,6 +75,7 @@ export async function GET(request: NextRequest) {
         .where(query)
         .limit(pageSize)
         .offset(offset)
+        .orderBy(desc(drivers.updatedAt))
         .execute(),
       db
         .select({ count: sql<number>`count(*)` })
@@ -101,7 +102,10 @@ export async function GET(request: NextRequest) {
       inactiveReason: driver.inactiveReason || '',
       lastDispatchedAt: driver.lastDispatchedAt?.toISOString() || null,
       createdAt: driver.createdAt?.toISOString() || '',
-      updatedAt: driver.updatedAt?.toISOString() || ''
+      updatedAt: driver.updatedAt?.toISOString() || '',
+      bankCode: driver.bankCode,
+      bankAccountNumber: driver.bankAccountNumber,
+      bankAccountHolder: driver.bankAccountHolder
     }));
 
     return NextResponse.json({
@@ -144,7 +148,11 @@ const CreateDriverSchema = z.object({
   businessNumber: z.string().min(10, '올바른 사업자번호 형식이 아닙니다.'),
   manufactureYear: z.string().optional(),
   isActive: z.boolean().default(true),
-  inactiveReason: z.string().optional()
+  inactiveReason: z.string().optional(),
+  // 은행 정보 필드 추가
+  bankCode: z.string().optional().nullable(),
+  bankAccountNumber: z.string().min(10, '올바른 계좌번호 형식이 아닙니다.').max(20, '올바른 계좌번호 형식이 아닙니다.').optional().nullable(),
+  bankAccountHolder: z.string().optional().nullable()
 });
 
 // 차주 등록 API (POST /api/drivers)
@@ -270,7 +278,11 @@ export async function POST(request: NextRequest) {
           createdBy: requestUser.id,
           createdBySnapshot: userSnapshot,
           updatedBy: requestUser.id,
-          updatedBySnapshot: userSnapshot
+          updatedBySnapshot: userSnapshot,
+          // 은행 정보 추가
+          bankCode: driverData.bankCode,
+          bankAccountNumber: driverData.bankAccountNumber,
+          bankAccountHolder: driverData.bankAccountHolder
         }as any)
         .returning();
       

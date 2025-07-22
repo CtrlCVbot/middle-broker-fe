@@ -171,6 +171,8 @@ export const registerDriver = async (driverData: any): Promise<IBrokerDriver> =>
  * @returns 수정된 차주 정보
  */
 export const updateDriver = async (id: string, driverData: any): Promise<IBrokerDriver> => {
+  console.log("updateDriver 호출됨: id", id);
+  console.log("updateDriver 호출됨: driverData", driverData);
   // 프론트엔드 폼 데이터를 API 요청 형식으로 변환
   const requestData = mapDriverFormToApiRequest(driverData);
   

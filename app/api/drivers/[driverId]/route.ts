@@ -23,21 +23,26 @@ const UpdateDriverSchema = z.object({
   address: z.object({
     roadAddress: z.string(),
     jibunAddress: z.string().optional(),
-    postalCode: z.string(),
+    postalCode: z.string().optional(),
     detailAddress: z.string().optional(),
-    sido: z.string(),
-    sigungu: z.string(),
-    bname: z.string(),
-    roadname: z.string(),
+    sido: z.string().optional(),
+    sigungu: z.string().optional(),
+    bname: z.string().optional(),
+    roadname: z.string().optional(),
     lng: z.number().optional(),
     lat: z.number().optional()
-  }),
+  }).optional(),
   companyType: z.enum(['개인', '소속']).default('개인'),
   companyId: z.string().uuid().optional(),
   businessNumber: z.string().min(10, '올바른 사업자번호 형식이 아닙니다.'),
   manufactureYear: z.string().optional(),
   isActive: z.boolean().default(true),
-  inactiveReason: z.string().optional()
+  inactiveReason: z.string().optional(),
+
+  // 은행 정보 필드 추가
+  bankCode: z.string().optional().nullable(),
+  bankAccountNumber: z.string().min(10, '올바른 계좌번호 형식이 아닙니다.').max(20, '올바른 계좌번호 형식이 아닙니다.').optional().nullable(),
+  bankAccountHolder: z.string().optional().nullable()
 });
 
 // GET /api/drivers/[driverId] - 차주 상세 조회
@@ -92,7 +97,11 @@ export async function GET(
       createdBy: driver.createdBy,
       createdBySnapshot: driver.createdBySnapshot,
       updatedBy: driver.updatedBy,
-      updatedBySnapshot: driver.updatedBySnapshot
+      updatedBySnapshot: driver.updatedBySnapshot,
+      // 은행 정보 추가
+      bankCode: driver.bankCode,
+      bankAccountNumber: driver.bankAccountNumber,
+      bankAccountHolder: driver.bankAccountHolder
     };
 
     return NextResponse.json(responseData);
@@ -122,6 +131,7 @@ export async function PUT(
     }
 
     const body = await request.json();
+    console.log("body!!!", body);
 
     // 요청 데이터 검증
     const validationResult = UpdateDriverSchema.safeParse(body);
@@ -208,7 +218,11 @@ export async function PUT(
         inactiveReason: updateData.inactiveReason,
         updatedBy: requestUser.id,
         updatedBySnapshot: userSnapshot,
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        // 은행 정보 추가
+        bankCode: updateData.bankCode,
+        bankAccountNumber: updateData.bankAccountNumber,
+        bankAccountHolder: updateData.bankAccountHolder
       }as any)
       .where(eq(drivers.id, driverId))
       .returning();

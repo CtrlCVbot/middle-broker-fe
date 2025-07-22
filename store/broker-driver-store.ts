@@ -88,7 +88,7 @@ interface IBrokerDriverState {
   toggleDriverSelection: (id: string) => void;
   clearSelectedDriverIds: () => void;
   
-  // 차주 데이터 관리
+  // 차주 데이터 관리 - 목업데이터 사용 현재사용안함 -> updateDriverWithAPI 사용
   updateDriver: (driver: IBrokerDriver) => void;
   
   // API 호출 메서드 (실제 백엔드 통신)

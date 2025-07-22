@@ -44,6 +44,9 @@ const basicInfoSchema = z.object({
   businessNumber: z.string().optional(),
   address: z.string().optional(),
   status: z.enum(["활성", "비활성"]).default("활성"),
+  bankCode: z.string().optional(),
+  bankAccountNumber: z.string().optional(),
+  bankAccountHolder: z.string().optional(),
 });
 
 // 차량 정보 스키마
@@ -119,7 +122,7 @@ export function BrokerDriverRegisterSheet({
     notes: false,
   });
   
-  const { updateDriver, registerDriverWithAPI } = useBrokerDriverStore();
+  const { updateDriverWithAPI, registerDriverWithAPI } = useBrokerDriverStore();
 
   // 외부에서 제어되는 경우 내부 상태 동기화
   useEffect(() => {
@@ -151,6 +154,7 @@ export function BrokerDriverRegisterSheet({
   // 폼 기본값 설정
   const getFormDefaultValues = () => {
     if (mode === 'edit' && driver) {
+      console.log("driver!!!", driver);
       return {
         basicInfo: {
           name: driver.name || "",
@@ -158,6 +162,9 @@ export function BrokerDriverRegisterSheet({
           businessNumber: driver.businessNumber || "",
           address: driver.address || "",
           status: driver.status || "활성",
+          bankCode: driver.bankCode || "",
+          bankAccountNumber: driver.bankAccountNumber || "",
+          bankAccountHolder: driver.bankAccountHolder || "",
         },
         vehicleInfo: {
           vehicleNumber: driver.vehicleNumber || "",
@@ -186,6 +193,9 @@ export function BrokerDriverRegisterSheet({
         businessNumber: "",
         address: "",
         status: "활성" as DriverStatus,
+        bankCode: "",
+        bankAccountNumber: "",
+        bankAccountHolder: "",
       },
       vehicleInfo: {
         vehicleNumber: "",
@@ -255,7 +265,11 @@ export function BrokerDriverRegisterSheet({
               phone: data.basicInfo.phone,
               businessNumber: data.basicInfo.businessNumber || "0000000000",
               address: data.basicInfo.address || "",
-              status: data.basicInfo.status
+              status: data.basicInfo.status,
+              // 은행 정보 추가
+              bankCode: data.basicInfo.bankCode || "",
+              bankAccountNumber: data.basicInfo.bankAccountNumber || "",
+              bankAccountHolder: data.basicInfo.bankAccountHolder || "",
             },
             vehicleInfo: {
               vehicleNumber: data.vehicleInfo.vehicleNumber,
@@ -308,6 +322,10 @@ export function BrokerDriverRegisterSheet({
             length: data.vehicleInfo.cargoBoxLength || ""
           },
           manufactureYear: data.vehicleInfo.manufactureYear || "",
+          // 은행 정보 추가
+          bankCode: data.basicInfo.bankCode || "",
+          bankAccountNumber: data.basicInfo.bankAccountNumber || "",
+          bankAccountHolder: data.basicInfo.bankAccountHolder || "",
           // account: {
           //   id: data.accountInfo.id,
           //   email: data.accountInfo.email || "",
@@ -322,7 +340,7 @@ export function BrokerDriverRegisterSheet({
         });
         
         // 스토어 업데이트
-        updateDriver(formattedDriver);
+        updateDriverWithAPI(driver?.id || "", formattedDriver);
         
         // 성공 콜백 호출
         if (onUpdateSuccess) {

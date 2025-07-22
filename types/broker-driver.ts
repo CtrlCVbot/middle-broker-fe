@@ -47,6 +47,11 @@ export interface IBrokerDriver {
   isActive?: boolean;
   inactiveReason?: string;
   
+  // 은행 정보
+  bankCode?: string;
+  bankAccountNumber?: string;
+  bankAccountHolder?: string;
+  
   // 추가 속성
   cargoBox?: ICargoBox;
   manufactureYear?: string;
