@@ -521,7 +521,8 @@ export function mapApiResponseToBrokerOrderDetail(
     
     // 화물 정보
     cargo: {
-      type: order.cargoName || '일반화물',
+      name: order.cargoName || '',
+      type: order.requestedVehicleType || '',
       options: [],
       weight: order.requestedVehicleWeight || '',
       remark: order.memo || ''

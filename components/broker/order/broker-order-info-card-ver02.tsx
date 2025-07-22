@@ -52,6 +52,7 @@ interface LocationInfo {
 }
 
 interface CargoInfo {
+  name?: string;
   type: string;
   options?: string[];
   weight?: string;
@@ -202,8 +203,10 @@ export function BrokerOrderInfoCard({
     avatar: "/images/driver-placeholder.png"
   };
 
+  console.log('cargo!!!', cargo);
   const cargoInfo = {
-    name: cargo.type,
+    name: cargo.name || "",
+    type: cargo.type,
     vehicleType: cargo.vehicleType || "",
     weight: cargo.weight || "",
     options: cargo.options || [],
@@ -255,7 +258,7 @@ export function BrokerOrderInfoCard({
     }
   ];
 
-  console.log('status1', status);
+  console.log('cargoInfo!!!', cargoInfo);
 
   return (
     <div className="space-y-4">

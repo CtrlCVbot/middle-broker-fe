@@ -41,6 +41,7 @@ export interface IBrokerOrderDetail {
     type: string;
     options?: string[];
     weight?: string;
+    name?: string;
     remark?: string;
   };
   vehicle: {

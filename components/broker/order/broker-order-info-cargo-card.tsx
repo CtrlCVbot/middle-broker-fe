@@ -19,6 +19,7 @@ interface ICargoCardProps {
   cargoInfo: {
     name: string;
     vehicleType: string;
+    type: string;
     weight: string;
     options: string[];
     remark: string;
@@ -32,6 +33,8 @@ export function CargoCard({
 }: ICargoCardProps) {
   const [isWarningsVisible, setIsWarningsVisible] = useState(false);
   
+
+  console.log('cargoInfo!!!!', cargoInfo);
   return (
     <div className="bg-white rounded-b-lg p-4">
 
@@ -97,16 +100,17 @@ export function CargoCard({
       <div className=" mt-2">
         <div className="flex items-center gap-2">
         <div className="flex items-left gap-1"> 
-            {cargoInfo.vehicleType && (
-              <span className="inline-flex items-center bg-primary/10 px-2 py-0.5 rounded text-sm">
-                {cargoInfo.vehicleType}
-              </span>
-            )}
             {cargoInfo.weight && (
               <span className="inline-flex items-center bg-primary/10 px-2 py-0.5 rounded text-sm">
-                {cargoInfo.weight}
+                {cargoInfo.weight}      
               </span>
             )}
+            {cargoInfo.type && (
+              <span className="inline-flex items-center bg-primary/10 px-2 py-0.5 rounded text-sm">
+                {cargoInfo.type}
+              </span>
+            )}
+            
           </div>
           <div className="flex items-center gap-1">
             {cargoInfo.options && cargoInfo.options.length > 0 && cargoInfo.options.map((option, index) => (

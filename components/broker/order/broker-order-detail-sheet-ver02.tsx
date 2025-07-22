@@ -645,13 +645,11 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
             <div className="flex-grow overflow-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                 {/* 화물 정보 카드 */} 
-
                 <div className={cn(
                   "overflow-hidden", 
                   "md:block", 
                   activeTab !== "cargo" && "hidden"
-                )}>
-                <div>
+                )}>                
                   {editMode === "cargo" ? (
                     <BrokerOrderInfoEditForm
                       initialData={{
@@ -723,8 +721,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                       onStatusChange={handleStatusUpdate}
                       isSaleClosed={isSaleClosed}
                     />
-                  )}
-                </div>
+                  )}                
                 </div>
                 
                 {/* 배차 정보 카드 */}
