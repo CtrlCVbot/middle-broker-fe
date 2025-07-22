@@ -63,6 +63,8 @@ export interface IUser {
   company_id?: string;
   created_at?: string;
   system_access_level?: SystemAccessLevel;
+
+  companyType?: string;
 }
 
 // 사용자 필터 인터페이스

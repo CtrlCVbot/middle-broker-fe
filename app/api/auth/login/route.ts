@@ -7,6 +7,7 @@ import { IUser } from '@/types/user';
 import { signAccessToken, signRefreshToken } from '@/utils/jwt';
 import { cookies } from 'next/headers';
 import { v4 as uuidv4 } from 'uuid';
+import { companies } from '@/db/schema/companies';
 
 // 리프레시 토큰 유효기간 (7일)
 const REFRESH_TOKEN_EXPIRES_IN = 7 * 24 * 60 * 60 * 1000; // 7일 (밀리초)
@@ -25,12 +26,36 @@ export async function POST(req: NextRequest) {
     }
 
     // 이메일로 사용자 조회
-    const user = await db.query.users.findFirst({
-      where: eq(users.email, email)
-    });
+    // const user = await db.query.users.findFirst({
+    //   where: eq(users.email, email),
+    //   with: {
+    //     company: true
+    //   }
+    // });
+    const result = await db.select()
+    .from(users)
+    .leftJoin(companies, eq(users.company_id, companies.id))
+    .where(eq(users.email, email))
+    .limit(1);
+    console.log('user', result);
+
+    if (!result || result.length === 0) {
+      return NextResponse.json(
+        { error: 'USER_NOT_FOUND', message: '존재하지 않는 사용자입니다.' },
+        { status: 401 }
+      );
+    }
+
+    const user = result[0];
+
+    const loginUser = {
+      ...result[0].users,
+      company: result[0].companies,
+    };
+    console.log('loginUser', loginUser);
 
     // 사용자가 존재하지 않는 경우
-    if (!user) {
+    if (!result[0]) {
       return NextResponse.json(
         { error: 'USER_NOT_FOUND', message: '존재하지 않는 사용자입니다.' },
         { status: 401 }
@@ -38,7 +63,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 계정 상태 확인
-    if (user.status !== 'active') {
+    if (loginUser.status !== 'active') {
       return NextResponse.json(
         { 
           error: 'ACCOUNT_LOCKED', 
@@ -49,7 +74,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 비밀번호 검증 (단순 문자열 비교)
-    if (password !== user.password) {
+    if (password !== loginUser.password) {
       return NextResponse.json(
         { error: 'INVALID_CREDENTIALS', message: '비밀번호가 일치하지 않습니다.' },
         { status: 403 }
@@ -58,16 +83,17 @@ export async function POST(req: NextRequest) {
 
     // 사용자 정보 변환 (스네이크 케이스 -> 카멜 케이스)
     const userData: IUser = {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      phoneNumber: user.phone_number || '',
-      companyId: user.company_id || '',
-      systemAccessLevel: user.system_access_level,
-      domains: user.domains as any,
-      status: user.status,
-      createdAt: user.created_at,
-      updatedAt: user.updated_at,
+      id: loginUser.id,
+      email: loginUser.email,
+      name: loginUser.name,
+      phoneNumber: loginUser.phone_number || '',
+      companyId: loginUser.company_id || '',
+      systemAccessLevel: loginUser.system_access_level,
+      domains: loginUser.domains as any,
+      status: loginUser.status,
+      createdAt: loginUser.created_at,
+      updatedAt: loginUser.updated_at,
+      companyType: loginUser.company?.type || '',
     };
 
     // 토큰 ID 생성
@@ -78,14 +104,14 @@ export async function POST(req: NextRequest) {
     
     // JWT 토큰 생성
     const accessToken = await signAccessToken({
-      id: user.id,
-      email: user.email
+      id: loginUser.id,
+      email: loginUser.email
     });
 
     // 리프레시 토큰 생성
     const refreshToken = await signRefreshToken({
-      id: user.id,
-      email: user.email,
+      id: loginUser.id,
+      email: loginUser.email,
       tokenId: tokenId
     }, '7d');
     
@@ -98,7 +124,7 @@ export async function POST(req: NextRequest) {
     // 리프레시 토큰을 데이터베이스에 저장
     await db.insert(userTokens).values({
       id: tokenId,
-      userId: user.id,
+      userId: loginUser.id,
       refreshToken: refreshToken,
       expiresAt: expiresAt,
       userAgent: userAgent,
