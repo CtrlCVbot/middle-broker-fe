@@ -417,10 +417,11 @@ export function BrokerDriverRegisterSheet({
       <span>차주 등록</span>
     </Button>
   ) : (
-    <Button variant="outline" className="flex items-center gap-1">
+    <Button hidden={true} variant="outline" className="flex items-center gap-1">
       <Edit className="h-4 w-4" />
       <span>수정</span>
     </Button>
+    
   );
 
   return (
