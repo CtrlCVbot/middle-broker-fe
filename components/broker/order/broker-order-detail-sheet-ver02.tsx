@@ -561,14 +561,14 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
         onInteractOutside={(e) => e.preventDefault()} // 외부 클릭으로 닫히는 것 방지
       >
         {/* 화면에 노출되지 않지만 접근성을 위한 타이틀 */}
-        <SheetTitle className="sr-only">중개 화물 상세 정보</SheetTitle>
+        <SheetTitle className="sr-only">주선 화물 상세 정보</SheetTitle>
         
         {isLoading ? (
           // 로딩 상태
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">중개 화물 정보를 불러오는 중...</p>
+              <p className="text-muted-foreground">주선 화물 정보를 불러오는 중...</p>
             </div>
           </div>
         ) : orderData ? (
@@ -624,19 +624,19 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
             {/* 모바일 전용 탭 메뉴 */}
             <div className="md:hidden border-b">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid grid-cols-3 w-full">
+                <TabsList className="grid grid-cols-2 w-full">
                   <TabsTrigger value="cargo" className="text-xs">
                     <Package className="h-4 w-4 mr-1" />
-                    화물 정보
+                    요청 화물
                   </TabsTrigger>
                   <TabsTrigger value="driver" className="text-xs">
                     <Truck className="h-4 w-4 mr-1" />
-                    배차 정보
+                    배차/정산
                   </TabsTrigger>
-                  <TabsTrigger value="settlement" className="text-xs">
+                  {/* <TabsTrigger value="settlement" className="text-xs">
                     <CreditCard className="h-4 w-4 mr-1" />
                     운임/정산
-                  </TabsTrigger>
+                  </TabsTrigger> */}
                 </TabsList>
               </Tabs>
             </div>
@@ -645,6 +645,12 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
             <div className="flex-grow overflow-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                 {/* 화물 정보 카드 */} 
+
+                <div className={cn(
+                  "overflow-hidden", 
+                  "md:block", 
+                  activeTab !== "cargo" && "hidden"
+                )}>
                 <div>
                   {editMode === "cargo" ? (
                     <BrokerOrderInfoEditForm
@@ -718,6 +724,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                       isSaleClosed={isSaleClosed}
                     />
                   )}
+                </div>
                 </div>
                 
                 {/* 배차 정보 카드 */}
