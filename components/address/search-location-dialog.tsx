@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search as SearchIcon, MapPin, Building, Loader2 } from 'lucide-react';
+import { Search as SearchIcon, MapPin, Building, Loader2, LineSquiggle } from 'lucide-react';
 
 // 카카오 주소 검색 결과 인터페이스
 export interface IKakaoAddressResult {
@@ -70,6 +70,7 @@ export function SearchLocationDialog({ open, onOpenChange, onSelect }: ISearchLo
       const data = await response.json();
       if (data.documents && Array.isArray(data.documents)) {
         setSearchResults(data.documents);
+        console.log("data.documents", data.documents);
       } else {
         setSearchResults([]);
         setSearchError('검색 결과가 없습니다.');
@@ -93,7 +94,7 @@ export function SearchLocationDialog({ open, onOpenChange, onSelect }: ISearchLo
         <DialogHeader>
           <DialogTitle>주소 검색</DialogTitle>
           <DialogDescription>
-            찾으시는 주소의 도로명, 지번, 건물명을 입력하세요
+            찾으시는 주소의 도로명, 지번, 건물명을 입력하세요.
           </DialogDescription>
         </DialogHeader>
         <div className="flex gap-2 my-4">
@@ -123,16 +124,17 @@ export function SearchLocationDialog({ open, onOpenChange, onSelect }: ISearchLo
                   >
                     <div className="flex flex-col gap-1 w-full">
                       <div className="flex items-start">
-                        <Building className="h-4 w-4 mr-2 shrink-0 mt-0.5 text-primary" />
-                        <span className="font-medium">{result.road_address?.address_name || result.address?.address_name}</span>
+                        <LineSquiggle className="h-4 w-4 mr-2 shrink-0 mt-0.5 text-primary" />
+                        <span className="font-medium">{result.address_name}</span>
                       </div>
-                      {(result.address_type === 'REGION' || result.address_type === 'REGION_ADDR') && (
+                      
+                      {(result.address_type === 'REGION' || result.address_type === 'REGION_ADDR') && (result.road_address?.address_name) && (
                         <div className="flex items-start text-sm text-muted-foreground pl-6">
                           <MapPin className="h-3.5 w-3.5 mr-2 shrink-0 mt-0.5" />
                           <span>도로명: {result.road_address?.address_name}</span>
                         </div>
                       )}
-                      {(result.address_type === 'ROAD' || result.address_type === 'ROAD_ADDR') && (
+                      {(result.address_type === 'ROAD' || result.address_type === 'ROAD_ADDR') && (result.address?.address_name) && (
                         <div className="flex items-start text-sm text-muted-foreground pl-6">
                           <MapPin className="h-3.5 w-3.5 mr-2 shrink-0 mt-0.5" />
                           <span>지번: {result.address?.address_name}</span>
