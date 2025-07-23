@@ -44,7 +44,7 @@ export function BrokerCompanyRegisterSheet({
   onUpdateSuccess,
   company,
   trigger,
-  mode,
+  mode = 'register',
   open,
   onOpenChange
 }: BrokerCompanyRegisterSheetProps) {

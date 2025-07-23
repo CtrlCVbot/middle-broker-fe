@@ -289,7 +289,7 @@ export function BrokerCompanyForm({
         bankAccountHolder: '',
       });
     }
-  }, [initialData]); // form을 의존성에서 제외하여 무한 루프 방지
+  }, [initialData?.id, initialData?.name, initialData?.businessNumber]); // 구체적인 필드만 의존성으로 설정
 
   // 전화번호 자동 하이픈 추가 함수
   const formatPhoneNumber = (value: string) => {

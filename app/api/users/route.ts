@@ -96,9 +96,9 @@ const CreateUserSchema = z.object({
   company_id: z.string().uuid(),
   system_access_level: z.enum(SYSTEM_ACCESS_LEVELS),
   domains: z.array(z.enum(USER_DOMAINS)),
-  department: z.string().optional(),
-  position: z.string().optional(),
-  rank: z.string().optional(),
+  department: z.string().optional().nullable(),
+  position: z.string().optional().nullable(),
+  rank: z.string().optional().nullable(),
   //requestUserId: z.string().uuid('잘못된 요청 사용자 ID 형식입니다.')
 });
 
