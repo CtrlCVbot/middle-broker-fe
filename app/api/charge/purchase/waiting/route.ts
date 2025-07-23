@@ -6,6 +6,7 @@ import { orderDispatches } from '@/db/schema/orderDispatches';
 //import { orderSales } from '@/db/schema/orderPurchases';
 import { orderPurchases } from '@/db/schema/orderPurchases';
 import { companies } from '@/db/schema/companies';
+import { drivers } from '@/db/schema/drivers';
 
 // 정산 대기 목록 조회 API
 export async function GET(request: NextRequest) {
@@ -104,9 +105,14 @@ export async function GET(request: NextRequest) {
         amount: orderPurchases.subtotalAmount,
         amountWithTax: orderPurchases.totalAmount,
         assignedDriverId: orderDispatches.assignedDriverId,
+        driverId: orderDispatches.assignedDriverId,
+          // driverBankCode: drivers.bankCode,
+          // driverBankAccountHolder: drivers.bankAccountHolder,
+          // driverBankAccount: drivers.bankAccountNumber,
       })
       .from(orders)
       .leftJoin(companies, eq(orders.companyId, companies.id))
+      //.leftJoin(drivers, eq(orderDispatches.assignedDriverId, drivers.id))
       .innerJoin(orderDispatches, eq(orders.id, orderDispatches.orderId))
       .innerJoin(orderPurchases, eq(orders.id, orderPurchases.orderId))
       .where(query)

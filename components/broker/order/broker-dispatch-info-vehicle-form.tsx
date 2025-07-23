@@ -317,6 +317,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
       let finalDriver = selectedDriver;
       
       
+      
       // 선택된 차주가 없으면 폼 데이터로 생성
       if (!finalDriver) {
         toast({
@@ -342,6 +343,8 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
           bankAccountHolder: finalDriver.bankAccountHolder
         }
       };
+      console.log("assignedDriverSnapshot : ", assignedDriverSnapshot);
+      //return;
       
       // 사용자 ID 필드 찾기
       const driverId = finalDriver.id || null;
@@ -361,6 +364,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
       };
       
       console.log("업데이트할 필드:", fields);
+      
       
       // 특이사항이 있는 경우 메모로 추가
       // if (specialNotes.length > 0) {

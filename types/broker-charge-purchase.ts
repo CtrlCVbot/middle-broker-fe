@@ -173,7 +173,12 @@ export interface ISettlementWaitingItem {
   isClosed: boolean;
   flowStatus: string;
   amount: number;
-  
+
+  // // 배차 정산 관련 정보 -> 매입부분에 필요
+  // driverId?: string;  
+  // driverBankCode?: string;
+  // driverBankAccountHolder?: string;
+  // driverBankAccount?: string;
 }
 
 // 정산 대기 목록 페이지 응답 타입
