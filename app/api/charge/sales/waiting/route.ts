@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       db.select({
         id: orderSales.id,
         orderId: orderSales.orderId,
-        companyId: orderSales.companyId,
+        companyId: orders.companyId,//orderSales.companyId,은 주선사 정보를 저장하는 거라 화주 id를 가져오려고 변경함
         companyName: companies.name,
         companyBusinessNumber: companies.businessNumber,
         companyCeo: companies.ceoName,

@@ -908,6 +908,7 @@ export function SettlementEditFormSheet() {
                         form.setValue("bankName", company.bankCode);
                         console.log("company.id", company.id);
 
+                        console.log("company.id", company.id);
                         setSelectedCompanyId(company.id);
                         // 회사 선택 시 담당자 목록 로드
                         if (selectedCompanyId) {
