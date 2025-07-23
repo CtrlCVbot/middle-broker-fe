@@ -271,11 +271,12 @@ export class AddressService {
    * @param type 주소 타입 ('pickup' | 'delivery')
    * @param limit 조회할 주소 개수 (기본값: 10, 최대: 20)
    */
-  static async getRecentAddresses(type: 'pickup' | 'delivery', limit: number = 10): Promise<IAddress[]> {
+  static async getRecentAddresses(type: 'pickup' | 'delivery', limit: number = 10, selectedCompanyId?: string): Promise<IAddress[]> {
     try {
       const queryParams = new URLSearchParams({
         type,
-        limit: Math.min(Math.max(limit, 1), 20).toString()
+        limit: Math.min(Math.max(limit, 1), 20).toString(),
+        companyId: selectedCompanyId || ''
       });
 
       const response = await apiClient.get<{

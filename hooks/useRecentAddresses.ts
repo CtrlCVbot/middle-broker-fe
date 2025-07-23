@@ -8,6 +8,7 @@ interface UseRecentAddressesOptions {
   type: 'pickup' | 'delivery'; // 필수 파라미터로 변경
   limit?: number;
   enabled?: boolean;
+  selectedCompanyId?: string;
 }
 
 // 쿼리 결과 타입
@@ -53,16 +54,17 @@ interface RecentAddressesQueryResult {
  */
 export const useRecentAddresses = (options: UseRecentAddressesOptions): RecentAddressesQueryResult => {
   const { user } = useAuthStore();
-  const { type, limit = 10, enabled = true } = options;
+  const { type, limit = 10, enabled = true, selectedCompanyId } = options;
 
   // 쿼리 키 생성 - 사용자의 회사 ID와 타입, limit을 포함
-  const queryKey = ['recent-addresses', user?.companyId, type, limit];
+  const queryKey = ['recent-addresses', selectedCompanyId, type, limit];
+  console.log('queryKey', queryKey);
 
   // React Query 설정
   const queryResult: UseQueryResult<IAddress[], Error> = useQuery({
     queryKey,
-    queryFn: () => AddressService.getRecentAddresses(type, limit),
-    enabled: enabled && !!user?.companyId && !!type,
+    queryFn: () => AddressService.getRecentAddresses(type, limit, selectedCompanyId),
+    enabled: enabled && !!selectedCompanyId && !!type,
     staleTime: 5 * 60 * 1000, // 5분 동안 fresh 상태 유지
     gcTime: 10 * 60 * 1000, // 10분 동안 캐시 유지 (구 cacheTime)
     retry: 2, // 실패 시 2번 재시도

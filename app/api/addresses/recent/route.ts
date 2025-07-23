@@ -19,7 +19,8 @@ const RecentAddressQuerySchema = z.object({
     if (!val) return 10;
     const num = parseInt(val, 10);
     return isNaN(num) ? 10 : Math.min(Math.max(num, 1), 20); // 1-20 범위로 제한
-  })
+  }),
+  companyId: z.string(),
 });
 
 // 응답 인터페이스
@@ -131,7 +132,8 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const queryResult = RecentAddressQuerySchema.safeParse({
       type: searchParams.get('type'),
-      limit: searchParams.get('limit')
+      limit: searchParams.get('limit'),
+      companyId: searchParams.get('companyId'),
     });
 
     if (!queryResult.success) {
@@ -146,29 +148,29 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { type, limit } = queryResult.data;
+    const { type, limit, companyId } = queryResult.data;
 
     // 사용자의 회사 ID 조회
-    const user = await db
-      .select({ companyId: users.company_id })
-      .from(users)
-      .where(eq(users.id, userId))
-      .limit(1)
-      .execute();
+    // const user = await db
+    //   .select({ companyId: users.company_id })
+    //   .from(users)
+    //   .where(eq(users.id, userId))
+    //   .limit(1)
+    //   .execute();
 
-    if (!user || user.length === 0 || !user[0].companyId) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: '사용자의 회사 정보를 찾을 수 없습니다.',
-          data: [],
-          total: 0
-        },
-        { status: 400 }
-      );
-    }
+    // if (!user || user.length === 0 || !user[0].companyId) {
+    //   return NextResponse.json(
+    //     { 
+    //       success: false, 
+    //       error: '사용자의 회사 정보를 찾을 수 없습니다.',
+    //       data: [],
+    //       total: 0
+    //     },
+    //     { status: 400 }
+    //   );
+    // }
 
-    const companyId = user[0].companyId;
+    // const companyId = user[0].companyId;
 
     // 타입별 최근 주문 조회 및 주소 데이터 변환
     let addresses: IAddress[] = [];

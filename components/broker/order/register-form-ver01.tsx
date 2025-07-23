@@ -333,20 +333,20 @@ const {
   });
 
   // 추가: 컴포넌트 마운트 시 자동 설정 실행 - 주선사 모드에서는 사용하지 않음, 하지만 삭제금지!
-  useEffect(() => {
-    // 조건: 로그인 상태 + 등록 모드 + 회사 미선택 + 사용자에 회사ID 존재 + 수동 초기화 안함
-    if (
-      isLoggedIn() && 
-      !editMode && 
-      user?.companyId && 
-      !selectedCompanyId && 
-      !isAutoSettingLoading &&
-      !isManualReset // 수동 초기화 하지 않은 경우에만 자동 설정
-    ) {
-      console.log('🚀 자동 설정 조건 충족, 실행 시작...');
-      handleAutoSetCompanyInfo();
-    }
-  }, [isLoggedIn(), user?.companyId, selectedCompanyId, editMode, isManualReset]);
+  // useEffect(() => {
+  //   // 조건: 로그인 상태 + 등록 모드 + 회사 미선택 + 사용자에 회사ID 존재 + 수동 초기화 안함
+  //   if (
+  //     isLoggedIn() && 
+  //     !editMode && 
+  //     user?.companyId && 
+  //     !selectedCompanyId && 
+  //     !isAutoSettingLoading &&
+  //     !isManualReset // 수동 초기화 하지 않은 경우에만 자동 설정
+  //   ) {
+  //     console.log('🚀 자동 설정 조건 충족, 실행 시작...');
+  //     handleAutoSetCompanyInfo();
+  //   }
+  // }, [isLoggedIn(), user?.companyId, selectedCompanyId, editMode, isManualReset]);
   
   // 폼 데이터 업데이트 (수정 모드에서 폼 필드가 초기 데이터와 연결되도록 추가)
   useEffect(() => {
@@ -872,6 +872,7 @@ const {
                     compact={true}
                     disabled={editMode && !isEditable('departure')}
                     onDisabledClick={() => handleDisabledFieldClick('departure')}
+                    companyId={selectedCompanyId || ''}
                   />
                 </CardContent>
               </Card>
@@ -886,6 +887,7 @@ const {
                     compact={true}
                     disabled={editMode && !isEditable('destination')}
                     onDisabledClick={() => handleDisabledFieldClick('destination')}                  
+                    companyId={selectedCompanyId || ''}
                   />
                 </CardContent>
               </Card>

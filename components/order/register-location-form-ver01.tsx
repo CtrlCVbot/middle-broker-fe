@@ -60,6 +60,7 @@ interface LocationFormProps {
   compact?: boolean;
   disabled?: boolean;
   onDisabledClick?: () => void;
+  companyId?: string;
 }
 
 export const LocationFormVer01: React.FC<LocationFormProps> = ({ 
@@ -69,7 +70,8 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
   //title = type === 'departure' ? '상차지 정보' : '하차지 정보',
   compact = false,
   disabled = false,
-  onDisabledClick
+  onDisabledClick,
+  companyId = ''
 }) => {
   const { useRecentLocation } = useOrderRegisterStore();
   const [hasSearchedAddress, setHasSearchedAddress] = useState(!!locationInfo.address);
@@ -83,6 +85,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
     isLoading: isLoadingRecentAddresses,
     error: recentAddressesError 
   } = useRecentAddresses({ 
+    selectedCompanyId: companyId,
     type: addressType,
     limit: 4,
     enabled: !hasSearchedAddress && compact 
