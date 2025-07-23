@@ -1,7 +1,9 @@
 "use client";
 
+//react
 import React, { useCallback, useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+
+//ui components
 import { 
   Breadcrumb, 
   BreadcrumbItem, 
@@ -10,29 +12,35 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
-import { ListFilter, Grid3x3, RotateCcw } from "lucide-react";
-import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
-import { useBrokerOrderStore } from "@/store/broker-order-store";
-import { getBrokerOrdersByPage } from "@/utils/mockdata/mock-broker-orders";
-import { BrokerOrderSearch } from "@/components/broker/order/broker-order-search";
-import { BrokerOrderTable } from "@/components/broker/order/broker-order-table";
-import { BrokerOrderCard } from "@/components/broker/order/broker-order-card";
-import { BrokerOrderDetailSheet } from "@/components/broker/order/broker-order-detail-sheet";
-
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { cn, formatCurrency } from "@/lib/utils";
-import { BrokerOrderStatusType } from "@/types/broker-order";
+import { ListFilter, Grid3x3, RotateCcw } from "lucide-react";
+import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
+//store
+import { useBrokerOrderStore } from "@/store/broker-order-store";
+import { getBrokerOrdersByPage } from "@/utils/mockdata/mock-broker-orders";
+
+//components
+import { BrokerOrderSearch } from "@/components/broker/order/broker-order-search";
+import { BrokerOrderTable } from "@/components/broker/order/broker-order-table";
+import { BrokerOrderDetailSheet } from "@/components/broker/order/broker-order-detail-sheet";
 import { OverviewTopCard } from "@/components/order/overview/overview-top-card";
-import { RevenueCard } from "@/components/order/overview/revenue-card";
 import { AverageValueCard } from "@/components/order/overview/average-value-card";
+import { RevenueCard } from "@/components/order/overview/revenue-card";
+import { BrokerOrderCard } from "@/components/broker/order/broker-order-card";
 import { OrderCard as OrderCardOverview } from "@/components/order/overview/order-card";
 import { SpendingCard } from "@/components/order/overview/spending-card";
 import { EarningsCard } from "@/components/order/overview/earning-card";
+
+//utils
+import { cn, formatCurrency } from "@/lib/utils";
+import { BrokerOrderStatusType } from "@/types/broker-order";
+import { useQuery } from "@tanstack/react-query";
+
 
 export default function BrokerOrderListPage() {
   // 자동 새로고침 상태

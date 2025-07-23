@@ -38,6 +38,10 @@ import { ListFilter, Grid3x3, ArrowUpRight } from "lucide-react";
 import { OrderFlowStatus, OrderVehicleType, OrderVehicleWeight } from "@/types/order";
 import { IOrderFilter, OrderStatusType } from "@/types/order";
 
+import { getCurrentUser } from "@/utils/auth"
+
+const user = getCurrentUser();
+
 
 // 프론트 상태와 백엔드 API 파라미터 간 매핑 함수
 const mapFilterToApiParams = (filter: IOrderFilter) => {
@@ -71,6 +75,7 @@ export default function OrderListPage() {
   // 에러 상태 관리를 위한 추가 state
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
+  
   // Zustand 스토어에서 상태 및 액션 가져오기
   const {
     viewMode,
@@ -99,6 +104,7 @@ export default function OrderListPage() {
         
         // API 파라미터 매핑
         const apiParams = {
+          companyId: user?.companyId,
           page: currentPage,
           pageSize,
           ...mapFilterToApiParams(filter)

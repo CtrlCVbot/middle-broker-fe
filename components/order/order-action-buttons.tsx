@@ -94,8 +94,8 @@ export function OrderActionButtons({ orderNumber, className }: OrderActionButton
         <Button
           variant="destructive"
           className="flex-1 sm:flex-none"
-          onClick={() => setCancelDialogOpen(true)}
-          disabled={!isActionAvailable('cancel')}
+          onClick={handleCancel}
+          //disabled={!isActionAvailable('cancel')}
         >
           <X className="h-4 w-4 mr-2" />
           배차 취소

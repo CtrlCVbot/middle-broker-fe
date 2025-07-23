@@ -35,8 +35,12 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate');
     const companyId = searchParams.get('companyId');
 
+    
+
     // 검색 조건 구성
     let conditions = [];
+
+    
 
     if (keyword) {
       conditions.push(
