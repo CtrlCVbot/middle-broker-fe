@@ -150,6 +150,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     isSaleClosed,
     createSale,
     createPurchase,
+    createSettlement,    
     checkOrderClosed
   } = useBrokerSettlementStore();
     
@@ -548,6 +549,49 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     }
   };
 
+  // 배차 정산 마감 실행
+  const handleConfirmCreateSettlement = async () => {
+    if (!orderData || !selectedOrderId || !orderData.dispatchId) {
+      toast({
+        title: "오류",
+        description: "주문 정보가 없습니다.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {      
+
+      const result = await createSettlement(selectedOrderId, orderData.dispatchId);
+      
+      if (result) {
+        toast({
+          title: "정산 생성 완료",
+          description: "정산이 성공적으로 생성되었습니다.",
+          variant: "default"
+        });
+        
+        // 상태 변경 플래그 설정 (목록 새로고침을 위해)
+        setHasStatusChanged(true);
+        
+        // 주문 정보 다시 조회
+        fetchOrderDetail(selectedOrderId);
+      }
+    } catch (error) {
+      console.error("정산 생성 오류:", error);
+      
+      toast({
+        title: "정산 생성 실패",
+        description: error instanceof Error ? error.message : "정산 생성 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    } finally {
+      // 다이얼로그 닫기
+      setIsConfirmPurchaseDialogOpen(false);
+    }
+  };
+
+
   return (
     <Sheet 
       open={isSheetOpen} 
@@ -608,7 +652,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                   </Badge>
                 )}
 
-                <Button 
+                {/* <Button 
                   variant="default" 
                   size="sm" 
                   className={cn("bg-purple-700 hover:bg-purple-500", "cursor-pointer")}
@@ -616,7 +660,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                   disabled={isSettlementLoading}
                 >
                   {isSettlementLoading ? "처리 중..." : "배차 마감하기"}
-                </Button>
+                </Button> */}
               </div>              
               
             </SheetHeader>
@@ -905,6 +949,27 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
       <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
+            <AlertDialogTitle>배차 정산 마감</AlertDialogTitle>
+            <AlertDialogDescription>
+              배차 정산을 마감하시겠습니까? 이 작업은 되돌릴 수 없으며, 이후 주문 정보와 운임 정보를 수정할 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmCreateSettlement}
+              className="bg-purple-700 hover:bg-purple-600"
+            >
+              마감하기
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* AlertDialog 추가 */}
+      {/* <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
             <AlertDialogTitle>청구 정산 마감</AlertDialogTitle>
             <AlertDialogDescription>
               청구 정산을 마감하시겠습니까? 이 작업은 되돌릴 수 없으며, 이후 주문 정보와 운임 정보를 수정할 수 없습니다.
@@ -920,7 +985,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog>
+      </AlertDialog> */}
 
       {/* AlertDialog 추가 */}
       <AlertDialog open={isConfirmPurchaseDialogOpen} onOpenChange={setIsConfirmPurchaseDialogOpen}>

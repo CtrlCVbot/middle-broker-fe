@@ -134,11 +134,7 @@ export async function checkSaleExists(orderId: string): Promise<boolean> {
 
 // 주문 매입 정산 데이터 생성 함수
 export async function createPurchase(orderId: string, dispatchId: string): Promise<IOrderSale> {
-  try {
-    console.log("createPurchase 호출됨");
-    console.log("orderId:", orderId);
-    console.log("dispatchId:", dispatchId);
-    
+  try {        
     // 1. 디스패치 매출 정산 요약 정보 조회
     console.log("디스패치 매출 정산 요약 정보 조회 시작");
     const purchaseSummary = await fetchPurchaseSummary(dispatchId);
@@ -195,6 +191,52 @@ export async function checkPurchaseExists(orderId: string): Promise<boolean> {
   }
 }
 
+
+// 주문 매입 정산 데이터 생성 함수
+export async function createSettlement(orderId: string, dispatchId: string): Promise<IOrderSale> {
+  try {        
+    // 1. 디스패치 매출, 매입 정산 요약 정보 조회
+    console.log("디스패치 매출, 매입 정산 요약 정보 조회 시작");
+    // const salesSummary = await fetchSalesSummary(dispatchId);
+    // const purchaseSummary = await fetchPurchaseSummary(dispatchId);
+    const [salesSummary, purchaseSummary] = await Promise.all([
+      fetchSalesSummary(dispatchId),
+      fetchPurchaseSummary(dispatchId),
+    ]);
+    
+    console.log("디스패치 매출 정산 요약 정보:", salesSummary);
+    console.log("디스패치 매입 정산 요약 정보:", purchaseSummary);
+
+    
+    
+    // 2. 매입, 매출 정산 데이터 생성 API 호출
+    console.log("매입, 매출 정산 데이터 생성 API 호출 시작");
+    const response = await fetch('/api/charge/settlement', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({sales: salesSummary, purchase: purchaseSummary}),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || '매입 정산 데이터 생성에 실패했습니다.');
+    }
+    
+    const result = await response.json();
+    console.log("매입 정산 데이터 생성 완료:", result.data);
+    
+    // 3. 디스패치 마감 처리
+    console.log("디스패치 마감 처리 시작");
+    await closeDispatch(dispatchId);
+    
+    return result.data;
+  } catch (error) {
+    console.error('매입 정산 데이터 생성 중 오류 발생:', error);
+    throw error;
+  }
+}
 
 // 운임 데이터에서 소계 계산 함수
 function calculateSubtotal(chargeData: any): number {

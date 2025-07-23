@@ -42,6 +42,7 @@ const protectedRoutes = [
   '/broker/charge/goods/waiting/:id',
   '/broker/charge/goods/waiting/:id/edit',
   
+  '/broker/charge/settlement',
   '/broker/charge/sales',
   '/broker/charge/sales/:id',
   '/broker/charge/sales/waiting',  
