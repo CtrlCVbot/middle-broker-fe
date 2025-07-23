@@ -1,10 +1,14 @@
 "use client";
 
+//react
 import { useState, useEffect } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
+
+
+//types
 import { IAddress } from "@/types/address";
+
+//ui components
 import {
   Sheet,
   SheetContent,
@@ -39,12 +43,14 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { LoaderCircle, X, Map, Phone, Building2, Info, ChevronLeft, User } from "lucide-react";
+import { LoaderCircle, X, Map, Phone, Building2, Info, ChevronLeft, User,Search as SearchIcon } from "lucide-react";
+
+//utils
 import { cn } from "@/lib/utils";
-import useAddressStore from "@/store/address-store";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search as SearchIcon } from 'lucide-react';
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+//components
 import { SearchLocationDialog, IKakaoAddressResult } from './search-location-dialog';
 
 // 폼 유효성 검증을 위한 스키마 - 강화된 버전
@@ -52,12 +58,14 @@ const addressFormSchema = z.object({
   name: z.string()
     .min(1, "상/하차지명은 필수입니다")
     .max(50, "상/하차지명은 50자 이내로 입력해주세요"),
-  roadAddress: z.string()
-    .min(1, "도로명 주소는 필수입니다")
-    .max(200, "도로명 주소는 200자 이내로 입력해주세요"),
-  jibunAddress: z.string()
-    .min(1, "지번 주소는 필수입니다")
-    .max(200, "지번 주소는 200자 이내로 입력해주세요"),
+  addressName: z.string().min(1, "주소명은 필수입니다").max(50, "주소명은 50자 이내로 입력해주세요"),
+  addressType: z.string().optional(),
+  roadAddress: z.string().optional(),
+    // .min(1, "도로명 주소는 필수입니다")
+    // .max(200, "도로명 주소는 200자 이내로 입력해주세요"),
+  jibunAddress: z.string().optional(),
+    // .min(1, "지번 주소는 필수입니다")
+    // .max(200, "지번 주소는 200자 이내로 입력해주세요"),
   detailAddress: z.string().max(100, "상세 주소는 100자 이내로 입력해주세요").optional(),
   postalCode: z.string().regex(/^\d{5}$/, "우편번호는 5자리 숫자로 입력해주세요").optional(),
   contactName: z.string().max(50, "담당자명은 50자 이내로 입력해주세요").optional(),
@@ -104,11 +112,87 @@ export function AddressFormSheet({
   // 주소 검색 여부 체크 (검색 결과가 있는지)
   const [hasSearchedAddress, setHasSearchedAddress] = useState(!!defaultValues?.id);
 
+  const handleSetAddressType = (roadAddress: string, jibunAddress: string) => {
+    let addressType = 'REGION';
+    if (roadAddress.length > 0) {
+      addressType = 'ROAD';
+    } else if (jibunAddress.length > 0) {
+      addressType = 'REGION';
+    } else {
+      addressType = 'REGION';
+    }
+    console.log("addressType", addressType);
+    return addressType;
+  }
+
+  function getFormattedAddress(roadAddress?: string, jibunAddress?: string): string {
+    const hasRoad = roadAddress && roadAddress.trim().length > 0;
+    const hasJibun = jibunAddress && jibunAddress.trim().length > 0;
+  
+    if (hasRoad && hasJibun) {
+      return 'both';
+    }
+  
+    if (hasRoad) {
+      return 'road';
+    }
+  
+    if (hasJibun) {
+      return 'jibun';
+    }
+  
+    return 'none';
+  }
+
+  function getFormattedAddressElement(roadAddress?: string, jibunAddress?: string) {
+    const hasRoad = roadAddress && roadAddress.trim().length > 0;
+    const hasJibun = jibunAddress && jibunAddress.trim().length > 0;
+  
+    return (
+      <div className="text-muted-foreground text-sm">
+        {hasRoad && hasJibun ? (          
+          <>
+          <div className="text-primary font-semibold text-lg mb-1">
+            (도로명) {roadAddress || '주소를 입력하세요'}
+          </div>
+          <div className="text-muted-foreground text-sm">          
+            (지번) {jibunAddress || '지번 주소 없음'}            
+          </div>
+          </>
+        ) : hasRoad ? (
+          <>
+          <div className="text-primary font-semibold text-lg mb-1">
+            (도로명) {roadAddress || '주소를 입력하세요'}
+          </div>
+          <div className="text-muted-foreground text-sm">          
+            (지번) {jibunAddress || '지번 주소 없음'}            
+          </div>
+          </>
+        ) : hasJibun ? (
+          <>
+          <div className="text-primary font-semibold text-lg mb-1">
+            (지번) {jibunAddress || '지번 주소 없음'}            
+          </div>
+          <div className="text-muted-foreground text-sm">          
+            (도로명) {roadAddress || '주소를 입력하세요'}  
+          </div>
+          </>
+        ) : (
+          <div>주소를 입력하세요</div>
+        )}
+
+      </div>
+    );
+  }
+
+  
   
   const form = useForm<AddressFormValues>({
     resolver: zodResolver(addressFormSchema),
     defaultValues: defaultValues ? {
       name: defaultValues.name,
+      addressName: defaultValues.roadAddress || defaultValues.jibunAddress || '',
+      addressType: handleSetAddressType(defaultValues.roadAddress || '', defaultValues.jibunAddress || ''),
       roadAddress: defaultValues.roadAddress,
       jibunAddress: defaultValues.jibunAddress,
       detailAddress: defaultValues.detailAddress || undefined,
@@ -132,6 +216,8 @@ export function AddressFormSheet({
       setHasSearchedAddress(true);
       form.reset({
         name: defaultValues.name,
+        //addressType: defaultValues.addressType,
+        addressName: defaultValues.roadAddress || defaultValues.jibunAddress || '',
         roadAddress: defaultValues.roadAddress,
         jibunAddress: defaultValues.jibunAddress,
         detailAddress: defaultValues.detailAddress || undefined,
@@ -140,7 +226,7 @@ export function AddressFormSheet({
         contactPhone: defaultValues.contactPhone || undefined,
         type: defaultValues.type,
         memo: defaultValues.memo || undefined,
-        metadata: defaultValues.metadata
+        metadata: defaultValues.metadata        
       });
       setValidationError(null);
     } else if (!defaultValues && isOpen) {
@@ -176,6 +262,9 @@ export function AddressFormSheet({
       // 폼 데이터 제출 - undefined를 null로 변환
       onSubmit({
         ...data,
+        //addressName: data.addressName || null,
+        roadAddress: data.roadAddress || '',
+        jibunAddress: data.jibunAddress || '',
         detailAddress: data.detailAddress || null,
         postalCode: data.postalCode || null,
         contactName: data.contactName || null,
@@ -196,7 +285,10 @@ export function AddressFormSheet({
 
   // 주소 검색 결과 선택 시 폼에 반영
   const handleSelectLocation = (result: IKakaoAddressResult) => {
+    console.log("result", result);
     form.setValue('name', result.place_name || form.getValues('name'));
+    form.setValue('addressType', result.address_type || 'REGION');
+    form.setValue('addressName', result.address_name || '');
     form.setValue('roadAddress', result.road_address?.address_name || '');
     form.setValue('jibunAddress', result.address?.address_name || '');
     form.setValue('contactPhone', result.phone || '');
@@ -369,12 +461,17 @@ export function AddressFormSheet({
                     {/* 도로명/지번 주소 표시 영역 */}
                     <div className="mb-6 space-y-4">
                       <div className="p-4 rounded-lg shadow-md bg-background border bg-muted">
-                        <div className="text-primary font-semibold text-lg mb-1">
-                          {form.getValues('roadAddress') || '주소를 입력하세요'}
+                        {/* <div className="text-primary font-semibold text-lg mb-1">
+                          {form.getValues('addressName') || '주소를 입력하세요'}
                         </div>
                         <div className="text-muted-foreground text-sm">
-                          (지번) {form.getValues('jibunAddress') || '지번 주소 없음'}
-                        </div>
+                          {
+                          handleSetAddressType(form.getValues('roadAddress') || '', form.getValues('jibunAddress') || '') === 'ROAD' 
+                          ? `(지번) ${form.getValues('jibunAddress') || '지번 주소 없음'}`
+                          : `(도로명) ${form.getValues('roadAddress') || '도로명 주소 없음'}` 
+                          }
+                        </div> */}
+                        {getFormattedAddressElement(form.getValues('roadAddress') || '', form.getValues('jibunAddress') || '')}
                       </div>
                     </div>
 

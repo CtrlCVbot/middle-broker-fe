@@ -5,6 +5,8 @@ export interface IAddress {
   name: string;           // 장소명
   type: AddressType;      // 상/하차지 구분
   
+  //addressName?: string;     // 주소명
+  //addressType?: string;     // 주소 유형
   roadAddress: string;     // 도로명 주소
   jibunAddress: string;    // 지번 주소
   detailAddress: string | null;  // 상세 주소
