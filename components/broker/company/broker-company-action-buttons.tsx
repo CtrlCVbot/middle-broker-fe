@@ -305,9 +305,9 @@ export function BrokerCompanyActionButtons({
             trigger={
               <Button className="flex items-center gap-1" disabled={isLoading}>
                 <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">신규 등록</span>
+                <span className="hidden sm:inline">신규 등록1</span>
               </Button>
-            }
+            }            
             onRegisterSuccess={(company) => {
               handleRefresh();
             }}

@@ -6,6 +6,8 @@ import {
   Frame,
   Home,
   LifeBuoy,
+  Loader,
+  Loader2,
   Map,
   PieChart,
   Send,
@@ -18,6 +20,10 @@ import {
   CreditCard,
   Building,
   DollarSign,
+  BanknoteArrowUp,
+  BanknoteArrowDown,
+  Banknote,
+  
 } from "lucide-react"
 import Link from 'next/link'
 
@@ -339,13 +345,13 @@ export const shipperData = {
     },
 
     {
-      title: "운송 요청",
+      title: "요청",
       url: "/order/register",
       icon: PackagePlus,
     },
 
     {
-      title: "운송 현황",
+      title: "현황",
       url: "/order/list",
       icon: Truck,
       items: [
@@ -362,9 +368,9 @@ export const shipperData = {
     
     
     {
-      title: "운송 정산",
+      title: "정산",
       url: "/settlement/list",
-      icon: CreditCard,
+      icon: Banknote,
     },
 
     
@@ -440,12 +446,12 @@ export const brokerData = {
     {
       title: "실시간 화물 현황 ver01",
       url: "/broker/order-ver01/list",
-      icon: LifeBuoy,
+      icon: Loader,
     },
     {
       title: "오더 등록",
       url: "/broker/order-ver01/register",
-      icon: LifeBuoy,
+      icon: PackagePlus,
     },
     {
       title: "업체 관리",
@@ -475,7 +481,7 @@ export const brokerData = {
     {
       title: "매출 정산-ver01",
       url: "/broker/sale",
-      icon: DollarSign,
+      icon: BanknoteArrowUp,
       items: [
         {
           title: "정산 목록",
@@ -491,7 +497,7 @@ export const brokerData = {
     {
       title: "매입 정산-ver01",
       url: "/broker/purchase",
-      icon: DollarSign,
+      icon: BanknoteArrowDown,
       items: [
         {
           title: "정산 목록",

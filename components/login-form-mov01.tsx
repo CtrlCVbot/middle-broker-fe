@@ -69,7 +69,7 @@ export function LoginForm({
 
   return (
     <div className="flex w-full max-w-sm flex-col gap-6">
-      <div className="flex items-center gap-2 self-center font-medium text-white text-xl font-semibold">
+      <div className="flex items-center gap-2 self-center font-medium text-black text-3xl font-semibold">
         <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
           <Truck className="size-4" />
         </div>
@@ -78,9 +78,10 @@ export function LoginForm({
       <div className={cn("flex flex-col gap-6", className)} {...props}>
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-xl">운송 관리 시스템</CardTitle>
+            {/* <CardTitle className="text-sm text-muted-foreground">Transport Manager System</CardTitle> */}
             <CardDescription>
-              이메일과 비밀번호로 로그인하세요
+            Transport Manager System
+              {/* 이메일과 비밀번호로 로그인하세요 */}
             </CardDescription>
           </CardHeader>
           <CardContent>
