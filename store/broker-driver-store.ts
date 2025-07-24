@@ -1,7 +1,13 @@
+import React from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { DriverStatus, IBrokerDriver, IBrokerDriverFilter, TonnageType, VehicleType } from '@/types/broker-driver';
+import { DriverStatus, IBrokerDriver, IBrokerDriverFilter, TonnageType, VehicleType, IDriverNote } from '@/types/broker-driver';
 import { DRIVER_STATUS, DISPATCH_COUNT_OPTIONS, TONNAGE_TYPES, VEHICLE_TYPES, getBrokerDriverById, updateBrokerDriver } from '@/utils/mockdata/mock-broker-drivers';
+import { registerDriver, updateDriver as updateDriverApi, deleteDriver, getDriverNotes, addDriverNote, updateDriverNote, deleteDriverNote, searchDrivers } from '@/services/driver-service';
+import * as driverService from '@/services/driver-service';
+import { toast } from 'sonner';
+import { mapApiResponseToNotesList } from '@/utils/driver-mapper';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 // 필터 요약 문구 생성 함수
 export const getFilterSummaryText = (filter: IBrokerDriverFilter): string => {
@@ -59,6 +65,16 @@ interface IBrokerDriverState {
   // 선택된 차주 ID 목록
   selectedDriverIds: string[];
   
+  // 특이사항 관련 상태
+  driverNotes: Record<string, IDriverNote[]>; // 차주 ID를 키로 하는 특이사항 맵
+  isLoadingNotes: boolean;
+  notesError: string | null;
+  
+  // 검색 관련 상태 추가
+  searchResults: IBrokerDriver[];
+  isSearching: boolean;
+  searchError: string | null;
+  
   // 액션
   setViewMode: (mode: 'table' | 'card') => void;
   setFilter: (filter: Partial<IBrokerDriverFilter>) => void;
@@ -72,8 +88,19 @@ interface IBrokerDriverState {
   toggleDriverSelection: (id: string) => void;
   clearSelectedDriverIds: () => void;
   
-  // 차주 데이터 관리
+  // 차주 데이터 관리 - 목업데이터 사용 현재사용안함 -> updateDriverWithAPI 사용
   updateDriver: (driver: IBrokerDriver) => void;
+  
+  // API 호출 메서드 (실제 백엔드 통신)
+  registerDriverWithAPI: (driverData: any) => Promise<IBrokerDriver>;
+  updateDriverWithAPI: (driverId: string, driverData: any) => Promise<IBrokerDriver>;
+  deleteDriverWithAPI: (driverId: string, reason?: string) => Promise<void>;
+  
+  // 특이사항 관련 메서드
+  fetchDriverNotes: (driverId: string) => Promise<IDriverNote[]>;
+  addDriverNote: (driverId: string, content: string) => Promise<IDriverNote>;
+  updateDriverNote: (noteId: string, content: string, driverId: string) => Promise<IDriverNote>;
+  deleteDriverNote: (noteId: string, driverId: string) => Promise<void>;
   
   // 필터 옵션
   filterOptions: {
@@ -82,6 +109,10 @@ interface IBrokerDriverState {
     statuses: DriverStatus[];
     dispatchCountOptions: typeof DISPATCH_COUNT_OPTIONS;
   };
+  
+  // 검색 관련 액션 추가
+  searchDrivers: (term: string) => Promise<IBrokerDriver[]>;
+  clearSearchResults: () => void;
 }
 
 // 목업 데이터 저장소 (실제 구현에서는 API 호출로 대체)
@@ -114,6 +145,16 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
       currentPage: 1,
       pageSize: 10,
       selectedDriverIds: [],
+      
+      // 특이사항 관련 상태
+      driverNotes: {},
+      isLoadingNotes: false,
+      notesError: null,
+      
+      // 검색 관련 상태 초기화
+      searchResults: [],
+      isSearching: false,
+      searchError: null,
       
       // 필터 옵션
       filterOptions: {
@@ -178,7 +219,7 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
       
       clearSelectedDriverIds: () => set({ selectedDriverIds: [] }),
       
-      // 차주 데이터 업데이트
+      // 차주 데이터 업데이트 (기존 Mock 메서드 유지)
       updateDriver: (updatedDriver) => {
         try {
           // 목업 데이터 업데이트
@@ -194,6 +235,345 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
           console.error('차주 정보 업데이트 실패:', error);
         }
       },
+      
+      // 실제 API 호출 메서드 추가
+      registerDriverWithAPI: async (driverData) => {
+        try {
+          console.log('registerDriverWithAPI 호출됨 - 입력 데이터:', driverData);
+          
+          // API 호출하여 차주 등록
+          const registeredDriver = await registerDriver(driverData);
+          
+          console.log('API 응답 성공 - 등록된 차주:', registeredDriver);
+          
+          // 선택적으로 성공 메시지 표시
+          toast.success(`${registeredDriver.name} 차주가 성공적으로 등록되었습니다.`);
+          
+          return registeredDriver;
+        } catch (error) {
+          console.error('차주 등록 API 호출 실패:', error);
+          console.error('오류 세부 정보:', {
+            name: error instanceof Error ? error.name : 'UnknownError',
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined
+          });
+          
+          toast.error('차주 등록에 실패했습니다.', {
+            description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+          });
+          throw error;
+        }
+      },
+      
+      updateDriverWithAPI: async (driverId, driverData) => {
+        try {
+          // API 호출하여 차주 정보 수정
+          const updatedDriver = await updateDriverApi(driverId, driverData);
+          
+          // 선택적으로 성공 메시지 표시
+          toast.success(`${updatedDriver.name} 차주 정보가 성공적으로 수정되었습니다.`);
+          
+          return updatedDriver;
+        } catch (error) {
+          console.error('차주 정보 수정 API 호출 실패:', error);
+          toast.error('차주 정보 수정에 실패했습니다.', {
+            description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+          });
+          throw error;
+        }
+      },
+      
+      deleteDriverWithAPI: async (driverId, reason) => {
+        try {
+          // API 호출하여 차주 삭제
+          await deleteDriver(driverId, reason);
+          
+          // 선택된 차주 ID 목록에서 삭제된 차주 제거
+          set((state) => ({
+            selectedDriverIds: state.selectedDriverIds.filter(id => id !== driverId)
+          }));
+          
+          // 선택적으로 성공 메시지 표시
+          toast.success('차주가 성공적으로 삭제되었습니다.');
+        } catch (error) {
+          console.error('차주 삭제 API 호출 실패:', error);
+          toast.error('차주 삭제에 실패했습니다.', {
+            description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+          });
+          throw error;
+        }
+      },
+      
+      // 특이사항 관련 메서드
+      fetchDriverNotes: async (driverId) => {
+        try {
+          set({ isLoadingNotes: true, notesError: null });
+          
+          console.log('fetchDriverNotes 호출됨:', driverId);
+          
+          // API 호출하여 특이사항 목록 조회
+          const apiResponse = await getDriverNotes(driverId);
+          console.log('특이사항 API 응답:', apiResponse);
+          
+          // API 응답 데이터가 null, undefined, 빈 배열인 경우 확인
+          if (!apiResponse || !Array.isArray(apiResponse) || apiResponse.length === 0) {
+            console.log('API 응답이 비어있음. 빈 배열 반환');
+            
+            // 빈 배열로 상태 초기화
+            set(state => ({
+              driverNotes: {
+                ...state.driverNotes,
+                [driverId]: []
+              },
+              isLoadingNotes: false
+            }));
+            
+            return [];
+          }
+          
+          // API 응답 데이터를 프론트엔드 형식으로 변환
+          const notes = mapApiResponseToNotesList(apiResponse);
+          console.log('변환된 특이사항 목록:', notes);
+          
+          // null 체크를 하여 안전하게 변환
+          const safeNotes = notes || [];
+          
+          // 상태 업데이트
+          set(state => {
+            console.log('특이사항 상태 업데이트 전:', state.driverNotes[driverId] || []);
+            
+            const updated = {
+              driverNotes: {
+                ...state.driverNotes,
+                [driverId]: safeNotes
+              },
+              isLoadingNotes: false
+            };
+            
+            console.log('특이사항 상태 업데이트 후:', updated.driverNotes[driverId]);
+            return updated;
+          });
+          
+          // 변환된 목록 반환
+          return safeNotes;
+        } catch (error) {
+          console.error('특이사항 목록 조회 API 오류:', error);
+          
+          // 더 자세한 오류 정보 로깅
+          if (error instanceof Error) {
+            console.error('오류 메시지:', error.message);
+            console.error('오류 스택:', error.stack);
+          } else {
+            console.error('알 수 없는 오류 유형:', typeof error);
+          }
+          
+          set({
+            isLoadingNotes: false,
+            notesError: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+          });
+          
+          toast.error('특이사항 목록 조회에 실패했습니다.', {
+            description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+          });
+          
+          // 에러 발생해도 빈 배열 반환하여 UI에서 처리 가능하게 함
+          return [];
+        }
+      },
+      
+      addDriverNote: async (driverId, content) => {
+        try {
+          console.log('addDriverNote 호출됨:', { driverId, content });
+          
+          // API 호출하여 특이사항 추가
+          const addedNote = await addDriverNote(driverId, content);
+          console.log('API 응답 (추가된 특이사항):', addedNote);
+          
+          // 특이사항 목록 상태 업데이트 (이전 상태 확인)
+          const state = get();
+          const currentNotes = state.driverNotes[driverId] || [];
+          console.log('추가 전 특이사항 목록:', currentNotes);
+          
+          // 새 특이사항 객체 생성
+          const newNote = {
+            id: addedNote.id,
+            content: addedNote.content,
+            date: addedNote.date ? new Date(addedNote.date) : new Date()
+          };
+          
+          // 최신 항목이 맨 위에 오도록 목록 업데이트
+          const updatedNotes = [newNote, ...currentNotes];
+          console.log('추가 후 특이사항 목록:', updatedNotes);
+          
+          // 상태 업데이트
+          set({
+            driverNotes: {
+              ...state.driverNotes,
+              [driverId]: updatedNotes
+            }
+          });
+          
+          toast.success('특이사항이 추가되었습니다.');
+          return newNote;
+        } catch (error) {
+          console.error('특이사항 추가 API 오류:', error);
+          
+          toast.error('특이사항 추가에 실패했습니다.', {
+            description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+          });
+          
+          throw error;
+        }
+      },
+      
+      updateDriverNote: async (noteId, content, driverId) => {
+        try {
+          console.log('updateDriverNote 호출됨:', { noteId, content, driverId });
+          
+          // 기존 상태 확인
+          const state = get();
+          const currentNotes = state.driverNotes[driverId] || [];
+          console.log('수정 전 특이사항 목록:', currentNotes);
+          
+          // 먼저 UI 업데이트를 위해 로컬 상태 변경
+          const updatedLocalNotes = currentNotes.map(note => 
+            note.id === noteId
+              ? {
+                  ...note,
+                  content,
+                  date: new Date()
+                }
+              : note
+          );
+          
+          console.log('로컬 상태 업데이트 후:', updatedLocalNotes);
+          
+          // 로컬 상태 먼저 업데이트
+          set({
+            driverNotes: {
+              ...state.driverNotes,
+              [driverId]: updatedLocalNotes
+            }
+          });
+          
+          // API 호출하여 특이사항 수정
+          const updatedNote = await updateDriverNote(noteId, content);
+          console.log('API 응답 (수정된 특이사항):', updatedNote);
+          
+          // 서버 응답과 동기화할 필요가 있을 경우
+          if (updatedNote && updatedNote.date) {
+            const serverDate = new Date(updatedNote.date);
+            
+            // 응답의 date로 로컬 상태 재조정
+            const syncedNotes = updatedLocalNotes.map(note => 
+              note.id === noteId
+                ? {
+                    ...note,
+                    date: serverDate
+                  }
+                : note
+            );
+            
+            // 상태 최종 업데이트
+            set({
+              driverNotes: {
+                ...state.driverNotes,
+                [driverId]: syncedNotes
+              }
+            });
+            
+            console.log('서버 응답 동기화 후:', syncedNotes);
+          }
+          
+          toast.success('특이사항이 수정되었습니다.');
+          
+          return {
+            id: updatedNote.id,
+            content: updatedNote.content,
+            date: updatedNote.date ? new Date(updatedNote.date) : new Date()
+          };
+        } catch (error) {
+          console.error('특이사항 수정 API 오류:', error);
+          
+          toast.error('특이사항 수정에 실패했습니다.', {
+            description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+          });
+          
+          throw error;
+        }
+      },
+      
+      deleteDriverNote: async (noteId, driverId) => {
+        try {
+          console.log('deleteDriverNote 호출됨:', { noteId, driverId });
+          
+          // 기존 상태 확인
+          const state = get();
+          const currentNotes = state.driverNotes[driverId] || [];
+          console.log('삭제 전 특이사항 목록:', currentNotes);
+          
+          // 먼저 UI 업데이트를 위해 로컬 상태 변경
+          const updatedNotes = currentNotes.filter(note => note.id !== noteId);
+          console.log('삭제 후 특이사항 목록:', updatedNotes);
+          
+          // 상태 업데이트
+          set({
+            driverNotes: {
+              ...state.driverNotes,
+              [driverId]: updatedNotes
+            }
+          });
+          
+          // API 호출하여 특이사항 삭제
+          await deleteDriverNote(noteId);
+          console.log('API 삭제 완료');
+          
+          toast.success('특이사항이 삭제되었습니다.');
+        } catch (error) {
+          console.error('특이사항 삭제 API 오류:', error);
+          
+          toast.error('특이사항 삭제에 실패했습니다.', {
+            description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+          });
+          
+          throw error;
+        }
+      },
+      
+      // 검색 관련 액션 구현
+      searchDrivers: async (term) => {
+        try {
+          set({ isSearching: true, searchError: null });
+          
+          // 검색어가 없는 경우 결과 초기화
+          if (!term.trim()) {
+            set({ searchResults: [], isSearching: false });
+            return [];
+          }
+          
+          // API 호출하여 차주 검색
+          console.log('차주 검색 API 호출:', term);
+          const results = await searchDrivers(term);
+          console.log('차주 검색 결과:', results);
+          
+          // 상태 업데이트
+          set({ searchResults: results, isSearching: false });
+          return results;
+        } catch (error) {
+          console.error('차주 검색 오류:', error);
+          
+          set({
+            isSearching: false,
+            searchError: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+          });
+          
+          return [];
+        }
+      },
+      
+      clearSearchResults: () => {
+        set({ searchResults: [], searchError: null });
+      },
     }),
     {
       name: 'broker-driver-storage',
@@ -205,3 +585,4 @@ export const useBrokerDriverStore = create<IBrokerDriverState>()(
     }
   )
 ); 
+

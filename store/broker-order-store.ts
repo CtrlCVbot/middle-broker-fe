@@ -9,6 +9,9 @@ import {
 } from '@/utils/mockdata/mock-broker-orders';
 import { persist } from 'zustand/middleware';
 
+// 디스패치 탭 타입 정의
+export type DispatchTabType = 'all' | 'dispatched' | 'waiting';
+
 // 필터 옵션의 기본값 정의 (import가 실패하는 경우를 대비)
 const DEFAULT_CITIES = CITIES || ["서울", "부산", "인천", "대구", "대전", "광주", "울산", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
 const DEFAULT_VEHICLE_TYPES = VEHICLE_TYPES || ["카고", "윙바디", "탑차", "냉장", "냉동", "트레일러"];
@@ -21,7 +24,7 @@ export const getFilterSummaryText = (filter: IBrokerOrderFilter): string => {
   if (!filter.departureCity && !filter.arrivalCity && !filter.vehicleType && 
       !filter.weight && !filter.status && !filter.startDate && !filter.endDate &&
       !filter.callCenter && !filter.manager) {
-    return "모든 중개 화물";
+    return "모든 화물";
   }
   
   const parts = [];
@@ -55,7 +58,7 @@ export const getFilterSummaryText = (filter: IBrokerOrderFilter): string => {
     parts.push(`${filter.endDate.slice(5)}까지`);
   }
   
-  return parts.join(", ") || "모든 중개 화물";
+  return parts.join(", ") || "모든 화물";
 };
 
 interface IBrokerOrderState {
@@ -70,6 +73,15 @@ interface IBrokerOrderState {
   currentPage: number;
   pageSize: number;
   
+  // 탭 상태
+  activeTab: DispatchTabType;
+  
+  // 다중 선택 상태 추가
+  selectedOrders: string[]; // 선택된 주문 ID 배열
+  
+  // 마지막 새로고침 시간
+  lastRefreshed: Date;
+  
   // 액션
   setViewMode: (mode: 'table' | 'card') => void;
   setFilter: (filter: Partial<IBrokerOrderFilter>) => void;
@@ -79,6 +91,17 @@ interface IBrokerOrderState {
   resetTempFilter: () => void;
   setCurrentPage: (page: number) => void;
   setPageSize: (size: number) => void;
+  setActiveTab: (tab: DispatchTabType) => void;
+  
+  // 다중 선택 액션 추가
+  selectOrder: (orderId: string) => void;
+  deselectOrder: (orderId: string) => void;
+  toggleOrderSelection: (orderId: string) => void;
+  selectAllOrders: (orderIds: string[]) => void;
+  deselectAllOrders: () => void;
+  
+  // 새로고침 액션 추가
+  setLastRefreshed: (date: Date) => void;
   
   // 필터 옵션
   filterOptions: {
@@ -114,6 +137,9 @@ export const useBrokerOrderStore = create<IBrokerOrderState>()(
       tempFilter: { ...initialFilter },
       currentPage: 1,
       pageSize: 10,
+      activeTab: 'all',
+      selectedOrders: [], // 선택된 주문 배열 초기화
+      lastRefreshed: new Date(),
       
       // 필터 옵션 목록
       filterOptions: {
@@ -158,12 +184,45 @@ export const useBrokerOrderStore = create<IBrokerOrderState>()(
         pageSize: size,
         currentPage: 1, // 페이지 크기가 변경되면 첫 페이지로 돌아감
       }),
+      
+      setActiveTab: (tab: DispatchTabType) => set({ 
+        activeTab: tab,
+        currentPage: 1, // 탭이 변경되면 첫 페이지로 돌아감
+        selectedOrders: [], // 탭이 변경되면 선택된 주문 초기화
+      }),
+      
+      // 다중 선택 액션 구현
+      selectOrder: (orderId: string) => set((state) => ({
+        selectedOrders: [...state.selectedOrders, orderId]
+      })),
+      
+      deselectOrder: (orderId: string) => set((state) => ({
+        selectedOrders: state.selectedOrders.filter(id => id !== orderId)
+      })),
+      
+      toggleOrderSelection: (orderId: string) => set((state) => ({
+        selectedOrders: state.selectedOrders.includes(orderId) 
+          ? state.selectedOrders.filter(id => id !== orderId)
+          : [...state.selectedOrders, orderId]
+      })),
+      
+      selectAllOrders: (orderIds: string[]) => set({
+        selectedOrders: orderIds
+      }),
+      
+      deselectAllOrders: () => set({ 
+        selectedOrders: [] 
+      }),
+      
+      // 새로고침 액션 구현
+      setLastRefreshed: (date: Date) => set({ lastRefreshed: date }),
     }),
     {
       name: 'broker-order-storage', // 로컬 스토리지 키 이름
       partialize: (state) => ({ 
         viewMode: state.viewMode,
         filter: state.filter,
+        activeTab: state.activeTab, // 탭 상태도 저장
       }), // 지속할 상태만 선택
     }
   )

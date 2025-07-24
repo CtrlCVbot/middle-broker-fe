@@ -14,7 +14,8 @@ import {
 } from "@/components/ui/context-menu";
 import { useBrokerOrderDetailStore } from "@/store/broker-order-detail-store";
 import { IBrokerOrder, BrokerOrderStatusType, BROKER_ORDER_STATUS } from "@/types/broker-order";
-import { FileText, Truck, DollarSign, AlertCircle, Map, Download } from "lucide-react";
+import { FileText, Truck, DollarSign, AlertCircle, Map, Download, ThumbsUp } from "lucide-react";
+import { useBrokerOrderStore } from "@/store/broker-order-store";
 
 interface BrokerOrderContextMenuProps {
   children: React.ReactNode;
@@ -23,6 +24,7 @@ interface BrokerOrderContextMenuProps {
   onEditTransportFee?: (orderId: string) => void;
   onExportExcel?: (orderId: string) => void;
   onViewMap?: (orderId: string) => void;
+  onAcceptOrder?: (orderId: string) => void;
 }
 
 export function BrokerOrderContextMenu({
@@ -32,8 +34,10 @@ export function BrokerOrderContextMenu({
   onEditTransportFee,
   onExportExcel,
   onViewMap,
+  onAcceptOrder,
 }: BrokerOrderContextMenuProps) {
   const { openSheet } = useBrokerOrderDetailStore();
+  const { activeTab } = useBrokerOrderStore();
 
   // 화물 상세 정보 열기
   const handleViewDetail = () => {
@@ -67,6 +71,13 @@ export function BrokerOrderContextMenu({
       onViewMap(order.id);
     }
   };
+  
+  // 운송 수락
+  const handleAcceptOrder = () => {
+    if (onAcceptOrder) {
+      onAcceptOrder(order.id);
+    }
+  };
 
   return (
     <ContextMenu>
@@ -80,33 +91,44 @@ export function BrokerOrderContextMenu({
         </ContextMenuItem>
 
         <ContextMenuSeparator />
+        
+        {activeTab === 'waiting' && (
+          <ContextMenuItem onClick={handleAcceptOrder}>
+            <ThumbsUp className="mr-2 h-4 w-4" />
+            <span>운송 수락</span>
+          </ContextMenuItem>
+        )}
 
-        <ContextMenuSub>
-          <ContextMenuSubTrigger>
-            <Truck className="mr-2 h-4 w-4" />
-            <span>배차 상태 변경</span>
-          </ContextMenuSubTrigger>
-          <ContextMenuSubContent className="w-48">
-            {BROKER_ORDER_STATUS.map((status) => (
-              <ContextMenuItem
-                key={status}
-                onClick={() => handleStatusChange(status as BrokerOrderStatusType)}
-                disabled={order.status === status}
-                className={order.status === status ? "font-bold bg-secondary/50" : ""}
-              >
-                {status}
-                {order.status === status && (
-                  <ContextMenuShortcut>✓</ContextMenuShortcut>
-                )}
-              </ContextMenuItem>
-            ))}
-          </ContextMenuSubContent>
-        </ContextMenuSub>
+        {(activeTab === 'dispatched' || activeTab === 'all') && (
+          <ContextMenuSub>
+            <ContextMenuSubTrigger>
+              <Truck className="mr-2 h-4 w-4" />
+              <span>배차 상태 변경</span>
+            </ContextMenuSubTrigger>
+            <ContextMenuSubContent className="w-48">
+              {BROKER_ORDER_STATUS.map((status) => (
+                <ContextMenuItem
+                  key={status}
+                  onClick={() => handleStatusChange(status as BrokerOrderStatusType)}
+                  disabled={order.status === status}
+                  className={order.status === status ? "font-bold bg-secondary/50" : ""}
+                >
+                  {status}
+                  {order.status === status && (
+                    <ContextMenuShortcut>✓</ContextMenuShortcut>
+                  )}
+                </ContextMenuItem>
+              ))}
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+        )}
 
-        <ContextMenuItem onClick={handleEditTransportFee}>
-          <DollarSign className="mr-2 h-4 w-4" />
-          <span>운송비 정보 수정</span>
-        </ContextMenuItem>
+        {(activeTab === 'dispatched' || activeTab === 'all') && (
+          <ContextMenuItem onClick={handleEditTransportFee}>
+            <DollarSign className="mr-2 h-4 w-4" />
+            <span>운송비 정보 수정</span>
+          </ContextMenuItem>
+        )}
 
         {order.gpsLocation && (
           <ContextMenuItem onClick={handleViewMap}>
@@ -120,12 +142,12 @@ export function BrokerOrderContextMenu({
           </ContextMenuItem>
         )}
 
-        <ContextMenuSeparator />
+        {/* <ContextMenuSeparator />
 
         <ContextMenuItem onClick={handleExportExcel}>
           <Download className="mr-2 h-4 w-4" />
           <span>엑셀 다운로드</span>
-        </ContextMenuItem>
+        </ContextMenuItem> */}
       </ContextMenuContent>
     </ContextMenu>
   );

@@ -2,16 +2,13 @@
 
 import React from "react";
 import { Progress } from "@/components/ui/progress";
-import { 
-  OrderStatusType,
-  ORDER_STATUS,
-  getProgressPercentage, 
-  isStatusAtLeast 
-} from "@/types/order";
+
+import { ORDER_FLOW_STATUSES, OrderFlowStatus, getProgressPercentage, isStatusAtLeast } from "@/types/order";
 import { cn } from "@/lib/utils";
+import { getStatusBadge, getStatusColor } from "./order-table-ver01";
 
 interface OrderProgressProps {
-  currentStatus: OrderStatusType;
+  currentStatus: OrderFlowStatus;
   className?: string;
 }
 
@@ -25,25 +22,30 @@ export function OrderProgress({ currentStatus, className }: OrderProgressProps) 
   return (
     <div className={cn("w-full", className)}>
       {/* Progress Bar */}
-      <div className="mb-2">
+      {/* <div className="mb-2">
         <Progress value={progressValue} className="h-2" />
-      </div>
+      </div> */}
       
       {/* Status Labels - 모바일에서는 현재 상태만 표시 */}
       {isSmallScreen ? (
-        <div className="flex justify-center items-center mt-4">
-          <div 
-            className={cn(
-              "font-medium text-sm px-3 py-1 rounded-full",
-              "bg-primary text-primary-foreground"
-            )}
-          >
-            {currentStatus}
-          </div>
-        </div>
+        // <div className="flex justify-center items-center mt-4">
+        //   <div 
+        //     className={cn(
+        //       "font-medium text-sm px-3 py-1 rounded-full",              
+        //       "bg-" + getStatusColor(currentStatus) + " text-primary-foreground"
+        //     )}
+        //   >
+        //     {currentStatus}
+        //   </div>
+        // </div>
+        <></>
       ) : (
+        <>
+        <div className="mb-2">
+          <Progress value={progressValue} className="h-2" />
+        </div>
         <div className="flex justify-between text-xs md:text-sm mt-2">
-          {ORDER_STATUS.map((status) => {
+          {ORDER_FLOW_STATUSES.map((status) => {
             const isActive = isStatusAtLeast(currentStatus, status);
             const isCurrent = currentStatus === status;
             
@@ -52,22 +54,67 @@ export function OrderProgress({ currentStatus, className }: OrderProgressProps) 
                 key={status}
                 className={cn(
                   "flex flex-col items-center transition-all",
-                  isActive ? "text-primary" : "text-muted-foreground",
-                  isCurrent ? "font-bold scale-110" : "font-normal"
+                  isActive ? "text-md text-shadow-xs " : "text-muted-foreground",
+                  isCurrent ? "font-bold scale-105" : "font-normal"
                 )}
-              >
-                <div 
+              >                
+                {/* <div 
                   className={cn(
                     "w-3 h-3 rounded-full mb-1 transition-all",
-                    isActive ? "bg-primary" : "bg-muted",
-                    isCurrent ? "ring-2 ring-primary ring-offset-2" : ""
+                    isActive ? `bg-${getStatusColor(status)}` : "bg-muted",
+                    isCurrent ? "ring-2 ring-offset-2 animate-glow" : ""
                   )}
-                />
+                /> */}
+
+                {isCurrent ? getStatusBadge(status) : <span>{status}</span>}
+                
+                {/* <span>{status}</span> */}
+              </div>
+            );
+          })}
+        </div>
+
+          {/* 배차 상태 표시 */}
+        <div className="flex justify-between text-xs md:text-sm mt-2">
+          {ORDER_FLOW_STATUSES.map((status) => {
+            const isActive = isStatusAtLeast(currentStatus, status);
+            const isCurrent = currentStatus === status;
+
+            return (
+              <div 
+                key={status}
+                className={cn(
+                  "flex flex-col items-center transition-all",
+                  isActive ? "text-md" : "text-muted-foreground",
+                  isCurrent ? "font-bold scale-105" : "font-normal"
+                )}
+              >
+                <div className="relative w-4 h-4 mb-1">
+                  {/* 배경 원 */}
+                  <div
+                    className={cn(
+                      "absolute inset-0 rounded-full transition-all",
+                      isActive ? `bg-${getStatusColor(status)}` : "bg-muted"
+                    )}
+                  />
+                  
+                  {/* 현재 상태일 경우 점멸 애니메이션 원 추가 */}
+                  {isCurrent && (
+                    <div
+                      className={cn(
+                        "absolute inset-0 rounded-full bg-blue-500 animate-bounce-scale"
+                      )}
+                    />
+                  )}
+                </div>
+
                 <span>{status}</span>
               </div>
             );
           })}
         </div>
+
+        </>
       )}
     </div>
   );

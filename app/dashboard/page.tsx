@@ -55,7 +55,7 @@ export default function DashboardPage() {
         </div>
       </header>
       
-      <main className="flex flex-1 flex-col p-4 pt-0">
+      <main className="min-h-screen flex flex-col items-center pt-4">
         <div className="container mx-auto">
           <div className="space-y-6">
             {/* KPI 카드 */}

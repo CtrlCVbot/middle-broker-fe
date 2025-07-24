@@ -129,7 +129,7 @@ export function IncomeDetailSheet() {
     }
 
     return (
-      <div className="space-y-6 py-6">
+      <div className="space-y-4 p-6">
         {/* 정산 기본 정보 카드 */}
         <Card>
           <CardHeader className="pb-3">

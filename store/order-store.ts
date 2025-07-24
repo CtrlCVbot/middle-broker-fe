@@ -1,33 +1,22 @@
 import { create } from 'zustand';
 import { IOrderFilter } from '@/types/order';
 import { 
-  CITIES, 
   VEHICLE_TYPES, 
   WEIGHT_TYPES 
 } from '@/utils/mockdata/mock-orders';
 import { persist } from 'zustand/middleware';
 
 // 필터 옵션의 기본값 정의 (import가 실패하는 경우를 대비)
-const DEFAULT_CITIES = CITIES || ["서울", "부산", "인천", "대구", "대전", "광주", "울산", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
 const DEFAULT_VEHICLE_TYPES = VEHICLE_TYPES || ["카고", "윙바디", "탑차", "냉장", "냉동", "트레일러"];
 const DEFAULT_WEIGHT_TYPES = WEIGHT_TYPES || ["1톤", "2.5톤", "3.5톤", "5톤", "11톤", "25톤"];
 
 // 필터 버튼에 표시할 요약 텍스트 생성 함수
 export const getFilterSummaryText = (filter: IOrderFilter): string => {
-  if (!filter.departureCity && !filter.arrivalCity && !filter.vehicleType && 
-      !filter.weight && !filter.status && !filter.startDate && !filter.endDate) {
+  if (!filter.vehicleType && !filter.weight && !filter.status && !filter.startDate && !filter.endDate) {
     return "모든 화물";
   }
   
   const parts = [];
-  
-  if (filter.departureCity && filter.arrivalCity) {
-    parts.push(`${filter.departureCity} → ${filter.arrivalCity}`);
-  } else if (filter.departureCity) {
-    parts.push(`${filter.departureCity}에서`);
-  } else if (filter.arrivalCity) {
-    parts.push(`${filter.arrivalCity}으로`);
-  }
   
   if (filter.vehicleType) parts.push(filter.vehicleType);
   if (filter.weight) parts.push(filter.weight);
@@ -71,7 +60,6 @@ interface IOrderState {
   
   // 필터 옵션
   filterOptions: {
-    cities: string[];
     vehicleTypes: string[];
     weightTypes: string[];
   };
@@ -79,8 +67,6 @@ interface IOrderState {
 
 // 초기 필터 상태
 const initialFilter: IOrderFilter = {
-  departureCity: undefined,
-  arrivalCity: undefined,
   vehicleType: undefined,
   weight: undefined,
   searchTerm: '',
@@ -102,7 +88,6 @@ export const useOrderStore = create<IOrderState>()(
       
       // 필터 옵션 목록
       filterOptions: {
-        cities: DEFAULT_CITIES,
         vehicleTypes: DEFAULT_VEHICLE_TYPES,
         weightTypes: DEFAULT_WEIGHT_TYPES,
       },

@@ -3,11 +3,10 @@ import { persist } from 'zustand/middleware';
 import { 
   IOrderRegisterData, 
   ILocationInfo,
-  VEHICLE_TYPES,
-  WEIGHT_TYPES,
   VehicleType, 
   WeightType
 } from '@/types/order';
+
 
 // 초기 주소 정보
 const initialLocationInfo: ILocationInfo = {
@@ -64,7 +63,16 @@ const initialOrderRegisterData: IOrderRegisterData = {
   },
   selectedOptions: [],
   estimatedDistance: undefined,
-  estimatedAmount: undefined
+  estimatedAmount: undefined,
+  selectedCompanyId: undefined,
+  selectedManagerId: undefined,
+  // 거리 정보 연동 필드 초기화
+  //estimatedDistanceKm: undefined,
+  estimatedDurationMinutes: undefined,
+  distanceCalculationMethod: undefined,
+  distanceCalculatedAt: undefined,
+  distanceCacheId: undefined,
+  distanceMetadata: undefined
 };
 
 // 최근 사용 주소 저장 인터페이스
@@ -89,8 +97,10 @@ export interface IOrderRegisterStore {
   setDeparture: (departure: ILocationInfo) => void;
   setDestination: (destination: ILocationInfo) => void;
   toggleOption: (optionId: string) => void;
-  setEstimatedInfo: (distance: number, amount: number) => void;
+  setEstimatedInfo: (distance: number, amount: number, extra?: Partial<IOrderRegisterData>) => void;
   setIsCalculating: (isCalculating: boolean) => void;
+  setSelectedCompanyId: (companyId: string | undefined) => void;
+  setSelectedManagerId: (managerId: string | undefined) => void;
   resetForm: () => void;
   addRecentLocation: (type: 'departure' | 'destination', info: ILocationInfo) => void;
   useRecentLocation: (type: 'departure' | 'destination', locationId: string) => void;
@@ -152,14 +162,36 @@ export const useOrderRegisterStore = create<IOrderRegisterStore>()(
           };
         }),
         
-      setEstimatedInfo: (distance, amount) => 
+      setEstimatedInfo: (distance, amount, extra = {}) => 
         set((state) => ({
-          registerData: { ...state.registerData, estimatedDistance: distance, estimatedAmount: amount }
+          registerData: { 
+            ...state.registerData, 
+            estimatedDistance: distance, 
+            estimatedAmount: amount,
+            // 기존 개별 필드 할당
+            estimatedDurationMinutes: extra.estimatedDurationMinutes,
+            distanceCalculationMethod: extra.distanceCalculationMethod,
+            distanceCalculatedAt: extra.distanceCalculatedAt,
+            distanceCacheId: extra.distanceCacheId,
+            distanceMetadata: extra.distanceMetadata,
+            // extra의 모든 필드를 마지막에 병합 (우선순위 부여)
+            ...extra
+          }
         })),
         
       setIsCalculating: (isCalculating) => 
         set((state) => ({
           isCalculating
+        })),
+        
+      setSelectedCompanyId: (companyId) => 
+        set((state) => ({
+          registerData: { ...state.registerData, selectedCompanyId: companyId }
+        })),
+        
+      setSelectedManagerId: (managerId) => 
+        set((state) => ({
+          registerData: { ...state.registerData, selectedManagerId: managerId }
         })),
         
       resetForm: () => 

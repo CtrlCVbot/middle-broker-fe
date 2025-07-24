@@ -52,7 +52,7 @@ export interface IIncome {
   status: IncomeStatusType;    // 상태 (정산대기, 정산대사, 정산완료)
   orderIds: string[];          // 포함된 화물 ID 목록
   orders?: IBrokerOrder[];     // 화물 상세 정보
-  orderCount: number;          // 화물 건수
+  orderCount: number | 0;          // 화물 건수
   
   // 화주 정보
   shipperId?: string;          // 화주 ID
@@ -81,6 +81,7 @@ export interface IIncome {
   invoiceNumber?: string;      // 세금계산서 번호
   invoiceIssuedDate?: string;  // 세금계산서 발행일
   invoiceStatus?: '미발행' | '발행대기' | '발행완료' | '발행오류'; // 세금계산서 상태
+  depositReceivedAt?: string;  // 입금일
   
   // 관리 정보
   manager: string;             // 담당자

@@ -35,7 +35,7 @@ export const BROKER_ORDER_STATUS = [
   "상차완료",
   "운송중",
   "하차완료",
-  "운송마감"
+  "운송완료"
 ];
 
 // 차량 종류 목록
@@ -241,6 +241,7 @@ const generateMockBrokerOrders = (count: number): IBrokerOrder[] => {
         contact
       },
       shipperName: company,
+      shipperCeo: "대표자",
       createdAt: date.toISOString().split('T')[0],
       updatedAt: date.toISOString().split('T')[0],
       

@@ -22,6 +22,7 @@ import { useBrokerOrderDetailStore } from "@/store/broker-order-detail-store";
 import { BrokerStatusBadge } from "./broker-status-badge";
 import { BrokerOrderContextMenu } from "./broker-order-context-menu";
 import { Badge } from "@/components/ui/badge";
+import { getStatusBadge } from "@/components/order/order-table-ver01";
 
 interface BrokerOrderTableProps {
   orders: IBrokerOrder[];
@@ -79,16 +80,16 @@ export function BrokerOrderTable({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-slate-50">
-              <TableHead className="w-[120px]">화물 ID</TableHead>
-              <TableHead>상태</TableHead>
-              <TableHead>출발지</TableHead>
-              <TableHead>출발 일시</TableHead>
-              <TableHead>도착지</TableHead>
-              <TableHead>도착 일시</TableHead>
+      <div className="rounded-md border overflow-x-auto">
+        <Table className="min-w-[900px]">
+          <TableHeader className="sticky top-0 z-10 bg-muted">
+            <TableRow>
+              <TableHead className="w-[80px] text-center">ID</TableHead>
+              <TableHead className="w-[80px] text-center">상태</TableHead>
+              <TableHead className="w-[80px] ">상차지</TableHead>
+              <TableHead className="w-[120px] ">상차일시</TableHead>              
+              <TableHead>하차지</TableHead>              
+              <TableHead className="w-[120px] ">하차일시</TableHead>
               <TableHead>차량</TableHead>
               <TableHead>차주</TableHead>
               <TableHead>콜센터</TableHead>
@@ -105,7 +106,7 @@ export function BrokerOrderTable({
                   colSpan={13}
                   className="h-24 text-center text-muted-foreground"
                 >
-                  표시할 중개 화물 정보가 없습니다.
+                  표시할 화물 정보가 없습니다.
                 </TableCell>
               </TableRow>
             ) : (
@@ -117,16 +118,11 @@ export function BrokerOrderTable({
                   onEditTransportFee={onEditTransportFee}
                   onExportExcel={onExportExcel}
                   onViewMap={onViewMap}
-                >
-                  <TableRow 
-                    className="cursor-pointer hover:bg-secondary/20" 
-                    onClick={() => handleOrderClick(order.id)}
-                  >
-                    <TableCell className="font-medium text-primary underline">
-                      {order.id}
-                    </TableCell>
-                    <TableCell>
-                      <BrokerStatusBadge status={order.status} size="sm" />
+                >                  
+                  <TableRow key={order.id} className="cursor-pointer hover:bg-secondary/80" onClick={() => handleOrderClick(order.id)}>
+                    <TableCell className="font-medium text-primary underline">{order.id.slice(0, 8)}</TableCell>
+                    <TableCell className="text-center scale-90">
+                      {getStatusBadge(order.status)}
                       {order.gpsLocation?.status === "상차 지각" || order.gpsLocation?.status === "하차 지각" ? (
                         <Badge variant="destructive" className="ml-1 text-[10px] px-1">지각</Badge>
                       ) : null}

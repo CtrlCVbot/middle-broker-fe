@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { OrderStatusType } from '@/types/order';
 import { IOrderDetail } from '@/utils/mockdata/mock-orders-detail';
 import { IOrderRegisterData } from '@/types/order';
 
@@ -157,7 +156,7 @@ export const useOrderEditStore = create<IOrderEditState>((set, get) => ({
     }
     
     // 하차 완료 & 정산 완료 상태에서는 수정 불가
-    if (['하차완료', '운송마감'].includes(status)) {
+    if (['하차완료', '운송완료'].includes(status)) {
       return false;
     }
     

@@ -31,7 +31,8 @@ import {
   MailCheck,
   Eye,
   DollarSign,
-  Check
+  Check,
+  Warehouse
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BrokerOrderInfoEditForm } from "./broker-order-info-edit-form";
@@ -81,7 +82,7 @@ export function BrokerOrderDetailSheet() {
   
   // 가능한 배차 상태 목록
   const availableStatuses = [
-    "배차대기", "배차진행중", "배차완료", "상차완료", "하차완료", "운송중", "운송마감"
+    "배차대기", "배차진행중", "배차완료", "상차완료", "하차완료", "운송중", "운송완료"
   ];
   
   // TanStack Query를 사용하여 화물 상세 정보 조회
@@ -107,14 +108,12 @@ export function BrokerOrderDetailSheet() {
         console.error(`화물 정보 조회 실패 (ID: ${selectedOrderId}):`, err);
         
         // 개발 환경에서는 오류가 발생했을 때 첫 번째 목업 데이터를 반환
-        // if (process.env.NODE_ENV === 'development') {
-        //   // 첫 번째 유효한 데이터를 반환 (fallback 처리)
-        //   const randomNumber = Math.floor(Math.random() * 8) + 1; // 1~8
-        //   const fallbackId = `BRO-001${String(randomNumber).padStart(3, '0')}`;
-        //   // const fallbackId = "BRO-001001";
-        //   console.warn(`개발 환경 - 폴백 데이터를 사용합니다. (ID: ${fallbackId})`);
-        //   return getBrokerOrderDetailById(fallbackId);
-        // }
+        if (process.env.NODE_ENV === 'development') {
+          // 첫 번째 유효한 데이터를 반환 (fallback 처리)
+          const fallbackId = "BRO-001001";
+          console.warn(`개발 환경 - 폴백 데이터를 사용합니다. (ID: ${fallbackId})`);
+          return getBrokerOrderDetailById(fallbackId);
+        }
         throw err;
       }
     },
@@ -145,7 +144,7 @@ export function BrokerOrderDetailSheet() {
   
   // 배차완료 여부 확인
   const isAssigned = orderData?.status === "배차완료" || orderData?.status === "운송중" || orderData?.status === "상차완료" || orderData?.status === "하차완료" || orderData?.status === "운송마감";
-  console.log(orderData);
+  
   // 편집 모드 설정 핸들러
   const handleSetEditMode = (mode: EditMode) => {
     setEditMode(mode);
@@ -317,7 +316,7 @@ export function BrokerOrderDetailSheet() {
           // 데이터 로드 완료
           <div className="h-full flex flex-col">
             {/* 헤더 - 기본 정보 */}
-            <SheetHeader className="px-6 py-4 sticky top-0 bg-background z-10 border-b">
+            <SheetHeader className="py-4 border-b sticky top-0 bg-background bg-muted/100">
               <div className="flex items-center justify-between">
                 <SheetTitle className="text-xl font-bold">
                   화물 번호: {orderData.orderNumber}
@@ -328,7 +327,7 @@ export function BrokerOrderDetailSheet() {
                   onClick={closeSheet}
                   className="h-8 w-8"
                 >
-                  <X className="h-5 w-5" />
+                  
                 </Button>
               </div>
               {/* 배차 상태 및 액션 버튼 */}
@@ -342,7 +341,7 @@ export function BrokerOrderDetailSheet() {
                         className="flex items-center gap-2 border-dashed"
                       >
                         <Badge 
-                          variant={orderData.status === "운송마감" ? "default" : "secondary"}
+                          variant={orderData.status === "운송완료" ? "default" : "secondary"}
                           className="font-semibold"
                         >
                           {orderData.status}
@@ -421,12 +420,14 @@ export function BrokerOrderDetailSheet() {
             <div className="flex-grow overflow-auto">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
                 {/* 화물 정보 카드 */}
-                <Card className={cn(
+                {/* <Card className={cn(
                   "overflow-hidden", 
                   "md:block", 
+                  "border-none",
                   activeTab !== "cargo" && "hidden"
-                )}>
-                  <CardHeader className="bg-muted/20 flex flex-row items-center justify-between py-3 px-4 border-b">
+                )}> */}
+                <div className="h-full bg-white shadow-md rounded-md hover:ring-2 hover:ring-primary/20 transition-all duration-150">
+                  <div className={cn("bg-orange-100 text-orange-700" + " text-sm p-2 rounded-t-md flex items-center","flex flex-row items-center justify-between py-3 px-4 border-b")}>
                     <div className="flex items-center gap-2">
                       <Package className="h-4 w-4 text-primary" />
                       <CardTitle className="text-base font-medium">
@@ -494,7 +495,8 @@ export function BrokerOrderDetailSheet() {
                         </Button>
                       )}
                     </div>
-                  </CardHeader>
+                  </div>
+                  
                   <CardContent className="p-0">
                     <div className="p-4">
                       {editMode === "cargo" ? (
@@ -565,7 +567,9 @@ export function BrokerOrderDetailSheet() {
                       )}
                     </div>
                   </CardContent>
-                </Card>
+                  
+                {/* </Card> */}
+                </div>
                 
                 {/* 차량 및 기사 정보 카드 */}
                 <Card className={cn(
@@ -627,6 +631,7 @@ export function BrokerOrderDetailSheet() {
                       {editMode === "driver" ? (
                         <BrokerOrderDriverInfoEditForm
                           initialData={{
+                            status: orderData?.status || "배차대기",
                             driver: orderData?.vehicle?.driver || { 
                               name: "", 
                               contact: "" 
@@ -637,7 +642,8 @@ export function BrokerOrderDetailSheet() {
                               licensePlate: orderData?.vehicle?.licensePlate || ""
                             },
                             callCenter: "24시",
-                            specialNotes: []
+                            specialNotes: [],
+                            dispatchId: orderData?.dispatchId || ""
                           }}
                           onSave={handleSaveDriverInfo}
                           onCancel={handleCancelEdit}

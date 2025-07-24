@@ -18,7 +18,7 @@ export function BrokerOrderProgress({ currentStatus }: BrokerOrderProgressProps)
         <Progress value={progressPercentage} className="h-2" />
         <div className="flex justify-between text-xs text-muted-foreground">
           <span>배차대기</span>
-          <span>운송마감</span>
+          <span>운송완료</span>
         </div>
       </div>
       

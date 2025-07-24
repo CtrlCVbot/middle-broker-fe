@@ -6,6 +6,8 @@ import {
   Frame,
   Home,
   LifeBuoy,
+  Loader,
+  Loader2,
   Map,
   PieChart,
   Send,
@@ -18,6 +20,10 @@ import {
   CreditCard,
   Building,
   DollarSign,
+  BanknoteArrowUp,
+  BanknoteArrowDown,
+  Banknote,
+  
 } from "lucide-react"
 import Link from 'next/link'
 
@@ -26,6 +32,7 @@ import { NavBroker } from "@/components/nav-broker"
 import { NavProjects } from "@/components/nav-projects"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
+import { NavTest } from "@/components/nav-test"
 import {
   Sidebar,
   SidebarContent,
@@ -36,11 +43,56 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
+import { getCurrentUser } from "@/utils/auth"
+
+const user = getCurrentUser();
+
+
+// 사이드바 데이터 분기 함수 (companyType 기준)
+function getSidebarDataByUser(user: any) {
+  if (!user || !user.companyType) {
+    // 미로그인 또는 회사 타입 없음: 빈 메뉴 반환
+    return {
+      user: { name: "", email: "", avatar: null },
+      navMain: [],
+      navBroker: [],
+      navTest: [],
+    }
+  }
+  switch (user.companyType) {
+    case "broker":
+      return {
+        user: { name: user.name || "", email: user.email || "", avatar: null },
+        navMain: [],
+        navBroker: brokerData.navBroker,
+        navTest: brokerData.navTest,
+      }
+    case "shipper":
+      return {
+        user: { name: user.name || "", email: user.email || "", avatar: null },
+        navMain: shipperData.navMain,
+        navBroker: [],
+        navTest: shipperData.navTest,
+      }
+    default:
+      // 알 수 없는 타입: 빈 메뉴
+      return {
+        user: { name: user.name || "", email: user.email || "", avatar: null },
+        navMain: [],
+        navBroker: [],
+        navTest: [],
+      }
+  }
+}
+
+
 export const data = {
+
+
   user: {
-    name: "홍길동",
-    email: "user@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    name: user?.name || "",
+    email: user?.email || "",
+    avatar: null,
   },
   navMain: [
     {
@@ -50,39 +102,42 @@ export const data = {
       isActive: true,
     },
     
-    
-    {
-      title: "화물 현황",
-      url: "/order/list",
-      icon: Truck,
-      items: [
-        {
-          title: "화물 목록",
-          url: "/order/list",
-        },
-        {
-          title: "화물 등록",
-          url: "/order/register",
-        }
-      ],
-    },
-    {
-      title: "화물 등록",
-      url: "/order/register",
-      icon: PackagePlus,
-    },
-    
-    {
-      title: "정산 현황",
-      url: "/settlement/list",
-      icon: CreditCard,
-    },
-
     {
       title: "주소록",
       url: "/address",
       icon: NotebookTabs,
     },
+
+    {
+      title: "운송 요청",
+      url: "/order/register",
+      icon: PackagePlus,
+    },
+
+    {
+      title: "운송 현황",
+      url: "/order/list",
+      icon: Truck,
+      items: [
+        {
+          title: "운송 목록",
+          url: "/order/list",
+        },
+        {
+          title: "운송 요청",
+          url: "/order/register",
+        }
+      ],
+    },
+    
+    
+    {
+      title: "운송 정산",
+      url: "/settlement/list",
+      icon: CreditCard,
+    },
+
+    
 
     {
       title: "대시보드",
@@ -104,29 +159,29 @@ export const data = {
       ],
     },
     
-    {
-      title: "설정",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "일반",
-          url: "#",
-        },
-        {
-          title: "팀",
-          url: "#",
-        },
-        {
-          title: "결제",
-          url: "#",
-        },
-        {
-          title: "제한",
-          url: "#",
-        },
-      ],
-    },
+    // {
+    //   title: "설정",
+    //   url: "#",
+    //   icon: Settings2,
+    //   items: [
+    //     {
+    //       title: "일반",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "팀",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "결제",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "제한",
+    //       url: "#",
+    //     },
+    //   ],
+    // },
     {
       title: "프로필",
       url: "/profile",
@@ -135,9 +190,19 @@ export const data = {
   ],
 
   navBroker: [
+    // {
+    //   title: "실시간 화물 현황",
+    //   url: "/broker/order/list",
+    //   icon: LifeBuoy,
+    // },
     {
-      title: "실시간 화물 현황",
-      url: "/broker/order/list",
+      title: "실시간 화물 현황 ver01",
+      url: "/broker/order-ver01/list",
+      icon: LifeBuoy,
+    },
+    {
+      title: "오더 등록",
+      url: "/broker/order-ver01/register",
       icon: LifeBuoy,
     },
     {
@@ -150,47 +215,79 @@ export const data = {
       url: "/broker/driver/list",
       icon: Truck,
     },
+    // {
+    //   title: "매출 정산",
+    //   url: "/broker/income",
+    //   icon: DollarSign,
+    //   items: [
+    //     {
+    //       title: "정산 목록",
+    //       url: "/broker/income",
+    //     },
+    //     {
+    //       title: "정산 대기 화물",
+    //       url: "/broker/income/first-settlement",
+    //     }
+    //   ],
+    // },
     {
-      title: "매출 정산",
-      url: "/broker/income",
+      title: "매출 정산-ver01",
+      url: "/broker/sale",
       icon: DollarSign,
       items: [
         {
           title: "정산 목록",
-          url: "/broker/income",
+          url: "/broker/sale",
         },
         {
           title: "정산 대기 화물",
-          url: "/broker/income/first-settlement",
+          url: "/broker/sale/waiting",
         }
       ],
     },
+
     {
-      title: "매입 정산",
-      url: "/broker/expenditure",
+      title: "매입 정산-ver01",
+      url: "/broker/purchase",
       icon: DollarSign,
       items: [
         {
           title: "정산 목록",
-          url: "/broker/expenditure",
+          url: "/broker/purchase",
         },
-      ],
-    },
-    {
-      title: "매입 정산2",
-      url: "/broker/expenditure2",
-      icon: DollarSign,
-      items: [
         {
-          title: "정산 목록",
-          url: "/broker/expenditure2",
-        },
+          title: "정산 대기 화물",
+          url: "/broker/purchase/waiting",
+        }
       ],
     },
+    // {
+    //   title: "매입 정산",
+    //   url: "/broker/expenditure",
+    //   icon: DollarSign,
+    //   items: [
+    //     {
+    //       title: "정산 목록",
+    //       url: "/broker/expenditure",
+    //     },
+    //   ],
+    // },
+    // {
+    //   title: "매입 정산2",
+    //   url: "/broker/expenditure2",
+    //   icon: DollarSign,
+    //   items: [
+    //     {
+    //       title: "정산 목록",
+    //       url: "/broker/expenditure2",
+    //     },
+    //   ],
+    // },
   ], 
 
 
   navSecondary: [
+    
     {
       title: "지원",
       url: "#",
@@ -202,10 +299,33 @@ export const data = {
       icon: Send,
     },
   ],
-  
+  projects: [
+    {
+      name: "디자인 엔지니어링",
+      url: "#",
+      icon: Frame,
+    },
+    {
+      name: "영업 및 마케팅",
+      url: "#",
+      icon: PieChart,
+    },
+    {
+      name: "여행",
+      url: "#",
+      icon: Map,
+    },
+  ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+
+  //const user = getCurrentUser();
+
+  console.log("user", user);
+  const sidebarData = getSidebarDataByUser(user);
+  console.log("sidebarData", sidebarData);
+
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -217,8 +337,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">MiddleMile Shipper</span>
-                  <span className="truncate text-xs">프론트엔드</span>
+                  <span className="truncate font-medium">{user?.companyName}</span>
+                  {user?.companyType === "broker" && <span className="truncate text-xs">주선사</span>}
+                  {user?.companyType === "shipper" && <span className="truncate text-xs">화주</span>}
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -228,11 +349,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavBroker items={data.navBroker} />
-        
+        <NavProjects projects={data.projects} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        {/* <NavUser user={data.user} /> */}
+        <NavUser user={sidebarData.user} />
       </SidebarFooter>
     </Sidebar>
   )

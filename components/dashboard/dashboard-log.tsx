@@ -26,7 +26,7 @@ const getStatusStyle = (status: OrderStatusType) => {
       return { color: 'text-orange-600 bg-orange-100', icon: <Activity className="h-3 w-3" /> };
     case '하차완료':
       return { color: 'text-green-600 bg-green-100', icon: <Activity className="h-3 w-3" /> };
-    case '운송마감':
+    case '운송완료':
       return { color: 'text-purple-600 bg-purple-100', icon: <Activity className="h-3 w-3" /> };
     default:
       return { color: 'text-gray-600 bg-gray-100', icon: <Activity className="h-3 w-3" /> };

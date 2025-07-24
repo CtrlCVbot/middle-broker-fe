@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "@/components/ui/toaster";
+import AuthInitializer from "@/components/auth-initializer";
+import { Inter } from 'next/font/google'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,9 +16,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const inter = Inter({ subsets: ['latin'] })
+
 export const metadata: Metadata = {
-  title: "Middle Shipper",
-  description: "Middle Shipper Frontend Application",
+  title: "중개사 화물 관리 시스템",
+  description: "중개사 화물 관리 시스템",
 };
 
 export default function RootLayout({
@@ -27,12 +31,15 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased ${inter.className}`}
+        suppressHydrationWarning
       >
         <Providers>
-          {children}
+          <AuthInitializer>
+            {children}
+          </AuthInitializer>
+          <Toaster />
         </Providers>
-        <Toaster />
       </body>
     </html>
   );

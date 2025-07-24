@@ -30,7 +30,12 @@ import {
   DriverStatus,
   PermissionType 
 } from "@/types/broker-driver";
+
+//store
 import { useBrokerDriverStore } from "@/store/broker-driver-store";
+
+//service
+import { registerDriver } from "@/services/driver-service";
 
 // 차주 기본 정보 스키마
 const basicInfoSchema = z.object({
@@ -39,6 +44,9 @@ const basicInfoSchema = z.object({
   businessNumber: z.string().optional(),
   address: z.string().optional(),
   status: z.enum(["활성", "비활성"]).default("활성"),
+  bankCode: z.string().optional(),
+  bankAccountNumber: z.string().optional(),
+  bankAccountHolder: z.string().optional(),
 });
 
 // 차량 정보 스키마
@@ -52,12 +60,12 @@ const vehicleInfoSchema = z.object({
 });
 
 // 계정 정보 스키마
-const accountInfoSchema = z.object({
-  id: z.string().min(4, "아이디는 최소 4자 이상이어야 합니다"),
-  password: z.string().min(6, "비밀번호는 최소 6자 이상이어야 합니다"),
-  email: z.string().email("유효한 이메일 주소를 입력해주세요").optional().or(z.literal("")),
-  permission: z.enum(["일반", "관리자"]).default("일반"),
-});
+// const accountInfoSchema = z.object({
+//   id: z.string().min(4, "아이디는 최소 4자 이상이어야 합니다"),
+//   password: z.string().min(6, "비밀번호는 최소 6자 이상이어야 합니다"),
+//   email: z.string().email("유효한 이메일 주소를 입력해주세요").optional().or(z.literal("")),
+//   permission: z.enum(["일반", "관리자"]).default("일반"),
+// });
 
 // 특이사항 스키마
 const noteSchema = z.object({
@@ -74,7 +82,7 @@ const noteSchema = z.object({
 const driverSchema = z.object({
   basicInfo: basicInfoSchema,
   vehicleInfo: vehicleInfoSchema,
-  accountInfo: accountInfoSchema,
+  // accountInfo: accountInfoSchema,
   notes: noteSchema,
 });
 
@@ -114,7 +122,7 @@ export function BrokerDriverRegisterSheet({
     notes: false,
   });
   
-  const { updateDriver } = useBrokerDriverStore();
+  const { updateDriverWithAPI, registerDriverWithAPI } = useBrokerDriverStore();
 
   // 외부에서 제어되는 경우 내부 상태 동기화
   useEffect(() => {
@@ -146,6 +154,7 @@ export function BrokerDriverRegisterSheet({
   // 폼 기본값 설정
   const getFormDefaultValues = () => {
     if (mode === 'edit' && driver) {
+      console.log("driver!!!", driver);
       return {
         basicInfo: {
           name: driver.name || "",
@@ -153,6 +162,9 @@ export function BrokerDriverRegisterSheet({
           businessNumber: driver.businessNumber || "",
           address: driver.address || "",
           status: driver.status || "활성",
+          bankCode: driver.bankCode || "",
+          bankAccountNumber: driver.bankAccountNumber || "",
+          bankAccountHolder: driver.bankAccountHolder || "",
         },
         vehicleInfo: {
           vehicleNumber: driver.vehicleNumber || "",
@@ -181,6 +193,9 @@ export function BrokerDriverRegisterSheet({
         businessNumber: "",
         address: "",
         status: "활성" as DriverStatus,
+        bankCode: "",
+        bankAccountNumber: "",
+        bankAccountHolder: "",
       },
       vehicleInfo: {
         vehicleNumber: "",
@@ -234,61 +249,114 @@ export function BrokerDriverRegisterSheet({
   // 폼 제출 핸들러
   const onSubmit = async (data: DriverFormValues) => {
     setIsSubmitting(true);
+    console.log("제출된 폼 데이터:", data);
     
     try {
-      // API 호출 대신 목업 데이터로 처리
-      // IBrokerDriver 형식으로 변환
-      const formattedDriver: IBrokerDriver = {
-        id: driver?.id || Math.random().toString(36).substring(2, 11),
-        name: data.basicInfo.name,
-        phoneNumber: data.basicInfo.phone,
-        businessNumber: data.basicInfo.businessNumber || "",
-        address: data.basicInfo.address || "",
-        status: data.basicInfo.status as DriverStatus,
-        vehicleNumber: data.vehicleInfo.vehicleNumber,
-        vehicleType: data.vehicleInfo.vehicleType as VehicleType,
-        tonnage: data.vehicleInfo.tonnage as TonnageType,
-        cargoBox: {
-          type: data.vehicleInfo.cargoBoxType || "",
-          length: data.vehicleInfo.cargoBoxLength || ""
-        },
-        manufactureYear: data.vehicleInfo.manufactureYear || "",
-        account: {
-          id: data.accountInfo.id,
-          email: data.accountInfo.email || "",
-          permission: data.accountInfo.permission as PermissionType
-        },
-        notes: data.notes.notes,
-      };
-      
-      // 성공 처리 (목업)
-      setTimeout(() => {
-        if (mode === 'register') {
+      if (mode === 'register') {
+        // 차주 등록 모드
+        try {
+          console.log("차주 등록 서비스 호출 시작");
+          
+          // 서비스 레이어 직접 호출 (driver-service.ts의 registerDriver 함수)
+          // getAuthHeaders()를 통해 현재 로그인한 사용자 정보가 자동으로 요청에 포함됨
+          const registeredDriver = await registerDriver({
+            basicInfo: {
+              name: data.basicInfo.name,
+              phone: data.basicInfo.phone,
+              businessNumber: data.basicInfo.businessNumber || "0000000000",
+              address: data.basicInfo.address || "",
+              status: data.basicInfo.status,
+              // 은행 정보 추가
+              bankCode: data.basicInfo.bankCode || "",
+              bankAccountNumber: data.basicInfo.bankAccountNumber || "",
+              bankAccountHolder: data.basicInfo.bankAccountHolder || "",
+            },
+            vehicleInfo: {
+              vehicleNumber: data.vehicleInfo.vehicleNumber,
+              vehicleType: data.vehicleInfo.vehicleType,
+              tonnage: data.vehicleInfo.tonnage, // API에서는 vehicleWeight로 매핑됨
+              cargoBoxType: data.vehicleInfo.cargoBoxType || "",
+              cargoBoxLength: data.vehicleInfo.cargoBoxLength || "",
+              manufactureYear: data.vehicleInfo.manufactureYear || ""
+            }
+          });
+          
+          console.log("차주 등록 성공:", registeredDriver);
+          
+          // 성공 메시지 표시
           toast.success("차주가 성공적으로 등록되었습니다", {
             description: `${data.basicInfo.name} 차주가 등록되었습니다.`,
           });
+          
+          // 성공 콜백 호출
           if (onRegisterSuccess) {
-            onRegisterSuccess(formattedDriver);
+            onRegisterSuccess(registeredDriver);
           }
-        } else {
-          toast.success("차주 정보가 성공적으로 수정되었습니다", {
-            description: `${data.basicInfo.name} 차주 정보가 수정되었습니다.`,
+          
+          // 폼 닫기
+          handleOpenChange(false);
+        } catch (apiError) {
+          console.error("차주 등록 API 오류:", apiError);
+          // 오류 메시지 표시
+          toast.error("차주 등록에 실패했습니다", {
+            description: apiError instanceof Error 
+              ? apiError.message 
+              : "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
           });
-          // 스토어 업데이트
-          updateDriver(formattedDriver);
-          if (onUpdateSuccess) {
-            onUpdateSuccess(formattedDriver);
-          }
+        }
+      } else {
+        // 차주 수정 모드 (기존 코드 유지)
+        // IBrokerDriver 형식으로 변환
+        const formattedDriver: IBrokerDriver = {
+          id: driver?.id || Math.random().toString(36).substring(2, 11),
+          name: data.basicInfo.name,
+          phoneNumber: data.basicInfo.phone,
+          businessNumber: data.basicInfo.businessNumber || "",
+          address: data.basicInfo.address || "",
+          status: data.basicInfo.status as DriverStatus,
+          vehicleNumber: data.vehicleInfo.vehicleNumber,
+          vehicleType: data.vehicleInfo.vehicleType as VehicleType,
+          tonnage: data.vehicleInfo.tonnage as TonnageType,
+          cargoBox: {
+            type: data.vehicleInfo.cargoBoxType || "",
+            length: data.vehicleInfo.cargoBoxLength || ""
+          },
+          manufactureYear: data.vehicleInfo.manufactureYear || "",
+          // 은행 정보 추가
+          bankCode: data.basicInfo.bankCode || "",
+          bankAccountNumber: data.basicInfo.bankAccountNumber || "",
+          bankAccountHolder: data.basicInfo.bankAccountHolder || "",
+          // account: {
+          //   id: data.accountInfo.id,
+          //   email: data.accountInfo.email || "",
+          //   permission: data.accountInfo.permission as PermissionType
+          // },
+          notes: data.notes.notes,
+        };
+        
+        // 성공 메시지 표시
+        toast.success("차주 정보가 성공적으로 수정되었습니다", {
+          description: `${data.basicInfo.name} 차주 정보가 수정되었습니다.`,
+        });
+        
+        // 스토어 업데이트
+        updateDriverWithAPI(driver?.id || "", formattedDriver);
+        
+        // 성공 콜백 호출
+        if (onUpdateSuccess) {
+          onUpdateSuccess(formattedDriver);
         }
         
+        // 폼 닫기
         handleOpenChange(false);
-        setIsSubmitting(false);
-      }, 1000);
+      }
     } catch (error) {
-      console.error("차주 등록/수정 오류:", error);
+      console.error("차주 등록/수정 처리 중 오류 발생:", error);
+      // 오류 메시지 표시
       toast.error(`차주 ${mode === 'register' ? '등록' : '수정'}에 실패했습니다`, {
-        description: "잠시 후 다시 시도해주세요.",
+        description: "서버와의 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
       });
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -307,15 +375,22 @@ export function BrokerDriverRegisterSheet({
       isValid = await form.trigger("vehicleInfo", { shouldFocus: true });
       if (isValid) {
         checkStepCompletion('vehicle', true);
-        setActiveTab("account-info");
+        // 수정 모드일 때만 특이사항 탭으로 이동, 등록 모드에서는 완료 처리
+        if (mode === 'edit') {
+          setActiveTab("notes");
+        } else {
+          // 등록 모드에서는 차량 정보까지 입력 후 제출
+          await form.handleSubmit(onSubmit)();
+        }
       }
-    } else if (activeTab === "account-info") {
-      isValid = await form.trigger("accountInfo", { shouldFocus: true });
-      if (isValid) {
-        checkStepCompletion('account', true);
-        setActiveTab("notes");
-      }
-    }
+    } 
+    // else if (activeTab === "account-info") {
+    //   isValid = await form.trigger("accountInfo", { shouldFocus: true });
+    //   if (isValid) {
+    //     checkStepCompletion('account', true);
+    //     setActiveTab("notes");
+    //   }
+    // }
   };
 
   // 이전 탭으로 이동
@@ -325,7 +400,7 @@ export function BrokerDriverRegisterSheet({
     } else if (activeTab === "account-info") {
       setActiveTab("vehicle-info");
     } else if (activeTab === "notes") {
-      setActiveTab("account-info");
+      setActiveTab("vehicle-info");
     }
   };
 
@@ -342,10 +417,11 @@ export function BrokerDriverRegisterSheet({
       <span>차주 등록</span>
     </Button>
   ) : (
-    <Button variant="outline" className="flex items-center gap-1">
+    <Button hidden={true} variant="outline" className="flex items-center gap-1">
       <Edit className="h-4 w-4" />
       <span>수정</span>
     </Button>
+    
   );
 
   return (
@@ -369,7 +445,7 @@ export function BrokerDriverRegisterSheet({
                 onValueChange={setActiveTab}
                 className="w-full px-6"
               >
-                <TabsList className="grid grid-cols-4 mb-4">
+                <TabsList className={`grid ${mode === 'edit' ? 'grid-cols-3' : 'grid-cols-2'} mb-4`}>
                   <TabsTrigger 
                     value="basic-info"
                     className="relative"
@@ -388,7 +464,7 @@ export function BrokerDriverRegisterSheet({
                       <Check className="h-3 w-3 absolute -top-1 -right-1 text-green-600" />
                     )}
                   </TabsTrigger>
-                  <TabsTrigger 
+                  {/* <TabsTrigger 
                     value="account-info"
                     className="relative"
                   >
@@ -396,16 +472,18 @@ export function BrokerDriverRegisterSheet({
                     {formStatus.account && (
                       <Check className="h-3 w-3 absolute -top-1 -right-1 text-green-600" />
                     )}
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="notes"
-                    className="relative"
-                  >
-                    특이사항
-                    {formStatus.notes && (
-                      <Check className="h-3 w-3 absolute -top-1 -right-1 text-green-600" />
-                    )}
-                  </TabsTrigger>
+                  </TabsTrigger> */}
+                  {mode === 'edit' && (
+                    <TabsTrigger 
+                      value="notes"
+                      className="relative"
+                    >
+                      특이사항
+                      {formStatus.notes && (
+                        <Check className="h-3 w-3 absolute -top-1 -right-1 text-green-600" />
+                      )}
+                    </TabsTrigger>
+                  )}
                 </TabsList>
 
                 <TabsContent value="basic-info">
@@ -434,7 +512,7 @@ export function BrokerDriverRegisterSheet({
                   />
                 </TabsContent>
 
-                <TabsContent value="account-info">
+                {/* <TabsContent value="account-info">
                   <Alert className="mb-4">
                     <AlertTitle>계정 정보 입력</AlertTitle>
                     <AlertDescription>
@@ -445,20 +523,23 @@ export function BrokerDriverRegisterSheet({
                     form={form}
                     onComplete={() => checkStepCompletion('account', true)}
                   />
-                </TabsContent>
+                </TabsContent> */}
 
-                <TabsContent value="notes">
-                  <Alert className="mb-4">
-                    <AlertTitle>특이사항 입력</AlertTitle>
-                    <AlertDescription>
-                      차주에 대한 특이사항이 있다면 기록해주세요.
-                    </AlertDescription>
-                  </Alert>
-                  <BrokerDriverNotesForm 
-                    form={form}
-                    onComplete={() => checkStepCompletion('notes', true)}
-                  />
-                </TabsContent>
+                {mode === 'edit' && (
+                  <TabsContent value="notes">
+                    <Alert className="mb-4">
+                      <AlertTitle>특이사항 입력</AlertTitle>
+                      <AlertDescription>
+                        차주에 대한 특이사항이 있다면 기록해주세요.
+                      </AlertDescription>
+                    </Alert>
+                    <BrokerDriverNotesForm 
+                      form={form}
+                      onComplete={() => checkStepCompletion('notes', true)}
+                      driverId={mode === 'edit' ? driver?.id : undefined}
+                    />
+                  </TabsContent>
+                )}
             </Tabs>
 
             <SheetFooter className="flex flex-row justify-between mt-6 gap-2">
@@ -475,7 +556,7 @@ export function BrokerDriverRegisterSheet({
                 )}
               </div>
               <div className="flex gap-2">
-                {activeTab !== "notes" ? (
+                {(mode === 'edit' && activeTab !== "notes") || (mode === 'register' && activeTab !== "vehicle-info") ? (
                   <Button 
                     type="button" 
                     onClick={handleNextTab}

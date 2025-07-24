@@ -16,18 +16,19 @@ import {
   BrokerCompanyStatementBadge
 } from './broker-company-status-badge';
 import { IBrokerCompany } from '@/types/broker-company';
-import { useBrokerCompanyStore } from '@/store/broker-company-store';
+import { useCompanyStore } from '@/store/company-store';
 import { BrokerCompanyContextMenu } from './broker-company-context-menu';
 import { cn } from '@/lib/utils';
 import { Mail, Phone, Smartphone, Calendar } from 'lucide-react';
+import { ILegacyCompany } from '@/types/company';
 
 interface BrokerCompanyCardProps {
-  company: IBrokerCompany;
+  company: IBrokerCompany | ILegacyCompany;
   onClick?: () => void;
 }
 
 export function BrokerCompanyCard({ company, onClick }: BrokerCompanyCardProps) {
-  const { selectedCompanyIds, toggleCompanySelection } = useBrokerCompanyStore();
+  const { selectedCompanyIds, toggleCompanySelection } = useCompanyStore();
 
   if (!company) {
     return (
@@ -49,7 +50,7 @@ export function BrokerCompanyCard({ company, onClick }: BrokerCompanyCardProps) 
       <Card 
         className={cn(
           "cursor-pointer hover:shadow-md transition-shadow",
-          company.status === '비활성' && "bg-gray-50",
+          (company.status === '비활성' || company.status === 'inactive') && "bg-gray-50",
           selectedCompanyIds.includes(company.id) && "border-primary border-2"
         )}
         onClick={onClick}
@@ -76,7 +77,7 @@ export function BrokerCompanyCard({ company, onClick }: BrokerCompanyCardProps) 
             <span>•</span>
             <BrokerCompanyTypeBadge type={company.type} />
             <span>•</span>
-            <BrokerCompanyStatementBadge type={company.statementType} />
+            <BrokerCompanyStatementBadge type={(company as IBrokerCompany).statementType || '매출처'} />
           </CardDescription>
         </CardHeader>
         <CardContent className="pb-2 pt-0">
@@ -103,38 +104,44 @@ export function BrokerCompanyCard({ company, onClick }: BrokerCompanyCardProps) 
               <Phone className="h-4 w-4 mr-2" />
               <span>{company.phoneNumber}</span>
             </div>
-            <div className="flex items-center text-muted-foreground">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16" 
-                height="16" 
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-4 w-4 mr-2"
-              >
-                <path d="M17 17h.01" />
-                <path d="M13 17h.01" />
-                <path d="M9 17h.01" />
-                <rect width="20" height="14" x="2" y="7" rx="2" />
-                <path d="M6 4v3" />
-                <path d="M18 4v3" />
-                <path d="M2 10h20" />
-              </svg>
-              <span>{company.faxNumber}</span>
-            </div>
+            {'faxNumber' in company && (
+              <div className="flex items-center text-muted-foreground">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16" 
+                  height="16" 
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4 mr-2"
+                >
+                  <path d="M17 17h.01" />
+                  <path d="M13 17h.01" />
+                  <path d="M9 17h.01" />
+                  <rect width="20" height="14" x="2" y="7" rx="2" />
+                  <path d="M6 4v3" />
+                  <path d="M18 4v3" />
+                  <path d="M2 10h20" />
+                </svg>
+                <span>{(company as any).faxNumber}</span>
+              </div>
+            )}
           </div>
         </CardContent>
         <CardFooter className="pt-2 text-xs text-muted-foreground border-t">
           <div className="flex flex-col sm:flex-row justify-between w-full gap-2">
             <div className="flex items-center gap-1">
               <span>담당자:</span>
-              <span className="font-medium">{company.managerName}</span>
+              <span className="font-medium">
+                {'managerName' in company ? (company as any).managerName : '-'}
+              </span>
               <Smartphone className="h-3 w-3 mx-1" />
-              <span>{company.managerPhoneNumber}</span>
+              <span>
+                {'managerPhoneNumber' in company ? (company as any).managerPhoneNumber : '-'}
+              </span>
             </div>
             <div className="flex items-center gap-1">
               <Calendar className="h-3 w-3 mr-1" />

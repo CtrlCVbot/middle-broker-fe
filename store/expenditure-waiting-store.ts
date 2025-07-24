@@ -16,7 +16,7 @@ const DEFAULT_CITIES = CITIES || ["서울", "부산", "인천", "대구", "대�
 const DEFAULT_VEHICLE_TYPES = VEHICLE_TYPES || ["카고", "윙바디", "탑차", "냉장", "냉동", "트레일러"];
 const DEFAULT_WEIGHT_TYPES = WEIGHT_TYPES || ["1톤", "2.5톤", "3.5톤", "5톤", "11톤", "25톤"];
 const DEFAULT_MANAGERS = MANAGERS ? MANAGERS.map(m => m.name).filter(Boolean) : ["김중개", "이주선", "박배송", "정관리", "최물류"];
-const DEFAULT_STATUSES: BrokerOrderStatusType[] = ["운송마감"];
+const DEFAULT_STATUSES: BrokerOrderStatusType[] = ["운송완료"];
 
 // 필터 타입 정의
 export interface IExpenditureWaitingFilter {
@@ -140,8 +140,8 @@ export const useExpenditureWaitingStore = create<IExpenditureWaitingState>()(
       
       selectedOrderIds: [],
       
-      filter: { ...initialFilter, status: "운송마감" },
-      tempFilter: { ...initialFilter, status: "운송마감" },
+      filter: { ...initialFilter, status: "운송완료" },
+      tempFilter: { ...initialFilter, status: "운송완료" },
       currentPage: 1,
       pageSize: 10,
       totalPages: 1,
@@ -163,9 +163,9 @@ export const useExpenditureWaitingStore = create<IExpenditureWaitingState>()(
           // 실제 API 대신 목업 데이터를 사용
           const allOrders = getMockBrokerOrders();
           
-          // 운송마감 상태의 화물만 필터링
+          // 운송완료 상태의 화물만 필터링
           const waitingOrders = allOrders.filter(order => 
-            order.status === "운송마감" && 
+            order.status === "운송완료" && 
             !order.settlementId // 이미 정산되지 않은 화물만
           );
           
@@ -237,7 +237,7 @@ export const useExpenditureWaitingStore = create<IExpenditureWaitingState>()(
       },
       
       resetFilter: () => {
-        const basicFilter: IExpenditureWaitingFilter = { ...initialFilter, status: "운송마감" };
+        const basicFilter: IExpenditureWaitingFilter = { ...initialFilter, status: "운송완료" };
         set((state) => {
           const filteredOrders = applyFilter(state.waitingOrders, basicFilter);
           const totalPages = Math.ceil(filteredOrders.length / state.pageSize);

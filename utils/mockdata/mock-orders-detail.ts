@@ -1,5 +1,5 @@
 // 화물 상세 정보 목업 데이터
-import { OrderStatusType, IOrderLog, ORDER_STATUS, getProgressPercentage, isStatusAtLeast } from '@/types/order';
+import { OrderStatusType, IOrderLog } from '@/types/order';
 
 // 화물 상세 정보 인터페이스
 export interface IOrderDetail {
@@ -369,10 +369,10 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
   },
   "202103150128": {
     orderNumber: "202103150128",
-    status: "운송마감",
+    status: "운송완료",
     amount: "220,000원",
     registeredAt: "2023-03-13 09:50",
-    statusProgress: "운송마감",
+    statusProgress: "운송완료",
     departure: {
       address: "경북 포항시 남구 오천읍",
       detailedAddress: "포항물류센터",
@@ -446,7 +446,7 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
         remark: "화물 하차 완료"
       },
       {
-        status: "운송마감",
+        status: "운송완료",
         time: "14:00",
         date: "2023-03-15",
         handler: "이경리",
@@ -826,10 +826,10 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
   },
   "202103150135": {
     orderNumber: "202103150135",
-    status: "운송마감",
+    status: "운송완료",
     amount: "280,000원",
     registeredAt: "2023-03-13 11:20",
-    statusProgress: "운송마감",
+    statusProgress: "운송완료",
     departure: {
       address: "서울특별시 영등포구 여의도동",
       detailedAddress: "여의도물류센터",
@@ -903,7 +903,7 @@ export const mockOrderDetails: Record<string, IOrderDetail> = {
         remark: "화물 하차 완료"
       },
       {
-        status: "운송마감",
+        status: "운송완료",
         time: "10:30",
         date: "2023-03-15",
         handler: "정경리",

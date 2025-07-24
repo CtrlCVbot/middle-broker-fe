@@ -99,7 +99,7 @@ export const isFieldEditable = (status: string, fieldName: string): boolean => {
     return fieldName === 'remark';
   }
   
-  // 하차완료, 운송마감 상태에서는 모든 필드 수정 불가
+  // 하차완료, 운송완료 상태에서는 모든 필드 수정 불가
   return false;
 };
 
@@ -116,7 +116,7 @@ export const getStatusColor = (status: string): string => {
       return 'bg-amber-100 text-amber-800';
     case '하차완료':
       return 'bg-emerald-100 text-emerald-800';
-    case '운송마감':
+    case '운송완료':
       return 'bg-green-100 text-green-800';
     default:
       return 'bg-gray-100 text-gray-800';

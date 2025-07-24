@@ -17,7 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ILocationInfo } from '@/types/order';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { CalendarIcon, Search as SearchIcon } from 'lucide-react';
+import { CalendarIcon, Search as SearchIcon, Pin } from 'lucide-react';
 import { useOrderRegisterStore } from '@/store/order-register-store';
 import { cn } from '@/lib/utils';
 import { RECENT_LOCATIONS } from '@/utils/mockdata/mock-register';

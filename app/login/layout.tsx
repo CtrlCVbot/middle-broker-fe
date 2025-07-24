@@ -23,12 +23,12 @@ export default function LoginLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+    //<html lang="ko">
+      <div
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}        
       >
         {children}
-      </body>
-    </html>
+      </div>
+    //</html>
   );
 } 

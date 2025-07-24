@@ -2,26 +2,29 @@
 
 // Settlement 관련 타입 임포트
 import { SettlementStatus } from "./settlement";
+import { IAddressSnapshot } from "@/types/order";
 
 // 중개 화물 상태 타입 정의
 export type BrokerOrderStatusType = 
+  | "운송요청"
   | "배차대기"
   | "배차완료"
-  | "운송중"
+  | "상차대기"  
   | "상차완료"
+  | "운송중"
   | "하차완료"
-  | "운송마감"
   | "운송완료"
   | "취소";
 
 // 중개 화물 상태 배열 - 상태 순서대로 정의
 export const BROKER_ORDER_STATUS: BrokerOrderStatusType[] = [
+  "운송요청",
   "배차대기",
   "배차완료",
-  "운송중",
+  "상차대기",
   "상차완료",
-  "하차완료",
-  "운송마감",
+  "운송중",
+  "하차완료",  
   "운송완료",
   "취소"
 ];
@@ -46,25 +49,35 @@ export interface IBrokerOrderLog {
 export interface IBrokerOrder {
   id: string;
   status: BrokerOrderStatusType;
-  statusProgress: BrokerOrderStatusType;
+  statusProgress?: BrokerOrderStatusType;
   departureDateTime: string;
-  departureCity: string;
+  //departureDate: string;
+  pickupTime?: string;
+  departureCity?: string;
   departureLocation: string;
+  pickupAddressSnapshot?: IAddressSnapshot | null;
   arrivalDateTime: string;
-  arrivalCity: string;
+  //deliveryDate: string;
+  deliveryTime?: string;
+  arrivalCity?: string;
   arrivalLocation: string;
+  deliveryAddressSnapshot?: IAddressSnapshot | null;
   vehicle: {
     type: string;
     weight: string;
   };
-  chargeAmount?: number;
+  chargeAmount: number;
   amount: number;
   fee: number;
-  shipperName: string;
+  shipperId?: string;
+  shipperBusinessNumber?: string;
+  shipperName?: string;
+  shipperCeo?: string;
   shipperContact?: string;
   shipperEmail?: string;
   manager?: string;
   driver: {
+    id?: string;
     name: string;
     contact: string;
   };
@@ -83,6 +96,9 @@ export interface IBrokerOrder {
     updatedAt: string;
   };
   settlementId?: string;
+  bankName?: string;
+  accountHolder?: string;
+  accountNumber?: string;
 }
 
 // 응답 페이징 정보 인터페이스
@@ -143,7 +159,7 @@ export const isBrokerStatusAtLeast = (currentStatus: BrokerOrderStatusType, targ
 // 중개 화물 등록 관련 타입 정의
 
 // 차량 종류
-export const BROKER_VEHICLE_TYPES = ['카고', '라보', '윙바디', '탑차', '냉동', '냉장'] as const;
+export const BROKER_VEHICLE_TYPES = ['카고', '윙바디', '탑차', '냉동', '냉장', '트레일러'] as const;
 export type BrokerVehicleType = typeof BROKER_VEHICLE_TYPES[number];
 
 // 차량 중량
@@ -158,13 +174,13 @@ export interface IBrokerTransportOption {
 }
 
 export const BROKER_TRANSPORT_OPTIONS: IBrokerTransportOption[] = [
-  { id: 'direct', label: '이착', description: '상하차 지점 직접 운송' },
-  { id: 'trace', label: '혼적', description: '다른 짐들과 합짐' },
   { id: 'fast', label: '빠른 배차', description: '우선 배차 처리' },
-  { id: 'cod', label: '착불', description: '도착 후 결제' },
-  { id: 'wing', label: '윙바디', description: '윙바디 차량으로 배차' },
-  { id: 'duplicate', label: '중복화물', description: '중복 화물 허용' },
-  { id: 'forklift', label: '지게차 하차', description: '하차 시 지게차 필요' },
+  { id: 'roundTrip', label: '왕복', description: '왕복 운송' },
+  { id: 'direct', label: '이착', description: '상하차 지점 직접 운송' },
+  { id: 'trace', label: '혼적', description: '다른 짐들과 합짐' },      
+  { id: 'forklift', label: '지게차', description: '지게차 필요' },  
+  { id: 'manual', label: '수작업', description: '수작업 필요' },  
+  { id: 'cod', label: '착불', description: '도착 후 결제' },   
   { id: 'special', label: '특수화물', description: '특수 운송 필요' },
 ];
 

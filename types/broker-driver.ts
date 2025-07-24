@@ -1,3 +1,5 @@
+import { ICompanySnapshot } from "./order";
+
 // 차주 관련 타입 정의
 export type DriverStatus = '활성' | '비활성';
 export type VehicleType = '카고' | '윙바디' | '냉동' | '탑차' | '리프트' | '기타';
@@ -28,12 +30,12 @@ export interface IDriverNote {
 export interface IBrokerDriver {
   id: string;
   code?: string;
-  name: string;
+  name: string;  
   phoneNumber: string;
   vehicleNumber: string;
   vehicleType: VehicleType;
   tonnage: TonnageType;
-  address: string;
+  address: string;  
   companyName?: string;
   businessNumber: string;
   dispatchCount?: number;
@@ -44,6 +46,11 @@ export interface IBrokerDriver {
   unsettledAmount?: number;
   isActive?: boolean;
   inactiveReason?: string;
+  
+  // 은행 정보
+  bankCode?: string;
+  bankAccountNumber?: string;
+  bankAccountHolder?: string;
   
   // 추가 속성
   cargoBox?: ICargoBox;

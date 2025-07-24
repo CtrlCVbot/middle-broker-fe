@@ -53,16 +53,6 @@ export function OrderSearch() {
     setFilter({ searchTerm: e.target.value });
   };
 
-  // 출발지 도시 변경 시 임시 필터 업데이트
-  const handleDepartureCityChange = (value: string) => {
-    setTempFilter({ departureCity: value === "all" ? undefined : value });
-  };
-
-  // 도착지 도시 변경 시 임시 필터 업데이트
-  const handleArrivalCityChange = (value: string) => {
-    setTempFilter({ arrivalCity: value === "all" ? undefined : value });
-  };
-
   // 차량 종류 변경 시 임시 필터 업데이트
   const handleVehicleTypeChange = (value: string) => {
     setTempFilter({ vehicleType: value === "all" ? undefined : value });
@@ -132,8 +122,6 @@ export function OrderSearch() {
 
   // 필터가 적용되었는지 확인
   const hasActiveFilters = !!(
-    filter.departureCity || 
-    filter.arrivalCity || 
     filter.vehicleType || 
     filter.weight ||
     filter.status ||
@@ -153,7 +141,7 @@ export function OrderSearch() {
             <Button 
               variant="outline" 
               className={cn(
-                "flex items-center gap-2 w-full md:w-auto border-dashed",
+                "flex items-center gap-2 w-full md:w-auto border-dashed hover:cursor-pointer",
                 hasActiveFilters ? "border-primary text-primary" : ""
               )}
             >
@@ -174,7 +162,6 @@ export function OrderSearch() {
           <PopoverContent className="w-[300px] p-4" align="start">
             <div className="space-y-4">
               <h4 className="font-medium text-sm">화물 필터링</h4>
-              
               {/* 시작일 필터 */}
               <div className="space-y-2">
                 <Label>시작일</Label>
@@ -206,7 +193,6 @@ export function OrderSearch() {
                   </PopoverContent>
                 </Popover>
               </div>
-              
               {/* 종료일 필터 */}
               <div className="space-y-2">
                 <Label>종료일</Label>
@@ -238,7 +224,6 @@ export function OrderSearch() {
                   </PopoverContent>
                 </Popover>
               </div>
-              
               {/* 배차상태 필터 */}
               <div className="space-y-2">
                 <Label htmlFor="status">배차상태</Label>
@@ -259,49 +244,6 @@ export function OrderSearch() {
                   </SelectContent>
                 </Select>
               </div>
-              
-              {/* 출발지 필터 */}
-              <div className="space-y-2">
-                <Label htmlFor="departure-city">출발지</Label>
-                <Select
-                  value={tempFilter.departureCity || "all"}
-                  onValueChange={handleDepartureCityChange}
-                >
-                  <SelectTrigger id="departure-city">
-                    <SelectValue placeholder="모든 출발지" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">모든 출발지</SelectItem>
-                    {(filterOptions?.cities || []).map((city) => (
-                      <SelectItem key={`dep-${city}`} value={city}>
-                        {city}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {/* 도착지 필터 */}
-              <div className="space-y-2">
-                <Label htmlFor="arrival-city">도착지</Label>
-                <Select
-                  value={tempFilter.arrivalCity || "all"}
-                  onValueChange={handleArrivalCityChange}
-                >
-                  <SelectTrigger id="arrival-city">
-                    <SelectValue placeholder="모든 도착지" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">모든 도착지</SelectItem>
-                    {(filterOptions?.cities || []).map((city) => (
-                      <SelectItem key={`arr-${city}`} value={city}>
-                        {city}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
               {/* 차량 종류 필터 */}
               <div className="space-y-2">
                 <Label htmlFor="vehicle-type">차량 종류</Label>
@@ -322,7 +264,6 @@ export function OrderSearch() {
                   </SelectContent>
                 </Select>
               </div>
-              
               {/* 중량 필터 */}
               <div className="space-y-2">
                 <Label htmlFor="weight">중량</Label>
@@ -343,7 +284,6 @@ export function OrderSearch() {
                   </SelectContent>
                 </Select>
               </div>
-              
               {/* 버튼 영역 */}
               <div className="flex items-center justify-between pt-2">
                 <Button

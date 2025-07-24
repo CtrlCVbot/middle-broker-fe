@@ -21,21 +21,26 @@ import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { IBrokerCompanyManager } from '@/types/broker-company';
 import { MANAGER_ROLES } from '@/utils/mockdata/mock-broker-company-managers';
 import { useBrokerCompanyManagerStore } from '@/store/broker-company-manager-store';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+// 백엔드 타입 참조를 위한 임포트 추가
+import { IUser, UserDomain, UserStatus, SystemAccessLevel } from '@/types/user';
+import { v4 as uuidv4 } from 'uuid';
 
 interface BrokerCompanyManagerFormProps {
   companyId: string;
   manager?: IBrokerCompanyManager;
-  onComplete: () => void;
-  onCancel: () => void;
+  onSubmit: (formData: IBrokerCompanyManager) => void;
+  isSubmitting?: boolean;
+  globalError?: string | null;
+  onCancel?: () => void;
 }
 
 // 담당자 등록/수정 폼 스키마 정의
 const managerFormSchema = z.object({
-  name: z.string().min(1, { message: '이름은 필수 입력 항목입니다.' }),
-  managerId: z.string().min(4, { message: 'ID는 4자 이상이어야 합니다.' }),
-  password: z.string().min(8, { message: '비밀번호는 8자리 이상이어야 합니다.' }).optional(),
+  name: z.string().min(1, { message: '이름은 필수 입력 항목입니다.' }),  
+  password: z.string().optional(),//.min(8, { message: '비밀번호는 8자리 이상이어야 합니다.' }).optional(),
   email: z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }),
-  phoneNumber: z.string().min(1, { message: '연락처는 필수 입력 항목입니다.' }),
+  phoneNumber: z.string().min(1, { message: '연락처는 필수 입력 항목입니다.' }).optional(),
   department: z.string().optional(),
   position: z.string().optional(),
   rank: z.string().optional(),
@@ -48,20 +53,21 @@ type ManagerFormValues = z.infer<typeof managerFormSchema>;
 export function BrokerCompanyManagerForm({ 
   companyId, 
   manager, 
-  onComplete, 
-  onCancel 
+  onSubmit,
+  isSubmitting = false,
+  globalError = null,
+  onCancel
 }: BrokerCompanyManagerFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
   const { addManager, updateManager } = useBrokerCompanyManagerStore();
+  console.log('manager :', manager);
   
   // 폼 설정
   const form = useForm<ManagerFormValues>({
     resolver: zodResolver(managerFormSchema),
     defaultValues: {
-      name: manager?.name || '',
-      managerId: manager?.managerId || '',
+      name: manager?.name || '',      
       password: '', // 수정 시 비밀번호는 비워두고 변경할 때만 입력
       email: manager?.email || '',
       phoneNumber: manager?.phoneNumber || '',
@@ -82,62 +88,97 @@ export function BrokerCompanyManagerForm({
   };
   
   // 폼 제출 핸들러
-  const handleSubmit = async (data: ManagerFormValues) => {
-    setIsSubmitting(true);
+  const handleSubmit = async (data: ManagerFormValues, e?: React.BaseSyntheticEvent) => {
+    // 기본 제출 동작 방지
+    if (e) {
+      e.preventDefault();
+    }
     
-    try {
-      // 수정 모드인 경우
-      if (manager) {
-        // 비밀번호가 입력되지 않은 경우 기존 비밀번호 유지
-        const updatedManager: IBrokerCompanyManager = {
-          ...manager,
-          name: data.name,
-          email: data.email,
-          phoneNumber: data.phoneNumber,
-          department: data.department,
-          position: data.position,
-          rank: data.rank,
-          status: data.status,
-          roles: data.roles,
-        };
-        
-        // 비밀번호가 입력된 경우에만 업데이트
-        if (data.password) {
-          updatedManager.password = data.password;
-        }
-        
-        await updateManager(updatedManager);
-      } 
-      // 신규 등록 모드인 경우
-      else {
-        const newManager = {
-          managerId: data.managerId,
-          password: data.password || 'password123', // 기본 비밀번호 설정
-          name: data.name,
-          email: data.email,
-          phoneNumber: data.phoneNumber,
-          department: data.department,
-          position: data.position,
-          rank: data.rank,
-          status: data.status,
-          roles: data.roles,
-          companyId: companyId
-        };
-        
-        await addManager(newManager);
+    console.log('📝 폼 데이터 제출:', { 
+      name: data.name,
+      email: data.email,      
+      roles: data.roles
+    });
+    
+    // 수정 모드인 경우
+    if (manager) {
+      // 비밀번호가 입력되지 않은 경우 기존 비밀번호 유지
+      const updatedManager: IBrokerCompanyManager = {
+        ...manager,
+        name: data.name,
+        email: data.email,
+        phoneNumber: data.phoneNumber || '',
+        department: data.department || '',
+        position: data.position || '',
+        rank: data.rank || '',
+        status: data.status,
+        roles: data.roles,
+      };
+      
+      // 비밀번호가 입력된 경우에만 업데이트
+      if (data.password) {
+        updatedManager.password = data.password;
       }
       
-      onComplete();
-    } catch (error) {
-      console.error('담당자 등록/수정 중 오류가 발생했습니다.', error);
-    } finally {
-      setIsSubmitting(false);
+      onSubmit(updatedManager);
+    } 
+    // 신규 등록 모드인 경우
+    else {
+      if (!data.email) {
+        console.error('❌ email가 없습니다. 유효성 검사가 제대로 작동하지 않습니다.');
+        form.setError('email', {
+          type: 'manual',
+          message: 'ID는 필수 입력 항목입니다.'
+        });
+        return;
+      }
+
+      const newManager: IBrokerCompanyManager = {
+        id: uuidv4(), // 클라이언트에서 임시 ID 생성
+        name: data.name,
+        email: data.email,
+        phoneNumber: data.phoneNumber || '',
+        password: data.password || '',
+        department: data.department || '',
+        position: data.position || '',
+        rank: data.rank || '',
+        status: data.status,
+        roles: data.roles,
+        companyId: companyId,
+        systemAccessLevel: 'broker_member' as SystemAccessLevel,
+        registeredDate: new Date().toISOString() // 현재 날짜를 등록일로 설정
+      };
+      
+      // 비밀번호가 입력된 경우에만 추가
+      if (data.password) {
+        newManager.password = data.password;
+      }
+      
+      console.log('📤 폼에서 생성된 신규 담당자 데이터:', {
+        name: newManager.name,
+        email: newManager.email,
+        roles: newManager.roles
+      });
+      
+      onSubmit(newManager);
     }
   };
   
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form id="manager-form" onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation(); // 이벤트 버블링 방지
+        console.log('담당자 폼 제출 이벤트 발생, 기본 동작 및 버블링 방지');
+        form.handleSubmit(handleSubmit)(e);
+      }} className="space-y-4">
+        {globalError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>오류 발생</AlertTitle>
+            <AlertDescription>{globalError}</AlertDescription>
+          </Alert>
+        )}
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* 이름 */}
           <FormField
@@ -154,27 +195,21 @@ export function BrokerCompanyManagerForm({
             )}
           />
           
-          {/* 로그인 ID */}
+          {/* 이메일 */}
           <FormField
             control={form.control}
-            name="managerId"
+            name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>로그인 ID *</FormLabel>
+                <FormLabel>이메일 *</FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder="로그인 시 사용할 ID" 
-                    {...field} 
-                    disabled={!!manager} // 수정 모드에서는 ID 변경 불가
-                  />
+                  <Input placeholder="이메일 주소" type="email" {...field} />
                 </FormControl>
-                {manager && (
-                  <FormDescription>ID는 변경할 수 없습니다.</FormDescription>
-                )}
                 <FormMessage />
               </FormItem>
             )}
           />
+          
         </div>
         
         {/* 비밀번호 */}
@@ -213,20 +248,7 @@ export function BrokerCompanyManagerForm({
         />
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* 이메일 */}
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>이메일 *</FormLabel>
-                <FormControl>
-                  <Input placeholder="이메일 주소" type="email" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          
           
           {/* 전화번호 */}
           <FormField
@@ -238,10 +260,10 @@ export function BrokerCompanyManagerForm({
                 <FormControl>
                   <Input 
                     placeholder="010-0000-0000" 
-                    {...field} 
                     onChange={(e) => {
                       field.onChange(formatPhoneNumber(e.target.value));
                     }}
+                    value={field.value}
                   />
                 </FormControl>
                 <FormMessage />
@@ -366,22 +388,6 @@ export function BrokerCompanyManagerForm({
             </FormItem>
           )}
         />
-        
-        {/* 버튼 영역 */}
-        <div className="flex justify-end gap-2 pt-4">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
-            취소
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {manager ? '수정하기' : '등록하기'}
-          </Button>
-        </div>
       </form>
     </Form>
   );

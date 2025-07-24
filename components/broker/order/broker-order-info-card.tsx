@@ -8,13 +8,17 @@ import {
   Factory, 
   MessageSquare,
   AlertTriangle,
-  CreditCard 
+  CreditCard,
+  User 
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { PaymentMethodType, LoadingMethodType } from "@/types/broker-order-updated";
+import { CardContent } from "@/components/ui/card";
+import { CardTitle } from "@/components/ui/card";
+import { CardHeader } from "@/components/ui/card";
 
 // 업체 주의사항 인터페이스
 interface CompanyWarning {
@@ -178,6 +182,97 @@ export function BrokerOrderInfoCard({ departure, destination, cargo, shipper }: 
           </div>
         )}
       </div>
+      <div>
+        <CardHeader className="p-3 flex justify-between items-center">
+            
+          <CardTitle className="text-md font-semibold flex items-center">
+          
+            {/* <Warehouse className="h-4 w-4 mr-2 text-gray-500" /> */}
+            {shipper.name}
+            
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              //onClick={() => setShowDetail((prev) => !prev)}
+            >
+              {/* {showDetail ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />} */}
+            </Button>
+
+            {/* 주의사항 버튼 */}
+            <Button
+              variant="outline" 
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsWarningsVisible(!isWarningsVisible);
+                if (!isShipperInfoOpen) {
+                  setIsShipperInfoOpen(true);
+                }
+              }}
+            >
+              <AlertTriangle className="mr-1 h-3.5 w-3.5 text-amber-500" />
+              주의사항 {isWarningsVisible ? '접기' : '보기'}
+            </Button>
+            {isShipperInfoOpen ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" onClick={() => setIsShipperInfoOpen(false)} />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" onClick={() => setIsShipperInfoOpen(true)} />
+            )}
+          
+          </CardTitle>
+        </CardHeader>
+
+        <CardContent className="p-3 border-t border-gray-200">            
+
+          {/* 배달 주소 */}
+          <div className="text-md font-medium mt-2">
+            담당자
+          </div>
+          {/* 담당자 정보 */}
+          <div className="flex items-center space-x-1">
+            <User className="inline h-4 w-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-600">{shipper.manager}</span>
+            {shipper.contact && (
+              <div className="text-sm text-muted-foreground ml-3">
+                {shipper.contact}
+              </div>
+            )}
+          </div>    
+          {/* 주의사항 섹션 - 확장 시 표시 */}
+          {isWarningsVisible && (
+              <div className="mt-3 space-y-2 bg-muted/10 p-3 rounded-md">
+                <h5 className="text-sm font-medium flex items-center gap-1">
+                  <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                  업체 주의사항
+                </h5>
+                
+                {companyWarnings.length > 0 ? (
+                  <ul className="space-y-2">
+                    {companyWarnings.map((warning) => (
+                      <li key={warning.id} className="flex items-start gap-2 text-sm">
+                        <Badge 
+                          variant="outline" 
+                          className={`
+                            ${warning.severity === 'high' ? 'bg-red-50 text-red-700' : 
+                              warning.severity === 'medium' ? 'bg-amber-50 text-amber-700' : 
+                              'bg-blue-50 text-blue-700'}
+                          `}
+                        >
+                          {warning.date}
+                        </Badge>
+                        <span>{warning.content}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">주의사항이 없습니다.</p>
+                )}
+              </div>
+            )}
+        </CardContent>
+      </div>  
 
       {/* 분리선 */}
       <Separator className="my-4" />

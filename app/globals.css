@@ -45,6 +45,8 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.147 0.004 49.25);
@@ -123,4 +125,36 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@keyframes pulse-scale {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 1;
+  }
+}
+
+.animate-pulse-scale {
+  animation: pulse-scale 1.2s infinite;
+}
+
+.timeline-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  top: 1rem; /* 마커와 수직선의 연결을 자연스럽게 */
+  left: 0.8rem; /* 마커 중앙과 수직선 일치 */
+  width: 2px;
+  height: 100%; /* 타임라인 길이 조정 */
+  background-color: #d1d5db; /* 회색 (Tailwind: bg-gray-300) */
+  z-index: -1;
 }

@@ -1,163 +1,115 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { 
-  Breadcrumb, 
-  BreadcrumbItem, 
-  BreadcrumbLink, 
-  BreadcrumbList,
-  BreadcrumbPage, 
-  BreadcrumbSeparator 
-} from "@/components/ui/breadcrumb";
-import { ListFilter, Grid3x3, CreditCard } from "lucide-react";
-import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
-import { useSettlementStore } from "@/store/settlement-store";
-import { getSettlementsByPage } from "@/utils/mockdata/mock-settlements";
-import { SettlementSearch } from "@/components/settlement/settlement-search";
-import { SettlementTable } from "@/components/settlement/settlement-table";
-import { SettlementCard } from "@/components/settlement/settlement-card";
-import { SettlementDetailSheet } from "@/components/settlement/settlement-detail-sheet";
+//use client
+import React, { useEffect, useState } from "react";
+
+//ui
 import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { formatCurrency } from "@/lib/utils";
-import { ISettlementResponse } from "@/types/settlement";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ToggleGroupItem } from "@/components/ui/toggle-group";
+import { ToggleGroup } from "@/components/ui/toggle-group";
+import { 
+  Loader2,
+  ListFilter,
+  Grid3x3
+} from "lucide-react";
 
-// 총 정산액 요약 카드 컴포넌트
-function SettlementSummaryCard({ data, isLoading }: { 
-  data: ISettlementResponse | undefined, 
-  isLoading: boolean 
-}) {
-  // 총 정산액 계산
-  const totalAmount = useMemo(() => {
-    if (!data || !data.data || data.data.length === 0) return 0;
-    return data.data.reduce((sum, settlement) => sum + settlement.finalAmount, 0);
-  }, [data]);
+//store
+import { useShipperSettlementStore } from "@/store/shipper-settlement-store";
 
-  // 총 건수
-  const totalCount = data?.pagination?.total || 0;
+//component
+import { BundleMatchingFilter } from "@/components/shipper/settlement/settlement-bundle-matching-filter";
+import { BundleMatchingList } from "@/components/shipper/settlement/settlement-bundle-matching-list";
+import { SettlementEditFormSheet } from "@/components/shipper/settlement/settlement-edit-form-sheet";
 
-  return (
-    <Card className="mb-6 bg-primary/5">
-      <CardContent className="pt-0">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex flex-col">
-            <span className="text-sm text-muted-foreground mb-1 flex items-center">
-              <CreditCard className="mr-1 h-4 w-4" />
-              검색된 정산 총액
-            </span>
-            <span className="text-2xl font-bold">
-              {isLoading ? (
-                <div className="h-8 w-32 animate-pulse rounded bg-muted"></div>
-              ) : (
-                `${formatCurrency(totalAmount)}원`
-              )}
-            </span>
-          </div>
-          
-          <div className="flex flex-col">
-            <span className="text-sm text-muted-foreground mb-1">조회된 정산 건수</span>
-            <span className="text-2xl font-bold">
-              {isLoading ? (
-                <div className="h-8 w-16 animate-pulse rounded bg-muted"></div>
-              ) : (
-                `${totalCount}건`
-              )}
-            </span>
-          </div>
-          
-          <div className="flex flex-col">
-            <span className="text-sm text-muted-foreground mb-1">평균 정산액</span>
-            <span className="text-2xl font-bold">
-              {isLoading ? (
-                <div className="h-8 w-24 animate-pulse rounded bg-muted"></div>
-              ) : totalCount > 0 ? (
-                `${formatCurrency(Math.round(totalAmount / totalCount))}원`
-              ) : (
-                "0원"
-              )}
-            </span>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+//types
+import { SalesMode } from "@/types/broker-charge";
+import { getCurrentUser } from "@/utils/auth";
 
-export default function SettlementListPage() {
-  // Zustand 스토어에서 상태 및 액션 가져오기
+export default function IncomePage() {
+ 
+  // 정산 스토어 접근 (새로운 구현)
   const {
-    viewMode,
-    setViewMode,
-    filter,
-    currentPage,
-    pageSize,
-    setCurrentPage,
-  } = useSettlementStore();
+    tabMode,
+    setTabMode,
 
-  // 디버깅을 위한 로그 추가
+    // sales bundles 관련 추가
+    salesBundlesAsIncomes,
+    salesBundlesTotal,
+    salesBundlesPage,
+    salesBundlesPageSize,
+    salesBundlesTotalPages,
+    salesBundlesIsLoading,
+    salesBundlesFilter,    
+    fetchSalesBundles,
+    updateSalesBundlesPage,
+    updateSalesBundlesFilter,
+    resetSalesBundlesFilter,
+    
+  } = useShipperSettlementStore();
+
+  
+  // sales bundles 데이터 로드 (정산 대사용)
   useEffect(() => {
-    console.log('Filter in SettlementListPage:', filter);
-  }, [filter]);
+    console.log('useEffect 실행됨 - sales bundles 데이터 로드');
+    const loadData = async () => {
+      try {
+        const user = getCurrentUser();
+        console.log('user', user);
+        salesBundlesFilter.companyId = user?.companyId;
+        await fetchSalesBundles();
+        console.log('sales bundles 데이터 로드 완료');
+      } catch (error) {
+        console.error('sales bundles 데이터 로드 중 오류 발생:', error);
+      }
+    };
+    loadData();
+    
+  }, [salesBundlesPage, salesBundlesPageSize, salesBundlesFilter, fetchSalesBundles]); 
 
-  // 정산 목록 데이터 조회
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["settlements", currentPage, pageSize, filter],
-    queryFn: () => {
-      console.log('Query function called with:', {
-        currentPage,
-        pageSize,
-        departureCity: filter.departureCity,
-        arrivalCity: filter.arrivalCity,
-        driverName: filter.driverName,
-        searchTerm: filter.searchTerm,
-        status: filter.status,
-        startDate: filter.startDate,
-        endDate: filter.endDate,
-        minAmount: filter.minAmount,
-        maxAmount: filter.maxAmount,
-        orderId: filter.orderId
-      });
+  // sales bundles 페이지 변경 처리 (정산 대사용)
+  const handleSalesBundlesPageChange = (page: number) => {
+    updateSalesBundlesPage(page);
+  };
+  
+  // 세금계산서 발행 처리
+  const handleIssueInvoice = (incomeId: string) => {
+    console.log("세금계산서 발행:", incomeId);
+    // 실제 구현은 백엔드 연동 시 추가
+  };
+
+  // 엑셀 내보내기
+  const handleExportExcel = (incomeId: string) => {
+    console.log("엑셀 내보내기:", incomeId);
+    // 실제 구현은 백엔드 연동 시 추가
+  };
+    
+  // 상태별 탭 처리
+  const handleTabChange = (value: string) => {
+    if (value === "MATCHING" || value === "COMPLETED") {
+      //setFilter({ status: value as IncomeStatusType });
+      setTabMode({ mode: value as SalesMode });
       
-      return getSettlementsByPage(
-        currentPage,
-        pageSize,
-        filter.departureCity,
-        filter.arrivalCity,
-        filter.driverName,
-        filter.searchTerm,
-        filter.status,
-        filter.startDate,
-        filter.endDate,
-        filter.minAmount,
-        filter.maxAmount,
-        filter.orderId
-      );
-    },
-    staleTime: 1000 * 60, // 1분
-  });
+      // sales bundles 필터도 업데이트
+      if (value === "MATCHING") {
+        const salesBundleStatus = value === "MATCHING" ? 'draft' : 'issued';
+        updateSalesBundlesFilter({ status: salesBundleStatus });
+      } else if (value === "COMPLETED") {
+        const salesBundleStatus = 'paid';
+        updateSalesBundlesFilter({ status: salesBundleStatus });
+      } 
+    }
+  };  
 
-  // 필터 변경 시 데이터 다시 조회
-  useEffect(() => {
-    refetch();
-  }, [currentPage, pageSize, filter, refetch]);
-
-  // 페이지 변경 핸들러
-  const handlePageChange = useCallback(
-    (page: number) => {
-      setCurrentPage(page);
-    },
-    [setCurrentPage]
-  );
-
-  // 총 페이지 수 계산
-  const totalPages = Math.ceil((data?.pagination.total || 0) / pageSize);
+  
 
   return (
     <>
-      <header className="flex h-16 shrink-0 items-center gap-2">
+      <header className="flex h-16 shrink-0 items-center gap-2 border-b">
         <div className="flex items-center gap-2 px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator
@@ -171,22 +123,31 @@ export default function SettlementListPage() {
                   홈
                 </BreadcrumbLink>
               </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />              
+              
+              <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>정산 현황</BreadcrumbPage>
+                <BreadcrumbPage>운송 정산</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </div>
       </header>
-      <main className="flex flex-1 flex-col p-4 pt-0">
-        <Card>
+      
+      <main>
+        <Card  className="border-none shadow-none">
           <CardHeader className="flex flex-row items-center justify-between">
             <div> 
-              <CardTitle>정산 현황</CardTitle>
-              <CardDescription>정산 목록을 확인할 수 있습니다.</CardDescription>
+              <CardTitle>운송 정산 관리</CardTitle>
+              <CardDescription className="hidden md:block">운송 정산 목록을 확인할 수 있습니다.
+                <span className="text-xs text-muted-foreground px-4">
+                  
+                </span>
+              </CardDescription>
             </div>
-            <ToggleGroup type="single" value={viewMode} onValueChange={(value: string) => value && setViewMode(value as 'table' | 'card')}>
+            <div className="flex items-center gap-2">
+              
+            </div>
+            <ToggleGroup type="single">
               <ToggleGroupItem value="table" aria-label="테이블 보기">
                 <ListFilter className="h-4 w-4" />
               </ToggleGroupItem>
@@ -196,59 +157,115 @@ export default function SettlementListPage() {
             </ToggleGroup>
           </CardHeader>
           <CardContent>
-            {/* 검색 필터 */}
-            <SettlementSearch />
-
-            {/* 정산 요약 카드 */}
-            <SettlementSummaryCard data={data} isLoading={isLoading} />
-
-            {/* 로딩 상태 */}
-            {isLoading && (
-              <div className="py-12 text-center text-lg text-muted-foreground">
-                데이터를 불러오는 중...
-              </div>
-            )}
-
-            {/* 에러 상태 */}
-            {isError && (
-              <div className="py-12 text-center text-lg text-red-500">
-                데이터 조회 중 오류가 발생했습니다.
-                <Button
-                  variant="outline"
-                  className="ml-2"
-                  onClick={() => refetch()}
-                >
-                  다시 시도
-                </Button>
-              </div>
-            )}
-
-            {/* 데이터 표시 */}
-            {!isLoading && !isError && data && (
-              <>
-                {/* 뷰 모드에 따라 테이블 또는 카드 형태로 표시 */}
-                {viewMode === "table" ? (
-                  <SettlementTable
-                    settlements={data.data}
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                  />
-                ) : (
-                  <SettlementCard
-                    settlements={data.data}
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                  />
-                )}
-              </>
-            )}
+            {/* 상태별 탭 영역 */}
+            <Card>
+              <CardContent>
+                <Tabs 
+                  defaultValue="MATCHING" 
+                  value={tabMode.mode || "MATCHING"}
+                  onValueChange={handleTabChange}
+                  className="w-full"
+                >                  
+                  <TabsList className="grid grid-cols-2 md:w-auto">                    
+                    <TabsTrigger value="MATCHING">진행중</TabsTrigger>
+                    <TabsTrigger value="COMPLETED">완료</TabsTrigger>
+                  </TabsList>
+                  
+                  {/* 정산 대사 탭 */}
+                  <TabsContent value="MATCHING">
+                    {salesBundlesIsLoading ? (
+                      <div className="flex h-24 items-center justify-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary/70" />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                          <div>
+                            
+                            <p className="text-sm text-muted-foreground">
+                             정산이 진행 중인 정보를 확인할 수 있습니다.
+                            </p>
+                          </div>
+                        </div>
+                        <BundleMatchingFilter
+                          tabStatus="MATCHING"
+                        />
+                        {salesBundlesAsIncomes.filter(income => income.status === 'MATCHING').length === 0 ? (
+                          <div className="flex h-24 items-center justify-center flex-col">
+                            <p className="text-muted-foreground mb-2">정산 진행 중인 데이터가 없습니다</p>
+                            <Button variant="outline" onClick={resetSalesBundlesFilter}>
+                              필터 초기화
+                            </Button>
+                          </div>
+                        ) : (
+                          <BundleMatchingList
+                            incomes={salesBundlesAsIncomes.filter(income => income.status === 'MATCHING')}
+                            currentPage={salesBundlesPage}
+                            totalPages={salesBundlesTotalPages}
+                            onPageChange={handleSalesBundlesPageChange}
+                            //onStatusChange={handleStatusChange}
+                            onIssueInvoice={handleIssueInvoice}
+                            onExportExcel={handleExportExcel}
+                            currentTab="MATCHING"
+                          />
+                        )}
+                      </>
+                    
+                    )}
+                  </TabsContent>
+                  
+                  {/* 정산 완료 탭 */}
+                  <TabsContent value="COMPLETED">
+                    {salesBundlesIsLoading ? (
+                      <div className="flex h-24 items-center justify-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary/70" />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                          <div>
+                            
+                            <p className="text-sm text-muted-foreground">
+                              정산 완료된 목록을 선택하여 정산을 진행할 수 있습니다.
+                            </p>
+                          </div>
+                        </div>
+                        <BundleMatchingFilter 
+                          //onFilterChange={handleSalesBundlesFilterChange}
+                          //onResetFilter={resetSalesBundlesFilter}
+                          tabStatus="COMPLETED"
+                        />
+                        {salesBundlesAsIncomes.filter(income => income.status === 'COMPLETED').length === 0 ? (
+                          <div className="flex h-24 items-center justify-center flex-col">
+                            <p className="text-muted-foreground mb-2">정산 완료된 데이터가 없습니다</p>
+                            <Button variant="outline" onClick={resetSalesBundlesFilter}>
+                              필터 초기화
+                            </Button>
+                          </div>
+                        ) : (
+                          <BundleMatchingList
+                            incomes={salesBundlesAsIncomes.filter(income => income.status === 'COMPLETED')}
+                            currentPage={salesBundlesPage}
+                            totalPages={salesBundlesTotalPages}
+                            onPageChange={handleSalesBundlesPageChange}                            
+                            onIssueInvoice={handleIssueInvoice}
+                            onExportExcel={handleExportExcel}
+                            currentTab="COMPLETED"
+                          />
+                        )}
+                      </>
+                    
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
           </CardContent>
         </Card>
         
-        {/* 정산 상세 정보 모달 */}
-        <SettlementDetailSheet />
+     
+        {/* 정산 폼 시트 */}
+        <SettlementEditFormSheet />
       </main>
     </>
   );

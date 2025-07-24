@@ -27,6 +27,9 @@ import {
 import { Plus, Trash2, Edit, Save, X } from "lucide-react"
 import { format } from "date-fns"
 import { ko } from "date-fns/locale"
+import { useBrokerDriverStore } from "@/store/broker-driver-store"
+import { toast } from "sonner"
+import { useQuery } from "@tanstack/react-query"
 
 // 특이사항 스키마
 const noteSchema = z.object({
@@ -43,30 +46,123 @@ const noteSchema = z.object({
 type DriverFormValues = {
   basicInfo: any;
   vehicleInfo: any;
-  accountInfo: any;
+  // accountInfo: any;
   notes: z.infer<typeof noteSchema>;
 }
 
 interface IBrokerDriverNotesFormProps {
   form: UseFormReturn<DriverFormValues>;
   onComplete?: () => void;
+  driverId?: string; // 차주 ID 프롭 추가
 }
 
 export function BrokerDriverNotesForm({
   form,
   onComplete,
+  driverId,
 }: IBrokerDriverNotesFormProps) {
   const [newNote, setNewNote] = useState("")
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
   const [editContent, setEditContent] = useState("")
+  
+  // 디버깅을 위한 로그 상태
+  const [logMessages, setLogMessages] = useState<string[]>([])
+  
+  // 로그 추가 함수
+  const addLog = (message: string) => {
+    console.log(`[NoteForm] ${message}`)
+    setLogMessages(prev => [...prev, `[${new Date().toISOString()}] ${message}`])
+  }
+  
+  // 차주 ID가 없는 경우 (신규 등록) 폼에서 직접 관리
+  const isNewDriver = !driverId;
 
-  // 현재 특이사항 목록
-  const notes = form.watch("notes.notes") || []
+  // Zustand 스토어에서 특이사항 관련 상태 및 액션 가져오기
+  const {
+    driverNotes,
+    isLoadingNotes,
+    notesError,
+    fetchDriverNotes,
+    addDriverNote: addNote,
+    updateDriverNote: updateNote,
+    deleteDriverNote: deleteNote,
+  } = useBrokerDriverStore();
+  
+  // 초기 마운트 시와 isNewDriver 변경 시에만 로그 기록
+  useEffect(() => {
+    addLog(`컴포넌트 마운트 - driverId: ${driverId || 'undefined'}`)
+    addLog(`isNewDriver: ${isNewDriver}`)
+  }, [driverId, isNewDriver]);
+
+  // 특이사항 목록 조회 (기존 차주인 경우)
+  const { data: notesData, isLoading, error, refetch } = useQuery({
+    queryKey: ['driverNotes', driverId],
+    queryFn: async () => {
+      if (!driverId) return [];
+      addLog(`API 호출 시작: fetchDriverNotes(${driverId})`)
+      
+      try {
+        const notes = await fetchDriverNotes(driverId);
+        addLog(`API 응답 완료: ${notes.length}개 항목 (상세: ${JSON.stringify(notes)})`)
+        return notes;
+      } catch (error) {
+        addLog(`API 호출 오류: ${error instanceof Error ? error.message : String(error)}`)
+        throw error;
+      }
+    },
+    enabled: !!driverId && !isNewDriver, // 차주 ID가 있고 기존 차주인 경우에만 쿼리 활성화
+    staleTime: 1000 * 30, // 30초
+    refetchOnWindowFocus: false,
+  });
+
+  // 현재 차주의 특이사항 목록
+  const apiNotes = driverId ? (driverNotes[driverId] || []) : [];
+  
+  // 폼 값 특이사항 목록 (신규 차주)
+  const formNotes = form.watch("notes.notes") || [];
+  
+  // 실제 사용할 특이사항 목록 (기존 차주: API 데이터, 신규 차주: 폼 데이터)
+  const notes = isNewDriver ? formNotes : apiNotes;
+  
+  // 디버깅: 특이사항 목록 상태 - 의존성 배열에 모든 관련 변수 포함
+  useEffect(() => {
+    // 로그를 매번 남기는 대신 변화가 있을 때만 남기도록 수정
+    if (driverId) {
+      addLog(`특이사항 목록 상태 업데이트 - apiNotes: ${apiNotes.length}개, notes: ${notes.length}개`)
+    }
+  }, [driverId, apiNotes.length, notes.length]);
+  
+  // React Query 응답에 따라 폼 값 설정
+  useEffect(() => {
+    if (notesData && driverId && !isNewDriver) {
+      addLog(`React Query 응답에 따라 폼 값 설정: ${notesData.length}개 항목`)
+      
+      // 폼 값에 API에서 가져온 특이사항 설정
+      form.setValue("notes.notes", notesData, { 
+        shouldValidate: true,
+        shouldDirty: false,
+      });
+    }
+  }, [notesData, driverId, isNewDriver, form]);
+  
+  // 특이사항 목록이 없을 때 강제로 데이터 다시 불러오기 - 무한 루프 방지를 위한 flag 추가
+  const [hasTriedRefetch, setHasTriedRefetch] = useState(false);
+  
+  useEffect(() => {
+    if (driverId && !isNewDriver && !isLoading && !error && notes.length === 0 && apiNotes.length === 0 && !hasTriedRefetch) {
+      setHasTriedRefetch(true); // 한 번만 시도하도록 flag 업데이트
+      addLog('특이사항 데이터가 없어 강제로 다시 불러오기 시도')
+      refetch().then(() => {
+        addLog('강제 refetch 완료')
+      });
+    }
+  }, [driverId, isNewDriver, isLoading, error, notes.length, apiNotes.length, refetch, hasTriedRefetch]);
   
   // 폼 상태 변화 감지
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (name?.includes("notes")) {
+        addLog(`폼 값 변경 감지: ${name}`)
         onComplete?.();
       }
     });
@@ -74,66 +170,211 @@ export function BrokerDriverNotesForm({
     return () => subscription.unsubscribe();
   }, [form, onComplete]);
   
-  // 특이사항 추가
-  const addNote = () => {
+  // 특이사항 추가 핸들러
+  const handleAddNote = async () => {
     if (!newNote.trim()) return;
     
-    const updatedNotes = [
-      ...notes,
-      {
-        id: uuidv4(),
-        content: newNote.trim(),
-        date: new Date(),
-      },
-    ];
-    
-    form.setValue("notes.notes", updatedNotes, { 
-      shouldValidate: true,
-      shouldDirty: true,
-    });
-    
-    setNewNote("");
+    try {
+      addLog(`특이사항 추가 시작: ${newNote.slice(0, 20)}${newNote.length > 20 ? '...' : ''}`)
+      
+      if (isNewDriver) {
+        // 신규 차주: 폼 상태로 관리
+        addLog('신규 차주 모드: 폼 상태에 추가')
+        const updatedNotes = [
+          ...formNotes,
+          {
+            id: uuidv4(),
+            content: newNote.trim(),
+            date: new Date(),
+          },
+        ];
+        
+        form.setValue("notes.notes", updatedNotes, { 
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+        
+        addLog(`폼 상태 업데이트: ${updatedNotes.length}개 항목`)
+      } else {
+        // 기존 차주: API 호출
+        addLog(`기존 차주 모드: API 호출(driverId: ${driverId})`)
+        const addedNote = await addNote(driverId!, newNote.trim());
+        addLog(`API 응답: ${JSON.stringify(addedNote)}`)
+        
+        // 화면 즉시 갱신을 위해 현재 상태에 추가
+        const currentNotes = [...apiNotes]; // 현재 apiNotes의 복사본
+        currentNotes.unshift({
+          id: addedNote.id,
+          content: addedNote.content,
+          date: new Date(addedNote.date)
+        });
+        
+        // 폼 상태도 동기화
+        form.setValue("notes.notes", currentNotes, {
+          shouldValidate: true,
+          shouldDirty: false,
+        });
+        
+        addLog(`특이사항 추가 후 갱신된 목록: ${currentNotes.length}개 항목`)
+        
+        // API 데이터 다시 가져오기
+        await refetch();
+        addLog('refetch 완료')
+      }
+      
+      setNewNote("");
+      addLog('특이사항 추가 완료')
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      addLog(`특이사항 추가 실패: ${errorMessage}`)
+      console.error('특이사항 추가 실패:', error);
+      toast.error('특이사항 추가 실패', {
+        description: errorMessage
+      });
+    }
   };
   
-  // 특이사항 삭제
-  const removeNote = (id: string) => {
-    const updatedNotes = notes.filter((note) => note.id !== id);
-    form.setValue("notes.notes", updatedNotes, { 
-      shouldValidate: true,
-      shouldDirty: true,
-    });
+  // 특이사항 삭제 핸들러
+  const handleRemoveNote = async (id: string) => {
+    try {
+      addLog(`특이사항 삭제 시작: ${id}`)
+      
+      if (isNewDriver) {
+        // 신규 차주: 폼 상태로 관리
+        addLog('신규 차주 모드: 폼 상태에서 삭제')
+        const updatedNotes = formNotes.filter((note) => note.id !== id);
+        form.setValue("notes.notes", updatedNotes, { 
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+        addLog(`폼 상태 업데이트: ${updatedNotes.length}개 항목`)
+      } else {
+        // 기존 차주: API 호출
+        addLog(`기존 차주 모드: API 호출(noteId: ${id}, driverId: ${driverId})`)
+        
+        // 화면 즉시 갱신을 위해 현재 상태에서 제거
+        const updatedNotes = apiNotes.filter(note => note.id !== id);
+        
+        // 폼 상태도 동기화
+        form.setValue("notes.notes", updatedNotes, {
+          shouldValidate: true,
+          shouldDirty: false,
+        });
+        
+        addLog(`특이사항 삭제 전 UI 갱신: ${updatedNotes.length}개 항목`)
+        
+        // 실제 API 호출
+        await deleteNote(id, driverId!);
+        addLog('API 삭제 완료')
+        
+        // API 데이터 다시 가져오기
+        await refetch();
+        addLog('refetch 완료')
+      }
+      
+      addLog('특이사항 삭제 완료')
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      addLog(`특이사항 삭제 실패: ${errorMessage}`)
+      console.error('특이사항 삭제 실패:', error);
+      toast.error('특이사항 삭제 실패', {
+        description: errorMessage
+      });
+    }
   };
 
   // 특이사항 편집 모드 시작
-  const startEditingNote = (note: { id: string; content: string }) => {
+  const handleStartEditingNote = (note: { id: string; content: string }) => {
+    addLog(`편집 모드 시작: ${note.id}`)
     setEditingNoteId(note.id);
     setEditContent(note.content);
   };
 
   // 특이사항 편집 취소
-  const cancelEditingNote = () => {
+  const handleCancelEditingNote = () => {
+    addLog('편집 취소')
     setEditingNoteId(null);
     setEditContent("");
   };
 
   // 특이사항 편집 저장
-  const saveEditedNote = () => {
+  const handleSaveEditedNote = async () => {
     if (!editContent.trim() || !editingNoteId) return;
 
-    const updatedNotes = notes.map(note => 
-      note.id === editingNoteId
-        ? { ...note, content: editContent.trim(), date: new Date() }
-        : note
-    );
+    try {
+      addLog(`특이사항 수정 시작: ${editingNoteId}`)
+      
+      if (isNewDriver) {
+        // 신규 차주: 폼 상태로 관리
+        addLog('신규 차주 모드: 폼 상태에서 수정')
+        const updatedNotes = formNotes.map(note => 
+          note.id === editingNoteId
+            ? { ...note, content: editContent.trim(), date: new Date() }
+            : note
+        );
 
-    form.setValue("notes.notes", updatedNotes, { 
-      shouldValidate: true,
-      shouldDirty: true,
-    });
+        form.setValue("notes.notes", updatedNotes, { 
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+        
+        addLog(`폼 상태 업데이트: ${updatedNotes.length}개 항목`)
+      } else {
+        // 기존 차주: API 호출
+        addLog(`기존 차주 모드: API 호출(noteId: ${editingNoteId}, driverId: ${driverId})`)
+        
+        // 화면 즉시 갱신을 위해 현재 상태 업데이트
+        const updatedNotes = apiNotes.map(note => 
+          note.id === editingNoteId
+            ? { ...note, content: editContent.trim(), date: new Date() }
+            : note
+        );
+        
+        // 폼 상태도 동기화
+        form.setValue("notes.notes", updatedNotes, {
+          shouldValidate: true,
+          shouldDirty: false,
+        });
+        
+        addLog(`특이사항 수정 전 UI 갱신: ${updatedNotes.length}개 항목`)
+        
+        // 실제 API 호출
+        await updateNote(editingNoteId, editContent.trim(), driverId!);
+        addLog('API 수정 완료')
+        
+        // API 데이터 다시 가져오기
+        await refetch();
+        addLog('refetch 완료')
+      }
 
-    setEditingNoteId(null);
-    setEditContent("");
+      setEditingNoteId(null);
+      setEditContent("");
+      
+      addLog('특이사항 수정 완료')
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      addLog(`특이사항 수정 실패: ${errorMessage}`)
+      console.error('특이사항 수정 실패:', error);
+      toast.error('특이사항 수정 실패', {
+        description: errorMessage
+      });
+    }
   };
+  
+  // 로딩 상태 표시
+  if (isLoading && !isNewDriver) {
+    return <div className="py-4 text-center text-muted-foreground">특이사항을 불러오는 중...</div>;
+  }
+  
+  // 에러 상태 표시
+  if (error && !isNewDriver) {
+    const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+    return (
+      <div className="py-4 text-center text-destructive">
+        특이사항을 불러오는 중 오류가 발생했습니다: {errorMessage}
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-4">
@@ -148,7 +389,7 @@ export function BrokerDriverNotesForm({
           />
           <Button 
             type="button" 
-            onClick={addNote}
+            onClick={handleAddNote}
             disabled={!newNote.trim()}
             className="self-start"
           >
@@ -160,6 +401,34 @@ export function BrokerDriverNotesForm({
           차주에 대한 특이사항이 있다면 추가하세요.
         </FormDescription>
       </div>
+      
+      {/* 디버깅 정보 (개발 중에만 사용) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="border border-amber-300 bg-amber-50 p-2 mb-4 rounded text-xs">
+          <p className="font-bold mb-1">디버깅 정보</p>
+          <p>driverId: {driverId || 'undefined'}</p>
+          <p>isNewDriver: {isNewDriver ? 'true' : 'false'}</p>
+          <p>notes 길이: {notes.length}</p>
+          <p>apiNotes 길이: {apiNotes.length}</p>
+          <p>formNotes 길이: {formNotes.length}</p>
+          <p>isLoading: {isLoading ? 'true' : 'false'}</p>
+          <p>notesError: {notesError || '없음'}</p>
+          <button 
+            onClick={() => refetch()} 
+            className="text-xs mt-1 bg-blue-500 text-white px-2 py-1 rounded"
+          >
+            데이터 강제 새로고침
+          </button>
+          <details>
+            <summary>최근 로그 ({logMessages.length}개)</summary>
+            <pre className="mt-2 p-1 bg-gray-100 max-h-40 overflow-y-auto">
+              {logMessages.map((msg, i) => (
+                <div key={i}>{msg}</div>
+              ))}
+            </pre>
+          </details>
+        </div>
+      )}
       
       <div className="space-y-2">
         <FormLabel>특이사항 목록</FormLabel>
@@ -189,7 +458,7 @@ export function BrokerDriverNotesForm({
                             type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={saveEditedNote}
+                            onClick={handleSaveEditedNote}
                             className="h-8 w-8 text-primary"
                           >
                             <Save className="h-4 w-4" />
@@ -198,7 +467,7 @@ export function BrokerDriverNotesForm({
                             type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={cancelEditingNote}
+                            onClick={handleCancelEditingNote}
                             className="h-8 w-8 text-muted-foreground"
                           >
                             <X className="h-4 w-4" />
@@ -210,7 +479,7 @@ export function BrokerDriverNotesForm({
                             type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={() => startEditingNote(note)}
+                            onClick={() => handleStartEditingNote(note)}
                             className="h-8 w-8 text-primary"
                           >
                             <Edit className="h-4 w-4" />
@@ -219,7 +488,7 @@ export function BrokerDriverNotesForm({
                             type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={() => removeNote(note.id)}
+                            onClick={() => handleRemoveNote(note.id)}
                             className="h-8 w-8 text-destructive"
                           >
                             <Trash2 className="h-4 w-4" />

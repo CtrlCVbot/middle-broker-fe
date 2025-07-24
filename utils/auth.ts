@@ -1,18 +1,17 @@
 "use client"
 
 import Cookies from 'js-cookie'
+import { IUser } from '@/types/user'
+import { useAuthStore } from '@/store/auth-store'
 
-// 목업 사용자 데이터 타입
-export interface IUser {
-  email: string;
-  name?: string;
+// Auth 전용 사용자 타입
+export interface AuthUser extends IUser {
   isLoggedIn: boolean;
 }
 
 // 사용자 정보 저장 (localStorage와 쿠키 모두 사용)
-export const setUser = (user: IUser): void => {
+export const setUser = (user: AuthUser): void => {
   if (typeof window !== "undefined") {
-    // localStorage에 저장
     localStorage.setItem("user", JSON.stringify(user));
     
     // 쿠키에 저장 (7일 유효기간)
@@ -21,9 +20,8 @@ export const setUser = (user: IUser): void => {
 };
 
 // 사용자 정보 가져오기 (localStorage 우선, 없으면 쿠키)
-export const getUser = (): IUser | null => {
+export const getUser = (): AuthUser | null => {
   if (typeof window !== "undefined") {
-    // localStorage에서 확인
     const localUser = localStorage.getItem("user");
     if (localUser) return JSON.parse(localUser);
     
@@ -40,42 +38,117 @@ export const getUser = (): IUser | null => {
 
 // 로그인 상태 확인
 export const isLoggedIn = (): boolean => {
-  const user = getUser();
-  return !!user && user.isLoggedIn;
+  return useAuthStore.getState().isLoggedIn();
 };
 
-// 로그아웃 (localStorage와 쿠키 모두 제거)
-export const logout = (): void => {
-  if (typeof window !== "undefined") {
-    localStorage.removeItem("user");
-    Cookies.remove('user', { path: '/' });
+// 토큰 만료 확인 (클라이언트 측)
+export const isTokenExpired = (token: string): boolean => {
+  try {
+    // JWT 토큰 디코딩 (Base64)
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(window.atob(base64));
+    
+    // 현재 시간과 만료 시간 비교 (초 단위)
+    const now = Math.floor(Date.now() / 1000);
+    return !payload.exp || payload.exp < now;
+  } catch (error) {
+    console.error('토큰 만료 확인 오류:', error);
+    return true; // 오류 발생 시 만료된 것으로 간주
   }
 };
 
-// 이메일과 비밀번호로 로그인 시도
-export const loginWithEmail = (
+// 토큰 자동 갱신 함수
+export const refreshAccessToken = async (): Promise<boolean> => {
+  try {
+    const response = await fetch('/api/auth/refresh', {
+      method: 'GET',
+      credentials: 'include', // 쿠키 포함
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success && data.token && data.user) {
+        // 스토어에 새 토큰과 사용자 정보 저장
+        useAuthStore.getState().login(data.user, data.token);
+        return true;
+      }
+    }
+    return false;
+  } catch (error) {
+    console.error('토큰 갱신 오류:', error);
+    return false;
+  }
+};
+
+// 로그아웃 (API 호출)
+export const logout = async (): Promise<boolean> => {
+  try {
+    const response = await fetch('/api/auth/logout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (response.ok) {
+      // 스토어에서 로그아웃 처리
+      useAuthStore.getState().logout();
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Logout error:', error);
+    return false;
+  }
+};
+
+// 이메일과 비밀번호로 로그인 시도 (API 사용)
+export const loginWithEmail = async (
   email: string,
   password: string
-): { success: boolean; user?: IUser; error?: string } => {
-  // 목업 사용자 데이터
-  const MOCK_USERS = [
-    { email: "user@example.com", password: "password123", name: "일반 사용자" },
-    { email: "admin@example.com", password: "admin123", name: "관리자" },
-  ];
+): Promise<{ success: boolean; user?: IUser; error?: string; message?: string }> => {
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-  const user = MOCK_USERS.find(
-    (user) => user.email === email && user.password === password
-  );
+    const data = await response.json();
 
-  if (user) {
-    const userData: IUser = {
-      email: user.email,
-      name: user.name,
-      isLoggedIn: true,
+    console.log("loginWithEmail data", data);
+
+    // 성공적으로 로그인한 경우
+    if (response.ok && data.success) {
+      // auth-store에 사용자 정보 저장
+      useAuthStore.getState().login(data.user, data.token);
+      return { 
+        success: true, 
+        user: data.user
+      };
+    }
+
+    // 로그인 실패한 경우
+    return { 
+      success: false, 
+      error: data.error || 'LOGIN_FAILED',
+      message: data.message || '로그인에 실패했습니다.'
     };
-    setUser(userData);
-    return { success: true, user: userData };
+  } catch (error) {
+    console.error('Login error:', error);
+    return { 
+      success: false, 
+      error: 'SERVER_ERROR',
+      message: '서버와 통신 중 오류가 발생했습니다.'
+    };
   }
+};
 
-  return { success: false, error: "이메일 또는 비밀번호가 올바르지 않습니다." };
+// 현재 로그인한 사용자 정보 조회
+export const getCurrentUser = (): IUser | null => {
+  return useAuthStore.getState().getUser();
 }; 

@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { BrokerOrderStatusType, BROKER_ORDER_STATUS, getBrokerProgressPercentage } from "@/types/broker-order";
+import { SquareCheckBig } from "lucide-react";
 
 // 중개 화물 상태에 따른 색상 클래스 반환 함수
 export const getBrokerStatusColor = (status: BrokerOrderStatusType): string => {
@@ -12,12 +13,13 @@ export const getBrokerStatusColor = (status: BrokerOrderStatusType): string => {
     case "배차완료":
       return "bg-blue-100 text-blue-800 hover:bg-blue-200";
     case "상차완료":
+    case "상차대기":
       return "bg-indigo-100 text-indigo-800 hover:bg-indigo-200";
     case "운송중":
       return "bg-amber-100 text-amber-800 hover:bg-amber-200";
     case "하차완료":
       return "bg-green-100 text-green-800 hover:bg-green-200";
-    case "운송마감":
+    case "운송완료":
       return "bg-purple-100 text-purple-800 hover:bg-purple-200";
     default:
       return "bg-gray-100 text-gray-800 hover:bg-gray-200";
@@ -57,6 +59,7 @@ export function BrokerStatusBadge({
           className
         )}
       >
+        
         {status}
       </Badge>
       

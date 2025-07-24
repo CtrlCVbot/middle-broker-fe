@@ -277,7 +277,7 @@ export function generateMockIncomes(): IIncome[] {
   
   // getMockBrokerOrders에서 원본 배열 복사
   const orders = [...getMockBrokerOrders()].filter(order => 
-    order.status === '운송마감' || order.status === '하차완료'
+    order.status === '운송완료' || order.status === '하차완료'
   );
   
   // 완료된 주문을 화주별로 그룹화

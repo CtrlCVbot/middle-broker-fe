@@ -174,6 +174,7 @@ interface SpecialNote {
 
 interface BrokerOrderDriverInfoEditFormProps {
   initialData: {
+    status: string;
     driver: {
       name: string;
       contact: string;
@@ -196,6 +197,7 @@ interface BrokerOrderDriverInfoEditFormProps {
       taxInvoiceType: string;
       deliveryMethod: string;
     };
+    dispatchId: string;
   };
   onSave: (data: any) => void;
   onCancel: () => void;
@@ -243,6 +245,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
   
   // 차주 조회 선택 시 정보 채우기
   const selectDriver = (driver: any) => {
+    console.log("selectDriver", driver);
     form.setValue('driver.name', driver.name);
     form.setValue('driver.contact', driver.contact);
     form.setValue('vehicle.type', driver.vehicle.type);

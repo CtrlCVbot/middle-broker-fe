@@ -1,46 +1,82 @@
 "use client";
 
-import React, { useState } from 'react';
+// React
+import React, { useState, useEffect } from 'react';
+
+// UI
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from '@/components/ui/form';
+import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Form } from '@/components/ui/form';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
+
+// Types
 import { 
   IBrokerCompany, 
-  CompanyType, 
-  StatementType, 
-  CompanyStatus 
+  CompanyStatus,
+  StatementType
 } from '@/types/broker-company';
-import { COMPANY_TYPES, STATEMENT_TYPES } from '@/utils/mockdata/mock-broker-companies';
+
+// utils
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+import { getCurrentUser } from '@/utils/auth';
+
+// components
 import { BrokerCompanyManagerList } from './broker-company-manager-list';
+import { BrokerCompanyWarning } from './broker-company-warning';
+
+
+// 상수 배열 추가
+const COMPANY_TYPE_OPTIONS = ['화주', '운송사', '주선사'] as const;
+type CompanyTypeOption = typeof COMPANY_TYPE_OPTIONS[number];
+
+// 은행 코드와 은행명 매핑
+const BANK_CODES = [
+  { code: '001', name: '한국은행' },
+  { code: '002', name: '산업은행' },
+  { code: '003', name: '기업은행' },
+  { code: '004', name: '국민은행' },
+  { code: '007', name: '수협은행' },
+  { code: '008', name: '수출입은행' },
+  { code: '011', name: '농협은행' },
+  { code: '020', name: '우리은행' },
+  { code: '023', name: 'SC제일은행' },
+  { code: '027', name: '씨티은행' },
+  { code: '031', name: '대구은행' },
+  { code: '032', name: '부산은행' },
+  { code: '034', name: '광주은행' },
+  { code: '035', name: '제주은행' },
+  { code: '037', name: '전북은행' },
+  { code: '039', name: '경남은행' },
+  { code: '045', name: '새마을금고중앙회' },
+  { code: '048', name: '신협중앙회' },
+  { code: '050', name: '상호저축은행' },
+  { code: '071', name: '우체국' },
+  { code: '081', name: '하나은행' },
+  { code: '088', name: '신한은행' },
+  { code: '089', name: '케이뱅크' },
+  { code: '090', name: '카카오뱅크' },
+  { code: '092', name: '토스뱅크' },
+];
+
 
 interface BrokerCompanyFormProps {
   isSubmitting?: boolean;
@@ -58,28 +94,97 @@ const generateId = () => {
 const companyFormSchema = z.object({
   name: z.string().min(1, { message: '업체명은 필수 입력 항목입니다.' }).max(50, { message: '업체명은 최대 50자까지 입력 가능합니다.' }),
   businessNumber: z.string().min(10, { message: '사업자번호는 10자리 숫자로 입력해주세요.' }).max(12, { message: '사업자번호는 최대 12자리까지 입력 가능합니다.' }),
-  type: z.enum(['화주', '운송사', '주선사']),
+  type: z.enum(COMPANY_TYPE_OPTIONS),
   statementType: z.enum(['매입처', '매출처']),
   email: z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }).optional().or(z.literal('')),
   phoneNumber: z.string().min(1, { message: '전화번호는 필수 입력 항목입니다.' }),
-  faxNumber: z.string().optional(),
+  //faxNumber: z.string().optional(),
+  mobileNumber: z.string().optional(),
   status: z.enum(['활성', '비활성']).default('활성'),
-  managerName: z.string().min(1, { message: '담당자명은 필수 입력 항목입니다.' }),
-  managerPhoneNumber: z.string().min(1, { message: '담당자 전화번호는 필수 입력 항목입니다.' }),
+  //managerName: z.string().optional(),
+  //managerPhoneNumber: z.string().optional(),
   representative: z.string().min(1, { message: '대표자명은 필수 입력 항목입니다.' }),
-  warnings: z.array(z.object({
-    id: z.string(),
-    text: z.string().min(1).max(500)
-  })).optional(),
   files: z.array(z.object({
     id: z.string(),
     name: z.string(),
     url: z.string(),
     type: z.string()
   })).optional(),
+  bankCode: z.string().optional(),
+  bankAccount: z.string().optional(),
+  bankAccountHolder: z.string().optional(),
 });
 
 type CompanyFormValues = z.infer<typeof companyFormSchema>;
+
+/**
+ * 다양한 회사 데이터 형식을 폼 데이터 형식으로 정규화하는 함수
+ * ILegacyCompany나 IBrokerCompany 등 여러 타입을 지원
+ */
+function normalizeCompanyData(data: any): Partial<IBrokerCompany> {
+  if (!data) return {};
+
+  console.log('data:', data);
+  
+  // 필드 매핑을 위한 객체
+  const normalized = {
+    // 기본 필드들
+    id: data.id || '',
+    code: data.code || '',
+    name: data.name || '',
+    businessNumber: data.businessNumber || '',
+    
+    // 타입 필드 - 영문이나 한글 모두 지원
+    type: (() => {
+      const t = (data.type || '').toLowerCase();
+      if (t === 'broker' || t === '주선사') return '주선사';
+      if (t === 'shipper' || t === '화주') return '화주';
+      if (t === 'carrier' || t === '운송사') return '운송사';
+      return '운송사'; // fallback
+    })() as CompanyTypeOption,
+    
+    // 전표 타입
+    statementType: (() => {
+      const t = (data.statementType || '').toLowerCase();
+      if (t === 'purchase' || t === '매입처') return '매입처';
+      if (t === 'sales' || t === '매출처') return '매출처';
+      return '매출처'; // 기본값
+    })() as StatementType,
+    
+    // 대표자명 - 필드명이 다른 경우를 모두 지원
+    representative: data.representative || data.ceoName || '',
+    
+    // 연락처 정보
+    email: data.email || (data.contact?.email) || '',
+    phoneNumber: data.phoneNumber || (data.contact?.tel) || '',
+    //faxNumber: data.faxNumber || '',    
+    mobileNumber: (data.contact?.mobile) || '',
+    
+    // 상태 - 영문이나 한글 모두 지원
+    status: (
+      data.status === 'active' || data.status === '활성'
+        ? '활성'
+        : data.status === 'inactive' || data.status === '비활성'
+        ? '비활성'
+        : '활성'
+    ) as CompanyStatus,
+    
+    // 등록일
+    registeredDate: data.registeredDate || data.registeredAt || '',
+    
+    // 추가 데이터
+    files: data.files || [],
+    managers: data.managers || [],
+
+    // 은행 정보
+    bankCode: data.bankCode || null,
+    bankAccount: data.bankAccount || null,
+    bankAccountHolder: data.bankAccountHolder || null,
+  };
+  
+  console.log('정규화된 회사 데이터:', normalized);
+  return normalized;
+}
 
 export function BrokerCompanyForm({ 
   isSubmitting = false, 
@@ -87,36 +192,104 @@ export function BrokerCompanyForm({
   initialData = {},
   mode = 'register'
 }: BrokerCompanyFormProps) {
-  // 주의사항 관리 상태
-  const [warnings, setWarnings] = useState<{ id: string; text: string }[]>(
-    initialData.warnings || []
-  );
-  const [newWarning, setNewWarning] = useState('');
-  
+
+  console.log("initialData:", initialData);
+
+  // 초기 데이터 정규화
+  const normalizedInitialData = normalizeCompanyData(initialData);
+
   // 파일 업로드 상태
   const [files, setFiles] = useState<{ id: string; name: string; url: string; type: string }[]>(
-    initialData.files || []
+    normalizedInitialData.files || []
   );
 
   // 폼 설정
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companyFormSchema),
     defaultValues: {
-      name: initialData.name || '',
-      businessNumber: initialData.businessNumber || '',
-      type: (initialData.type as CompanyType) || '운송사',
-      statementType: (initialData.statementType as StatementType) || '매입처',
-      email: initialData.email || '',
-      phoneNumber: initialData.phoneNumber || '',
-      faxNumber: initialData.faxNumber || '',
-      status: (initialData.status as CompanyStatus) || '활성',
-      managerName: initialData.managerName || '',
-      managerPhoneNumber: initialData.managerPhoneNumber || '',
-      representative: initialData.representative || '',
-      warnings: [],
+      name: normalizedInitialData.name || '',
+      businessNumber: normalizedInitialData.businessNumber || '',
+      type: normalizedInitialData.type as CompanyTypeOption || '운송사',
+      statementType: normalizedInitialData.statementType as StatementType || '매입처',
+      email: normalizedInitialData.email || '',
+      phoneNumber: normalizedInitialData.phoneNumber || '',
+      mobileNumber: normalizedInitialData.mobileNumber || '',
+      status: normalizedInitialData.status as CompanyStatus || '활성',
+      representative: normalizedInitialData.representative || '',
       files: [],
+      bankCode: normalizedInitialData.bankCode || '',
+      bankAccount: normalizedInitialData.bankAccount || '',
+      bankAccountHolder: normalizedInitialData.bankAccountHolder || '',
     },
   });
+  
+  // initialData가 변경될 때 폼 값을 업데이트하기 위한 useEffect
+  useEffect(() => {
+    console.log('useEffect 실행 - initialData 변경 감지:', initialData);
+    
+    // 회사 데이터가 있을 때만 폼을 재설정
+    if (initialData && Object.keys(initialData).length > 0) {
+      console.log('초기 데이터 로드:', initialData);
+      
+      // 데이터 정규화 - 다양한 형식의 데이터를 폼에 맞게 변환
+      const normalizedData = normalizeCompanyData(initialData);
+      console.log('정규화된 데이터:', normalizedData);
+      
+      // 파일 상태 업데이트
+      if (normalizedData.files && normalizedData.files.length > 0) {
+        console.log('파일 상태 업데이트:', normalizedData.files);
+        setFiles(normalizedData.files);
+      } else {
+        setFiles([]);
+      }
+      
+      // 폼 값 재설정 - 정규화된 데이터 사용
+      const resetValues = {
+        name: normalizedData.name || '',
+        businessNumber: normalizedData.businessNumber || '',
+        type: normalizedData.type as CompanyTypeOption || '운송사',
+        statementType: normalizedData.statementType as StatementType || '매입처',
+        email: normalizedData.email || '',
+        phoneNumber: normalizedData.phoneNumber || '',
+        mobileNumber: normalizedData.mobileNumber || '',
+        status: normalizedData.status as CompanyStatus || '활성',
+        representative: normalizedData.representative || '',
+        files: [],
+        bankCode: normalizedData.bankCode || '',
+        bankAccount: normalizedData.bankAccount || '',
+        bankAccountHolder: normalizedData.bankAccountHolder || '',
+      };
+      
+      console.log('폼 리셋 값:', resetValues);
+      
+      form.reset(resetValues, {
+        keepDirtyValues: false, // 모든 값을 새로 설정
+        keepErrors: false, // 모든 에러 초기화
+      });
+      
+      // 디버깅용 로그 - 폼 값 확인
+      console.log('폼 값 설정 완료:', form.getValues());
+    } else {
+      console.log('초기 데이터가 없음 - 폼 초기화');
+      // 빈 데이터로 폼 초기화
+      setFiles([]);
+      form.reset({
+        name: '',
+        businessNumber: '',
+        type: '운송사',
+        statementType: '매입처',
+        email: '',
+        phoneNumber: '',
+        mobileNumber: '',
+        status: '활성',
+        representative: '',
+        files: [],
+        bankCode: '',
+        bankAccount: '',
+        bankAccountHolder: '',
+      });
+    }
+  }, [initialData?.id, initialData?.name, initialData?.businessNumber]); // 구체적인 필드만 의존성으로 설정
 
   // 전화번호 자동 하이픈 추가 함수
   const formatPhoneNumber = (value: string) => {
@@ -126,36 +299,29 @@ export function BrokerCompanyForm({
     return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
   };
 
-  // 주의사항 추가 핸들러
-  const handleAddWarning = () => {
-    if (newWarning.trim()) {
-      const warning = {
-        id: generateId(),
-        text: newWarning.trim()
-      };
-      setWarnings([...warnings, warning]);
-      setNewWarning('');
-    }
-  };
-
-  // 주의사항 삭제 핸들러
-  const handleDeleteWarning = (id: string) => {
-    setWarnings(warnings.filter(warning => warning.id !== id));
-  };
-
   // 폼 제출 핸들러
-  const handleSubmit = (data: CompanyFormValues) => {
+  const handleSubmit = (data: CompanyFormValues, e?: React.BaseSyntheticEvent) => {
+    // 기본 제출 동작 방지
+    if (e) {
+      e.preventDefault();
+    }
+    
+    // 현재 로그인된 사용자 정보 가져오기
+    const currentUser = getCurrentUser();
+    
     // ID 추가 (실제 구현에서는 백엔드에서 생성된 ID를 사용)
     const newCompany: IBrokerCompany = {
       ...data,
-      email: data.email || '', // undefined인 경우 빈 문자열로 변환
-      faxNumber: data.faxNumber || '', // undefined인 경우 빈 문자열로 변환
+      email: data.email || '',
+      //faxNumber: data.faxNumber || '',
+      //managerName: data.managerName || '',
+      //managerPhoneNumber: data.managerPhoneNumber || '',
+      mobileNumber: data.mobileNumber || '',
       id: initialData.id || generateId(),
       code: initialData.code || `CM${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`,
       registeredDate: initialData.registeredDate || new Date().toISOString().split('T')[0],
-      warnings,
       files,
-      managers: initialData.managers || []
+      managers: initialData.managers || [],
     };
     
     onSubmit(newCompany);
@@ -176,7 +342,12 @@ export function BrokerCompanyForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation(); // 이벤트 버블링 방지
+        console.log('폼 제출 이벤트 발생, 기본 동작 및 버블링 방지');
+        form.handleSubmit(handleSubmit)(e);
+      }} className="space-y-6">
         <Tabs defaultValue="basic" className="w-full px-6">
           <TabsList className="grid grid-cols-4 mb-4">
             <TabsTrigger value="basic">기본 정보</TabsTrigger>
@@ -214,7 +385,13 @@ export function BrokerCompanyForm({
                     name="businessNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>사업자번호 *</FormLabel>
+                        <FormLabel>
+                          사업자번호 *
+                          <FormDescription>
+                          (하이픈(-) 포함하여 입력 가능)
+                        </FormDescription>
+
+                        </FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="000-00-00000" 
@@ -227,9 +404,7 @@ export function BrokerCompanyForm({
                             }}
                           />
                         </FormControl>
-                        <FormDescription>
-                          하이픈(-) 포함하여 입력 가능
-                        </FormDescription>
+                        
                         <FormMessage />
                       </FormItem>
                     )}
@@ -250,49 +425,23 @@ export function BrokerCompanyForm({
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
+                  />                  
                   
-                  {/* 업체 상태 */}
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>업체 상태</FormLabel>
-                        <div className="flex items-center space-x-2">
-                          <Switch
-                            checked={field.value === '활성'}
-                            onCheckedChange={(checked) => {
-                              field.onChange(checked ? '활성' : '비활성');
-                            }}
-                          />
-                          <span>{field.value === '활성' ? '활성' : '비활성'}</span>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* 업체 구분 */}
+                  {/* 업체 타입 */}
                   <FormField
                     control={form.control}
                     name="type"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>업체 구분 *</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          defaultValue={field.value}
-                        >
+                        <FormLabel>업체 타입 *</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="업체 구분을 선택하세요" />
+                              <SelectValue placeholder="업체 타입을 선택하세요" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {COMPANY_TYPES.map((type) => (
+                            {COMPANY_TYPE_OPTIONS.map((type) => (
                               <SelectItem key={type} value={type}>
                                 {type}
                               </SelectItem>
@@ -303,36 +452,10 @@ export function BrokerCompanyForm({
                       </FormItem>
                     )}
                   />
-                  
-                  {/* 전표 구분 */}
-                  <FormField
-                    control={form.control}
-                    name="statementType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>전표 구분 *</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="전표 구분을 선택하세요" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {STATEMENT_TYPES.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+
+                </div>                
+                
+                
               </CardContent>
             </Card>
             
@@ -363,17 +486,16 @@ export function BrokerCompanyForm({
                       </FormItem>
                     )}
                   />
-                  
-                  {/* 팩스번호 */}
+                  {/* 담당자 전화번호 */}
                   <FormField
                     control={form.control}
-                    name="faxNumber"
+                    name="mobileNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>팩스번호</FormLabel>
+                        <FormLabel>담당자 전화번호 *</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="02-0000-0000" 
+                            placeholder="010-0000-0000" 
                             {...field} 
                             onChange={(e) => {
                               field.onChange(formatPhoneNumber(e.target.value));
@@ -385,7 +507,6 @@ export function BrokerCompanyForm({
                     )}
                   />
                 </div>
-                
                 {/* 이메일 */}
                 <FormField
                   control={form.control}
@@ -406,52 +527,100 @@ export function BrokerCompanyForm({
                 />
               </CardContent>
             </Card>
-            
+
+            {/* 은행 정보 카드 */}
             <Card>
               <CardHeader>
-                <CardTitle>담당자 정보</CardTitle>
-                <CardDescription>업체 담당자 정보를 입력합니다.</CardDescription>
+                <CardTitle>은행 정보</CardTitle>
+                <CardDescription>정산 및 송금에 필요한 계좌 정보를 입력합니다.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* 담당자명 */}
+                  {/* 은행 코드(Select) */}
                   <FormField
                     control={form.control}
-                    name="managerName"
+                    name="bankCode"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>담당자명 *</FormLabel>
+                        <FormLabel>은행 *</FormLabel>
                         <FormControl>
-                          <Input placeholder="담당자명을 입력하세요" {...field} />
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="은행 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {BANK_CODES.map((bank) => (
+                                <SelectItem key={bank.code} value={bank.code}>
+                                  {bank.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
-                  {/* 담당자 전화번호 */}
+                  {/* 예금주 */}
                   <FormField
                     control={form.control}
-                    name="managerPhoneNumber"
+                    name="bankAccountHolder"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>담당자 전화번호 *</FormLabel>
+                        <FormLabel>예금주 *</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="010-0000-0000" 
-                            {...field} 
-                            onChange={(e) => {
-                              field.onChange(formatPhoneNumber(e.target.value));
-                            }}
-                          />
+                          <Input placeholder="예금주명" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
+                {/* 계좌번호 (2열 전체) */}
+                <FormField
+                  control={form.control}
+                  name="bankAccount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>계좌번호 *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="계좌번호를 입력하세요" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </CardContent>
             </Card>
+
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                  
+                  {/* 로그인 활성화 상태 */}
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                        <div className="space-y-0.5">
+                          <FormLabel>로그인 활성화</FormLabel>
+                          <FormDescription>
+                            비활성화 시 해당 담당자는 로그인할 수 없습니다.
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value === '활성'}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked ? '활성' : '비활성');
+                            }}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+            
+            
           </TabsContent>
           
           <TabsContent value="warning" className="space-y-4">
@@ -461,50 +630,11 @@ export function BrokerCompanyForm({
                 <CardDescription>해당 업체에 대한 주의사항을 등록합니다. 여러 개의 주의사항을 추가할 수 있습니다.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Input
-                    value={newWarning}
-                    onChange={(e) => setNewWarning(e.target.value)}
-                    placeholder="주의사항을 입력하세요"
-                    className="flex-1"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleAddWarning();
-                      }
-                    }}
-                  />
-                  <Button 
-                    type="button" 
-                    onClick={handleAddWarning}
-                    variant="secondary"
-                  >
-                    추가
-                  </Button>
-                </div>
-                
-                {warnings.length > 0 ? (
-                  <div className="space-y-2 mt-4">
-                    {warnings.map((warning) => (
-                      <div 
-                        key={warning.id} 
-                        className="flex items-center p-2 rounded border border-gray-200 bg-gray-50"
-                      >
-                        <span className="flex-1">{warning.text}</span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteWarning(warning.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
+                {initialData.id ? (
+                  <BrokerCompanyWarning companyId={initialData.id} />
                 ) : (
                   <div className="text-center py-6 text-muted-foreground">
-                    등록된 주의사항이 없습니다. 주의사항을 추가해주세요.
+                    업체를 등록한 후 주의사항을 관리할 수 있습니다.
                   </div>
                 )}
               </CardContent>

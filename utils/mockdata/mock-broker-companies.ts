@@ -11,7 +11,7 @@ export const STATEMENT_TYPES: StatementType[] = ['매입처', '매출처'];
 export const COMPANY_STATUS: CompanyStatus[] = ['활성', '비활성'];
 
 // 목업 데이터 생성 (50개 업체)
-const mockCompanies: IBrokerCompany[] = Array.from({ length: 50 }).map((_, index) => {
+const mockCompanies: Partial<IBrokerCompany>[] = Array.from({ length: 50 }).map((_, index) => {
   const id = `company-${index + 1}`;
   const companyType = COMPANY_TYPES[Math.floor(Math.random() * COMPANY_TYPES.length)];
   const statementType = STATEMENT_TYPES[Math.floor(Math.random() * STATEMENT_TYPES.length)];
@@ -91,7 +91,7 @@ const mockCompanies: IBrokerCompany[] = Array.from({ length: 50 }).map((_, index
 });
 
 // 담당자 데이터 생성
-const mockManagersData = generateAllManagersData(mockCompanies.map(company => company.id));
+const mockManagersData = generateAllManagersData(mockCompanies.map(company => company.id).filter((id): id is string => id !== undefined));
 
 // 페이지네이션 처리된 업체 목록 반환 함수
 export const getBrokerCompaniesByPage = (
@@ -106,7 +106,7 @@ export const getBrokerCompaniesByPage = (
     endDate?: string | null;
   } = {}
 ): { 
-  data: IBrokerCompany[]; 
+  data: Partial<IBrokerCompany>[]; 
   total: number; 
   page: number; 
   pageSize: number; 
@@ -119,10 +119,10 @@ export const getBrokerCompaniesByPage = (
   if (filter.searchTerm) {
     const searchTerm = filter.searchTerm.toLowerCase();
     filteredData = filteredData.filter(company => 
-      company.name.toLowerCase().includes(searchTerm) ||
-      company.representative.toLowerCase().includes(searchTerm) ||
-      company.businessNumber.includes(searchTerm) ||
-      company.phoneNumber.includes(searchTerm)
+      company.name?.toLowerCase().includes(searchTerm) ||
+      company.representative?.toLowerCase().includes(searchTerm) ||
+      company.businessNumber?.includes(searchTerm) ||
+      company.phoneNumber?.includes(searchTerm)
     );
   }
   
@@ -144,6 +144,8 @@ export const getBrokerCompaniesByPage = (
   // 등록일 기간 필터링
   if (filter.startDate && filter.endDate) {
     filteredData = filteredData.filter(company => {
+      if (!company.registeredDate) return false;
+      
       const registeredDate = new Date(company.registeredDate);
       const start = new Date(filter.startDate!);
       const end = new Date(filter.endDate!);
@@ -154,9 +156,11 @@ export const getBrokerCompaniesByPage = (
   }
   
   // 정렬 (등록일 기준 최신순)
-  filteredData.sort((a, b) => 
-    new Date(b.registeredDate).getTime() - new Date(a.registeredDate).getTime()
-  );
+  filteredData.sort((a, b) => {
+    const dateA = a.registeredDate ? new Date(a.registeredDate).getTime() : 0;
+    const dateB = b.registeredDate ? new Date(b.registeredDate).getTime() : 0;
+    return dateB - dateA;
+  });
   
   // 페이지네이션
   const total = filteredData.length;
@@ -166,7 +170,7 @@ export const getBrokerCompaniesByPage = (
   
   // 각 업체에 담당자 데이터 연결
   const dataWithManagers = paginatedData.map(company => {
-    const managers = getManagersByCompanyId(company.id, mockManagersData);
+    const managers = company.id ? getManagersByCompanyId(company.id, mockManagersData) : [];
     return {
       ...company,
       managers
@@ -183,12 +187,12 @@ export const getBrokerCompaniesByPage = (
 };
 
 // 단일 업체 정보 반환 함수
-export const getBrokerCompanyById = (id: string): IBrokerCompany | undefined => {
+export const getBrokerCompanyById = (id: string): Partial<IBrokerCompany> | undefined => {
   const company = mockCompanies.find(company => company.id === id);
   
   if (company) {
     // 담당자 데이터 연결
-    const managers = getManagersByCompanyId(company.id, mockManagersData);
+    const managers = company.id ? getManagersByCompanyId(company.id, mockManagersData) : [];
     return {
       ...company,
       managers
@@ -199,7 +203,11 @@ export const getBrokerCompanyById = (id: string): IBrokerCompany | undefined => 
 };
 
 // 업체 정보 업데이트 함수
-export const updateBrokerCompany = (updatedCompany: IBrokerCompany): IBrokerCompany => {
+export const updateBrokerCompany = (updatedCompany: Partial<IBrokerCompany>): Partial<IBrokerCompany> => {
+  if (!updatedCompany.id) {
+    throw new Error('업체 ID가 없습니다.');
+  }
+  
   const index = mockCompanies.findIndex(company => company.id === updatedCompany.id);
   
   if (index !== -1) {

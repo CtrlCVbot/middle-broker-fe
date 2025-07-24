@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import {
   BadgeCheck,
   Bell,
@@ -31,6 +32,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { logout } from "@/utils/auth"
+import { useToast } from "@/components/ui/use-toast"
 
 export function NavUser({
   user,
@@ -40,10 +43,46 @@ export function NavUser({
   user: {
     name: string
     email: string
-    avatar: string
+    avatar: string | null
   }
 }) {
   const { isMobile } = useSidebar()
+  const router = useRouter()
+  const { toast } = useToast()
+
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    
+    try {
+      const success = await logout()
+      
+      if (success) {
+        toast({
+          title: "로그아웃 되었습니다",
+          description: "성공적으로 로그아웃 되었습니다.",
+          variant: "default",
+        })
+        
+        // 짧은 지연 후 로그인 페이지로 리디렉션 (토스트 메시지를 볼 수 있도록)
+        setTimeout(() => {
+          router.push("/login")
+        }, 1000)
+      } else {
+        toast({
+          title: "로그아웃 실패",
+          description: "로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Logout error:", error)
+      toast({
+        title: "로그아웃 실패",
+        description: "로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive",
+      })
+    }
+  }
 
   return (
     <SidebarMenu className={className} {...props}>
@@ -55,7 +94,7 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarImage src={user.avatar || ""} alt={user.name} />
                 <AvatarFallback className="rounded-lg">
                   {user.name
                     .split(" ")
@@ -79,7 +118,7 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarImage src={user.avatar || ""} alt={user.name} />
                   <AvatarFallback className="rounded-lg">
                     {user.name
                       .split(" ")
@@ -121,7 +160,7 @@ export function NavUser({
                 <span>설정</span>
               </a>
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 size-4" />
               로그아웃
             </DropdownMenuItem>
