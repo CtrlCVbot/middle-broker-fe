@@ -109,6 +109,8 @@ export function BrokerOrderInfoCard({
   onStatusChange,
   isSaleClosed = false // 기본값 false
 }: BrokerOrderInfoCardProps) {
+
+  console.log('orderId123456789', orderId);
   const [isShipperInfoOpen, setIsShipperInfoOpen] = useState(true);
   const [isWarningsVisible, setIsWarningsVisible] = useState(false);
   const [isLocationInfoOpen, setIsLocationInfoOpen] = useState(true);

@@ -56,7 +56,7 @@ export function MessageDrawer({
   console.log('defaultRecipient', defaultRecipient);
   console.log('defaultRole', defaultRole);
   console.log('defaultMessageType', defaultMessageType);
-  console.log('orderId', orderId);
+  console.log('orderId000', orderId);
 
   // 기본값 설정
   useEffect(() => {
@@ -102,6 +102,8 @@ export function MessageDrawer({
           role: recipient.roleType,
         })));
       }
+
+      console.log('orderId333', orderId);
     } catch (error) {
       toast({
         title: '오류',
@@ -126,19 +128,21 @@ export function MessageDrawer({
     reset();
   };
 
+  
+
   return (
     <>
       {showButtons && (
         <div className="flex gap-2 mb-4">
-          <Button onClick={() => setIsOpen(true)}>
+          {/* <Button onClick={() => setIsOpen(true)}>
             문자 메시지 보내기
-          </Button>
-          <Button 
+          </Button> */}
+          {/* <Button 
             variant="outline" 
             onClick={() => setIsHistoryOpen(true)}
           >
             문자 이력 보기
-          </Button>
+          </Button> */}
         </div>
       )}
 
@@ -147,7 +151,16 @@ export function MessageDrawer({
         <DrawerContent>
           <div className="mx-auto w-full max-w-md">
             <DrawerHeader>
-              <DrawerTitle>문자 메시지 보내기</DrawerTitle>
+              <DrawerTitle>
+                문자 메시지 보내기(아직 미구현)
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsHistoryOpen(true)}
+                  className="ml-4"
+                >
+                  이력 보기
+                </Button>
+              </DrawerTitle>
             </DrawerHeader>
             
             <div className="p-4 space-y-4">

@@ -15,7 +15,7 @@ export interface ISmsRecipient {
 
 export interface ISmsDispatchRequest {
   orderId: string;
-  senderId: string;
+  senderId?: string;
   messageType: SmsMessageType;
   messageBody: string;
   recipients: ISmsRecipient[];

@@ -6,6 +6,9 @@ import { Loader2, Send } from 'lucide-react';
 import { useSmsStore } from '@/store/sms-store';
 import { sendSms } from '@/services/sms-service';
 import { useToast } from '@/components/ui/use-toast';
+import { getCurrentUser } from '@/utils/auth';
+
+const user = getCurrentUser();
 
 interface ISmsSendButtonProps {
   orderId: string;
@@ -25,9 +28,13 @@ export function SmsSendButton({ orderId, isValid }: ISmsSendButtonProps) {
       setLoading(true);
       setError(null);
 
+      console.log('recipients', recipients);
+
+      console.log('user', user);
+      console.log('orderId!!!', orderId);
       const response = await sendSms({
         orderId,
-        senderId: 'user-123', // 실제로는 현재 사용자 ID
+        senderId: user?.id, // 실제로는 현재 사용자 ID
         messageType,
         messageBody: message,
         recipients,

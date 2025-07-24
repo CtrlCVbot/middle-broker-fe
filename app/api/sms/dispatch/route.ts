@@ -11,7 +11,7 @@ async function callExternalSmsApi(recipients: any[], messageBody: string) {
   // 실제 구현에서는 Twilio, KT Bizm 등의 외부 API 호출
   const results = recipients.map((recipient) => {
     // 모의 응답 - 실제로는 외부 API 응답을 받아야 함
-    const isSuccess = Math.random() > 0.1; // 90% 성공률
+    const isSuccess = true; //Math.random() > 0.1; // 90% 성공률
     return {
       phone: recipient.phone,
       status: isSuccess ? 'success' : 'failed',
@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('body', body);
     // 1. sms_messages 테이블에 발송 요청 생성
     const [smsMessage] = await db
       .insert(smsMessages)
@@ -74,8 +75,12 @@ export async function POST(request: NextRequest) {
 
     await db.insert(smsRecipients).values(recipientValues);
 
-    // 3. 외부 SMS API 호출
+    // 3. 외부 SMS API 호출 - 아직 구현안됨
     const externalResult = await callExternalSmsApi(body.recipients, body.messageBody);
+    //const externalResult = {
+    //  status: 'dispatched',
+    //  results: [],
+    //};
 
     // 4. 수신자별 전송 결과 업데이트
     for (const result of externalResult.results) {

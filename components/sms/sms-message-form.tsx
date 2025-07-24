@@ -16,7 +16,7 @@ interface ISmsMessageFormProps {
 export function SmsMessageForm({ orderId }: ISmsMessageFormProps) {
   const [templates, setTemplates] = useState<ISmsTemplate[]>([]);
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
-  
+  console.log('orderId123', orderId);
   const { 
     message, 
     messageType, 
@@ -50,9 +50,10 @@ export function SmsMessageForm({ orderId }: ISmsMessageFormProps) {
     templateBody = templateBody.replace(/{{order_id}}/g, orderId);
     templateBody = templateBody.replace(/{{vehicle_number}}/g, '82가1234'); // 실제로는 화물 정보에서 가져와야 함
     templateBody = templateBody.replace(/{{driver_name}}/g, '김기사');
-    templateBody = templateBody.replace(/{{driver_phone}}/g, '010-****-5678');
+    templateBody = templateBody.replace(/{{driver_phone}}/g, '010-****-56781');
     templateBody = templateBody.replace(/{{pickup_address}}/g, '서울 OO');
     templateBody = templateBody.replace(/{{delivery_address}}/g, '부산 XX');
+    
     
     setMessage(templateBody);
   };

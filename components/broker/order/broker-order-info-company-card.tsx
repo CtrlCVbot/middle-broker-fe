@@ -45,6 +45,8 @@ export function CompanyCard({
   onCall, 
   onMessage 
 }: ICompanyCardProps) {
+
+  console.log('orderId123456', orderId);
   const [isWarningsVisible, setIsWarningsVisible] = useState(false);
   const [companyWarnings, setCompanyWarnings] = useState<ICompanyWarning[]>([]);
   const [isLoadingWarnings, setIsLoadingWarnings] = useState(false);

@@ -162,7 +162,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
   // 주문 데이터 저장
   const orderData = orderDetail;
   console.log('orderData0', orderData);
-  
+  console.log('selectedOrderId123', selectedOrderId);
   // 선택된 ID가 변경될 때마다 데이터 가져오기  
   useEffect(() => {    
     if (selectedOrderId && isSheetOpen) {     
@@ -733,7 +733,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                     />
                   ) : (
                     <BrokerOrderInfoCardVer02
-                      orderId={orderData.orderNumber}
+                      orderId={selectedOrderId || ""}
                       dispatchId={orderData.dispatchId}
                       status={orderData.status}
                       departure={{
