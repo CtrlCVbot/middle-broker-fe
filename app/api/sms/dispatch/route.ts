@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { smsMessages, smsRecipients } from '@/db/schema/smsMessages';
-import { ISmsDispatchRequest, ISmsDispatchResponse } from '@/types/sms';
+import { ISmsDispatchRequest, ISmsDispatchResponse, SmsRoleType, SmsDeliveryStatus, SmsRequestStatus } from '@/types/sms';
 import { eq } from 'drizzle-orm';
 
 /**
@@ -68,8 +68,8 @@ export async function POST(request: NextRequest) {
       smsMessageId: smsMessage.id,
       recipientName: recipient.name,
       recipientPhone: recipient.phone,
-      roleType: recipient.role,
-      deliveryStatus: 'pending',
+      roleType: recipient.role as SmsRoleType,
+      deliveryStatus: 'pending' as const,
     }));
 
     await db.insert(smsRecipients).values(recipientValues);
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       await db
         .update(smsRecipients)
         .set({
-          deliveryStatus: result.status,
+          deliveryStatus: result.status as SmsDeliveryStatus,
           errorMessage: result.errorMessage,
           apiMessageId: result.apiMessageId,
           sentAt: result.status === 'success' ? new Date() : null,
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
     await db
       .update(smsMessages)
       .set({
-        requestStatus: externalResult.status,
+        requestStatus: externalResult.status as SmsRequestStatus,
         dispatchedAt: new Date(),
       })
       .where(eq(smsMessages.id, smsMessage.id));
@@ -105,10 +105,15 @@ export async function POST(request: NextRequest) {
 
     const response: ISmsDispatchResponse = {
       messageId: smsMessage.id,
-      status: externalResult.status as any,
+      status: externalResult.status as SmsRequestStatus,
       successCount,
       failureCount,
-      results: externalResult.results,
+      results: externalResult.results.map(result => ({
+        phone: result.phone,
+        status: result.status as SmsDeliveryStatus,
+        errorMessage: result.errorMessage,
+        apiMessageId: result.apiMessageId,
+      })),
     };
 
     return NextResponse.json(response);

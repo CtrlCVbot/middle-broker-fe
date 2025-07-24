@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { smsMessages, smsRecipients } from '@/db/schema/smsMessages';
-import { ISmsHistoryItem } from '@/types/sms';
+import { ISmsHistoryItem, SmsDeliveryStatus, SmsRequestStatus } from '@/types/sms';
 import { eq } from 'drizzle-orm';
 
 export async function GET(
@@ -48,16 +48,16 @@ export async function GET(
 
       historyItems.push({
         messageId: message.id,
-        createdAt: message.createdAt.toISOString(),
+        createdAt: message.createdAt?.toISOString() || '',
         messageType: message.messageType,
         messageBody: message.messageBody,
-        requestStatus: message.requestStatus,
+        requestStatus: message.requestStatus as SmsRequestStatus,
         recipients: recipients.map((recipient) => ({
           name: recipient.recipientName,
           phone: recipient.recipientPhone,
           role: recipient.roleType,
-          status: recipient.deliveryStatus,
-          errorMessage: recipient.errorMessage,
+          status: recipient.deliveryStatus as SmsDeliveryStatus,
+          errorMessage: recipient.errorMessage || undefined,
         })),
       });
     }
