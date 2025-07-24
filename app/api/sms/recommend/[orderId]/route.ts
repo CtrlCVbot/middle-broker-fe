@@ -37,33 +37,33 @@ export async function GET(
       })
     );
 
-    // 기본 추천 수신자가 없는 경우 모의 데이터 제공
-    if (recommendedRecipients.length === 0) {
-      const mockRecipients: ISmsRecommendedRecipient[] = [
-        {
-          name: '김요청',
-          phone: '010-1111-2222',
-          roleType: 'requester',
-        },
-        {
-          name: '홍기사',
-          phone: '010-3333-4444',
-          roleType: 'driver',
-        },
-        {
-          name: '이상차',
-          phone: '010-5555-6666',
-          roleType: 'load',
-        },
-        {
-          name: '박하차',
-          phone: '010-7777-8888',
-          roleType: 'unload',
-        },
-      ];
+    // 기본 추천 수신자가 없는 경우 모의 데이터 제공 -- 주석처리 삭제금지
+    // if (recommendedRecipients.length === 0) {
+    //   const mockRecipients: ISmsRecommendedRecipient[] = [
+    //     {
+    //       name: '김요청',
+    //       phone: '010-1111-2222',
+    //       roleType: 'requester',
+    //     },
+    //     {
+    //       name: '홍기사',
+    //       phone: '010-3333-4444',
+    //       roleType: 'driver',
+    //     },
+    //     {
+    //       name: '이상차',
+    //       phone: '010-5555-6666',
+    //       roleType: 'load',
+    //     },
+    //     {
+    //       name: '박하차',
+    //       phone: '010-7777-8888',
+    //       roleType: 'unload',
+    //     },
+    //   ];
 
-      return NextResponse.json(mockRecipients);
-    }
+    //   return NextResponse.json(mockRecipients);
+    // }
 
     return NextResponse.json(recommendedRecipients);
   } catch (error) {

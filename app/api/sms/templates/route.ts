@@ -12,20 +12,20 @@ export async function GET(request: NextRequest) {
 
     // 기본 템플릿 데이터 (실제로는 DB에서 관리)
     const defaultTemplates: ISmsTemplate[] = [
-      {
-        id: 'tmpl-001',
-        roleType: 'driver',
-        messageType: 'complete',
-        templateBody: '[화물번호:{{order_id}}] 배차가 완료되었습니다. 차량: {{vehicle_number}}, 기사: {{driver_name}} {{driver_phone}}',
-        isActive: true,
-      },
-      {
-        id: 'tmpl-002',
-        roleType: 'requester',
-        messageType: 'complete',
-        templateBody: '[화물번호:{{order_id}}] 배차가 완료되었습니다. 차량: {{vehicle_number}}, 기사: {{driver_name}}',
-        isActive: true,
-      },
+      // {
+      //   id: 'tmpl-001',
+      //   roleType: 'driver',
+      //   messageType: 'complete',
+      //   templateBody: '[화물번호:{{order_id}}] 배차가 완료되었습니다. 차량: {{vehicle_number}}, 기사: {{driver_name}} {{driver_phone}}',
+      //   isActive: true,
+      // },
+      // {
+      //   id: 'tmpl-002',
+      //   roleType: 'requester',
+      //   messageType: 'complete',
+      //   templateBody: '[화물번호:{{order_id}}] 배차가 완료되었습니다. 차량: {{vehicle_number}}, 기사: {{driver_name}}',
+      //   isActive: true,
+      // },
       {
         id: 'tmpl-003',
         roleType: 'shipper',
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
       },
       {
         id: 'tmpl-007',
-        roleType: 'requester',
+        roleType: 'shipper',
         messageType: 'cancel',
         templateBody: '[화물번호:{{order_id}}] 배차가 취소되었습니다.',
         isActive: true,

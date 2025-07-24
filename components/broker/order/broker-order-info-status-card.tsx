@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 //components
 import { BrokerStatusDropdown } from "./broker-status-dropdown";
 import { MessageDrawer } from "@/components/sms/message-drawer";
-import { SmsMessageType, SmsRoleType } from "@/types/sms";
+import { SmsMessageType, SmsRoleType, ISmsRecipient } from "@/types/sms";
 
 //utils
 import { validate as isValidUUID, version as getUUIDVersion } from 'uuid';
@@ -62,7 +62,7 @@ export function BrokerOrderStatusCard({
   const [isSmsDrawerOpen, setIsSmsDrawerOpen] = useState(false);
   const [smsDefaultValues, setSmsDefaultValues] = useState({
     messageType: 'update' as SmsMessageType,
-    recipient: '',
+    recipient: {name: '', phone: '', role: 'shipper' as SmsRoleType} as ISmsRecipient,
     role: 'shipper' as SmsRoleType
   });
   
@@ -84,7 +84,7 @@ export function BrokerOrderStatusCard({
   const handleLoadContactMessage = () => {
     setSmsDefaultValues({
       messageType: 'update',
-      recipient: from.contactPhone,
+      recipient: {name: from.contactName, phone: from.contactPhone, role: 'load' as SmsRoleType} as ISmsRecipient,
       role: 'shipper'
     });
     setIsSmsDrawerOpen(true);
@@ -93,7 +93,7 @@ export function BrokerOrderStatusCard({
   const handleUnloadContactMessage = () => {
     setSmsDefaultValues({
       messageType: 'update',
-      recipient: to.contactPhone,
+      recipient: {name: to.contactName, phone: to.contactPhone, role: 'unload' as SmsRoleType} as ISmsRecipient,
       role: 'unload'
     });
     setIsSmsDrawerOpen(true);

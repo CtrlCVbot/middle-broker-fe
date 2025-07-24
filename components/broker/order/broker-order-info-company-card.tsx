@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { fetchWarnings } from '@/services/broker-company-warning-service';
 import { ICompanyWarning } from "@/types/company-warning";
 import { MessageDrawer } from "@/components/sms/message-drawer";
-import { SmsMessageType, SmsRoleType } from "@/types/sms";
+import { ISmsRecipient, SmsMessageType, SmsRoleType } from "@/types/sms";
 
 import { safeFormatDate } from "@/utils/format";
 
@@ -53,8 +53,8 @@ export function CompanyCard({
   const [isSmsDrawerOpen, setIsSmsDrawerOpen] = useState(false);
   const [smsDefaultValues, setSmsDefaultValues] = useState({
     messageType: 'complete' as SmsMessageType,
-    recipient: '',
-    role: 'requester' as SmsRoleType
+    recipient: {name: '', phone: '', role: 'shipper' as SmsRoleType} as ISmsRecipient,
+    role: 'shipper' as SmsRoleType
   });
 
   useEffect(() => {
@@ -75,8 +75,8 @@ export function CompanyCard({
   const handleCancelMessage = () => {
     setSmsDefaultValues({
       messageType: 'cancel',
-      recipient: managerInfo.contact,
-      role: 'requester'
+      recipient: {name: managerInfo.name, phone: managerInfo.contact, role: 'shipper' as SmsRoleType} as ISmsRecipient,
+      role: 'shipper'
     });
     setIsSmsDrawerOpen(true);
   };
@@ -84,7 +84,7 @@ export function CompanyCard({
   const handleCompleteMessage = () => {
     setSmsDefaultValues({
       messageType: 'complete',
-      recipient: managerInfo.contact,
+      recipient: {name: managerInfo.name, phone: managerInfo.contact, role: 'shipper' as SmsRoleType} as ISmsRecipient,
       role: 'requester'
     });
     setIsSmsDrawerOpen(true);

@@ -52,7 +52,20 @@ export function SmsTemplateSelect({
   return (
     <Select value={selectedType} onValueChange={handleValueChange}>
       <SelectTrigger>
-        <SelectValue placeholder="메시지 유형을 선택하세요" />
+        <SelectValue>
+          {selectedType
+            ? (
+              <div className="flex flex-col">
+                <span className="font-medium">
+                  {messageTypeLabels[selectedType]}
+                </span>
+                <span className="text-xs text-gray-500">
+                  {roleLabels[selectedType]}
+                </span>
+              </div>
+            )
+            : "메시지 유형을 선택하세요"}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
         {templates.map((template) => (

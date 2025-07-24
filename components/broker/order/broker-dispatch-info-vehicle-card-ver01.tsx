@@ -15,7 +15,7 @@ import {
 import { BrokerOrderDriverInfoEditForm as VehicleEditForm } from "./broker-dispatch-info-vehicle-form";
 import { formatPhoneNumber } from "@/utils/format";
 import { MessageDrawer } from "@/components/sms/message-drawer";
-import { SmsMessageType, SmsRoleType } from "@/types/sms";
+import { SmsMessageType, SmsRoleType, ISmsRecipient } from "@/types/sms";
 
 interface IVehicleCardProps {
   dispatchId: string;
@@ -56,7 +56,7 @@ export function VehicleCard({
   const [isSmsDrawerOpen, setIsSmsDrawerOpen] = useState(false);
   const [smsDefaultValues, setSmsDefaultValues] = useState({
     messageType: 'complete' as SmsMessageType,
-    recipient: '',
+    recipient: {name: driverInfo.name || '', phone: driverInfo.contact || '', role: 'driver' as SmsRoleType} as ISmsRecipient,
     role: 'driver' as SmsRoleType
   });
 
@@ -70,7 +70,7 @@ export function VehicleCard({
   const handleDriverMessage = () => {
     setSmsDefaultValues({
       messageType: 'complete',
-      recipient: driverInfo.contact || '',
+      recipient: {name: driverInfo.name || '', phone: driverInfo.contact || '', role: 'driver' as SmsRoleType} as ISmsRecipient,
       role: 'driver'
     });
     setIsSmsDrawerOpen(true);

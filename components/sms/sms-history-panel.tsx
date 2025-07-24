@@ -17,7 +17,7 @@ interface ISmsHistoryPanelProps {
 
 const messageTypeLabels: Record<string, string> = {
   complete: '배차 완료 안내',
-  update: '배차 변경 안내',
+  update: '차량 변경 안내',
   cancel: '배차 취소 안내',
   custom: '커스텀 입력',
 };

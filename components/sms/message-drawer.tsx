@@ -5,17 +5,18 @@ import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { SmsMessageForm } from '@/components/sms/sms-message-form';
 import { SmsRecipientPills } from '@/components/sms/sms-recipient-pills';
-import { RecipientSidebar } from '@/components/sms/recipient-sidebar';
+//import { RecipientSidebar } from '@/components/sms/recipient-sidebar';
+import { RecipientDrawer } from '@/components/sms/recipient-drawer';
 import { SmsHistoryPanel } from '@/components/sms/sms-history-panel';
 import { useSmsStore } from '@/store/sms-store';
 import { fetchRecommendedRecipients } from '@/services/sms-service';
-import { ISmsRecommendedRecipient, SmsMessageType, SmsRoleType } from '@/types/sms';
+import { ISmsRecipient, ISmsRecommendedRecipient, SmsMessageType, SmsRoleType } from '@/types/sms';
 import { useToast } from '@/components/ui/use-toast';
 
 interface IMessageDrawerProps {
   orderId: string;
   defaultMessageType?: SmsMessageType;
-  defaultRecipient?: string;
+  defaultRecipient?: ISmsRecipient;
   defaultRole?: SmsRoleType;
   showButtons?: boolean;
   isOpen?: boolean;
@@ -52,6 +53,10 @@ export function MessageDrawer({
   } = useSmsStore();
   
   const { toast } = useToast();
+  console.log('defaultRecipient', defaultRecipient);
+  console.log('defaultRole', defaultRole);
+  console.log('defaultMessageType', defaultMessageType);
+  console.log('orderId', orderId);
 
   // 기본값 설정
   useEffect(() => {
@@ -70,18 +75,20 @@ export function MessageDrawer({
   const loadRecommendedRecipients = async () => {
     try {
       setIsLoadingRecipients(true);
-      const data = await fetchRecommendedRecipients(orderId);
+      const data = [{name: defaultRecipient?.name, phone: defaultRecipient?.phone, roleType: defaultRecipient?.role}] as ISmsRecommendedRecipient[]; 
+      //아직 활용하지 말자.
+      //await fetchRecommendedRecipients(orderId);
       setRecommendedRecipients(data);
-      
+      console.log('data', data);
       // 기본 수신자 설정
       let defaultRecipients = data.filter(
-        (recipient) => ['requester', 'driver'].includes(recipient.roleType)
+        (recipient) => ['requester', 'shipper', 'load', 'unload', 'broker', 'driver'].includes(recipient.roleType)
       );
       
       // 특정 수신자가 지정된 경우
       if (defaultRecipient && defaultRole) {
         const specificRecipient = data.find(
-          (recipient) => recipient.phone === defaultRecipient && recipient.roleType === defaultRole
+          (recipient) => recipient.phone === defaultRecipient.phone && recipient.roleType === defaultRole
         );
         if (specificRecipient) {
           defaultRecipients = [specificRecipient];
@@ -172,7 +179,7 @@ export function MessageDrawer({
       </Drawer>
 
       {/* 수신자 추가 사이드바 */}
-      <RecipientSidebar
+      <RecipientDrawer
         isOpen={isSidebarOpen}
         onClose={handleSidebarClose}
         recommendedRecipients={recommendedRecipients}
