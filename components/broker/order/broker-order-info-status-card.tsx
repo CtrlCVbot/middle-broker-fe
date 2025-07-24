@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 
 //components
 import { BrokerStatusDropdown } from "./broker-status-dropdown";
+import { MessageDrawer } from "@/components/sms/message-drawer";
+import { SmsMessageType, SmsRoleType } from "@/types/sms";
 
 //utils
 import { validate as isValidUUID, version as getUUIDVersion } from 'uuid';
@@ -56,6 +58,14 @@ export function BrokerOrderStatusCard({
   const [currentStatus, setCurrentStatus] = useState(status);  
   const [isDispatchIdValid, setIsDispatchIdValid] = useState(false);
   
+  // SMS Drawer 상태 관리
+  const [isSmsDrawerOpen, setIsSmsDrawerOpen] = useState(false);
+  const [smsDefaultValues, setSmsDefaultValues] = useState({
+    messageType: 'update' as SmsMessageType,
+    recipient: '',
+    role: 'shipper' as SmsRoleType
+  });
+  
   console.log('status', status);
   // dispatchId 검증
   useEffect(() => {
@@ -69,6 +79,25 @@ export function BrokerOrderStatusCard({
       console.warn("유효하지 않은 배차 ID:", dispatchId);
     }
   }, [dispatchId]);
+  
+  // 문자 메시지 핸들러 추가
+  const handleLoadContactMessage = () => {
+    setSmsDefaultValues({
+      messageType: 'update',
+      recipient: from.contactPhone,
+      role: 'shipper'
+    });
+    setIsSmsDrawerOpen(true);
+  };
+
+  const handleUnloadContactMessage = () => {
+    setSmsDefaultValues({
+      messageType: 'update',
+      recipient: to.contactPhone,
+      role: 'unload'
+    });
+    setIsSmsDrawerOpen(true);
+  };
   
   // 상태 변경 핸들러
   const handleStatusChange = (newStatus: string) => {
@@ -135,12 +164,13 @@ export function BrokerOrderStatusCard({
         <div className="col-span-2">          
           <div className="flex items-center">
             <p className="text-sm text-gray-500">{from.contactName}</p>
-            <Badge
+            <Button
               variant="outline"            
               className="h-5 text-xs ml-2"            
+              onClick={handleLoadContactMessage}
             >
               <MessageSquare className="h-2 w-2" />                          
-            </Badge>
+            </Button>
           </div>
           <p className="text-sm text-gray-500">{from.contactPhone}</p>
         </div>
@@ -152,16 +182,28 @@ export function BrokerOrderStatusCard({
         <div className="col-span-2">
           <div className="flex items-center">
             <p className="text-sm text-gray-500">{to.contactName}</p>
-            <Badge
+            <Button
               variant="outline"            
               className="h-5 text-xs ml-2"            
+              onClick={handleUnloadContactMessage}
             >
               <MessageSquare className="h-2 w-2" />                          
-            </Badge>
+            </Button>
           </div>
           <p className="text-sm text-gray-500">{to.contactPhone}</p>
         </div>
       </div>
+
+      {/* SMS Drawer */}
+      <MessageDrawer
+        orderId={dispatchId || ''}
+        defaultMessageType={smsDefaultValues.messageType}
+        defaultRecipient={smsDefaultValues.recipient}
+        defaultRole={smsDefaultValues.role}
+        showButtons={false}
+        isOpen={isSmsDrawerOpen}
+        onOpenChange={setIsSmsDrawerOpen}
+      />
     </div>
   );
 } 

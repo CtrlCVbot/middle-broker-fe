@@ -9,15 +9,34 @@ import { RecipientSidebar } from '@/components/sms/recipient-sidebar';
 import { SmsHistoryPanel } from '@/components/sms/sms-history-panel';
 import { useSmsStore } from '@/store/sms-store';
 import { fetchRecommendedRecipients } from '@/services/sms-service';
-import { ISmsRecommendedRecipient } from '@/types/sms';
+import { ISmsRecommendedRecipient, SmsMessageType, SmsRoleType } from '@/types/sms';
 import { useToast } from '@/components/ui/use-toast';
 
 interface IMessageDrawerProps {
   orderId: string;
+  defaultMessageType?: SmsMessageType;
+  defaultRecipient?: string;
+  defaultRole?: SmsRoleType;
+  showButtons?: boolean;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function MessageDrawer({ orderId }: IMessageDrawerProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function MessageDrawer({ 
+  orderId, 
+  defaultMessageType,
+  defaultRecipient,
+  defaultRole,
+  showButtons = true,
+  isOpen: controlledIsOpen,
+  onOpenChange
+}: IMessageDrawerProps) {
+  // 제어형/비제어형 상태 관리
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isControlled = controlledIsOpen !== undefined;
+  const isOpen = isControlled ? controlledIsOpen : internalIsOpen;
+  const setIsOpen = isControlled ? onOpenChange || (() => {}) : setInternalIsOpen;
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [recommendedRecipients, setRecommendedRecipients] = useState<ISmsRecommendedRecipient[]>([]);
@@ -28,10 +47,18 @@ export function MessageDrawer({ orderId }: IMessageDrawerProps) {
     setRecipients, 
     addRecipient, 
     removeRecipient,
+    setMessageType,
     reset 
   } = useSmsStore();
   
   const { toast } = useToast();
+
+  // 기본값 설정
+  useEffect(() => {
+    if (defaultMessageType) {
+      setMessageType(defaultMessageType);
+    }
+  }, [defaultMessageType, setMessageType]);
 
   // 추천 수신자 로드
   useEffect(() => {
@@ -46,10 +73,20 @@ export function MessageDrawer({ orderId }: IMessageDrawerProps) {
       const data = await fetchRecommendedRecipients(orderId);
       setRecommendedRecipients(data);
       
-      // 기본 수신자 자동 추가 (요청자, 기사)
-      const defaultRecipients = data.filter(
+      // 기본 수신자 설정
+      let defaultRecipients = data.filter(
         (recipient) => ['requester', 'driver'].includes(recipient.roleType)
       );
+      
+      // 특정 수신자가 지정된 경우
+      if (defaultRecipient && defaultRole) {
+        const specificRecipient = data.find(
+          (recipient) => recipient.phone === defaultRecipient && recipient.roleType === defaultRole
+        );
+        if (specificRecipient) {
+          defaultRecipients = [specificRecipient];
+        }
+      }
       
       if (defaultRecipients.length > 0) {
         setRecipients(defaultRecipients.map(recipient => ({
@@ -84,17 +121,19 @@ export function MessageDrawer({ orderId }: IMessageDrawerProps) {
 
   return (
     <>
-      <div className="flex gap-2 mb-4">
-        <Button onClick={() => setIsOpen(true)}>
-          문자 메시지 보내기
-        </Button>
-        <Button 
-          variant="outline" 
-          onClick={() => setIsHistoryOpen(true)}
-        >
-          문자 이력 보기
-        </Button>
-      </div>
+      {showButtons && (
+        <div className="flex gap-2 mb-4">
+          <Button onClick={() => setIsOpen(true)}>
+            문자 메시지 보내기
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => setIsHistoryOpen(true)}
+          >
+            문자 이력 보기
+          </Button>
+        </div>
+      )}
 
       {/* 메인 문자 발송 시트 */}
       <Drawer open={isOpen} onOpenChange={setIsOpen}>

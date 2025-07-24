@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/dialog";
 import { BrokerOrderDriverInfoEditForm as VehicleEditForm } from "./broker-dispatch-info-vehicle-form";
 import { formatPhoneNumber } from "@/utils/format";
+import { MessageDrawer } from "@/components/sms/message-drawer";
+import { SmsMessageType, SmsRoleType } from "@/types/sms";
 
 interface IVehicleCardProps {
   dispatchId: string;
@@ -49,6 +51,14 @@ export function VehicleCard({
   const [editMode, setEditMode] = useState(false);
   const [isDriverInfoOpen, setIsDriverInfoOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  
+  // SMS Drawer 상태 관리
+  const [isSmsDrawerOpen, setIsSmsDrawerOpen] = useState(false);
+  const [smsDefaultValues, setSmsDefaultValues] = useState({
+    messageType: 'complete' as SmsMessageType,
+    recipient: '',
+    role: 'driver' as SmsRoleType
+  });
 
   const handleCall = () => {
     if (onCall) {
@@ -56,10 +66,14 @@ export function VehicleCard({
     }
   };
 
-  const handleMessage = () => {
-    if (onMessage) {
-      onMessage(driverInfo.name);
-    }
+  // 문자 메시지 핸들러 수정
+  const handleDriverMessage = () => {
+    setSmsDefaultValues({
+      messageType: 'complete',
+      recipient: driverInfo.contact || '',
+      role: 'driver'
+    });
+    setIsSmsDrawerOpen(true);
   };
 
   const toggleDriverInfo = () => {
@@ -192,7 +206,7 @@ export function VehicleCard({
             variant="default" 
             size="sm" 
             className="px-3 py-1 h-8 hover:cursor-pointer bg-gray-900 hover:bg-gray-700" 
-            onClick={handleMessage}
+            onClick={handleDriverMessage}
           >
             <MessageSquare className="h-4 w-4 mr-1" />
             <span className="text-sm">메시지</span>
@@ -235,6 +249,17 @@ export function VehicleCard({
           />
         </DialogContent>
       </Dialog>
+
+      {/* SMS Drawer */}
+      <MessageDrawer
+        orderId={dispatchId}
+        defaultMessageType={smsDefaultValues.messageType}
+        defaultRecipient={smsDefaultValues.recipient}
+        defaultRole={smsDefaultValues.role}
+        showButtons={false}
+        isOpen={isSmsDrawerOpen}
+        onOpenChange={setIsSmsDrawerOpen}
+      />
     </div>
   );
 } 

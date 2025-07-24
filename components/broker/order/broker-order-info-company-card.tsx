@@ -7,6 +7,8 @@ import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 import { fetchWarnings } from '@/services/broker-company-warning-service';
 import { ICompanyWarning } from "@/types/company-warning";
+import { MessageDrawer } from "@/components/sms/message-drawer";
+import { SmsMessageType, SmsRoleType } from "@/types/sms";
 
 import { safeFormatDate } from "@/utils/format";
 
@@ -46,6 +48,14 @@ export function CompanyCard({
   const [isWarningsVisible, setIsWarningsVisible] = useState(false);
   const [companyWarnings, setCompanyWarnings] = useState<ICompanyWarning[]>([]);
   const [isLoadingWarnings, setIsLoadingWarnings] = useState(false);
+  
+  // SMS Drawer 상태 관리
+  const [isSmsDrawerOpen, setIsSmsDrawerOpen] = useState(false);
+  const [smsDefaultValues, setSmsDefaultValues] = useState({
+    messageType: 'complete' as SmsMessageType,
+    recipient: '',
+    role: 'requester' as SmsRoleType
+  });
 
   useEffect(() => {
     console.log('companyInfo.id', companyInfo.id);
@@ -60,6 +70,25 @@ export function CompanyCard({
       .catch(() => setCompanyWarnings([]))
       .finally(() => setIsLoadingWarnings(false));
   }, [companyInfo.id]);
+
+  // 문자 메시지 핸들러 수정
+  const handleCancelMessage = () => {
+    setSmsDefaultValues({
+      messageType: 'cancel',
+      recipient: managerInfo.contact,
+      role: 'requester'
+    });
+    setIsSmsDrawerOpen(true);
+  };
+
+  const handleCompleteMessage = () => {
+    setSmsDefaultValues({
+      messageType: 'complete',
+      recipient: managerInfo.contact,
+      role: 'requester'
+    });
+    setIsSmsDrawerOpen(true);
+  };
 
   const handleCall = () => {
     if (onCall) {
@@ -188,7 +217,7 @@ export function CompanyCard({
             variant="outline" 
             size="sm" 
             className="px-3 py-1 h-8" 
-            onClick={handleCall}
+            onClick={handleCancelMessage}
           >
             <MessageSquareOff className="h-4 w-4 mr-1" />
             <span className="text-sm">취소</span>
@@ -197,13 +226,24 @@ export function CompanyCard({
             variant="default" 
             size="sm" 
             className="px-3 py-1 h-8 bg-gray-800" 
-            onClick={handleMessage}
+            onClick={handleCompleteMessage}
           >
             <MessageSquare className="h-4 w-4 mr-1" />
             <span className="text-sm">완료</span>
           </Button>
         </div>
       </div>
+
+      {/* SMS Drawer */}
+      <MessageDrawer
+        orderId={orderId}
+        defaultMessageType={smsDefaultValues.messageType}
+        defaultRecipient={smsDefaultValues.recipient}
+        defaultRole={smsDefaultValues.role}
+        showButtons={false}
+        isOpen={isSmsDrawerOpen}
+        onOpenChange={setIsSmsDrawerOpen}
+      />
 
     </div>
   );
