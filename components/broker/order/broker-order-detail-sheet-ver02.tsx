@@ -64,9 +64,10 @@ import { FinanceSummaryCard } from "./broker-dispatch-info-cost-card-ver01";
 import { BrokerOrderDriverInfoEditForm as VehicleEditForm } from "./broker-dispatch-info-vehicle-form";
 import BrokerChargeInfoLineForm, { IAdditionalFee } from "./broker-charge-info-line-form";
 
-//types
+//hooks
 // 추가금 관련 중복 로직 제거하고 useChargeForm 훅 import 추가
 import { useChargeForm } from '@/hooks/useChargeForm';
+
 // 전체적인 상태 관리를 위한 타입 정의
 type EditMode = "cargo" | "driver" | "settlement" | null;
 

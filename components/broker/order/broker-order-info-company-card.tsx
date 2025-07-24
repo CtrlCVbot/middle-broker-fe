@@ -182,7 +182,7 @@ export function CompanyCard({
           </div>
         </div>
         
-        {/* 통화 및 메시지 버튼 */}
+        {/* 메시지 발송 버튼 */}
         <div className="flex gap-2">
           <Button 
             variant="outline" 
