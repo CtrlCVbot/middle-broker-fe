@@ -75,12 +75,9 @@ export async function POST(request: NextRequest) {
 
     await db.insert(smsRecipients).values(recipientValues);
 
-    // 3. 외부 SMS API 호출 - 아직 구현안됨
+    // 3. 외부 SMS API 호출 - 아직 구현안됨 - 추후 화물맨 시스템과 연결 필요
     const externalResult = await callExternalSmsApi(body.recipients, body.messageBody);
-    //const externalResult = {
-    //  status: 'dispatched',
-    //  results: [],
-    //};
+    
 
     // 4. 수신자별 전송 결과 업데이트
     for (const result of externalResult.results) {
