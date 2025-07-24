@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { SmsTemplateSelect } from './sms-template-select';
-import { SmsSendButton } from './sms-send-button';
+import { SmsTemplateSelect } from '@/components/sms/sms-template-select';
+import { SmsSendButton } from '@/components/sms/sms-send-button';
 import { useSmsStore } from '@/store/sms-store';
 import { fetchTemplates } from '@/services/sms-service';
 import { ISmsTemplate } from '@/types/sms';

@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
-import { SmsMessageForm } from './sms-message-form';
-import { SmsRecipientPills } from './sms-recipient-pills';
-import { RecipientSidebar } from './recipient-sidebar';
-import { SmsHistoryPanel } from './sms-history-panel';
+import { SmsMessageForm } from '@/components/sms/sms-message-form';
+import { SmsRecipientPills } from '@/components/sms/sms-recipient-pills';
+import { RecipientSidebar } from '@/components/sms/recipient-sidebar';
+import { SmsHistoryPanel } from '@/components/sms/sms-history-panel';
 import { useSmsStore } from '@/store/sms-store';
 import { fetchRecommendedRecipients } from '@/services/sms-service';
 import { ISmsRecommendedRecipient } from '@/types/sms';

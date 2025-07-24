@@ -318,6 +318,10 @@ export const data = {
           title: "api 모니터링",
           url: "/test/api-monitor",
         } ,
+        {
+          title: "문자 메시지 발송",
+          url: "/test/sms",
+        }
       ],
     }
   ]
@@ -423,6 +427,10 @@ export const shipperData = {
           title: "api 모니터링",
           url: "/test/api-monitor",
         } ,
+        {
+          title: "문자 메시지 발송",
+          url: "/test/sms",
+        }
       ],
     }
   ]
@@ -551,6 +559,10 @@ export const brokerData = {
           title: "api 모니터링",
           url: "/test/api-monitor",
         } ,
+        {
+          title: "문자 메시지 발송",
+          url: "/test/sms",
+        }
       ],
     }
   ]
