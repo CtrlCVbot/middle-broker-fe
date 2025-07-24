@@ -24,3 +24,6 @@ export * from './relations';
 export * from './distanceCache';
 export * from './kakaoApiUsage';
 
+// SMS 관련 스키마 추가
+export * from './smsMessages';
+
