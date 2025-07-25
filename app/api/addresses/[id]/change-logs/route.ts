@@ -4,7 +4,7 @@ import { db } from '@/db';
 import { addressChangeLogs } from '@/db/schema/addressChangeLogs';
 import { z } from 'zod';
 
-
+//테스트용
 
 // UUID 검증
 function isValidUUID(uuid: string) {
