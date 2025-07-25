@@ -19,7 +19,8 @@ import {
   createItemAdjustment,
   updateItemAdjustment,
   deleteItemAdjustment,
-  getSalesBundleFreightList
+  getSalesBundleFreightList,
+  getChargeGroupsByOrderIdWithLines
 } from '@/services/broker-charge-service';
 
 //utils
@@ -317,7 +318,8 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
-      const chargeGroups = await getChargeGroupsByOrderId(orderId);
+      const chargeGroups = await getChargeGroupsByOrderIdWithLines(orderId);
+      console.log("chargeGroups:", chargeGroups);
       const financeSummary = mapChargeDataToFinanceSummary(chargeGroups);
 
       console.log("fetchChargesByOrderId:", chargeGroups, financeSummary);

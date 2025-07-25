@@ -164,18 +164,36 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
   console.log('orderData0', orderData);
   console.log('selectedOrderId123', selectedOrderId);
   // 선택된 ID가 변경될 때마다 데이터 가져오기  
-  useEffect(() => {    
-    if (selectedOrderId && isSheetOpen) {     
+  // useEffect(() => {    
+  //   if (selectedOrderId && isSheetOpen) {     
       
-      fetchOrderDetail(selectedOrderId);            
-      // 운임 정보도 함께 조회      
-      fetchChargesByOrderId(selectedOrderId).catch(err => {        
-        console.error('운임 정보 조회 중 오류 발생:', err);        
-        // 오류가 발생해도 UI 흐름에 영향을 주지 않도록 함      
-      });    
-    }  
+  //     fetchOrderDetail(selectedOrderId).catch(err => {
+  //       console.error('주문 정보 조회 중 오류 발생:', err);
+  //     });            
+  //     // 운임 정보도 함께 조회      
+  //     fetchChargesByOrderId(selectedOrderId).catch(err => {        
+  //       console.error('운임 정보 조회 중 오류 발생:', err);        
+  //       // 오류가 발생해도 UI 흐름에 영향을 주지 않도록 함      
+  //     });    
+  //   }  
+  // }, [selectedOrderId, isSheetOpen, fetchOrderDetail, fetchChargesByOrderId]);
+  useEffect(() => {
+    if (!selectedOrderId || !isSheetOpen) return;
+  
+    (async () => {
+      try {
+        await fetchOrderDetail(selectedOrderId);
+      } catch (err) {
+        console.error('주문 정보 오류:', err);
+      }
+  
+      try {
+        await fetchChargesByOrderId(selectedOrderId);
+      } catch (err) {
+        console.error('운임 정보 오류:', err);
+      }
+    })();
   }, [selectedOrderId, isSheetOpen, fetchOrderDetail, fetchChargesByOrderId]);
-
   
   // 시트가 닫힐 때 상태 변경 여부에 따라 목록 새로고침
   useEffect(() => {

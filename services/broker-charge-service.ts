@@ -60,6 +60,29 @@ export async function getChargeGroupsByOrderId(orderId: string): Promise<ICharge
   }
 }
 
+export async function getChargeGroupsByOrderIdWithLines(orderId: string): Promise<IChargeGroupWithLines[]> {
+  try {
+    const response = await fetch(`/api/charge/groups/with-lines?orderId=${orderId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('운임 그룹 조회에 실패했습니다.');
+    }
+
+    const result = await response.json();   
+    
+    
+    return result.data;
+  } catch (error) {
+    console.error('운임 그룹 조회 중 오류 발생:', error);
+    throw error;
+  }
+}
+
 /**
  * 그룹 ID로 운임 라인 목록 조회
  */

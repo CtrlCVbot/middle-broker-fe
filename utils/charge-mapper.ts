@@ -93,6 +93,18 @@ export function mapAdditionalFeeToChargeLine(
 export function mapChargeDataToFinanceSummary(chargeGroups: any[]): IFinanceSummary {
   const income: IFinanceItem[] = [];
   const expense: IFinanceItem[] = [];
+  console.log("mapChargeDataToFinanceSummary - chargeGroups:", chargeGroups);
+
+  if (!Array.isArray(chargeGroups)) {
+    console.error('chargeGroups 응답이 배열이 아닙니다:', chargeGroups);
+    return {
+      title: '운임 정산',
+      date: new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }) + ' 기준',
+      income: [],
+      expense: [],
+      balance: 0
+    } as IFinanceSummary;
+  }
   
   chargeGroups.forEach(group => {
     const reasonLabels: Record<string, string> = {
@@ -106,6 +118,7 @@ export function mapChargeDataToFinanceSummary(chargeGroups: any[]): IFinanceSumm
     };
     
     const label = reasonLabels[group.reason] || group.reason;
+    
     
     // 운임 라인 처리
     group.chargeLines?.forEach((line: any) => {
