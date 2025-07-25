@@ -114,6 +114,7 @@ export const mockBrokerOrderDetails: Record<string, IBrokerOrderDetail> = {
       driver: {
         name: "김차장",
         contact: "010-1234-5678",
+        businessNumber: "123-45-67890"
       }
     },
     logs: [

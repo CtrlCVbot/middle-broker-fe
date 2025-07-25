@@ -299,23 +299,273 @@ export const data = {
       icon: Send,
     },
   ],
-  projects: [
+
+  navTest: [
     {
-      name: "디자인 엔지니어링",
+      title: "테스트",
       url: "#",
-      icon: Frame,
+      icon: LifeBuoy,
+      items: [
+        {
+          title: "엑셀 기능",
+          url: "/test/excel",
+        } ,
+        {
+          title: "카카오",
+          url: "/test/kakao",
+        } , 
+        {
+          title: "api 모니터링",
+          url: "/test/api-monitor",
+        } ,
+        {
+          title: "문자 메시지 발송",
+          url: "/test/sms",
+        }
+      ],
+    }
+  ]
+}
+export const shipperData = {
+
+
+  user: {
+    name: user?.name || "",
+    email: user?.email || "",
+    avatar: null,
+  },
+  navMain: [
+    {
+      title: "홈",
+      url: "/",
+      icon: Home,
+      isActive: true,
     },
+    
     {
-      name: "영업 및 마케팅",
-      url: "#",
-      icon: PieChart,
+      title: "주소록",
+      url: "/address",
+      icon: NotebookTabs,
     },
+
     {
-      name: "여행",
-      url: "#",
-      icon: Map,
+      title: "요청",
+      url: "/order/register",
+      icon: PackagePlus,
+    },
+
+    {
+      title: "현황",
+      url: "/order/list",
+      icon: Truck,
+      items: [
+        {
+          title: "운송 목록",
+          url: "/order/list",
+        },
+        {
+          title: "운송 요청",
+          url: "/order/register",
+        }
+      ],
+    },
+    
+    
+    {
+      title: "정산",
+      url: "/settlement/list",
+      icon: Banknote,
+    },
+
+    
+
+    {
+      title: "대시보드",
+      url: "/dashboard",
+      icon: SquareTerminal,
+      items: [
+        {
+          title: "통계",
+          url: "/dashboard/stats",
+        },
+        {
+          title: "보고서",
+          url: "/dashboard/reports",
+        },
+        {
+          title: "설정",
+          url: "/dashboard/settings",
+        },
+      ],
+    },
+    
+    
+    {
+      title: "프로필",
+      url: "/profile",
+      icon: User,
     },
   ],
+
+  
+
+  navTest: [
+    {
+      title: "테스트",
+      url: "#",
+      icon: LifeBuoy,
+      items: [
+        {
+          title: "엑셀 기능",
+          url: "/test/excel",
+        } ,
+        {
+          title: "카카오",
+          url: "/test/kakao",
+        } , 
+        {
+          title: "api 모니터링",
+          url: "/test/api-monitor",
+        } ,
+        {
+          title: "문자 메시지 발송",
+          url: "/test/sms",
+        }
+      ],
+    }
+  ]
+}
+
+export const brokerData = {
+
+
+  user: {
+    name: user?.name || "",
+    email: user?.email || "",
+    avatar: null,
+  },
+  
+  navBroker: [
+    // {
+    //   title: "실시간 화물 현황",
+    //   url: "/broker/order/list",
+    //   icon: LifeBuoy,
+    // },
+    {
+      title: "실시간 화물 현황 ver01",
+      url: "/broker/order-ver01/list",
+      icon: Loader,
+    },
+    {
+      title: "오더 등록",
+      url: "/broker/order-ver01/register",
+      icon: PackagePlus,
+    },
+    {
+      title: "업체 관리",
+      url: "/broker/company/list",
+      icon: Building,
+    },
+    {
+      title: "차주 관리",
+      url: "/broker/driver/list",
+      icon: Truck,
+    },
+    // {
+    //   title: "매출 정산",
+    //   url: "/broker/income",
+    //   icon: DollarSign,
+    //   items: [
+    //     {
+    //       title: "정산 목록",
+    //       url: "/broker/income",
+    //     },
+    //     {
+    //       title: "정산 대기 화물",
+    //       url: "/broker/income/first-settlement",
+    //     }
+    //   ],
+    // },
+    {
+      title: "매출 정산-ver01",
+      url: "/broker/sale",
+      icon: BanknoteArrowUp,
+      items: [
+        {
+          title: "정산 목록",
+          url: "/broker/sale",
+        },
+        {
+          title: "정산 대기 화물",
+          url: "/broker/sale/waiting",
+        }
+      ],
+    },
+
+    {
+      title: "매입 정산-ver01",
+      url: "/broker/purchase",
+      icon: BanknoteArrowDown,
+      items: [
+        {
+          title: "정산 목록",
+          url: "/broker/purchase",
+        },
+        {
+          title: "정산 대기 화물",
+          url: "/broker/purchase/waiting",
+        }
+      ],
+    },
+    // {
+    //   title: "매입 정산",
+    //   url: "/broker/expenditure",
+    //   icon: DollarSign,
+    //   items: [
+    //     {
+    //       title: "정산 목록",
+    //       url: "/broker/expenditure",
+    //     },
+    //   ],
+    // },
+    // {
+    //   title: "매입 정산2",
+    //   url: "/broker/expenditure2",
+    //   icon: DollarSign,
+    //   items: [
+    //     {
+    //       title: "정산 목록",
+    //       url: "/broker/expenditure2",
+    //     },
+    //   ],
+    // },
+  ], 
+
+  navTest: [
+    {
+      title: "테스트",
+      url: "#",
+      icon: LifeBuoy,
+      items: [
+        {
+          title: "엑셀 기능",
+          url: "/test/excel",
+        } ,
+        {
+          title: "카카오",
+          url: "/test/kakao",
+        } , 
+        {
+          title: "api 모니터링",
+          url: "/test/api-monitor",
+        } ,
+        {
+          title: "문자 메시지 발송",
+          url: "/test/sms",
+        }
+      ],
+    }
+  ]
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -347,10 +597,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavBroker items={data.navBroker} />
-        <NavProjects projects={data.projects} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {/* <NavMain items={data.navMain} />
+        <NavBroker items={data.navBroker} />        
+        <NavTest items={data.navTest} /> */}
+
+        {/* 회사 타입에 따라 동적으로 메뉴 분기 */}
+        {sidebarData.navMain.length > 0 && <NavMain items={sidebarData.navMain} />}
+        {sidebarData.navBroker.length > 0 && <NavBroker items={sidebarData.navBroker} />}
+        {sidebarData.navTest.length > 0 && <NavTest items={sidebarData.navTest} />}
+        
       </SidebarContent>
       <SidebarFooter>
         {/* <NavUser user={data.user} /> */}

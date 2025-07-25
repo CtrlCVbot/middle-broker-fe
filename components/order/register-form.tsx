@@ -51,15 +51,42 @@ import { OrderStepProgress } from "./order-step-progress";
 //utils
 import { format } from 'date-fns';
 import { cn } from "@/lib/utils";
-
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { toast } from "@/components/ui/use-toast";
+import { adjustMinutesToHalfHour } from '@/utils/time-utils';
+import { validateOrderFormData } from '@/utils/order-utils';
 
 interface OrderRegisterFormProps {
   onSubmit: () => void;
   editMode?: boolean;
   orderNumber?: string;
 }
+
+interface AnimatedNumberProps {
+  number: number;
+  duration?: number; // 기본 애니메이션 시간
+  suffix?: string;   // "km", "원" 등 단위
+}
+
+export function AnimatedNumber({ number, duration = 500, suffix = '' }: AnimatedNumberProps) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const start = performance.now();
+    const from = display;
+
+    const step = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const nextValue = Math.floor(from + (number - from) * progress);
+      setDisplay(nextValue);
+      if (progress < 1) requestAnimationFrame(step);
+    };
+
+    requestAnimationFrame(step);
+  }, [number]);
+
+  return <span>{display.toLocaleString()}{suffix}</span>;
+}
+
+
 
 export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: OrderRegisterFormProps) {
   const [activeTab, setActiveTab] = useState<string>("vehicle");
@@ -109,9 +136,6 @@ const { user, isLoggedIn } = useAuthStore();
   const { 
     registerData,
   } = store;
-  
-
-
   
   // 스토어 타입에 맞는 resetForm 함수 참조
   const resetFormAction = editMode 
@@ -380,26 +404,129 @@ const { user, isLoggedIn } = useAuthStore();
       return; // 거리 계산 로직 실행하지 않음
     }
     // 출발지와 도착지 주소가 모두 입력된 경우에만 계산
-    if (departure.address && destination.address) {
-      const calculateDistanceAndAmount = async () => {
-        setIsCalculating(true);
-        
-        try {
-          // 거리 계산
-          const distance = await calculateDistance(departure.address, destination.address);
-          
-          // 금액 계산
-          const amount = await calculateAmount(distance, weightType, selectedOptions);
-        } catch (error) {
-          console.error("계산 중 오류 발생:", error);
-        } finally {
-          setIsCalculating(false);
-        }
-      };
+    const calculateDistanceAndAmount = async () => {
+      setIsCalculating(true);
       
-      // 계산 실행
-      calculateDistanceAndAmount();
-    }
+      try {
+        // 실제 거리 계산 (카카오 API 사용)
+        let distance = 0;
+        // 예상 금액은 "협의"로 설정 (0으로 설정하여 UI에서 "협의" 표시)
+        const amount = 0; // 협의 금액으로 설정
+        
+        // 좌표 정보가 있는 경우 실제 API 호출
+        if (departure.latitude && departure.longitude && 
+            destination.latitude && destination.longitude) {
+          
+          const result = await DistanceClientService.calculateDistanceByAddresses({
+            pickupAddressId: departure.id,
+            deliveryAddressId: destination.id,
+            pickupCoordinates: {
+              lat: departure.latitude,
+              lng: departure.longitude
+            },
+            deliveryCoordinates: {
+              lat: destination.latitude,
+              lng: destination.longitude
+            },
+            priority: 'RECOMMEND'
+          });
+          
+          if (result.success && result.distanceKm) {
+            distance = result.distanceKm;
+            let duration = result.durationMinutes;
+            let method = result.method;
+            let cacheId = result.cacheId;
+            let metadata = result.metadata;
+            // 거리 정보 연동: duration, method, cacheId, metadata 등 저장
+            console.log('거리 계산 결과:', result);
+            const extra = {
+              distanceCalculationMethod: result.method,
+              distanceCacheId: result.cacheId,
+              distanceMetadata: result.metadata,
+              estimatedDurationMinutes: result.durationMinutes,
+              distanceKm: result.distanceKm,
+              // 필요시 추가 필드 매핑
+            };
+
+            console.log('editMode-->', editMode);
+            if (editMode) {              
+              //수정
+              editStore.setRegisterData({
+                estimatedDistance: distance,
+                estimatedAmount: amount,
+                estimatedDurationMinutes: result.durationMinutes,
+                distanceCalculationMethod: result.method,
+                distanceCalculatedAt: new Date().toISOString(),
+                distanceCacheId: result.cacheId,
+                distanceMetadata: result.metadata as any,                
+              });
+            } else {       
+              //등록 
+              console.log('등록 전 extra-->', extra);
+              registerStore.setEstimatedInfo(distance, amount, extra as any);
+              console.log('등록 registerData-->', registerStore.registerData);
+              
+            }
+          } else {
+            console.log('거리 계산 실패, 직선거리 계산 사용:', result.error);
+            // fallback: 직선 거리 계산
+            distance = await DistanceClientService.calculateMockDistance(
+              departure.latitude,
+              departure.longitude,
+              destination.latitude,
+              destination.longitude
+            );
+          }
+        } else {          
+          console.log('좌표 정보 없음!!!');
+          // 계산 결과를 store에 반영
+          if (editMode) {
+            editStore.setRegisterData({
+              estimatedDistance: distance,
+              estimatedAmount: amount,
+            });
+          } else {
+            console.log('editMode2-->', editMode);
+            registerStore.setEstimatedInfo(distance, amount);
+          }
+        }
+        
+        console.log(` 거리: ${distance}km, 예상금액: 협의`);
+        console.log('registerStore.registerData-->', registerStore.registerData);
+      } catch (error) {
+        console.error("거리 계산 중 오류 발생:", error);
+        
+        // 에러 발생 시 기본값 설정
+        const fallbackDistance = 0; // 기본 0km
+        const fallbackAmount = 0; // 협의
+        
+        if (editMode) {
+          editStore.setRegisterData({
+            estimatedDistance: fallbackDistance,
+            estimatedAmount: fallbackAmount,
+          });
+        } else {          
+          registerStore.setEstimatedInfo(fallbackDistance, fallbackAmount);
+        }
+        
+        toast({
+          title: "거리 계산 오류",
+          description: "거리 계산 중 문제가 발생했습니다. 기본값으로 설정됩니다.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsCalculating(false);
+      }
+    };
+    
+    // 300ms 디바운스로 연속 호출 방지
+    const timeoutId = setTimeout(() => {
+      if (departure.address && destination.address) {
+        calculateDistanceAndAmount();
+      }
+    }, 300);
+    
+    return () => clearTimeout(timeoutId);
   }, [
     registerData.departure.address,
     registerData.destination.address
@@ -730,130 +857,120 @@ const { user, isLoggedIn } = useAuthStore();
                   </div>
                 </div>
 
-          {/* 중간: 출발지/도착지 정보 카드 */}
-          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* 출발지 정보 */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <MapPinIcon className="h-5 w-5 mr-2 text-blue-500" />
-                  출발지 정보
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <LocationForm
-                  type="departure"
-                  locationInfo={registerData.departure}
-                  onChange={(info) => setDeparture(info as any)}
-                  compact={true}
-                  disabled={editMode && !isEditable('departure')}
-                  onDisabledClick={() => handleDisabledFieldClick('departure')}
-                />
-              </CardContent>
-            </Card>
-            
-            {/* 도착지 정보 */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <MapPinIcon className="h-5 w-5 mr-2 text-red-500" />
-                  도착지 정보
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <LocationForm
-                  type="destination"
-                  locationInfo={registerData.destination}
-                  onChange={(info) => setDestination(info as any)}
-                  compact={true}
-                  disabled={editMode && !isEditable('destination')}
-                  onDisabledClick={() => handleDisabledFieldClick('destination')}
-                />
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* 오른쪽: 예상 정보 및 옵션 카드 */}
-          <div className="lg:col-span-1 space-y-4">
-            {/* 운송 옵션 카드 */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <OptionsIcon className="h-5 w-5 mr-2" />
-                  운송 옵션
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <OptionSelector
-                  options={TRANSPORT_OPTIONS}
-                  selectedOptions={registerData.selectedOptions}
-                  onToggle={toggleOption}
-                  disabled={editMode && !isEditable('selectedOptions')}
-                  onDisabledClick={() => handleDisabledFieldClick('selectedOptions')}
-                />
-              </CardContent>
-            </Card>
-            
-            {/* 예상 정보 카드 */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <CalculatorIcon className="h-5 w-5 mr-2" />
-                  {editMode ? '운송 정보' : '예상 정보'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">예상 거리</span>
-                    <span className="font-medium">
-                      {isCalculating ? (
-                        <span className="animate-pulse">계산 중...</span>
-                      ) : (
-                        <span>
-                          {typeof registerData.estimatedDistance === 'number' ? 
-                            `${registerData.estimatedDistance.toLocaleString()}km` : 
-                            editMode && originalData ? 
-                              `${0}km` : 
-                              '0km'
-                          }
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">
-                      {editMode ? '운송 금액' : '예상 금액'}
-                    </span>
-                    <span className="text-xl font-bold text-primary">
-                      {isCalculating ? (
-                        <span className="animate-pulse">계산 중...</span>
-                      ) : (
-                        <span>
-                          {typeof registerData.estimatedAmount === 'number' ? 
-                            `${registerData.estimatedAmount.toLocaleString()}원` : 
-                            editMode && originalData ? 
-                              originalData.amount : 
-                              '0원'
-                          }
-                        </span>
-                      )}
-                    </span>
-                  </div>
+              {/* 출발지, 도착지 정보/화물 정보 */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {/* 중간: 출발지/도착지 정보 카드 */}
+                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">              
+
+              {/* 상차지 정보*/}
+              <Card>                
+                <CardContent>
+                  <LocationFormVer01
+                    type="departure"
+                    locationInfo={registerData.departure}
+                    onChange={(info) => setDeparture(info as any)}
+                    compact={true}
+                    disabled={editMode && !isEditable('departure')}
+                    onDisabledClick={() => handleDisabledFieldClick('departure')}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* 하차지 정보 Copy*/}
+              <Card>                
+                <CardContent>
+                  <LocationFormVer01
+                    type="destination"
+                    locationInfo={registerData.destination}
+                    onChange={(info) => setDestination(info as any)}
+                    compact={true}
+                    disabled={editMode && !isEditable('destination')}
+                    onDisabledClick={() => handleDisabledFieldClick('destination')}                  
+                  />
+                </CardContent>
+              </Card>
+              </div>
+
+                {/* 오른쪽: 화물 정보 카드 */}
+                <div className="lg:col-span-1 space-y-4">
+
+              {/* 운송 옵션 카드 */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-md flex items-center">
+                    <OptionsIcon className="h-5 w-5 mr-2" />
+                    <span className="">운송 옵션</span>
+                  </CardTitle>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowOptions((prev) => !prev)}
+                  >
+                    {showOptions ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
+                </CardHeader>
+                {showOptions && (
+                  <CardContent>
+                    <RegisterTransportOptionCard
+                      selectedOptions={registerData.selectedOptions}
+                      onToggle={toggleOption}
+                      disabled={editMode && !isEditable('selectedOptions')}
+                    />
+                  </CardContent>
+                )}
+              </Card>
+
+              {/* 예상 정보 카드 */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center">
+                    <CalculatorIcon className="h-5 w-5 mr-2" />
+                    <span className="">{editMode ? '정산 정보' : '예상 정보'}</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <RegisterEstimateInfoCard
+                    estimatedDistance={registerData.estimatedDistance}
+                    estimatedAmount={registerData.estimatedAmount}
+                    isCalculating={isCalculating}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* 등록 버튼 - 수정 모드에서는 표시하지 않음 */}
+              {!editMode && (
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      처리 중...
+                    </>
+                  ) : (
+                    '화물 등록'
+                  )}
+                </Button>
+              )}
                 </div>
-              </CardContent>
-            </Card>
-            
-            {/* 등록 버튼 - 수정 모드에서는 표시하지 않음 */}
-            {!editMode && (
-              <Button type="submit" size="lg" className="w-full">
-                화물 등록
-              </Button>
-            )}
-          </div>
-        </div>
-      </form>
-    </Form>
+              </div>
+
+            </CardContent>
+          </Card>
+
+        </form>
+      </Form>
+      
+      {/* 성공 다이얼로그 */}
+      <RegisterSuccessDialog
+        isOpen={successDialogOpen}
+        orderId={registeredOrderId}
+        onClose={handleSuccessDialogClose}
+      />
+    </>
   );
 } 
