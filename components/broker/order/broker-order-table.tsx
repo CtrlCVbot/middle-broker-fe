@@ -50,6 +50,7 @@ export function BrokerOrderTable({
   
   // 화물 상세 정보 열기
   const handleOrderClick = (orderId: string) => {
+    console.log("orderId => ", orderId);
     openSheet(orderId);
   };
   

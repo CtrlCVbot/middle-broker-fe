@@ -132,17 +132,18 @@ export function MessageDrawer({
 
   return (
     <>
+      {/* 테스트 페이지 문자 메시지 보내기 버튼 */}
       {showButtons && (
         <div className="flex gap-2 mb-4">
-          {/* <Button onClick={() => setIsOpen(true)}>
+           <Button onClick={() => setIsOpen(true)}>
             문자 메시지 보내기
-          </Button> */}
-          {/* <Button 
+          </Button>
+           <Button 
             variant="outline" 
             onClick={() => setIsHistoryOpen(true)}
           >
             문자 이력 보기
-          </Button> */}
+          </Button>
         </div>
       )}
 
