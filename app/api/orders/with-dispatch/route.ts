@@ -1,16 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+//db schema
 import { db } from '@/db';
 import { orderFlowStatusEnum, orders, vehicleTypeEnum, vehicleWeightEnum } from '@/db/schema/orders';
 import { orderDispatches } from '@/db/schema/orderDispatches';
-import { users } from '@/db/schema/users';
-import { eq, and, ilike, or, sql, desc, asc, gte, lte, inArray } from 'drizzle-orm';
-import { orderWithDispatchQuerySchema, IOrderWithDispatchListResponse, IOrderWithDispatchItem } from '@/types/order-with-dispatch';
-import { z } from 'zod';
-import { generateMockDispatchData } from './mock';
 
-import { chargeGroups } from '@/db/schema/chargeGroups';
-import { chargeLines } from '@/db/schema/chargeLines';
+//services
 import { ChargeService } from '@/services/charge-service';
+
+//types
+import { orderWithDispatchQuerySchema, IOrderWithDispatchListResponse, IOrderWithDispatchItem } from '@/types/order-with-dispatch';
+
+//utils
+import { eq, and, ilike, or, sql, desc, asc, gte, lte, inArray } from 'drizzle-orm';
+
+//zod
+import { z } from 'zod';
+
+
 
 /**
  * 주문 목록을 배차 정보와 함께 조회합니다.
@@ -27,26 +34,7 @@ export async function GET(request: NextRequest) {
     
     // 요청 파라미터 검증
     const validatedQuery = orderWithDispatchQuerySchema.parse(queryParams);
-
-    // *** 임시: Mock 데이터 반환으로 변경 - 테스트용! ***
-    /*console.log('DB 쿼리 대신 Mock 데이터 생성');
-    const mockResponse = generateMockDispatchData(searchParams);
     
-    // 디버깅 로그
-    console.log('Mock 응답 데이터 구조:', {
-      dataLength: mockResponse.data.length,
-      hasValidData: mockResponse.data.some(item => item.dispatch !== null),
-      pagination: {
-        total: mockResponse.total,
-        page: mockResponse.page,
-        pageSize: mockResponse.pageSize,
-        totalPages: mockResponse.totalPages
-      }
-    });
-    
-    return NextResponse.json(mockResponse);*/
-    
-    // 실제 DB 쿼리 코드 (테스트 후 주석 해제)    
     // 페이지네이션 파라미터
     const page = validatedQuery.page;
     const pageSize = validatedQuery.pageSize;
@@ -225,7 +213,9 @@ export async function GET(request: NextRequest) {
 
     // 2. chargeMap 생성 (lines 포함)
     const chargeService = new ChargeService();
-    const chargeMap = await chargeService.getChargeMap(orderIds);
+    const chargeMap = await chargeService.getChargeMapFix(orderIds);
+
+    console.log("chargeMap-->", chargeMap);
 
     // 3. 주문+배차+운임 데이터 병합
     const final = result.map(o => ({

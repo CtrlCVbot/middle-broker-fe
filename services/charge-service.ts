@@ -95,6 +95,7 @@ export class ChargeService {
           group.lines = lines;
         }
       }
+
     }
 
     // 3. chargeMap 생성
@@ -102,6 +103,170 @@ export class ChargeService {
       chargeGroupsResult.map(cg => [cg.orderId, this.parseChargeSummary(cg.summary)])
     );
   }
+
+  async getChargeMapFix(orderIds: string[]): Promise<Map<string, IOrderCharge>> {
+    if (!orderIds || orderIds.length === 0) return new Map();
+
+    // 단일 쿼리로 모든 데이터 조회 (N+1 문제 해결)
+    const result = await db
+      .select({
+        orderId: chargeGroups.orderId,
+        groupId: chargeGroups.id,
+        stage: chargeGroups.stage,
+        reason: chargeGroups.reason,
+        description: chargeGroups.description,
+        isLocked: chargeGroups.isLocked,
+        lineId: chargeLines.id,
+        side: chargeLines.side,
+        amount: chargeLines.amount,
+        memo: chargeLines.memo,
+        taxRate: chargeLines.taxRate,
+        taxAmount: chargeLines.taxAmount,
+      })
+      .from(chargeGroups)
+      .leftJoin(chargeLines, eq(chargeLines.groupId, chargeGroups.id)) // ✅ 올바른 JOIN
+      .where(inArray(chargeGroups.orderId, orderIds));
+      
+      
+    console.log("!!!result-->", JSON.stringify(result));
+    // 클라이언트에서 효율적 그룹화 및 집계
+    const chargeMap = new Map<string, IOrderCharge>();
+    
+    for (const row of result) {
+      if (!chargeMap.has(row.orderId)) {
+        chargeMap.set(row.orderId, {
+          groups: [],
+          summary: { totalAmount: 0, salesAmount: 0, purchaseAmount: 0, profit: 0 }
+        });
+      }
+      
+      const orderCharge = chargeMap.get(row.orderId)!;
+      let group = orderCharge.groups.find(g => g.groupId === row.groupId);
+      
+      if (!group) {
+        group = {
+          groupId: row.groupId,
+          stage: row.stage,
+          reason: row.reason,
+          description: row.description ?? '',
+          isLocked: row.isLocked,
+          lines: [],
+          totalAmount: 0,
+          salesAmount: 0,
+          purchaseAmount: 0
+        };
+        orderCharge.groups.push(group);
+      }
+      
+      if (row.lineId) {
+        const line = {
+          id: row.lineId,
+          side: row.side as 'sales' | 'purchase',
+          amount: Number(row.amount) || 0,
+          memo: row.memo ?? '',
+          taxRate: Number(row.taxRate) || 0,
+          taxAmount: Number(row.taxAmount) || 0
+        };
+        group.lines.push(line);
+        
+        // 실시간 집계 계산 (중복 계산 방지)
+        group.totalAmount += line.amount;
+        orderCharge.summary.totalAmount += line.amount;
+        
+        if (line.side === 'sales') {
+          group.salesAmount += line.amount;
+          orderCharge.summary.salesAmount += line.amount;
+        } else {
+          group.purchaseAmount += line.amount;
+          orderCharge.summary.purchaseAmount += line.amount;
+        }
+      }
+    }
+    
+    // 최종 profit 계산
+    for (const [, orderCharge] of chargeMap) {
+      orderCharge.summary.profit = orderCharge.summary.salesAmount - orderCharge.summary.purchaseAmount;
+    }
+    
+    return chargeMap;
+  }
+
+  // async getChargeMapFix01(orderIds: string[]): Promise<Map<string, IOrderCharge>> {
+  //   if (!orderIds || orderIds.length === 0) return new Map();
+  
+  //   // 1. chargeGroupsResult 조회
+  //   const chargeGroupsResult = await db
+  //     .select({
+  //       orderId: chargeGroups.orderId,
+  //       //groupId: chargeGroups.id,
+  //       summary: this.buildChargeSummarySQL()
+  //     })
+  //     .from(chargeGroups)
+  //     .where(inArray(chargeGroups.orderId, orderIds))
+  //     .groupBy(chargeGroups.orderId);
+  
+  //   // 2. groupId 목록 수집
+  //   const groupIds = chargeGroupsResult.map(g => g.groupId);
+  
+  //   // 3. chargeLines를 groupId in (...)로 한방 조회
+  //   const chargeLinesResult = await db
+  //     .select()
+  //     .from(chargeLines)
+  //     .where(inArray(chargeLines.groupId, groupIds));
+  
+  //   // 4. groupId → lines[] 매핑
+  //   const linesMap = new Map<string, typeof chargeLines[]>();
+  //   for (const line of chargeLinesResult) {
+  //     const groupId = line.groupId;
+  //     if (!linesMap.has(groupId)) {
+  //       linesMap.set(groupId, []);
+  //     }
+  //     linesMap.get(groupId)!.push(line as any);
+  //   }
+  
+  //   // 5. group에 lines 삽입
+  //   for (const cg of chargeGroupsResult) {
+  //     const groupId = cg.groupId;
+  //     const lines = linesMap.get(groupId) ?? [];
+  //     const parsedSummary = typeof cg.summary === 'string' 
+  //       ? JSON.parse(cg.summary) 
+  //       : cg.summary;
+  //     parsedSummary.lines = lines;
+  //     cg.summary = parsedSummary;
+  //   }
+  
+  //   // 6. 결과 매핑
+  //   const result = new Map<string, IOrderCharge>();
+  //   for (const cg of chargeGroupsResult) {
+  //     const parsed = this.parseChargeSummary(cg.summary);
+  //     result.set(cg.orderId, parsed);
+  //   }
+  
+  //   return result;
+  // }
+
+  async getChargeMapFix02(orderIds: string[]): Promise<Map<string, IOrderCharge>> {
+    if (!orderIds || orderIds.length === 0) return new Map();
+  
+    // chargeGroupsResult에 lines가 이미 포함되어 있음
+    const chargeGroupsResult = await db
+      .select({
+        orderId: chargeGroups.orderId,
+        summary: this.buildChargeSummarySQL()
+      })
+      .from(chargeGroups)
+      .where(inArray(chargeGroups.orderId, orderIds))
+      .groupBy(chargeGroups.orderId);
+  
+    // N+1 제거! → chargeLines 별도 쿼리 제거
+
+    console.log("chargeGroupsResult-->", JSON.stringify(chargeGroupsResult));
+  
+    return new Map(
+      chargeGroupsResult.map(cg => [cg.orderId, this.parseChargeSummary(cg.summary)])
+    );
+  }
+  
 
   async getOrderCharge(orderId: string): Promise<IOrderCharge> {
     const map = await this.getChargeMap([orderId]);
