@@ -155,7 +155,7 @@ interface IBrokerChargeState {
   openSettlementFormForEdit: (bundleId: string) => Promise<void>;
   updateSalesBundleData: (id: string, formData: ISettlementFormData, reason?: string) => Promise<boolean>;
   deleteSalesBundleData: (id: string) => Promise<boolean>;
-  completeSalesBundleData: (id: string) => Promise<boolean>;
+  completeSalesBundleData: (id: string, reason?: string) => Promise<boolean>;
 
   // 새로 추가: 추가금 관련 액션들
   fetchBundleFreightList: (bundleId: string) => Promise<ISalesBundleItemWithDetails[]>;
@@ -912,17 +912,36 @@ export const useBrokerChargeStore = create<IBrokerChargeState>((set, get) => ({
         // 필요시 추가 필드 변환
       };
       
+      console.log('정산 완료 처리 시작:', id, updateInput);
+      
+      // API 호출
       await updateSalesBundle(id, updateInput, reason);
+      
+      console.log('정산 완료 처리 성공:', id);
+      
       set({ isLoading: false });
-      // 성공 시 sales bundles 목록 새로고침
-      await get().fetchSalesBundles();
+      
+      // 성공 시 sales bundles 목록 새로고침 (에러 처리 추가)
+      try {
+        await get().fetchSalesBundles();
+      } catch (refreshError) {
+        console.warn('sales bundles 목록 새로고침 실패:', refreshError);
+        // 새로고침 실패는 전체 작업 실패로 처리하지 않음
+      }
+      
       return true;
     } catch (error) {
       console.error('sales bundle 업데이트 중 오류 발생:', error);
+      
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'sales bundle 업데이트에 실패했습니다.';
+      
       set({ 
-        error: error instanceof Error ? error.message : 'sales bundle 업데이트에 실패했습니다.',
+        error: errorMessage,
         isLoading: false 
       });
+      
       return false;
     }
   },

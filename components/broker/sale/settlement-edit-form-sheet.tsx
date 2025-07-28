@@ -1,7 +1,7 @@
 "use client";
 
 //react
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 //ui
@@ -256,10 +256,14 @@ export function SettlementEditFormSheet() {
       if (customEvent.detail?.orders && Array.isArray(customEvent.detail.orders)) {
         console.log("정산 폼 열기 이벤트 수신", customEvent.detail.orders.length, "개의 화물");
         
-        // 다음 렌더 사이클에서 상태 업데이트 (경쟁 상태 방지)
-        // setTimeout(() => {
-        //   openForm(customEvent.detail.orders);
-        // }, 0);
+        // 로딩 상태 확인
+        if (loading) {
+          toast.error("처리 중입니다. 잠시 후 다시 시도해주세요.");
+          return;
+        }
+        
+        // 즉시 폼 열기 (setTimeout 제거)
+        // openForm(customEvent.detail.orders);
       }
     };
     
@@ -270,7 +274,7 @@ export function SettlementEditFormSheet() {
     return () => {
       window.removeEventListener('openSettlementForm', handleOpenSettlementForm);
     };
-  }, []);
+  }, [loading]); // ✅ loading 상태를 의존성으로 추가
 
   // 편집 모드일 때 기존 데이터를 폼에 로드
   useEffect(() => {
@@ -399,7 +403,7 @@ export function SettlementEditFormSheet() {
     if (isEditMode && editingSalesBundle && isOpen) {
       fetchBundleAdjustments(editingSalesBundle.id);
     }
-  }, [isEditMode, editingSalesBundle, isOpen, fetchBundleAdjustments]); // ✅ 모든 의존성 추가
+  }, [isEditMode, editingSalesBundle?.id, isOpen]); // ✅ editingSalesBundle.id만 의존성으로 사용
 
   // 정산 대사 모드에서 화물 목록 로딩
   useEffect(() => {
@@ -408,7 +412,7 @@ export function SettlementEditFormSheet() {
     if (isEditMode && selectedSalesBundleId) {
       fetchBundleFreightList(selectedSalesBundleId);
     }
-  }, [isEditMode, selectedSalesBundleId, fetchBundleFreightList]); // ✅ 모든 의존성 추가
+  }, [isEditMode, selectedSalesBundleId]); // ✅ fetchBundleFreightList 제거 (store 함수는 안정적)
 
   
 
@@ -606,22 +610,77 @@ export function SettlementEditFormSheet() {
   };
 
   // 정산 완료
-  const handleComplete = async () => {
-    if (!selectedSalesBundleId) return;
+  const handleComplete = useCallback(async () => {
+    console.log("=== handleComplete 함수 시작 ===");
+    console.log("정산 완료 버튼 클릭");
+    console.log("selectedSalesBundleId:", selectedSalesBundleId);
+    console.log("loading 상태:", loading);
+    
+    if (!selectedSalesBundleId) {
+      console.log("정산 ID가 없음 - 함수 종료");
+      toast.error("정산 ID가 없습니다.");
+      return;
+    }
+    
+    // 다이얼로그 닫기
+    console.log("다이얼로그 닫기");
     setIsCompleteDialogOpen(false);
+    
+    // 로딩 상태 설정
+    console.log("로딩 상태 설정");
+    setLoading(true);
+    
     try {
-
-      const success = await completeSalesBundleData(selectedSalesBundleId);
+      console.log("정산 완료 처리 시작:", selectedSalesBundleId);
+      
+      // 타임아웃 설정 (30초)
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('요청 시간이 초과되었습니다.')), 30000);
+      });
+      
+      // 실제 API 호출
+      console.log("completeSalesBundleData 호출 시작");
+      const completePromise = completeSalesBundleData(selectedSalesBundleId);
+      
+      // 타임아웃과 API 호출 중 먼저 완료되는 것 처리
+      const success = await Promise.race([completePromise, timeoutPromise]);
+      
+      console.log("API 호출 결과:", success);
+      
       if (success) {
+        console.log("정산 완료 성공");
         toast.success("정산이 성공적으로 완료되었습니다.");
-        closeSettlementForm();
+        // 폼 닫기 전에 약간의 지연 추가
+        setTimeout(() => {
+          console.log("폼 닫기");
+          closeSettlementForm();
+        }, 500);
       } else {
+        console.log("정산 완료 실패");
         toast.error("정산 완료에 실패했습니다.");
       }
     } catch (error) {
-      toast.error("정산 완료 중 오류가 발생했습니다.");
+      console.error("정산 완료 중 오류 발생:", error);
+      
+      // 에러 타입에 따른 다른 메시지 표시
+      if (error instanceof Error) {
+        if (error.message.includes('시간이 초과')) {
+          toast.error("요청 시간이 초과되었습니다. 다시 시도해주세요.");
+        } else if (error.message.includes('네트워크')) {
+          toast.error("네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.");
+        } else {
+          toast.error(`정산 완료 중 오류가 발생했습니다: ${error.message}`);
+        }
+      } else {
+        toast.error("정산 완료 중 알 수 없는 오류가 발생했습니다.");
+      }
+    } finally {
+      // 로딩 상태 해제
+      console.log("로딩 상태 해제");
+      setLoading(false);
+      console.log("=== handleComplete 함수 종료 ===");
     }
-  };
+  }, [selectedSalesBundleId, loading, completeSalesBundleData, closeSettlementForm]);
 
   // 화주별 그룹화
   const shipperGroups = useMemo(() => {
@@ -702,9 +761,14 @@ export function SettlementEditFormSheet() {
   const hasTax = useWatch({ control: form.control, name: 'hasTax' });
   const calculatedTotals = useMemo(() => {    
 
-    console.log("calculatedTotals 호출");
-    console.log("isEditMode:", isEditMode);
-    console.log("editingSalesBundle:", editingSalesBundle);
+    console.log("calculatedTotals 호출 - 의존성 확인:", {
+      ordersLength: orders?.length,
+      isEditMode,
+      editingSalesBundleId: editingSalesBundle?.id,
+      hasTax,
+      bundleAdjustmentsLength: bundleAdjustments?.length,
+      bundleFreightListLength: bundleFreightList?.length
+    });
 
     if (isEditMode && editingSalesBundle) {
 
@@ -798,8 +862,7 @@ export function SettlementEditFormSheet() {
       tax, 
       totalAmount 
     };
-  //}, [orders, isEditMode, editingSalesBundle, hasTax]);
-}, [orders, isEditMode, editingSalesBundle, hasTax, bundleAdjustments, bundleFreightList]);
+  }, [orders?.length, isEditMode, editingSalesBundle?.id, hasTax, bundleAdjustments?.length, bundleFreightList?.length]); // ✅ 배열 길이만 의존성으로 사용
 
 
   console.log('orders--!!:', orders);
@@ -831,14 +894,14 @@ export function SettlementEditFormSheet() {
   };
 
   // 디버깅용 useEffect 추가
-  useEffect(() => {
-    console.log("폼 상태 변경:", {
-      isEditMode,
-      editingSalesBundle: editingSalesBundle?.id,
-      isOpen,
-      selectedSalesBundleId
-    });
-  }, [isEditMode, editingSalesBundle, isOpen, selectedSalesBundleId]);
+  // useEffect(() => {
+  //   console.log("폼 상태 변경:", {
+  //     isEditMode,
+  //     editingSalesBundle: editingSalesBundle?.id,
+  //     isOpen,
+  //     selectedSalesBundleId
+  //   });
+  // }, [isEditMode, editingSalesBundle, isOpen, selectedSalesBundleId]);
 
   if (!isOpen) return null;
 
@@ -848,13 +911,17 @@ export function SettlementEditFormSheet() {
       open={isOpen} 
       onOpenChange={(open) => {
         if (!open) {
+          // 로딩 상태 확인
+          if (loading) {
+            toast.error("처리 중입니다. 잠시 후 다시 시도해주세요.");
+            return;
+          }
+          
           // 먼저 폼 초기화
           form.reset();
           
-          // 다음 렌더 사이클에서 상태 업데이트 (경쟁 상태 방지)
-          setTimeout(() => {
-            closeSettlementForm();
-          }, 0);
+          // 즉시 폼 닫기 (setTimeout 제거)
+          closeSettlementForm();
         }
       }}
     >
@@ -1533,7 +1600,19 @@ export function SettlementEditFormSheet() {
                       <Button 
                         type="button" 
                         variant="default"
-                        onClick={() => setIsCompleteDialogOpen(true)}
+                        onClick={() => {
+                          console.log('정산 완료 버튼 클릭됨');
+                          
+                          // 중복 클릭 방지
+                          if (loading) {
+                            console.log('로딩 중이므로 클릭 무시');
+                            toast.error("처리 중입니다. 잠시 후 다시 시도해주세요.");
+                            return;
+                          }
+                          
+                          console.log('정산 완료 다이얼로그 열기');
+                          setIsCompleteDialogOpen(true);
+                        }}
                         disabled={loading}
                         size="sm"
                         className="bg-blue-500 hover:bg-blue-700 hover:cursor-pointer"
