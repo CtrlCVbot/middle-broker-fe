@@ -5,7 +5,7 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   FormControl,
@@ -154,66 +154,72 @@ export function DriverInfoSection({
               name="driverName"
               render={({ field }) => (
                 <FormItem>
-                  <Popover>
-                    <PopoverTrigger asChild>
+                  <Dialog>
+                    <DialogTrigger asChild>
                       <Button type="button">
                         <Search className="h-4 w-4 mr-2" />
                         차량 조회
                       </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0" align="start">
-                      <div className="border-b p-2">
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>차량 검색</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
                         <div className="flex items-center gap-2">
                           <Input
                             placeholder="차량 검색"
-                            className="h-8"
-                            type="search"
+                            className="h-9"
+                            type="text"
                             value={driverSearchTerm}
                             onChange={e => setDriverSearchTerm(e.target.value)}
-                            // onChange={e => setDriverSearchTerm(e.target.value)}
-                            // //onChange={e => onDriverSearch(e.target.value)}
-                            // onKeyDown={e => {
-                            //   if (e.key === 'Enter') {
-                            //     onDriverSearch(driverSearchTerm);
-                            //   }
-                            // }}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') {
+                                onDriverSearch(driverSearchTerm);
+                              }
+                            }}
+                            autoFocus
                           />
-                          <Button size="sm" className="h-8 px-2" onClick={() => onDriverSearch(driverSearchTerm)}>검색</Button>
+                          <Button 
+                            size="sm" 
+                            className="h-9 px-3" 
+                            onClick={() => onDriverSearch(driverSearchTerm)}
+                          >
+                            검색
+                          </Button>
                         </div>
-                      </div>
-                      <ScrollArea className="h-60">
-                        <div className="p-2">
-                          {drivers.map((driver) => (
-                            <div
-                              key={driver.id}
-                              className="flex items-center justify-between px-2 py-1.5 hover:bg-secondary/50 rounded-md cursor-pointer"
-                              onClick={() => {                                
-                                //console.log("driver!!!", driver);
-                                //console.log("form!!!", form.getValues());
-                                field.onChange(driver.name);
-                                form.setValue("driverBusinessNumber", driver.businessNumber || "-");
-                                onSelectDriver(driver);
-                              }}
-                            >
-                              <div className="flex flex-col">
-                                <span className="font-medium">{driver.name}</span>
-                                <span className="text-xs text-muted-foreground">{driver.businessNumber}</span>
+                        <ScrollArea className="h-60 border rounded-md">
+                          <div className="p-2">
+                            {drivers.map((driver) => (
+                              <div
+                                key={driver.id}
+                                className="flex items-center justify-between px-2 py-1.5 hover:bg-secondary/50 rounded-md cursor-pointer"
+                                onClick={() => {                                
+                                  console.log("driver!!!", driver);
+                                  console.log("form!!!", form.getValues());
+                                  onSelectDriver(driver);
+                                }}
+                              >
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{driver.name}</span>
+                                  <span className="text-xs text-muted-foreground">{driver.businessNumber}</span>
+                                </div>
+                                {driver.name === field.value && (
+                                  <CheckCircle className="h-4 w-4 text-primary" />
+                                )}
                               </div>
-                              {driver.name === field.value && (
-                                <CheckCircle className="h-4 w-4 text-primary" />
-                              )}
-                            </div>
-                          ))}
-                          {isLoadingDrivers && (
-                            <div className="text-xs text-muted-foreground p-2">검색 중...</div>
-                          )}
-                          {!isLoadingDrivers && drivers.length === 0 && (
-                            <div className="text-xs text-muted-foreground p-2">검색 결과가 없습니다.</div>
-                          )}
-                        </div>
-                      </ScrollArea>
-                    </PopoverContent>
-                  </Popover>
+                            ))}
+                            {isLoadingDrivers && (
+                              <div className="text-xs text-muted-foreground p-2">검색 중...</div>
+                            )}
+                            {!isLoadingDrivers && drivers.length === 0 && (
+                              <div className="text-xs text-muted-foreground p-2">검색 결과가 없습니다.</div>
+                            )}
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </FormItem>
               )}
             />

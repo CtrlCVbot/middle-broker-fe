@@ -5,7 +5,7 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   FormControl,
@@ -154,20 +154,23 @@ export function CompanyInfoSection({
               name="shipperName"
               render={({ field }) => (
                 <FormItem>
-                  <Popover>
-                    <PopoverTrigger asChild>
+                  <Dialog>
+                    <DialogTrigger asChild>
                       <Button type="button">
                         <Search className="h-4 w-4 mr-2" />
                         회사 조회
                       </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0" align="start">
-                      <div className="border-b p-2">
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>회사 검색</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
                         <div className="flex items-center gap-2">
                           <Input
                             placeholder="회사명 검색"
-                            className="h-8"
-                            type="search"
+                            className="h-9"
+                            type="text"
                             value={companySearchTerm}
                             onChange={e => setCompanySearchTerm(e.target.value)}
                             onKeyDown={e => {
@@ -175,51 +178,58 @@ export function CompanyInfoSection({
                                 onCompanySearch();
                               }
                             }}
+                            autoFocus
                           />
-                          <Button size="sm" className="h-8 px-2" onClick={onCompanySearch}>검색</Button>
+                          <Button 
+                            size="sm" 
+                            className="h-9 px-3" 
+                            onClick={onCompanySearch}
+                          >
+                            검색
+                          </Button>
                         </div>
-                      </div>
-                      <ScrollArea className="h-60">
-                        <div className="p-2">
-                          {companies.map((company) => (
-                            <div
-                              key={company.id}
-                              className="flex items-center justify-between px-2 py-1.5 hover:bg-secondary/50 rounded-md cursor-pointer"
-                              onClick={() => {
-                                // form.reset({
-                                //   ...form.getValues(),
-                                //   // shipperName: company.name,
-                                //   // businessNumber: company.businessNumber,
-                                //   // shipperCeo: company.ceoName,
-                                //   // accountHolder: company.bankAccountHolder,
-                                //   // accountNumber: company.bankAccountNumber,
-                                //   // bankCode: company.bankCode,
-                                // });
-                                console.log("company!!!", company);
-                                console.log("form!!!", form.getValues());
-                                
-                                onSelectCompany(company);
-                              }}
-                            >
-                              <div className="flex flex-col">
-                                <span className="font-medium">{company.name}</span>
-                                <span className="text-xs text-muted-foreground">{company.businessNumber}</span>
+                        <ScrollArea className="h-60 border rounded-md">
+                          <div className="p-2">
+                            {companies.map((company) => (
+                              <div
+                                key={company.id}
+                                className="flex items-center justify-between px-2 py-1.5 hover:bg-secondary/50 rounded-md cursor-pointer"
+                                onClick={() => {
+                                  // form.reset({
+                                  //   ...form.getValues(),
+                                  //   // shipperName: company.name,
+                                  //   // businessNumber: company.businessNumber,
+                                  //   // shipperCeo: company.ceoName,
+                                  //   // accountHolder: company.bankAccountHolder,
+                                  //   // accountNumber: company.bankAccountNumber,
+                                  //   // bankCode: company.bankCode,
+                                  // });
+                                  console.log("company!!!", company);
+                                  console.log("form!!!", form.getValues());
+                                  
+                                  onSelectCompany(company);
+                                }}
+                              >
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{company.name}</span>
+                                  <span className="text-xs text-muted-foreground">{company.businessNumber}</span>
+                                </div>
+                                {company.name === field.value && (
+                                  <CheckCircle className="h-4 w-4 text-primary" />
+                                )}
                               </div>
-                              {company.name === field.value && (
-                                <CheckCircle className="h-4 w-4 text-primary" />
-                              )}
-                            </div>
-                          ))}
-                          {isLoadingCompanies && (
-                            <div className="text-xs text-muted-foreground p-2">검색 중...</div>
-                          )}
-                          {!isLoadingCompanies && companies.length === 0 && (
-                            <div className="text-xs text-muted-foreground p-2">검색 결과가 없습니다.</div>
-                          )}
-                        </div>
-                      </ScrollArea>
-                    </PopoverContent>
-                  </Popover>
+                            ))}
+                            {isLoadingCompanies && (
+                              <div className="text-xs text-muted-foreground p-2">검색 중...</div>
+                            )}
+                            {!isLoadingCompanies && companies.length === 0 && (
+                              <div className="text-xs text-muted-foreground p-2">검색 결과가 없습니다.</div>
+                            )}
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </FormItem>
               )}
             />

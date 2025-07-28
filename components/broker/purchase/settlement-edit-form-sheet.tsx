@@ -1012,7 +1012,7 @@ export function SettlementEditFormSheet() {
         }
       }}
     >
-      <SheetContent className="sm:max-w-3xl overflow-y-auto p-0" side="right">
+      <SheetContent className="sm:max-w-3xl p-0" side="right">
         <SheetHeader className="p-6 pb-2">
           <SheetTitle className="text-xl font-semibold">
             {isEditMode ? 
