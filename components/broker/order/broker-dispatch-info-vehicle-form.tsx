@@ -22,10 +22,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { 
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { 
   Command,
   CommandInput,
@@ -232,7 +234,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
     return cleanup;
   }, [searchTerm, debouncedSearch]);
   
-  // 팝오버가 닫힐 때 검색 결과 초기화
+  // 다이얼로그가 닫힐 때 검색 결과 초기화
   useEffect(() => {
     if (!isOpen) {
       clearSearchResults();
@@ -271,7 +273,7 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
     form.trigger('vehicle.type');
     form.trigger('vehicle.weight');
     
-    // 팝오버 닫기
+    // 다이얼로그 닫기
     setIsOpen(false);
   };
   
@@ -421,8 +423,8 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
             <div className="grid grid-cols-3 gap-3 items-center mb-3">
               <Label className="text-muted-foreground text-sm">차주 조회</Label>
               <div className="col-span-2">
-                <Popover open={isOpen} onOpenChange={setIsOpen}>
-                  <PopoverTrigger asChild>
+                <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                  <DialogTrigger asChild>
                     <Button
                       variant="outline"
                       role="combobox"
@@ -431,42 +433,47 @@ export function BrokerOrderDriverInfoEditForm({ initialData, onSave, onCancel }:
                       차주 검색
                       <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[300px] p-0">
-                    <Command>
-                      <CommandInput 
-                        placeholder="차주 검색..." 
-                        value={searchTerm}
-                        onValueChange={handleSearchChange}
-                      />
-                      {isSearching && (
-                        <div className="flex items-center justify-center py-2">
-                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                          <span className="ml-2 text-sm text-muted-foreground">검색 중...</span>
-                        </div>
-                      )}
-                      {searchError && (
-                        <div className="py-2 px-3 text-sm text-red-500">
-                          오류: {searchError}
-                        </div>
-                      )}
-                      <CommandEmpty>차주를 찾을 수 없습니다.</CommandEmpty>
-                      <CommandGroup>
-                        <CommandList>
-                          {formattedDrivers.map(driver => (
-                            <CommandItem
-                              key={driver.id}
-                              value={driver.name}
-                              onSelect={() => selectDriver(driver)}
-                            >
-                              {driver.name} ({driver.vehicle.licensePlate})/{driver.vehicle.weight}/{driver.vehicle.type}
-                            </CommandItem>
-                          ))}
-                        </CommandList>
-                      </CommandGroup>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>차주 검색</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <Command>
+                        <CommandInput 
+                          placeholder="차주 검색..." 
+                          value={searchTerm}
+                          onValueChange={handleSearchChange}
+                        />
+                        {isSearching && (
+                          <div className="flex items-center justify-center py-2">
+                            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                            <span className="ml-2 text-sm text-muted-foreground">검색 중...</span>
+                          </div>
+                        )}
+                        {searchError && (
+                          <div className="py-2 px-3 text-sm text-red-500">
+                            오류: {searchError}
+                          </div>
+                        )}
+                        <CommandEmpty>차주를 찾을 수 없습니다.</CommandEmpty>
+                        <CommandGroup>
+                          <CommandList>
+                            {formattedDrivers.map(driver => (
+                              <CommandItem
+                                key={driver.id}
+                                value={driver.name}
+                                onSelect={() => selectDriver(driver)}
+                              >
+                                {driver.name} ({driver.vehicle.licensePlate})/{driver.vehicle.weight}/{driver.vehicle.type}
+                              </CommandItem>
+                            ))}
+                          </CommandList>
+                        </CommandGroup>
+                      </Command>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
             
