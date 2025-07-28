@@ -36,7 +36,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Calendar } from "@/components/ui/calendar";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { 
@@ -53,6 +53,7 @@ import { BundleAdjustmentManager } from "@/components/broker/purchase/bundle-adj
 import { ItemAdjustmentDialog } from "@/components/broker/purchase/item-adjustment-dialog";
 import { CompanyInfoSection } from "@/components/broker/purchase/company-info-section";
 import { ManagerInfoSection } from "@/components/broker/purchase/manager-info-section";
+import { DriverInfoSection } from "@/components/broker/purchase/driver-info-section";
 
 //types
 import { IBrokerOrder } from "@/types/broker-order";
@@ -70,7 +71,7 @@ import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { DriverInfoSection } from "./driver-info-section";
+
 //import { useDrivers } from "@/hooks/use-drivers";
 
 const PaymentMethod = [
@@ -211,7 +212,7 @@ export function SettlementEditFormSheet() {
 
 
   const { isOpen, selectedItems: orders, formData } = settlementForm;
-  console.log('orders!:', orders);
+  
   
   // 편집 모드 여부 확인
   const isEditMode = selectedPurchaseBundleId !== null;
@@ -229,6 +230,10 @@ export function SettlementEditFormSheet() {
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
   //const driversQuery = useBrokerDriverStore.getState().searchDrivers(driverSearchTerm);
   const { searchDrivers, searchResults, isSearching, searchError, clearSearchResults  } = useBrokerDriverStore();
+
+  //popver 편집 추가 
+  // 시간 편집 Popover 상태
+  const [isTimePopoverOpen, setIsTimePopoverOpen] = useState(false);
     
   
   // 담당자 관리 store 사용
@@ -306,7 +311,7 @@ export function SettlementEditFormSheet() {
       console.log('편집 모드: 기존 데이터 로드', editingPurchaseBundle);
       
       //화주 데이터 로드
-      setSelectedCompanyId(editingPurchaseBundle.companyId || '');
+      //setSelectedCompanyId(editingPurchaseBundle.companyId || '');
       //form.setValue('shipperName', editingPurchaseBundle.companySnapshot?.name || '');
       //form.setValue('businessNumber', editingPurchaseBundle.companySnapshot?.businessNumber || '');
       //form.setValue('shipperCeo', editingPurchaseBundle.companySnapshot?.ceoName || '');
@@ -333,6 +338,9 @@ export function SettlementEditFormSheet() {
       //form.setValue('bankName', editingPurchaseBundle.bankCode || '');
       //form.setValue('accountHolder', editingPurchaseBundle.bankAccountHolder || '');
       //form.setValue('accountNumber', editingPurchaseBundle.bankAccount || '');
+
+      // 운전사 데이터 로드
+      setSelectedDriverId(editingPurchaseBundle.driverId || '');
       form.setValue('driverName', editingPurchaseBundle.driverName || '');
       form.setValue('driverBusinessNumber', editingPurchaseBundle.driverBusinessNumber || '');
       //form.setValue('driverCeo', editingPurchaseBundle.driverCeo || '');
@@ -1268,17 +1276,16 @@ export function SettlementEditFormSheet() {
                                       </FormControl>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-auto p-0" align="start">
-                                      <CalendarComponent
+                                      <Calendar
                                         mode="single"
                                         selected={field.value ? new Date(field.value) : undefined}
                                         onSelect={(e) => {
                                           field.onChange(e);
                                           form.setValue('startDate', e ? format(e, 'yyyy-MM-dd') : '');
                                         }}
-                                        
+                                        initialFocus                                       
                                         //disabled={(date) => date < new Date()}
                                         locale={ko}
-                                        initialFocus
                                       />
                                     </PopoverContent>
                                   </Popover>
@@ -1310,7 +1317,7 @@ export function SettlementEditFormSheet() {
                                       </FormControl>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-auto p-0" align="start">
-                                      <CalendarComponent
+                                      <Calendar
                                         mode="single"
                                         selected={field.value ? new Date(field.value) : undefined}
                                         onSelect={(e) => {
@@ -1353,7 +1360,7 @@ export function SettlementEditFormSheet() {
                                       </FormControl>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-auto p-0" align="start">
-                                      <CalendarComponent
+                                      <Calendar
                                         mode="single"
                                         selected={field.value}
                                         onSelect={field.onChange}
@@ -1376,11 +1383,12 @@ export function SettlementEditFormSheet() {
                               name="invoiceIssuedAt"
                               render={({ field }) => (
                                 <FormItem>
-                                  <div className="text-sm font-medium">세금계산서 발행일</div>
+                                  <div className="text-sm font-medium">세금계산서 발행일1</div>
                                   <Popover>
                                     <PopoverTrigger asChild>
                                       <FormControl>
                                         <Button
+                                          type="button"
                                           variant="outline"
                                           className="w-full h-9 pl-3 text-left font-normal"
                                         >
@@ -1394,7 +1402,7 @@ export function SettlementEditFormSheet() {
                                       </FormControl>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-auto p-0" align="start">
-                                      <CalendarComponent
+                                      <Calendar
                                         mode="single"
                                         selected={field.value ? new Date(field.value) : undefined}
                                         onSelect={(e) => {
@@ -1404,7 +1412,7 @@ export function SettlementEditFormSheet() {
                                         
                                         //disabled={(date) => date < new Date()}
                                         locale={ko}
-                                        initialFocus
+                                        //initialFocus
                                         captionLayout="dropdown"
                                       />
                                     </PopoverContent>
@@ -1437,7 +1445,7 @@ export function SettlementEditFormSheet() {
                                       </FormControl>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-auto p-0" align="start">
-                                      <CalendarComponent
+                                      <Calendar
                                         mode="single"
                                         selected={field.value ? new Date(field.value) : undefined}
                                         onSelect={(e) => {

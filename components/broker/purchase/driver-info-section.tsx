@@ -169,8 +169,9 @@ export function DriverInfoSection({
                             className="h-8"
                             type="search"
                             value={driverSearchTerm}
-                            //onChange={e => setDriverSearchTerm(e.target.value)}
-                            onChange={e => onDriverSearch(e.target.value)}
+                            onChange={e => setDriverSearchTerm(e.target.value)}
+                            // onChange={e => setDriverSearchTerm(e.target.value)}
+                            // //onChange={e => onDriverSearch(e.target.value)}
                             // onKeyDown={e => {
                             //   if (e.key === 'Enter') {
                             //     onDriverSearch(driverSearchTerm);
@@ -187,9 +188,10 @@ export function DriverInfoSection({
                               key={driver.id}
                               className="flex items-center justify-between px-2 py-1.5 hover:bg-secondary/50 rounded-md cursor-pointer"
                               onClick={() => {                                
-                                console.log("driver!!!", driver);
-                                console.log("form!!!", form.getValues());
-                                
+                                //console.log("driver!!!", driver);
+                                //console.log("form!!!", form.getValues());
+                                field.onChange(driver.name);
+                                form.setValue("driverBusinessNumber", driver.businessNumber || "-");
                                 onSelectDriver(driver);
                               }}
                             >
