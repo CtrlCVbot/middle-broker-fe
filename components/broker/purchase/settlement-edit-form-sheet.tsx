@@ -51,6 +51,7 @@ import {
 import { FreightListTable } from "@/components/broker/purchase/freight-list-table";
 import { BundleAdjustmentManager } from "@/components/broker/purchase/bundle-adjustment-manager";
 import { ItemAdjustmentDialog } from "@/components/broker/purchase/item-adjustment-dialog";
+import { ItemDeleteConfirmDialog } from "@/components/broker/purchase/item-delete-confirm-dialog";
 import { CompanyInfoSection } from "@/components/broker/purchase/company-info-section";
 import { ManagerInfoSection } from "@/components/broker/purchase/manager-info-section";
 import { DriverInfoSection } from "@/components/broker/purchase/driver-info-section";
@@ -254,8 +255,8 @@ export function SettlementEditFormSheet() {
     open: false
   });
 
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
+
+
 
   // 개별 추가금 삭제 다이얼로그 상태
   const [itemDeleteDialog, setItemDeleteDialog] = useState<{
@@ -269,15 +270,7 @@ export function SettlementEditFormSheet() {
     setItemDeleteDialog({ open: true, itemId, adjustmentId });
   };
 
-  const handleConfirmItemDelete = () => {
-    const { itemId, adjustmentId } = itemDeleteDialog;
-    if (itemId && adjustmentId) {
-      const { removeItemAdjustment } = useBrokerChargeStore.getState();
-      removeItemAdjustment(itemId, adjustmentId);
-      toast.success("추가금이 삭제되었습니다.");
-    }
-    setItemDeleteDialog({ open: false });
-  };
+
   
 
   // 정산 생성 이벤트 리스너 추가
@@ -638,7 +631,7 @@ export function SettlementEditFormSheet() {
   // 정산 삭제 (취소)
   const handleDelete = async () => {
     if (!selectedPurchaseBundleId) return;
-    setIsDeleteDialogOpen(false);
+
     try {
       const success = await deletePurchaseBundleData(selectedPurchaseBundleId);
       if (success) {
@@ -655,7 +648,7 @@ export function SettlementEditFormSheet() {
   // 정산 완료
   const handleComplete = async () => {
     if (!selectedPurchaseBundleId) return;
-    setIsCompleteDialogOpen(false);
+
     try {
 
       const success = await completePurchaseBundleData(selectedPurchaseBundleId);
@@ -1716,7 +1709,12 @@ export function SettlementEditFormSheet() {
                     <Button 
                       type="button" 
                       variant="destructive"
-                      onClick={() => setIsDeleteDialogOpen(true)}
+                      onClick={() => {
+                        console.log('정산 삭제 확인');
+                        if (confirm('정말로 이 정산을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+                          handleDelete();
+                        }
+                      }}
                       disabled={loading}
                       size="sm"
                       className="hover:cursor-pointer"
@@ -1737,7 +1735,12 @@ export function SettlementEditFormSheet() {
                       <Button 
                         type="button" 
                         variant="default"
-                        onClick={() => setIsCompleteDialogOpen(true)}
+                        onClick={() => {
+                          console.log('정산 완료 확인');
+                          if (confirm('정말로 이 정산을 완료하시겠습니까?')) {
+                            handleComplete();
+                          }
+                        }}
                         disabled={loading}
                         size="sm"
                         className="bg-blue-500 hover:bg-blue-700 hover:cursor-pointer"
@@ -1823,40 +1826,16 @@ export function SettlementEditFormSheet() {
       itemId={itemAdjustmentDialog.itemId}
       adjustmentId={itemAdjustmentDialog.adjustmentId}
     />
-    {/* 정산 삭제 확인 ConfirmDialog */}
-    <ConfirmDialog
-      open={isDeleteDialogOpen}
-      onOpenChange={setIsDeleteDialogOpen}
-      title="정산 삭제 확인"
-      description="정말로 이 정산을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
-      confirmText="정산 삭제"
-      cancelText="취소"
-      onConfirm={handleDelete}
-      variant="destructive"
-    />
 
-    {/* 정산 완료 확인 ConfirmDialog */}
-    <ConfirmDialog
-      open={isCompleteDialogOpen}
-      onOpenChange={setIsCompleteDialogOpen}
-      title="정산 완료 확인"
-      description="정말로 이 정산을 완료하시겠습니까?"
-      confirmText="정산 완료"
-      cancelText="취소"
-      onConfirm={handleComplete}
-      variant="default"
-    />
 
-    {/* 개별 추가금 삭제 확인 ConfirmDialog */}
-    <ConfirmDialog
+
+
+    {/* 개별 추가금 삭제 확인 다이얼로그 */}
+    <ItemDeleteConfirmDialog
       open={itemDeleteDialog.open}
       onOpenChange={(open) => setItemDeleteDialog(prev => ({ ...prev, open }))}
-      title="추가금 삭제 확인"
-      description="정말로 이 추가금을 삭제하시겠습니까?"
-      confirmText="삭제"
-      cancelText="취소"
-      onConfirm={handleConfirmItemDelete}
-      variant="destructive"
+      itemId={itemDeleteDialog.itemId}
+      adjustmentId={itemDeleteDialog.adjustmentId}
     />
     </>
   );
