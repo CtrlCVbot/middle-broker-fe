@@ -120,10 +120,10 @@ export function BrokerDriverCard({ driver, onDriverClick }: BrokerDriverCardProp
                 </div>
               </div>
             </div>
-            <div className="flex items-start gap-2">
+            {/* <div className="flex items-start gap-2">
               <MapPin className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
               <span className="line-clamp-2">{driver.address}</span>
-            </div>
+            </div> */}
             <div className="flex items-center gap-2">
               <Building className="h-3.5 w-3.5 text-muted-foreground" />
               <span>

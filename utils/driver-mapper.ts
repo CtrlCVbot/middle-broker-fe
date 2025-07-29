@@ -49,6 +49,8 @@ export function mapDriverFormToApiRequest(formData: any): any {
   return requestData;
 }
 
+
+
 /**
  * API 응답 데이터를 프론트엔드 차주 객체로 변환
  * @param apiResponse API 응답 데이터

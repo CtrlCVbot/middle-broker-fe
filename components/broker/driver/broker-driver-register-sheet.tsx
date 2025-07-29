@@ -260,25 +260,42 @@ export function BrokerDriverRegisterSheet({
           // 서비스 레이어 직접 호출 (driver-service.ts의 registerDriver 함수)
           // getAuthHeaders()를 통해 현재 로그인한 사용자 정보가 자동으로 요청에 포함됨
           const registeredDriver = await registerDriver({
-            basicInfo: {
-              name: data.basicInfo.name,
-              phone: data.basicInfo.phone,
-              businessNumber: data.basicInfo.businessNumber || "0000000000",
-              address: data.basicInfo.address || "",
-              status: data.basicInfo.status,
-              // 은행 정보 추가
-              bankCode: data.basicInfo.bankCode || "",
-              bankAccountNumber: data.basicInfo.bankAccountNumber || "",
-              bankAccountHolder: data.basicInfo.bankAccountHolder || "",
+            // basicInfo: {
+            //   name: data.basicInfo.name,
+            //   phone: data.basicInfo.phone,
+            //   businessNumber: data.basicInfo.businessNumber || "0000000000",
+            //   address: data.basicInfo.address || "",
+            //   status: data.basicInfo.status,
+            //   // 은행 정보 추가
+            //   bankCode: data.basicInfo.bankCode || "",
+            //   bankAccountNumber: data.basicInfo.bankAccountNumber || "",
+            //   bankAccountHolder: data.basicInfo.bankAccountHolder || "",
+            // },
+            // vehicleInfo: {
+            //   vehicleNumber: data.vehicleInfo.vehicleNumber,
+            //   vehicleType: data.vehicleInfo.vehicleType,
+            //   tonnage: data.vehicleInfo.tonnage, // API에서는 vehicleWeight로 매핑됨
+            //   cargoBoxType: data.vehicleInfo.cargoBoxType || "",
+            //   cargoBoxLength: data.vehicleInfo.cargoBoxLength || "",
+            //   manufactureYear: data.vehicleInfo.manufactureYear || ""
+            // }
+            name: data.basicInfo.name,
+            phoneNumber: data.basicInfo.phone,
+            businessNumber: data.basicInfo.businessNumber || "",
+            address: data.basicInfo.address || "",
+            status: data.basicInfo.status as DriverStatus,
+            vehicleNumber: data.vehicleInfo.vehicleNumber,
+            vehicleType: data.vehicleInfo.vehicleType as VehicleType,
+            tonnage: data.vehicleInfo.tonnage as TonnageType,
+            cargoBox: {
+              type: data.vehicleInfo.cargoBoxType || "",
+              length: data.vehicleInfo.cargoBoxLength || ""
             },
-            vehicleInfo: {
-              vehicleNumber: data.vehicleInfo.vehicleNumber,
-              vehicleType: data.vehicleInfo.vehicleType,
-              tonnage: data.vehicleInfo.tonnage, // API에서는 vehicleWeight로 매핑됨
-              cargoBoxType: data.vehicleInfo.cargoBoxType || "",
-              cargoBoxLength: data.vehicleInfo.cargoBoxLength || "",
-              manufactureYear: data.vehicleInfo.manufactureYear || ""
-            }
+            manufactureYear: data.vehicleInfo.manufactureYear || "",
+            // 은행 정보 추가
+            bankCode: data.basicInfo.bankCode || "",
+            bankAccountNumber: data.basicInfo.bankAccountNumber || "",
+            bankAccountHolder: data.basicInfo.bankAccountHolder || "",
           });
           
           console.log("차주 등록 성공:", registeredDriver);

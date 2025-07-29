@@ -156,7 +156,7 @@ export function BrokerDriverBasicInfoForm({
         )}
       />
       
-      <FormField
+      {/* <FormField
         control={form.control}
         name="basicInfo.address"
         render={({ field }) => (
@@ -175,7 +175,7 @@ export function BrokerDriverBasicInfoForm({
             <FormMessage />
           </FormItem>
         )}
-      />
+      /> */}
 
       {/* 은행 정보 카드 */}
       <Card>

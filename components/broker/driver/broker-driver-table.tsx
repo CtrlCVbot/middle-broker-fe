@@ -76,7 +76,7 @@ export function BrokerDriverTable({ drivers, onDriverClick }: BrokerDriverTableP
             <TableHead className="w-[120px]">차량번호</TableHead>
             <TableHead className="w-[90px]">차량 종류</TableHead>
             <TableHead className="w-[90px]">톤수</TableHead>
-            <TableHead>주소</TableHead>
+            {/* <TableHead>주소</TableHead> */}
             <TableHead>업체명</TableHead>
             <TableHead>사업자번호</TableHead>
             <TableHead className="w-[90px] text-right">배차 횟수</TableHead>
@@ -133,7 +133,7 @@ export function BrokerDriverTable({ drivers, onDriverClick }: BrokerDriverTableP
                 <TableCell>
                   <BrokerDriverTonnageBadge tonnage={driver.tonnage} />
                 </TableCell>
-                <TableCell className="max-w-[200px] truncate">{driver.address}</TableCell>
+                {/* <TableCell className="max-w-[200px] truncate">{driver.address}</TableCell> */}
                 <TableCell>{driver.companyName}</TableCell>
                 <TableCell>{driver.businessNumber}</TableCell>
                 <TableCell className="text-right font-medium">
