@@ -138,7 +138,7 @@ const CreateCompanySchema = z.object({
       (val) => (val === '' || val === null || val === undefined ? undefined : val),
       z.string().optional()
     )
-  }).optional(),
+  }).optional().nullable(),
   contact: z.object({
     tel: z.preprocess(
       (val) => (val === '' || val === null || val === undefined ? undefined : val),
@@ -152,7 +152,7 @@ const CreateCompanySchema = z.object({
       (val) => (val === '' || val === null || val === undefined ? undefined : val),
       z.string().email('올바른 이메일 형식이 아닙니다.').optional()
     )
-  }).optional(),
+  }).optional().nullable(),
   //requestUserId: z.string().uuid('잘못된 요청 사용자 ID 형식입니다.')
 });
 

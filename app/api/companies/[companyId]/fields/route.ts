@@ -93,7 +93,9 @@ export async function PATCH(
     const updateData = {
       ...fields,
       updatedAt: new Date(),
-      bankAccountNumber: fields.bankAccount,
+      bankCode: fields.bankCode || null,
+      bankAccountNumber: fields.bankAccount || null,
+      bankAccountHolder: fields.bankAccountHolder || null,
     };
 
     // 업체 정보 업데이트
