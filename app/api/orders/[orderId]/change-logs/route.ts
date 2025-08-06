@@ -74,6 +74,7 @@ export async function GET(
         email: log.changedByEmail,
         accessLevel: log.changedByAccessLevel
       },
+      changedByRole: log.changedByRole,
       changedAt: log.changedAt?.toISOString(),
       oldData: log.oldData,
       newData: log.newData,

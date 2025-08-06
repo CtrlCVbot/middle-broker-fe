@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 // Dialog import 추가
 import {   
   Dialog,   
@@ -54,6 +54,7 @@ import { cn } from "@/lib/utils";
 
 //component
 import { BrokerOrderStatusLog as BrokerOrderStatusLogVer01 } from "./broker-order-status-log-ver01";
+import { BrokerOrderChangeLog } from "./broker-order-change-log";
 // 화물 상세 정보 카드
 import { BrokerOrderInfoEditForm } from "./broker-order-info-edit-form";
 import { BrokerOrderInfoCard as BrokerOrderInfoCardVer02 } from "./broker-order-info-card-ver02";
@@ -137,6 +138,9 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
   
   // 모바일 뷰를 위한 현재 선택된 탭
   const [activeTab, setActiveTab] = useState<string>("cargo");
+
+  // 이력 탭 상태
+  const [historyTab, setHistoryTab] = useState<string>("change-logs");
   
   // 배차 정보 저장 성공 여부 추적을 위한 상태 추가 (통합된 상태)
   const [hasDriverInfo, setHasDriverInfo] = useState(false);
@@ -776,18 +780,29 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
               </div>
             </div>
             
-            {/* 상태 변경 이력 - 확장/축소 가능한 패널로 변경 */}
+            {/* 이력 정보 - 확장/축소 가능한 패널로 변경 */}
             <div className="border-t mt-auto">
               <details className="px-6 py-3">
                 <summary className="flex items-center gap-2 cursor-pointer">
                   <History className="h-5 w-5 text-primary" />
-                  <h3 className="text-base font-medium">상태 변경 이력</h3>
+                  <h3 className="text-base font-medium">변경 이력</h3>
                   <span className="text-sm text-muted-foreground ml-3">
                     등록일시: {orderData.registeredAt}
                   </span>
                 </summary>
                 <div className="mt-3 pb-3">
-                  <BrokerOrderStatusLogVer01 logs={orderData.logs} />
+                  <Tabs value={historyTab} onValueChange={setHistoryTab} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="change-logs">변경 이력</TabsTrigger>
+                      <TabsTrigger value="status-logs">상태 로그</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="change-logs" className="mt-4">
+                      {selectedOrderId && <BrokerOrderChangeLog orderId={selectedOrderId} />}
+                    </TabsContent>
+                    <TabsContent value="status-logs" className="mt-4">
+                      <BrokerOrderStatusLogVer01 logs={orderData.logs} />
+                    </TabsContent>
+                  </Tabs>
                 </div>
               </details>
             </div>

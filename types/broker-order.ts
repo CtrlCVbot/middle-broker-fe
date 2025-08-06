@@ -206,4 +206,22 @@ export interface IBrokerOrderRegisterData {
   selectedOptions: string[];
   estimatedDistance?: number;
   estimatedAmount?: number;
+}
+
+// 주문 변경 이력 타입 정의
+export interface IOrderChangeLog {
+  id: string;
+  orderId: string;
+  changeType: 'create' | 'update' | 'updateStatus' | 'updatePrice' | 'updatePriceSales' | 'updatePricePurchase' | 'updateDispatch' | 'cancelDispatch' | 'cancel' | 'delete';
+  changedBy: {
+    id: string;
+    name: string;
+    email: string;
+    accessLevel: string;
+  };
+  changedByRole?: 'shipper' | 'broker' | 'admin';
+  changedAt: string;
+  oldData?: any;
+  newData?: any;
+  reason?: string;
 } 
