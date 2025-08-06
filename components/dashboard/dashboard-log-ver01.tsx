@@ -35,7 +35,7 @@ const getStatusStyle = (status: OrderStatusType) => {
 
 export function DashboardLog() {
   const router = useRouter();
-  const { logs, loading, refreshLogs, filters, setAutoRefresh } = useDashboardStore();
+  const { logs, loading, refreshLogs, filters, setAutoRefresh, error } = useDashboardStore();
   const [refreshCounter, setRefreshCounter] = useState(0);
 
   // 자동 새로고침 기능 구현
@@ -44,10 +44,10 @@ export function DashboardLog() {
     
     // 자동 새로고침이 활성화되어 있으면 일정 간격으로 로그 업데이트
     if (filters.autoRefresh) {
-      interval = setInterval(() => {
-        refreshLogs();
+      interval = setInterval(async () => {
+        await refreshLogs();
         setRefreshCounter((prev) => prev + 1);
-      }, 5000); // 5초마다 새로고침
+      }, 10000); // 10초마다 새로고침 (API 호출 부담 고려)
     }
     
     // 컴포넌트 언마운트 시 인터벌 정리
@@ -57,8 +57,8 @@ export function DashboardLog() {
   }, [filters.autoRefresh, refreshLogs]);
 
   // 수동 새로고침 핸들러
-  const handleRefresh = () => {
-    refreshLogs();
+  const handleRefresh = async () => {
+    await refreshLogs();
     setRefreshCounter((prev) => prev + 1);
   };
 
@@ -69,7 +69,8 @@ export function DashboardLog() {
 
   // 화물 상세 페이지로 이동 핸들러
   const goToOrderDetail = (orderNumber: string) => {
-    router.push(`/order/list?id=${orderNumber}`);
+    // orderNumber가 짧은 경우 (UUID slice) 전체 orderId를 찾아서 이동
+    router.push(`/order/list?search=${orderNumber}`);
   };
 
   // 상대적 시간 포맷 함수
@@ -128,6 +129,22 @@ export function DashboardLog() {
               </div>
             ))}
           </div>
+        ) : error ? (
+          // 에러 상태
+          <div className="text-center py-6">
+            <Activity className="h-8 w-8 mx-auto mb-2 text-destructive" />
+            <p className="text-destructive font-medium">데이터 로딩 중 오류가 발생했습니다</p>
+            <p className="text-sm text-muted-foreground mt-1">{error}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-3"
+              onClick={handleRefresh}
+            >
+              <RefreshCw className="h-4 w-4 mr-1" />
+              다시 시도
+            </Button>
+          </div>
         ) : (
           // 타임라인 UI
           <div className="space-y-4">
@@ -166,7 +183,9 @@ export function DashboardLog() {
             
             {logs.length === 0 && !loading.logs && (
               <div className="text-center py-6 text-muted-foreground">
-                로그 데이터가 없습니다.
+                <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>변경 이력이 없습니다.</p>
+                <p className="text-sm mt-1">화물 등록, 상태 변경 등의 활동이 기록됩니다.</p>
               </div>
             )}
           </div>
