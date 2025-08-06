@@ -1,33 +1,39 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+//ui
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Activity, RefreshCw, Clock, User, PauseCircle, PlayCircle, CircleFadingPlus, SquarePen, Truck, HandCoins, SquareX} from "lucide-react";
+
+//store
 import { useDashboardStore } from "@/store/dashboard-store";
-import { Activity, RefreshCw, Clock, User, PauseCircle, PlayCircle } from "lucide-react";
+
+//utils
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
+
+//types
 import { OrderStatusType } from "@/types/order";
 
 // 상태별 색상 및 아이콘 정의
-const getStatusStyle = (status: OrderStatusType) => {
+const getStatusStyle = (status: string) => {
   switch (status) {
-    case '배차대기':
-      return { color: 'text-gray-600 bg-gray-100', icon: <Clock className="h-3 w-3" /> };
-    case '배차완료':
-      return { color: 'text-blue-600 bg-blue-100', icon: <User className="h-3 w-3" /> };
-    case '상차완료':
-      return { color: 'text-yellow-600 bg-yellow-100', icon: <Activity className="h-3 w-3" /> };
-    case '운송중':
-      return { color: 'text-orange-600 bg-orange-100', icon: <Activity className="h-3 w-3" /> };
-    case '하차완료':
-      return { color: 'text-green-600 bg-green-100', icon: <Activity className="h-3 w-3" /> };
-    case '운송완료':
-      return { color: 'text-purple-600 bg-purple-100', icon: <Activity className="h-3 w-3" /> };
+    case '요청':
+      return { color: 'text-gray-600 bg-gray-100', icon: <CircleFadingPlus className="h-3 w-3" /> };
+    case '상태변경':
+      return { color: 'text-blue-600 bg-blue-100', icon: <SquarePen className="h-3 w-3" /> };
+    case '배차정보변경':
+      return { color: 'text-yellow-600 bg-yellow-100', icon: <Truck className="h-3 w-3" /> };
+    case '운임변경':
+      return { color: 'text-orange-600 bg-orange-100', icon: <HandCoins className="h-3 w-3" /> };
+    case '취소':
+      return { color: 'text-green-600 bg-green-100', icon: <SquareX className="h-3 w-3" /> };    
     default:
       return { color: 'text-gray-600 bg-gray-100', icon: <Activity className="h-3 w-3" /> };
   }

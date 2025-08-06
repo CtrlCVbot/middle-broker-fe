@@ -26,20 +26,20 @@ const mapOrderChangeLogToStatusLog = (changeLog: IOrderChangeLog): IStatusLog =>
   const getStatusFromChangeType = (changeType: string, newData?: any): string => {
     switch (changeType) {
       case 'create':
-        return '배차대기';
+        return '요청';
       case 'updateStatus':
-        return newData?.flowStatus || '배차대기';
+        return '상태변경';
       case 'updateDispatch':
-        return '배차완료';
+        return '배차정보변경';
       case 'updatePrice':
       case 'updatePriceSales':
       case 'updatePricePurchase':
-        return newData?.flowStatus || '배차대기';
+        return '운임변경';
       case 'cancel':
       case 'delete':
         return '취소';
       default:
-        return '배차대기';
+        return '요청';
     }
   };
 
