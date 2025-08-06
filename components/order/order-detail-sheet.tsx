@@ -425,19 +425,15 @@ export function OrderDetailSheet() {
               
               <Separator />
               
-              <div className="h-full bg-white">
+              {/* <div className="h-full bg-white">
                 <div className={cn("" + " text-sm px-1 rounded-t-md flex items-center")} onClick={() => setShowStatusLog((prev) => !prev)}>
                   
-                  {/* <Badge variant="default" className="mr-2 bg-gray-700 text-white">
-                    <Logs className="h-4 w-4 text-white" />
-                  </Badge> */}
                   <Logs className="h-5 w-5 text-gray-500 mr-2" />
                   <div className="font-medium text-md text-gray-700 truncate">상태 로그</div>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    //onClick={() => setShowStatusLog((prev) => !prev)}
                   >
                     {showStatusLog ? <ChevronsUp className="h-4 w-4 text-gray-700" /> : <ChevronsDown className="h-4 w-4 text-gray-700" />}
                   </Button>  
@@ -446,8 +442,6 @@ export function OrderDetailSheet() {
                 
                 {showStatusLog && (
                   <CardContent className="p-3 border-t border-gray-200">
-                    {/* <OrderStatusLog logs={orderData.logs.slice(0, 3)} />
-                    {orderData.logs.length > 3 && <Button variant="link" size="sm">+ 더보기</Button>} */}
                     <Timeline
                       items={orderData.logs.map((log) => ({
                         icon: <Circle className={cn("text-" + getStatusColor(log.status) + "-500")} size={12} />,
@@ -456,45 +450,12 @@ export function OrderDetailSheet() {
                         time: log.time,
                         
                       }))}
-                      // items={[
-                      //   {
-                      //     icon: <Circle className="text-purple-500" size={12} />,
-                      //     title: "12 Invoices have been paid",
-                      //     description: "Invoices have been paid to the company",
-                      //     time: "12 min ago",
-                      //     fileLink: "#",
-                      //   },
-                      //   {
-                      //     icon: <Circle className="text-green-500" size={12} />,
-                      //     title: "Client Meeting",
-                      //     description: "Project meeting with John @10:15am",
-                      //     time: "45 min ago",
-                      //     additionalInfo: "Lester McCarthy (Client) - CEO of Pixinvent",
-                      //     userImages: [
-                      //       "/images/user1.jpg",
-                      //       "/images/user2.jpg",
-                      //     ],
-                      //   },
-                      //   {
-                      //     icon: <Circle className="text-blue-500" size={12} />,
-                      //     title: "Create a new project for client",
-                      //     description: "6 team members in a project",
-                      //     time: "2 Day Ago",
-                      //     userImages: [
-                      //       "/images/user1.jpg",
-                      //       "/images/user2.jpg",
-                      //       "/images/user3.jpg",
-                      //       "/images/user4.jpg",
-                      //     ],
-                      //   },
-                      // ]}
                     />
-
                   </CardContent>
                 )}
-              </div>
+              </div> */}
               
-              <Separator />
+              {/* <Separator /> */}
               
               {/* 변경 이력 섹션 */}
               <div className="h-full bg-white">
