@@ -6,6 +6,9 @@ import { fetchOrderChangeLogs } from "@/services/order-service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, User, FileText, AlertCircle, Loader2 } from "lucide-react";
+import { getCurrentUser } from "@/utils/auth";
+
+
 // Date formatting utility (date-fns 대신 내장 기능 사용)
 const formatDate = (dateString: string): string => {
   try {
@@ -147,6 +150,10 @@ export function BrokerOrderChangeLog({ orderId }: BrokerOrderChangeLogProps) {
     );
   }
 
+  const user = getCurrentUser();
+  console.log('user: ', user);
+
+
   return (
     <Card>
       <CardHeader>
@@ -193,7 +200,8 @@ export function BrokerOrderChangeLog({ orderId }: BrokerOrderChangeLogProps) {
             )}
 
             {/* 변경 내용 상세 (필요시 확장 가능) */}
-            {(log.oldData || log.newData) && (
+            {user?.systemAccessLevel === 'platform_admin' && 
+            (log.oldData || log.newData) && (
               <div className="ml-1">
                 <details className="text-xs">
                   <summary className="cursor-pointer text-muted-foreground hover:text-foreground">

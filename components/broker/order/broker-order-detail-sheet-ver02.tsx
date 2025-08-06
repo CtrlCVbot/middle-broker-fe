@@ -794,14 +794,16 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                   {/* <Tabs value={historyTab} onValueChange={setHistoryTab} className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="change-logs">변경 이력</TabsTrigger>
-                      
+                      <TabsTrigger value="status-logs">상태 로그</TabsTrigger>
                     </TabsList>
                     <TabsContent value="change-logs" className="mt-4">
-                      
+                      {selectedOrderId && <BrokerOrderChangeLog orderId={selectedOrderId} />}
                     </TabsContent>
-                    
+                    <TabsContent value="status-logs" className="mt-4"> 
+                      <BrokerOrderStatusLogVer01 logs={orderData.logs} />}
+                    </TabsContent>                    
                   </Tabs> */}
-                  {selectedOrderId && <BrokerOrderChangeLog orderId={selectedOrderId} />}
+                    {selectedOrderId && <BrokerOrderChangeLog orderId={selectedOrderId} />}
                 </div>
               </details>
             </div>
