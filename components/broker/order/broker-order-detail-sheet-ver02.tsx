@@ -53,7 +53,7 @@ import { useBrokerSettlementStore } from "@/store/broker-settlement-store";
 import { cn } from "@/lib/utils";
 
 //component
-import { BrokerOrderStatusLog } from "./broker-order-status-log";
+import { BrokerOrderStatusLog as BrokerOrderStatusLogVer01 } from "./broker-order-status-log-ver01";
 // 화물 상세 정보 카드
 import { BrokerOrderInfoEditForm } from "./broker-order-info-edit-form";
 import { BrokerOrderInfoCard as BrokerOrderInfoCardVer02 } from "./broker-order-info-card-ver02";
@@ -787,7 +787,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
                   </span>
                 </summary>
                 <div className="mt-3 pb-3">
-                  <BrokerOrderStatusLog logs={orderData.logs} />
+                  <BrokerOrderStatusLogVer01 logs={orderData.logs} />
                 </div>
               </details>
             </div>
