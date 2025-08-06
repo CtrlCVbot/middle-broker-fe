@@ -94,25 +94,33 @@ export function BrokerOrderChangeLog({ orderId }: BrokerOrderChangeLogProps) {
   const [changeLogs, setChangeLogs] = useState<IOrderChangeLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
-    const loadChangeLogs = async () => {
+    const loadData = async () => {
       if (!orderId) return;
       
       try {
         setIsLoading(true);
         setError(null);
-        const response = await fetchOrderChangeLogs(orderId);
+        
+        // 사용자 정보와 변경 이력을 병렬로 조회
+        const [user, response] = await Promise.all([
+          getCurrentUser(),
+          fetchOrderChangeLogs(orderId)
+        ]);
+        
+        setCurrentUser(user);
         setChangeLogs(response.data || []);
       } catch (err) {
-        console.error('변경 이력 조회 중 오류 발생:', err);
-        setError(err instanceof Error ? err.message : '변경 이력을 불러오는데 실패했습니다.');
+        console.error('데이터 조회 중 오류 발생:', err);
+        setError(err instanceof Error ? err.message : '데이터를 불러오는데 실패했습니다.');
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadChangeLogs();
+    loadData();
   }, [orderId]);
 
   if (isLoading) {
@@ -150,8 +158,7 @@ export function BrokerOrderChangeLog({ orderId }: BrokerOrderChangeLogProps) {
     );
   }
 
-  const user = getCurrentUser();
-  console.log('user: ', user);
+  console.log('currentUser: ', currentUser);
 
 
   return (
@@ -200,7 +207,7 @@ export function BrokerOrderChangeLog({ orderId }: BrokerOrderChangeLogProps) {
             )}
 
             {/* 변경 내용 상세 (필요시 확장 가능) */}
-            {user?.systemAccessLevel === 'platform_admin' && 
+            {currentUser?.systemAccessLevel === 'platform_admin' && 
             (log.oldData || log.newData) && (
               <div className="ml-1">
                 <details className="text-xs">

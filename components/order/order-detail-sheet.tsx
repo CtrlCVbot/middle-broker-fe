@@ -17,7 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { CalendarClock, AlertTriangle, Package, Truck, Link2Off, ChevronUp, ChevronDown, Phone, Logs, ChevronsDown, ChevronsUp, Circle } from "lucide-react";
+import { CalendarClock, AlertTriangle, Package, Truck, Link2Off, ChevronUp, ChevronDown, Phone, Logs, ChevronsDown, ChevronsUp, Circle, History } from "lucide-react";
 
 //store, service
 import { useOrderDetailStore } from "@/store/order-detail-store";
@@ -34,6 +34,7 @@ import { OrderActionButtons } from "./order-action-buttons";
 import { getStatusBadge, getStatusColor } from "./order-table-ver01";
 import { OrderInfoCardVer01 } from "./order-info-card-ver01";
 import { Timeline } from "./order-timeline";
+import { BrokerOrderChangeLog } from "../broker/order/broker-order-change-log";
 
 //utils
 import { handleApiError } from "@/utils/api-error-handler";
@@ -104,6 +105,7 @@ export function OrderDetailSheet() {
   const [showCargeDetail, setShowCargeDetail] = useState(true);
   const [showVehicleDetail, setShowVehicleDetail] = useState(true);
   const [showStatusLog, setShowStatusLog] = useState(true);
+  const [showChangeLog, setShowChangeLog] = useState(true);
   
   // TanStack Query를 사용하여 화물 상세 정보 조회 - 실제 API 연동
   const { 
@@ -490,7 +492,30 @@ export function OrderDetailSheet() {
 
                   </CardContent>
                 )}
-              </div>                            
+              </div>
+              
+              <Separator />
+              
+              {/* 변경 이력 섹션 */}
+              <div className="h-full bg-white">
+                <div className={cn("" + " text-sm px-1 rounded-t-md flex items-center")} onClick={() => setShowChangeLog((prev) => !prev)}>
+                  <History className="h-5 w-5 text-gray-500 mr-2" />
+                  <div className="font-medium text-md text-gray-700 truncate">변경 이력</div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                  >
+                    {showChangeLog ? <ChevronsUp className="h-4 w-4 text-gray-700" /> : <ChevronsDown className="h-4 w-4 text-gray-700" />}
+                  </Button>  
+                </div>
+                
+                {showChangeLog && (
+                  <CardContent className="p-3 border-t border-gray-200">
+                    <BrokerOrderChangeLog orderId={orderData.orderNumber} />
+                  </CardContent>
+                )}
+              </div>                           
             </div>
             
             {/* 푸터 - 액션 버튼 */}
