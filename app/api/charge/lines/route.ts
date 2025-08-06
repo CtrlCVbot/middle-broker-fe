@@ -3,9 +3,88 @@ import { eq, and, desc, asc, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { chargeLines, chargeSideEnum } from '@/db/schema/chargeLines';
 import { chargeGroups } from '@/db/schema/chargeGroups';
+import { users } from '@/db/schema/users';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/config';
+import { logOrderChange } from '@/utils/order-change-logger';
+
+// 사용자 역할 결정 함수
+const getUserRole = (systemAccessLevel?: string): 'shipper' | 'broker' | 'admin' => {
+  if (!systemAccessLevel) return 'broker';
+  
+  switch (systemAccessLevel) {
+    case 'platform_admin':
+    case 'broker_admin':
+    case 'shipper_admin':
+      return 'admin';
+    case 'broker_member':
+      return 'broker';
+    case 'shipper_member':
+      return 'shipper';
+    default:
+      return 'broker';
+  }
+};
+
+// 운임 변경 타입 감지 함수
+const detectPriceChangeType = (oldData: any, newData: any): 'updatePrice' | 'updatePriceSales' | 'updatePricePurchase' => {
+  const salesChanged = oldData.salesAmount !== newData.salesAmount;
+  const purchaseChanged = oldData.purchaseAmount !== newData.purchaseAmount;
+  
+  if (salesChanged && purchaseChanged) {
+    return 'updatePrice';
+  } else if (salesChanged) {
+    return 'updatePriceSales';
+  } else if (purchaseChanged) {
+    return 'updatePricePurchase';
+  } else {
+    return 'updatePrice'; // 기본값
+  }
+};
+
+// 주문의 기존 운임 정보 조회 함수
+const getOrderChargeData = async (orderId: string) => {
+  try {
+    // 해당 주문의 모든 운임 그룹과 라인 조회
+    const groups = await db
+      .select()
+      .from(chargeGroups)
+      .where(eq(chargeGroups.orderId, orderId))
+      .execute();
+
+    let salesAmount = 0;
+    let purchaseAmount = 0;
+
+    // 각 그룹의 라인들을 조회하여 합계 계산
+    for (const group of groups) {
+      const lines = await db
+        .select()
+        .from(chargeLines)
+        .where(eq(chargeLines.groupId, group.id))
+        .execute();
+
+      for (const line of lines) {
+        if (line.side === 'sales') {
+          salesAmount += Number(line.amount) || 0;
+        } else if (line.side === 'purchase') {
+          purchaseAmount += Number(line.amount) || 0;
+        }
+      }
+    }
+
+    return {
+      salesAmount,
+      purchaseAmount
+    };
+  } catch (error) {
+    console.error('기존 운임 데이터 조회 중 오류:', error);
+    return {
+      salesAmount: 0,
+      purchaseAmount: 0
+    };
+  }
+};
 
 // 운임 라인 목록 조회
 export async function GET(request: NextRequest) {
@@ -138,6 +217,30 @@ export async function POST(request: NextRequest) {
         { status: 403 }
       );
     }
+
+    // orderId 확인 (이력 기록용)
+    const orderId = chargeGroup.orderId;
+    if (!orderId) {
+      return NextResponse.json(
+        { error: '주문 정보가 없는 운임 그룹입니다.' },
+        { status: 400 }
+      );
+    }
+
+    // 운임 변경 이력 기록을 위한 기존 데이터 조회
+    const oldChargeData = await getOrderChargeData(orderId);
+
+    // 사용자 정보 조회 (이력 기록용)
+    const requestUser = await db.query.users.findFirst({
+      where: eq(users.id, userId)
+    });
+
+    if (!requestUser) {
+      return NextResponse.json(
+        { error: '사용자 정보를 찾을 수 없습니다.' },
+        { status: 404 }
+      );
+    }
     
     // 세금 자동 계산 (taxAmount가 제공되지 않은 경우)
     if (data.taxRate && !data.taxAmount) {
@@ -150,6 +253,46 @@ export async function POST(request: NextRequest) {
       createdBy: userId,
       updatedBy: userId,
     }as any).returning();
+
+    // 운임 라인 생성 후 새로운 운임 데이터 조회
+    const newChargeData = await getOrderChargeData(orderId);
+
+    // 운임 변경이 있는 경우 이력 기록
+    if (oldChargeData.salesAmount !== newChargeData.salesAmount || 
+        oldChargeData.purchaseAmount !== newChargeData.purchaseAmount) {
+      
+      try {
+        console.log('!!운임 정보 변경 로그!!');
+        // 변경 타입 자동 감지
+        const changeType = detectPriceChangeType(oldChargeData, newChargeData);
+        
+        // 변경 사유 생성
+        let changeReason = `운임 정보 변경: ${data.side === 'sales' ? '청구금' : '배차금'} `;
+        if (data.memo) {
+          changeReason += `(${data.memo})`;
+        } else {
+          changeReason += `${Number(data.amount).toLocaleString()}원 추가`;
+        }
+
+        // 이력 기록
+        await logOrderChange({
+          orderId,
+          changedBy: userId,
+          changedByRole: getUserRole(requestUser.system_access_level),
+          changedByName: requestUser.name,
+          changedByEmail: requestUser.email,
+          changedByAccessLevel: requestUser.system_access_level,
+          changeType,
+          oldData: oldChargeData,
+          newData: newChargeData,
+          reason: changeReason
+        });
+        console.log('!!운임 정보 변경 로그 기록 완료!!');
+      } catch (logError) {
+        // 이력 기록 실패는 운임 라인 생성에 영향을 주지 않도록 로그만 남김
+        console.error('운임 변경 이력 기록 중 오류 발생:', logError);
+      }
+    }
 
     return NextResponse.json(
       { message: '운임 라인이 생성되었습니다.', data: newChargeLine[0] },
