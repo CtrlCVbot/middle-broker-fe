@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
 import { DashboardStatus } from "@/components/dashboard/dashboard-status";
-import { DashboardLog } from "@/components/dashboard/dashboard-log";
+import { DashboardLog } from "@/components/dashboard/dashboard-log-ver01";
 import { DashboardTrends } from "@/components/dashboard/dashboard-trends";
 import { DashboardGeo } from "@/components/dashboard/dashboard-geo";
 import { DashboardWeight } from "@/components/dashboard/dashboard-weight";

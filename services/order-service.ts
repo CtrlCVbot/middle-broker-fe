@@ -360,6 +360,27 @@ export async function fetchOrderChangeLogs(orderId: string): Promise<any> {
 }
 
 /**
+ * 화물 변경 이력 업체별 조회 API
+ * @param companyId 업체 ID
+ * @returns Promise<any> 화물 변경 이력 업체별
+ */
+export async function fetchOrderChangeLogsByCompanyId(companyId: string): Promise<any> {
+  const response = await fetch(`/api/orders/change-logs/${companyId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || '화물 변경 이력 업체별 조회에 실패했습니다.');
+  }
+
+  return response.json();
+}
+
+/**
  * 주선사 배차 목록을 조회하는 함수
  * @param page 페이지 번호
  * @param pageSize 페이지 크기
