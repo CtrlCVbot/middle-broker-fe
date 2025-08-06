@@ -82,7 +82,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     error,    
     fetchOrderDetail,       
   } = useBrokerOrderDetailStore();     
-  console.log('orderDetail', orderDetail);
+  
   
   // 브로커 주문 스토어 추가 - 새로고침을 위한 상태 관리  
   const { setLastRefreshed } = useBrokerOrderStore();    
@@ -364,32 +364,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     }, 300);
   };
   
-  // 배차 상태 변경 핸들러
-  const handleChangeStatus = () => {
-    if (orderData && selectedStatus && selectedStatus !== orderData.status) {
-      // 실제 구현에서는 여기서 API 호출을 통해 상태를 변경할 것입니다.
-      console.log(`상태 변경: ${orderData.status} -> ${selectedStatus}`);
-      
-      // 상태 변경 성공 알림
-      toast({
-        title: "상태 변경 완료",
-        description: `배차 상태가 ${selectedStatus}(으)로 변경되었습니다.`,
-        variant: "default"
-      });
-      
-      // 상태 변경 플래그 설정
-      setHasStatusChanged(true);
-      
-      setStatusPopoverOpen(false);
-      
-      // 실제 구현에서는 fetchOrderDetail로 최신 데이터 조회
-      setTimeout(() => {
-        if (selectedOrderId) {
-          fetchOrderDetail(selectedOrderId);
-        }
-      }, 300);
-    }
-  };
+  
   
   // 배차 상태 변경 처리 핸들러 추가
   const handleStatusUpdate = (newStatus: string) => {
@@ -403,67 +378,14 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     }
   };
   
-  // 배차 상태 변경 시작
-  const startStatusChange = () => {
-    if (orderData) {
-      setSelectedStatus(orderData.status);
-      setIsChangingStatus(true);
-    }
-  };
   
-  // 배차 상태 변경 취소
-  const cancelStatusChange = () => {
-    setIsChangingStatus(false);
-    setStatusPopoverOpen(false);
-  };
 
   // 편집 취소 핸들러
   const handleCancelEdit = () => {
     setEditMode(null);
   };
 
-  // 운송 마감하기 버튼 핸들러 추가(기존 handleConfirmCreateSales로 변경됨)
-  const handleCreateSales = async () => {
-    if (!orderData || !selectedOrderId || !orderData.dispatchId) {
-      toast({
-        title: "오류",
-        description: "주문 정보가 없습니다.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // 매출 정산 생성 전 확인 다이얼로그 (실제 구현에서는 Dialog 컴포넌트 사용 가능)
-    if (!window.confirm("매출 정산을 생성하시겠습니까? 이 작업은 되돌릴 수 없으며, 이후 주문 정보와 운임 정보를 수정할 수 없습니다.")) {
-      return;
-    }
-    
-    try {
-      const result = await createSale(selectedOrderId, orderData.dispatchId);
-      
-      if (result) {
-        toast({
-          title: "매출 정산 생성 완료",
-          description: "매출 정산이 성공적으로 생성되었습니다.",
-          variant: "default"
-        });
-        
-        // 상태 변경 플래그 설정 (목록 새로고침을 위해)
-        setHasStatusChanged(true);
-        
-        // 주문 정보 다시 조회
-        fetchOrderDetail(selectedOrderId);
-      }
-    } catch (error) {
-      console.error("매출 정산 생성 오류:", error);
-      
-      toast({
-        title: "매출 정산 생성 실패",
-        description: error instanceof Error ? error.message : "매출 정산 생성 중 오류가 발생했습니다.",
-        variant: "destructive"
-      });
-    }
-  };
+  
   
   // 주문이 이미 마감되었는지 확인
   useEffect(() => {
@@ -481,51 +403,7 @@ export function BrokerOrderDetailSheet({ onAdditionalFeeAdded }: { onAdditionalF
     setIsConfirmDialogOpen(true);
   };
 
-  // 배차 정산 생성 확인 다이얼로그 열기
-  const handleOpenConfirmPurchaseDialog = () => {
-    setIsConfirmPurchaseDialogOpen(true);
-  };
   
-  // 매출 정산 생성 실행
-  const handleConfirmCreateSales = async () => {
-    if (!orderData || !selectedOrderId || !orderData.dispatchId) {
-      toast({
-        title: "오류",
-        description: "주문 정보가 없습니다.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    try {
-      const result = await createSale(selectedOrderId, orderData.dispatchId);
-      
-      if (result) {
-        toast({
-          title: "매출 정산 생성 완료",
-          description: "매출 정산이 성공적으로 생성되었습니다.",
-          variant: "default"
-        });
-        
-        // 상태 변경 플래그 설정 (목록 새로고침을 위해)
-        setHasStatusChanged(true);
-        
-        // 주문 정보 다시 조회
-        fetchOrderDetail(selectedOrderId);
-      }
-    } catch (error) {
-      console.error("매출 정산 생성 오류:", error);
-      
-      toast({
-        title: "매출 정산 생성 실패",
-        description: error instanceof Error ? error.message : "매출 정산 생성 중 오류가 발생했습니다.",
-        variant: "destructive"
-      });
-    } finally {
-      // 다이얼로그 닫기
-      setIsConfirmDialogOpen(false);
-    }
-  };
 
   // 배차 정산 마감 실행
   const handleConfirmCreatePurchase = async () => {

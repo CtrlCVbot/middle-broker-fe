@@ -10,6 +10,23 @@ import { validate as isValidUUID, version as getUUIDVersion } from 'uuid';
 import { orderDispatches } from '@/db/schema/orderDispatches';
 import { ChargeService } from '@/services/charge-service';
 
+// 사용자 역할 결정 함수
+const getUserRole = (systemAccessLevel?: string): 'shipper' | 'broker' | 'admin' => {
+  if (!systemAccessLevel) return 'broker';
+  
+  switch (systemAccessLevel) {
+    case 'platform_admin':
+    case 'broker_admin':
+    case 'shipper_admin':
+      return 'admin';
+    case 'broker_member':
+      return 'broker';
+    case 'shipper_member':
+      return 'shipper';
+    default:
+      return 'broker';
+  }
+};
 
 // 화물 수정 요청 스키마
 const UpdateOrderSchema = z.object({
@@ -275,18 +292,32 @@ export async function PUT(
       .where(eq(orders.id, orderId))
       .returning();
 
-    // 변경 이력 기록
+    // 변경 이력 기록 - 상태 변경 여부 확인
     if (typeof logOrderChange === 'function') {
+      // 상태 변경인지 확인
+      const isStatusChange = updateData.flowStatus && existingOrder.flowStatus !== updateData.flowStatus;
+      
+      // 변경 타입 결정
+      const changeType = isStatusChange ? 'updateStatus' : 'update';
+      
+      // 변경 사유 설정
+      const changeReason = isStatusChange 
+        ? `상태 변경: ${existingOrder.flowStatus} → ${updateData.flowStatus}`
+        : (body.reason || '화물 정보 업데이트');
+
+      console.log('!!변경 사유!!', changeReason);
+
       await logOrderChange({
         orderId: updatedOrder.id,
         changedBy: requestUserId,
+        changedByRole: getUserRole(requestUser.system_access_level),
         changedByName: requestUser.name,
         changedByEmail: requestUser.email,
         changedByAccessLevel: requestUser.system_access_level,
-        changeType: 'update',
+        changeType,
         oldData: existingOrder,
         newData: updatedOrder,
-        reason: body.reason || '화물 정보 업데이트'
+        reason: changeReason
       });
     }
 
@@ -414,6 +445,7 @@ export async function DELETE(
       await logOrderChange({
         orderId: canceledOrder.id,
         changedBy: requestUserId,
+        changedByRole: getUserRole(requestUser.system_access_level),
         changedByName: requestUser.name,
         changedByEmail: requestUser.email,
         changedByAccessLevel: requestUser.system_access_level,

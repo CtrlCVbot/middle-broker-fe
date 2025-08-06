@@ -4,10 +4,11 @@ import { orderChangeLogs } from '@/db/schema/orderChangeLogs';
 interface IOrderChangeLogParams {
   orderId: string;
   changedBy: string;
+  changedByRole?: 'shipper' | 'broker' | 'admin';
   changedByName: string;
   changedByEmail: string;
   changedByAccessLevel: string;
-  changeType: 'create' | 'update' | 'updateStatus' | 'cancel' | 'delete';
+  changeType: 'create' | 'update' | 'updateStatus' | 'updatePrice' | 'updatePriceSales' | 'updatePricePurchase' | 'updateDispatch' | 'cancelDispatch' | 'cancel' | 'delete';
   oldData?: any;
   newData?: any;
   reason?: string;
@@ -19,6 +20,7 @@ interface IOrderChangeLogParams {
 export async function logOrderChange({
   orderId,
   changedBy,
+  changedByRole = 'broker', // 기본값을 broker로 설정
   changedByName,
   changedByEmail,
   changedByAccessLevel,
@@ -28,11 +30,13 @@ export async function logOrderChange({
   reason
 }: IOrderChangeLogParams) {
   try {
+    console.log('logOrderChange!!!', orderId);
     await db
       .insert(orderChangeLogs)
       .values({
         orderId,
         changedBy,
+        changedByRole,
         changedByName,
         changedByEmail,
         changedByAccessLevel,
@@ -44,7 +48,7 @@ export async function logOrderChange({
       })
       .execute();
     
-    console.log(`화물 변경 이력 기록 성공: ${orderId}, 유형: ${changeType}`);
+    console.log(`화물 변경 이력 기록 성공: ${orderId}, 유형: ${changeType}, 역할: ${changedByRole}`);
   } catch (error) {
     console.error('화물 변경 이력 기록 중 오류 발생:', error);
     // 로깅 실패 시에도 비즈니스 로직은 계속 진행

@@ -7,7 +7,25 @@ import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
 import { users } from '@/db/schema/users';
 import { validate as isValidUUID, version as getUUIDVersion } from 'uuid';
+import { logOrderChange } from '@/utils/order-change-logger';
 
+// 사용자 역할 결정 함수
+const getUserRole = (systemAccessLevel?: string): 'shipper' | 'broker' | 'admin' => {
+  if (!systemAccessLevel) return 'broker';
+  
+  switch (systemAccessLevel) {
+    case 'platform_admin':
+    case 'broker_admin':
+    case 'shipper_admin':
+      return 'admin';
+    case 'broker_member':
+      return 'broker';
+    case 'shipper_member':
+      return 'shipper';
+    default:
+      return 'broker';
+  }
+};
 
 // 필드 업데이트 스키마
 const UpdateDispatchFieldsSchema = z.object({
@@ -132,6 +150,31 @@ export async function PATCH(
           updatedAt: new Date()
         })
         .where(eq(orders.id, existingDispatch.orderId));
+    }
+
+    // 변경 이력 기록
+    if (typeof logOrderChange === 'function') {
+      // 변경된 필드 감지
+      const changedFields = Object.keys(fields).filter(key => 
+        existingDispatch[key as keyof typeof existingDispatch] !== fields[key]
+      );
+      
+      if (changedFields.length > 0) {
+        const changeReason = reason || `배차 정보 변경: ${changedFields.join(', ')}`;
+        
+        await logOrderChange({
+          orderId: existingDispatch.orderId,
+          changedBy: requestUserId,
+          changedByRole: getUserRole(requestUser.system_access_level),
+          changedByName: requestUser.name,
+          changedByEmail: requestUser.email,
+          changedByAccessLevel: requestUser.system_access_level,
+          changeType: 'updateDispatch',
+          oldData: existingDispatch,
+          newData: updatedDispatch,
+          reason: changeReason
+        });
+      }
     }
 
     return NextResponse.json({

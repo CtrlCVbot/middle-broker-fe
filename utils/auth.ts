@@ -151,4 +151,26 @@ export const loginWithEmail = async (
 // 현재 로그인한 사용자 정보 조회
 export const getCurrentUser = (): IUser | null => {
   return useAuthStore.getState().getUser();
+};
+
+/**
+ * 사용자의 systemAccessLevel을 기반으로 changedByRole을 결정하는 함수
+ * @param systemAccessLevel 사용자의 시스템 접근 레벨
+ * @returns 'shipper' | 'broker' | 'admin'
+ */
+export const getUserRole = (systemAccessLevel?: string): 'shipper' | 'broker' | 'admin' => {
+  if (!systemAccessLevel) return 'broker'; // 기본값
+  
+  switch (systemAccessLevel) {
+    case 'platform_admin':
+    case 'broker_admin':
+    case 'shipper_admin':
+      return 'admin';
+    case 'broker_member':
+      return 'broker';
+    case 'shipper_member':
+      return 'shipper';
+    default:
+      return 'broker'; // 기본값
+  }
 }; 

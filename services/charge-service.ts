@@ -128,7 +128,7 @@ export class ChargeService {
       .where(inArray(chargeGroups.orderId, orderIds));
       
       
-    console.log("!!!result-->", JSON.stringify(result));
+   
     // 클라이언트에서 효율적 그룹화 및 집계
     const chargeMap = new Map<string, IOrderCharge>();
     

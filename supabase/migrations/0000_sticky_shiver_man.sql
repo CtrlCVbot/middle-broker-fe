@@ -1,0 +1,735 @@
+-- Current sql file was generated after introspecting the database
+-- If you want to run this migration please uncomment this code before executing migrations
+
+-- CREATE TYPE "public"."adjustment_status" AS ENUM('draft', 'issued', 'processed', 'canceled');--> statement-breakpoint
+-- CREATE TYPE "public"."adjustment_type" AS ENUM('refund', 'additional', 'correction', 'other');--> statement-breakpoint
+-- CREATE TYPE "public"."bank_code" AS ENUM('001', '002', '003', '004', '007', '008', '011', '020', '023', '027', '031', '032', '034', '035', '037', '039', '045', '048', '050', '071', '081', '088', '089', '090', '092');--> statement-breakpoint
+-- CREATE TYPE "public"."bundle_adj_type" AS ENUM('discount', 'surcharge');--> statement-breakpoint
+-- CREATE TYPE "public"."bundle_period_type" AS ENUM('departure', 'arrival', 'etc');--> statement-breakpoint
+-- CREATE TYPE "public"."calculation_method" AS ENUM('api', 'cached', 'manual');--> statement-breakpoint
+-- CREATE TYPE "public"."charge_reason" AS ENUM('base_freight', 'extra_wait', 'night_fee', 'toll', 'discount', 'penalty', 'etc');--> statement-breakpoint
+-- CREATE TYPE "public"."charge_side" AS ENUM('sales', 'purchase');--> statement-breakpoint
+-- CREATE TYPE "public"."charge_stage" AS ENUM('estimate', 'progress', 'completed');--> statement-breakpoint
+-- CREATE TYPE "public"."company_status" AS ENUM('active', 'inactive');--> statement-breakpoint
+-- CREATE TYPE "public"."company_type" AS ENUM('broker', 'shipper', 'carrier');--> statement-breakpoint
+-- CREATE TYPE "public"."delivery_status" AS ENUM('pending', 'success', 'failed', 'invalid_number');--> statement-breakpoint
+-- CREATE TYPE "public"."dispatch_status" AS ENUM('배차대기', '배차완료', '상차중', '운송중', '하차완료', '정산완료');--> statement-breakpoint
+-- CREATE TYPE "public"."driver_company_type" AS ENUM('개인', '소속');--> statement-breakpoint
+-- CREATE TYPE "public"."invoice_status" AS ENUM('draft', 'issued', 'paid', 'canceled', 'void');--> statement-breakpoint
+-- CREATE TYPE "public"."kakao_api_type" AS ENUM('directions', 'search-address');--> statement-breakpoint
+-- CREATE TYPE "public"."message_type" AS ENUM('complete', 'update', 'cancel', 'custom');--> statement-breakpoint
+-- CREATE TYPE "public"."order_change_type" AS ENUM('create', 'update', 'updateStatus', 'cancel', 'delete');--> statement-breakpoint
+-- CREATE TYPE "public"."order_flow_status" AS ENUM('운송요청', '배차대기', '배차완료', '상차대기', '상차완료', '운송중', '하차완료', '운송완료');--> statement-breakpoint
+-- CREATE TYPE "public"."payment_method" AS ENUM('cash', 'bank_transfer', 'card', 'etc');--> statement-breakpoint
+-- CREATE TYPE "public"."payment_status" AS ENUM('draft', 'issued', 'paid', 'canceled', 'void');--> statement-breakpoint
+-- CREATE TYPE "public"."permission_type" AS ENUM('일반');--> statement-breakpoint
+-- CREATE TYPE "public"."price_type" AS ENUM('기본', '계약');--> statement-breakpoint
+-- CREATE TYPE "public"."purchase_bundle_status" AS ENUM('draft', 'issued', 'paid', 'canceled');--> statement-breakpoint
+-- CREATE TYPE "public"."request_status" AS ENUM('pending', 'dispatched', 'failed');--> statement-breakpoint
+-- CREATE TYPE "public"."role_type" AS ENUM('requester', 'shipper', 'load', 'unload', 'broker', 'driver');--> statement-breakpoint
+-- CREATE TYPE "public"."route_priority" AS ENUM('RECOMMEND', 'TIME', 'DISTANCE');--> statement-breakpoint
+-- CREATE TYPE "public"."sales_bundle_status" AS ENUM('draft', 'issued', 'paid', 'canceled');--> statement-breakpoint
+-- CREATE TYPE "public"."source_type" AS ENUM('manual', 'system_imported');--> statement-breakpoint
+-- CREATE TYPE "public"."system_access_level" AS ENUM('platform_admin', 'broker_admin', 'shipper_admin', 'broker_member', 'shipper_member', 'viewer', 'guest');--> statement-breakpoint
+-- CREATE TYPE "public"."tax_type" AS ENUM('비과세', '과세');--> statement-breakpoint
+-- CREATE TYPE "public"."user_domain" AS ENUM('logistics', 'settlement', 'sales', 'etc');--> statement-breakpoint
+-- CREATE TYPE "public"."user_status" AS ENUM('active', 'inactive', 'locked');--> statement-breakpoint
+-- CREATE TYPE "public"."vehicle_connection" AS ENUM('24시', '원콜', '화물맨', '기타');--> statement-breakpoint
+-- CREATE TYPE "public"."vehicle_type" AS ENUM('카고', '윙바디', '탑차', '냉장', '냉동', '트레일러');--> statement-breakpoint
+-- CREATE TYPE "public"."vehicle_weight" AS ENUM('1톤', '1.4톤', '2.5톤', '3.5톤', '5톤', '8톤', '11톤', '18톤', '25톤');--> statement-breakpoint
+-- CREATE TABLE "user_tokens" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"user_id" uuid NOT NULL,
+-- 	"refresh_token" text NOT NULL,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"expires_at" timestamp NOT NULL,
+-- 	"is_revoked" boolean DEFAULT false NOT NULL,
+-- 	"user_agent" text,
+-- 	"ip_address" text
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "company_change_logs" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"company_id" uuid NOT NULL,
+-- 	"changed_by" uuid NOT NULL,
+-- 	"changed_by_name" varchar(100) NOT NULL,
+-- 	"changed_by_email" varchar(100) NOT NULL,
+-- 	"changed_by_access_level" varchar(50),
+-- 	"change_type" varchar(30) NOT NULL,
+-- 	"diff" json NOT NULL,
+-- 	"reason" varchar(255),
+-- 	"created_at" timestamp DEFAULT now()
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "user_change_logs" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"user_id" uuid NOT NULL,
+-- 	"changed_by" uuid NOT NULL,
+-- 	"changed_by_name" varchar(100) NOT NULL,
+-- 	"changed_by_email" varchar(100) NOT NULL,
+-- 	"changed_by_access_level" varchar(50),
+-- 	"change_type" varchar(20) NOT NULL,
+-- 	"diff" json NOT NULL,
+-- 	"reason" varchar(255),
+-- 	"created_at" timestamp DEFAULT now() NOT NULL
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "companies" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"name" varchar(100) NOT NULL,
+-- 	"business_number" varchar(20) NOT NULL,
+-- 	"ceo_name" varchar(50) NOT NULL,
+-- 	"type" "company_type" NOT NULL,
+-- 	"status" "company_status" DEFAULT 'active' NOT NULL,
+-- 	"address_postal" varchar(10),
+-- 	"address_road" varchar(200),
+-- 	"address_detail" varchar(200),
+-- 	"contact_tel" varchar(20),
+-- 	"contact_mobile" varchar(20),
+-- 	"contact_email" varchar(100),
+-- 	"created_by" uuid,
+-- 	"updated_by" uuid,
+-- 	"created_at" timestamp DEFAULT now(),
+-- 	"updated_at" timestamp DEFAULT now(),
+-- 	"bank_code" "bank_code",
+-- 	"bank_account_number" varchar(30),
+-- 	"bank_account_holder" varchar(50),
+-- 	CONSTRAINT "companies_business_number_unique" UNIQUE("business_number")
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "user_login_logs" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"user_id" uuid NOT NULL,
+-- 	"login_at" timestamp DEFAULT now() NOT NULL,
+-- 	"ip_address" varchar(50),
+-- 	"user_agent" varchar(500),
+-- 	"success" boolean NOT NULL,
+-- 	"fail_reason" varchar(100)
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "users" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"email" varchar(100) NOT NULL,
+-- 	"password" varchar(255),
+-- 	"name" varchar(100) NOT NULL,
+-- 	"phone_number" varchar(20),
+-- 	"company_id" uuid,
+-- 	"system_access_level" "system_access_level" DEFAULT 'guest' NOT NULL,
+-- 	"domains" json DEFAULT '["etc"]'::json NOT NULL,
+-- 	"status" "user_status" DEFAULT 'active' NOT NULL,
+-- 	"department" varchar(100),
+-- 	"position" varchar(100),
+-- 	"rank" varchar(100),
+-- 	"last_login_at" timestamp,
+-- 	"created_by" uuid,
+-- 	"updated_by" uuid,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"updated_at" timestamp DEFAULT now() NOT NULL,
+-- 	CONSTRAINT "users_email_unique" UNIQUE("email")
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "company_warning_logs" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"company_id" uuid,
+-- 	"warning_id" uuid,
+-- 	"action" varchar(20) NOT NULL,
+-- 	"previous_data" jsonb,
+-- 	"new_data" jsonb,
+-- 	"reason" text,
+-- 	"created_by" uuid NOT NULL,
+-- 	"created_at" timestamp with time zone DEFAULT now()
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "company_warnings" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"company_id" uuid,
+-- 	"text" text NOT NULL,
+-- 	"category" varchar(50) DEFAULT '기타',
+-- 	"sort_order" integer DEFAULT 0,
+-- 	"created_by" uuid,
+-- 	"updated_by" uuid,
+-- 	"created_at" timestamp with time zone DEFAULT now(),
+-- 	"updated_at" timestamp with time zone DEFAULT now()
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "order_dispatches" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"order_id" uuid NOT NULL,
+-- 	"broker_company_id" uuid,
+-- 	"broker_company_snapshot" json,
+-- 	"broker_manager_id" uuid,
+-- 	"broker_manager_snapshot" json,
+-- 	"assigned_driver_id" uuid,
+-- 	"assigned_driver_snapshot" json,
+-- 	"assigned_driver_phone" varchar(100),
+-- 	"assigned_vehicle_number" varchar(20),
+-- 	"assigned_vehicle_type" "vehicle_type",
+-- 	"assigned_vehicle_weight" "vehicle_weight",
+-- 	"assigned_vehicle_connection" "vehicle_connection",
+-- 	"agreed_freight_cost" numeric(12, 2),
+-- 	"broker_memo" varchar(500),
+-- 	"created_by" uuid NOT NULL,
+-- 	"updated_by" uuid NOT NULL,
+-- 	"created_at" timestamp DEFAULT now(),
+-- 	"updated_at" timestamp DEFAULT now(),
+-- 	"created_by_snapshot" json,
+-- 	"updated_by_snapshot" json,
+-- 	"broker_flow_status" "order_flow_status" DEFAULT '배차대기' NOT NULL,
+-- 	"is_closed" boolean DEFAULT false NOT NULL,
+-- 	"assigned_driver_name" varchar(100)
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "addresses" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"name" varchar(100) NOT NULL,
+-- 	"type" varchar(10) NOT NULL,
+-- 	"road_address" text NOT NULL,
+-- 	"jibun_address" text NOT NULL,
+-- 	"detail_address" text,
+-- 	"postal_code" varchar(10),
+-- 	"metadata" jsonb DEFAULT '{}'::jsonb NOT NULL,
+-- 	"contact_name" varchar(50),
+-- 	"contact_phone" varchar(20),
+-- 	"memo" text,
+-- 	"is_frequent" boolean DEFAULT false NOT NULL,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"updated_at" timestamp DEFAULT now() NOT NULL,
+-- 	"created_by" uuid,
+-- 	"updated_by" uuid,
+-- 	"company_id" uuid,
+-- 	"deleted_at" timestamp
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "driver_accounts" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"driver_id" uuid NOT NULL,
+-- 	"email" varchar(100),
+-- 	"permission" "permission_type" DEFAULT '일반' NOT NULL,
+-- 	"created_by" uuid NOT NULL,
+-- 	"created_at" timestamp DEFAULT now(),
+-- 	"updated_by" uuid NOT NULL,
+-- 	"updated_at" timestamp DEFAULT now()
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "driver_change_logs" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"driver_id" uuid NOT NULL,
+-- 	"changed_by" uuid NOT NULL,
+-- 	"changed_by_name" varchar(100) NOT NULL,
+-- 	"changed_by_email" varchar(100) NOT NULL,
+-- 	"changed_by_access_level" varchar(50),
+-- 	"change_type" varchar(30) NOT NULL,
+-- 	"diff" json NOT NULL,
+-- 	"reason" varchar(255),
+-- 	"created_at" timestamp DEFAULT now()
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "address_change_logs" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"address_id" uuid NOT NULL,
+-- 	"changed_by" uuid NOT NULL,
+-- 	"changed_by_name" varchar(100) NOT NULL,
+-- 	"changed_by_email" varchar(255) NOT NULL,
+-- 	"changed_by_access_level" varchar(50),
+-- 	"change_type" varchar(20) NOT NULL,
+-- 	"changes" jsonb NOT NULL,
+-- 	"reason" text,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "driver_notes" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"driver_id" uuid NOT NULL,
+-- 	"content" varchar(500) NOT NULL,
+-- 	"date" timestamp DEFAULT now() NOT NULL,
+-- 	"created_by" uuid NOT NULL,
+-- 	"created_at" timestamp DEFAULT now(),
+-- 	"updated_by" uuid NOT NULL,
+-- 	"updated_at" timestamp DEFAULT now()
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "orders" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"company_id" uuid NOT NULL,
+-- 	"contact_user_id" uuid NOT NULL,
+-- 	"contact_user_snapshot" json,
+-- 	"flow_status" "order_flow_status" DEFAULT '운송요청' NOT NULL,
+-- 	"cargo_name" varchar(100),
+-- 	"estimated_price_amount" numeric(12, 2),
+-- 	"pickup_address_id" uuid,
+-- 	"delivery_address_id" uuid,
+-- 	"pickup_address_snapshot" json,
+-- 	"delivery_address_snapshot" json,
+-- 	"pickup_date" date,
+-- 	"delivery_date" date,
+-- 	"is_canceled" boolean DEFAULT false,
+-- 	"memo" varchar(500),
+-- 	"created_by" uuid NOT NULL,
+-- 	"created_by_snapshot" json,
+-- 	"created_at" timestamp DEFAULT now(),
+-- 	"updated_by" uuid NOT NULL,
+-- 	"updated_by_snapshot" json,
+-- 	"updated_at" timestamp DEFAULT now(),
+-- 	"company_snapshot" json,
+-- 	"contact_user_phone" varchar(100),
+-- 	"contact_user_mail" varchar(100),
+-- 	"requested_vehicle_type" "vehicle_type" DEFAULT '카고' NOT NULL,
+-- 	"requested_vehicle_weight" "vehicle_weight" DEFAULT '1톤' NOT NULL,
+-- 	"pickup_address_detail" varchar(100),
+-- 	"pickup_name" varchar(100),
+-- 	"pickup_contact_name" varchar(100),
+-- 	"pickup_contact_phone" varchar(100),
+-- 	"delivery_address_detail" varchar(100),
+-- 	"delivery_name" varchar(100),
+-- 	"delivery_contact_name" varchar(100),
+-- 	"delivery_contact_phone" varchar(100),
+-- 	"pickup_time" time,
+-- 	"delivery_time" time,
+-- 	"transport_options" json,
+-- 	"price_snapshot" json,
+-- 	"price_type" "price_type" DEFAULT '기본' NOT NULL,
+-- 	"tax_type" "tax_type" DEFAULT '과세' NOT NULL,
+-- 	"estimated_distance_km" numeric(10, 2),
+-- 	"estimated_duration_minutes" integer,
+-- 	"distance_calculation_method" "calculation_method" DEFAULT 'api',
+-- 	"distance_calculated_at" timestamp,
+-- 	"distance_cache_id" uuid,
+-- 	"distance_metadata" json
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "order_change_logs" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"order_id" uuid NOT NULL,
+-- 	"change_type" "order_change_type" NOT NULL,
+-- 	"changed_by" uuid NOT NULL,
+-- 	"changed_by_name" varchar(100),
+-- 	"changed_by_email" varchar(100),
+-- 	"changed_by_access_level" varchar(50),
+-- 	"changed_at" timestamp DEFAULT now() NOT NULL,
+-- 	"old_data" json,
+-- 	"new_data" json,
+-- 	"reason" varchar(500)
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "drivers" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"name" varchar(100) NOT NULL,
+-- 	"phone_number" varchar(20) NOT NULL,
+-- 	"vehicle_number" varchar(20) NOT NULL,
+-- 	"vehicle_type" "vehicle_type" NOT NULL,
+-- 	"vehicle_weight" "vehicle_weight" NOT NULL,
+-- 	"address_snapshot" json,
+-- 	"company_id" uuid,
+-- 	"business_number" varchar(20) NOT NULL,
+-- 	"manufacture_year" varchar(10),
+-- 	"is_active" boolean DEFAULT true,
+-- 	"inactive_reason" varchar(200),
+-- 	"last_dispatched_at" timestamp,
+-- 	"created_by" uuid,
+-- 	"created_by_snapshot" json,
+-- 	"created_at" timestamp DEFAULT now(),
+-- 	"updated_by" uuid,
+-- 	"updated_by_snapshot" json,
+-- 	"updated_at" timestamp DEFAULT now(),
+-- 	"company_type" "driver_company_type" DEFAULT '개인' NOT NULL,
+-- 	"bank_code" "bank_code",
+-- 	"bank_account_number" varchar(30),
+-- 	"bank_account_holder" varchar(50)
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "charge_groups" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"order_id" uuid NOT NULL,
+-- 	"dispatch_id" uuid,
+-- 	"stage" charge_stage NOT NULL,
+-- 	"reason" charge_reason NOT NULL,
+-- 	"description" text,
+-- 	"is_locked" boolean DEFAULT false NOT NULL,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"updated_at" timestamp DEFAULT now() NOT NULL,
+-- 	"created_by" uuid NOT NULL,
+-- 	"updated_by" uuid NOT NULL
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "charge_lines" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"group_id" uuid NOT NULL,
+-- 	"side" charge_side NOT NULL,
+-- 	"amount" numeric(14, 2) NOT NULL,
+-- 	"memo" text,
+-- 	"tax_rate" numeric(5, 2) DEFAULT '10',
+-- 	"tax_amount" numeric(14, 2),
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"updated_at" timestamp DEFAULT now() NOT NULL,
+-- 	"created_by" uuid NOT NULL,
+-- 	"updated_by" uuid NOT NULL
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "order_sales" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"order_id" uuid NOT NULL,
+-- 	"company_id" uuid NOT NULL,
+-- 	"invoice_number" varchar(100),
+-- 	"status" "invoice_status" DEFAULT 'draft' NOT NULL,
+-- 	"issue_date" timestamp,
+-- 	"due_date" timestamp,
+-- 	"subtotal_amount" numeric(14, 2) NOT NULL,
+-- 	"tax_amount" numeric(14, 2),
+-- 	"total_amount" numeric(14, 2) NOT NULL,
+-- 	"financial_snapshot" jsonb,
+-- 	"memo" text,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"updated_at" timestamp DEFAULT now() NOT NULL,
+-- 	"created_by" uuid,
+-- 	"updated_by" uuid
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "credit_notes" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"order_sale_id" uuid,
+-- 	"sales_bundle_id" uuid,
+-- 	"credit_note_number" varchar(100),
+-- 	"type" "adjustment_type" NOT NULL,
+-- 	"status" "adjustment_status" DEFAULT 'draft' NOT NULL,
+-- 	"issue_date" timestamp,
+-- 	"amount" numeric(14, 2) NOT NULL,
+-- 	"tax_amount" numeric(14, 2),
+-- 	"total_amount" numeric(14, 2) NOT NULL,
+-- 	"reason" text NOT NULL,
+-- 	"snapshot" jsonb,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"updated_at" timestamp DEFAULT now() NOT NULL,
+-- 	"created_by" uuid,
+-- 	"updated_by" uuid
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "debit_notes" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"order_purchase_id" uuid,
+-- 	"purchase_bundle_id" uuid,
+-- 	"debit_note_number" varchar(100),
+-- 	"type" "adjustment_type" NOT NULL,
+-- 	"status" "adjustment_status" DEFAULT 'draft' NOT NULL,
+-- 	"issue_date" timestamp,
+-- 	"amount" numeric(14, 2) NOT NULL,
+-- 	"tax_amount" numeric(14, 2),
+-- 	"total_amount" numeric(14, 2) NOT NULL,
+-- 	"reason" text NOT NULL,
+-- 	"snapshot" jsonb,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"updated_at" timestamp DEFAULT now() NOT NULL,
+-- 	"created_by" uuid,
+-- 	"updated_by" uuid
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "sales_bundle_items" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"bundle_id" uuid NOT NULL,
+-- 	"order_sales_id" uuid NOT NULL,
+-- 	"base_amount" numeric(12, 2) NOT NULL,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"updated_at" timestamp DEFAULT now() NOT NULL
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "purchase_bundle_items" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"bundle_id" uuid NOT NULL,
+-- 	"order_purchase_id" uuid NOT NULL,
+-- 	"base_amount" numeric(12, 2) NOT NULL,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"updated_at" timestamp DEFAULT now() NOT NULL
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "sales_bundle_adjustments" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"bundle_id" uuid NOT NULL,
+-- 	"type" "bundle_adj_type" NOT NULL,
+-- 	"description" varchar(200),
+-- 	"amount" numeric(12, 2) NOT NULL,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"tax_amount" numeric(12, 2) NOT NULL,
+-- 	"created_by" uuid NOT NULL
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "sales_item_adjustments" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"bundle_item_id" uuid NOT NULL,
+-- 	"type" "bundle_adj_type" NOT NULL,
+-- 	"description" varchar(200),
+-- 	"amount" numeric(12, 2) NOT NULL,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"tax_amount" numeric(12, 2) NOT NULL,
+-- 	"created_by" uuid NOT NULL
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "distance_cache" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"pickup_address_id" uuid NOT NULL,
+-- 	"delivery_address_id" uuid NOT NULL,
+-- 	"pickup_coordinates" json NOT NULL,
+-- 	"delivery_coordinates" json NOT NULL,
+-- 	"distance_km" numeric(10, 2) NOT NULL,
+-- 	"duration_minutes" integer NOT NULL,
+-- 	"route_priority" "route_priority" DEFAULT 'RECOMMEND' NOT NULL,
+-- 	"kakao_response" json,
+-- 	"is_valid" boolean DEFAULT true NOT NULL,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"updated_at" timestamp DEFAULT now() NOT NULL
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "kakao_api_usage" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"api_type" "kakao_api_type" NOT NULL,
+-- 	"endpoint" varchar(200),
+-- 	"request_params" json NOT NULL,
+-- 	"response_status" integer NOT NULL,
+-- 	"response_time_ms" integer NOT NULL,
+-- 	"success" boolean NOT NULL,
+-- 	"error_message" varchar(500),
+-- 	"result_count" integer,
+-- 	"user_id" uuid,
+-- 	"ip_address" varchar(45) NOT NULL,
+-- 	"user_agent" varchar(500),
+-- 	"estimated_cost" integer,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "sales_bundles" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"company_id" uuid NOT NULL,
+-- 	"period_from" date,
+-- 	"period_to" date,
+-- 	"invoice_no" varchar(50),
+-- 	"total_amount" numeric(14, 2),
+-- 	"status" "sales_bundle_status" DEFAULT 'draft' NOT NULL,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"updated_at" timestamp DEFAULT now() NOT NULL,
+-- 	"company_snapshot" jsonb,
+-- 	"manager_id" uuid,
+-- 	"manager_snapshot" jsonb,
+-- 	"payment_method" "payment_method" DEFAULT 'bank_transfer' NOT NULL,
+-- 	"bank_code" "bank_code",
+-- 	"bank_account" varchar(30),
+-- 	"bank_account_holder" varchar(50),
+-- 	"settlement_memo" varchar(200),
+-- 	"period_type" "bundle_period_type" DEFAULT 'departure' NOT NULL,
+-- 	"invoice_issued_at" date,
+-- 	"deposit_requested_at" date,
+-- 	"deposit_received_at" date,
+-- 	"settlement_confirmed_at" date,
+-- 	"settlement_batch_id" varchar(50),
+-- 	"settled_at" date,
+-- 	"total_tax_amount" numeric(14, 2),
+-- 	"total_amount_with_tax" numeric(14, 2),
+-- 	"companies_snapshot" jsonb,
+-- 	"item_extra_amount" numeric(14, 2),
+-- 	"item_extra_amount_tax" numeric(14, 2),
+-- 	"bundle_extra_amount" numeric(14, 2),
+-- 	"bundle_extra_amount_tax" numeric(14, 2),
+-- 	"created_by" uuid NOT NULL,
+-- 	"updated_by" uuid NOT NULL,
+-- 	"order_count" integer DEFAULT 0 NOT NULL,
+-- 	"company_name" varchar(50),
+-- 	"company_business_number" varchar(20)
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "order_purchases" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"order_id" uuid NOT NULL,
+-- 	"company_id" uuid NOT NULL,
+-- 	"invoice_number" varchar(100),
+-- 	"status" "payment_status" DEFAULT 'draft' NOT NULL,
+-- 	"issue_date" timestamp,
+-- 	"payment_date" timestamp,
+-- 	"subtotal_amount" numeric(14, 2) NOT NULL,
+-- 	"tax_amount" numeric(14, 2),
+-- 	"total_amount" numeric(14, 2) NOT NULL,
+-- 	"financial_snapshot" jsonb,
+-- 	"memo" text,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"updated_at" timestamp DEFAULT now() NOT NULL,
+-- 	"created_by" uuid,
+-- 	"updated_by" uuid
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "purchase_bundle_adjustments" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"bundle_id" uuid NOT NULL,
+-- 	"type" "bundle_adj_type" NOT NULL,
+-- 	"description" varchar(200),
+-- 	"amount" numeric(12, 2) NOT NULL,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"tax_amount" numeric(12, 2) NOT NULL,
+-- 	"created_by" uuid NOT NULL
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "purchase_item_adjustments" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"bundle_item_id" uuid NOT NULL,
+-- 	"type" "bundle_adj_type" NOT NULL,
+-- 	"description" varchar(200),
+-- 	"amount" numeric(12, 2) NOT NULL,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"tax_amount" numeric(12, 2) NOT NULL,
+-- 	"created_by" uuid NOT NULL
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "sms_templates" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"role_type" "role_type" NOT NULL,
+-- 	"message_type" "message_type" NOT NULL,
+-- 	"template_body" text NOT NULL,
+-- 	"is_active" boolean DEFAULT true
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "purchase_bundles" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"company_id" uuid,
+-- 	"manager_id" uuid,
+-- 	"period_from" date,
+-- 	"period_to" date,
+-- 	"total_amount" numeric(14, 2),
+-- 	"status" "purchase_bundle_status" DEFAULT 'draft' NOT NULL,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"updated_at" timestamp DEFAULT now() NOT NULL,
+-- 	"company_name" varchar(50),
+-- 	"company_business_number" varchar(20),
+-- 	"company_snapshot" jsonb,
+-- 	"companies_snapshot" jsonb,
+-- 	"manager_snapshot" jsonb,
+-- 	"order_count" integer DEFAULT 0 NOT NULL,
+-- 	"payment_method" "payment_method" DEFAULT 'bank_transfer' NOT NULL,
+-- 	"bank_code" "bank_code",
+-- 	"bank_account" varchar(30),
+-- 	"bank_account_holder" varchar(50),
+-- 	"settlement_memo" varchar(200),
+-- 	"period_type" "bundle_period_type" DEFAULT 'departure' NOT NULL,
+-- 	"invoice_issued_at" date,
+-- 	"deposit_requested_at" date,
+-- 	"deposit_received_at" date,
+-- 	"settlement_confirmed_at" date,
+-- 	"settlement_batch_id" varchar(50),
+-- 	"settled_at" date,
+-- 	"invoice_no" varchar(50),
+-- 	"total_tax_amount" numeric(14, 2),
+-- 	"total_amount_with_tax" numeric(14, 2),
+-- 	"item_extra_amount" numeric(14, 2),
+-- 	"item_extra_amount_tax" numeric(14, 2),
+-- 	"bundle_extra_amount" numeric(14, 2),
+-- 	"bundle_extra_amount_tax" numeric(14, 2),
+-- 	"created_by" uuid NOT NULL,
+-- 	"updated_by" uuid NOT NULL,
+-- 	"driver_id" uuid,
+-- 	"driver_name" varchar(50),
+-- 	"driver_business_number" varchar(20),
+-- 	"driver_snapshot" jsonb
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "sms_messages" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"order_id" uuid NOT NULL,
+-- 	"sender_id" uuid NOT NULL,
+-- 	"message_body" text NOT NULL,
+-- 	"message_type" "message_type" NOT NULL,
+-- 	"request_status" "request_status" DEFAULT 'pending',
+-- 	"created_at" timestamp with time zone DEFAULT now(),
+-- 	"dispatched_at" timestamp with time zone
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "order_participants" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"order_id" uuid NOT NULL,
+-- 	"role_type" "role_type" NOT NULL,
+-- 	"name" varchar(100) NOT NULL,
+-- 	"phone" varchar(20) NOT NULL,
+-- 	"source_type" "source_type" NOT NULL,
+-- 	"created_at" timestamp with time zone DEFAULT now()
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE "sms_recipients" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"sms_message_id" uuid NOT NULL,
+-- 	"recipient_name" varchar(100) NOT NULL,
+-- 	"recipient_phone" varchar(20) NOT NULL,
+-- 	"role_type" "role_type" NOT NULL,
+-- 	"delivery_status" "delivery_status" DEFAULT 'pending',
+-- 	"error_message" text,
+-- 	"sent_at" timestamp with time zone,
+-- 	"api_message_id" varchar(100)
+-- );
+-- --> statement-breakpoint
+-- ALTER TABLE "user_tokens" ADD CONSTRAINT "user_tokens_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "order_dispatches" ADD CONSTRAINT "order_dispatches_assigned_driver_id_drivers_id_fk" FOREIGN KEY ("assigned_driver_id") REFERENCES "public"."drivers"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "order_dispatches" ADD CONSTRAINT "order_dispatches_broker_company_id_companies_id_fk" FOREIGN KEY ("broker_company_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "order_dispatches" ADD CONSTRAINT "order_dispatches_broker_manager_id_users_id_fk" FOREIGN KEY ("broker_manager_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "order_dispatches" ADD CONSTRAINT "order_dispatches_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "order_dispatches" ADD CONSTRAINT "order_dispatches_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "order_dispatches" ADD CONSTRAINT "order_dispatches_updated_by_users_id_fk" FOREIGN KEY ("updated_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "driver_accounts" ADD CONSTRAINT "driver_accounts_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "driver_accounts" ADD CONSTRAINT "driver_accounts_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "public"."drivers"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "driver_accounts" ADD CONSTRAINT "driver_accounts_updated_by_users_id_fk" FOREIGN KEY ("updated_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "driver_change_logs" ADD CONSTRAINT "driver_change_logs_changed_by_users_id_fk" FOREIGN KEY ("changed_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "driver_change_logs" ADD CONSTRAINT "driver_change_logs_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "public"."drivers"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "address_change_logs" ADD CONSTRAINT "address_change_logs_address_id_addresses_id_fk" FOREIGN KEY ("address_id") REFERENCES "public"."addresses"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "driver_notes" ADD CONSTRAINT "driver_notes_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "driver_notes" ADD CONSTRAINT "driver_notes_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "public"."drivers"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "driver_notes" ADD CONSTRAINT "driver_notes_updated_by_users_id_fk" FOREIGN KEY ("updated_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "drivers" ADD CONSTRAINT "drivers_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "drivers" ADD CONSTRAINT "drivers_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "drivers" ADD CONSTRAINT "drivers_updated_by_users_id_fk" FOREIGN KEY ("updated_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "charge_groups" ADD CONSTRAINT "charge_groups_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "charge_groups" ADD CONSTRAINT "charge_groups_dispatch_id_order_dispatches_id_fk" FOREIGN KEY ("dispatch_id") REFERENCES "public"."order_dispatches"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "charge_groups" ADD CONSTRAINT "charge_groups_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "charge_groups" ADD CONSTRAINT "charge_groups_updated_by_users_id_fk" FOREIGN KEY ("updated_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "charge_lines" ADD CONSTRAINT "charge_lines_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "charge_lines" ADD CONSTRAINT "charge_lines_group_id_charge_groups_id_fk" FOREIGN KEY ("group_id") REFERENCES "public"."charge_groups"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "charge_lines" ADD CONSTRAINT "charge_lines_updated_by_users_id_fk" FOREIGN KEY ("updated_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "order_sales" ADD CONSTRAINT "order_sales_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "order_sales" ADD CONSTRAINT "order_sales_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "credit_notes" ADD CONSTRAINT "credit_notes_order_sale_id_order_sales_id_fk" FOREIGN KEY ("order_sale_id") REFERENCES "public"."order_sales"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "credit_notes" ADD CONSTRAINT "credit_notes_sales_bundle_id_sales_bundles_id_fk" FOREIGN KEY ("sales_bundle_id") REFERENCES "public"."sales_bundles"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "debit_notes" ADD CONSTRAINT "debit_notes_order_purchase_id_order_purchases_id_fk" FOREIGN KEY ("order_purchase_id") REFERENCES "public"."order_purchases"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "debit_notes" ADD CONSTRAINT "debit_notes_purchase_bundle_id_purchase_bundles_id_fk" FOREIGN KEY ("purchase_bundle_id") REFERENCES "public"."purchase_bundles"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "sales_bundle_items" ADD CONSTRAINT "sales_bundle_items_bundle_id_sales_bundles_id_fk" FOREIGN KEY ("bundle_id") REFERENCES "public"."sales_bundles"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "sales_bundle_items" ADD CONSTRAINT "sales_bundle_items_order_sales_id_order_sales_id_fk" FOREIGN KEY ("order_sales_id") REFERENCES "public"."order_sales"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "purchase_bundle_items" ADD CONSTRAINT "purchase_bundle_items_bundle_id_purchase_bundles_id_fk" FOREIGN KEY ("bundle_id") REFERENCES "public"."purchase_bundles"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "purchase_bundle_items" ADD CONSTRAINT "purchase_bundle_items_order_purchase_id_order_purchases_id_fk" FOREIGN KEY ("order_purchase_id") REFERENCES "public"."order_purchases"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "sales_bundle_adjustments" ADD CONSTRAINT "sales_bundle_adjustments_bundle_id_sales_bundles_id_fk" FOREIGN KEY ("bundle_id") REFERENCES "public"."sales_bundles"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "sales_bundle_adjustments" ADD CONSTRAINT "sales_bundle_adjustments_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "sales_item_adjustments" ADD CONSTRAINT "sales_item_adjustments_bundle_item_id_sales_bundle_items_id_fk" FOREIGN KEY ("bundle_item_id") REFERENCES "public"."sales_bundle_items"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "sales_item_adjustments" ADD CONSTRAINT "sales_item_adjustments_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "distance_cache" ADD CONSTRAINT "distance_cache_delivery_address_id_addresses_id_fk" FOREIGN KEY ("delivery_address_id") REFERENCES "public"."addresses"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "distance_cache" ADD CONSTRAINT "distance_cache_pickup_address_id_addresses_id_fk" FOREIGN KEY ("pickup_address_id") REFERENCES "public"."addresses"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "kakao_api_usage" ADD CONSTRAINT "kakao_api_usage_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "sales_bundles" ADD CONSTRAINT "sales_bundles_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "sales_bundles" ADD CONSTRAINT "sales_bundles_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "sales_bundles" ADD CONSTRAINT "sales_bundles_manager_id_users_id_fk" FOREIGN KEY ("manager_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "sales_bundles" ADD CONSTRAINT "sales_bundles_updated_by_users_id_fk" FOREIGN KEY ("updated_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "order_purchases" ADD CONSTRAINT "order_purchases_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "order_purchases" ADD CONSTRAINT "order_purchases_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "purchase_bundle_adjustments" ADD CONSTRAINT "purchase_bundle_adjustments_bundle_id_purchase_bundles_id_fk" FOREIGN KEY ("bundle_id") REFERENCES "public"."purchase_bundles"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "purchase_bundle_adjustments" ADD CONSTRAINT "purchase_bundle_adjustments_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "purchase_item_adjustments" ADD CONSTRAINT "purchase_item_adjustments_bundle_item_id_purchase_bundle_items_" FOREIGN KEY ("bundle_item_id") REFERENCES "public"."purchase_bundle_items"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "purchase_item_adjustments" ADD CONSTRAINT "purchase_item_adjustments_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "purchase_bundles" ADD CONSTRAINT "purchase_bundles_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "purchase_bundles" ADD CONSTRAINT "purchase_bundles_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "purchase_bundles" ADD CONSTRAINT "purchase_bundles_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "public"."drivers"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "purchase_bundles" ADD CONSTRAINT "purchase_bundles_updated_by_users_id_fk" FOREIGN KEY ("updated_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "sms_recipients" ADD CONSTRAINT "sms_recipients_sms_message_id_sms_messages_id_fk" FOREIGN KEY ("sms_message_id") REFERENCES "public"."sms_messages"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- CREATE INDEX "idx_orders_company_delivery_created" ON "orders" USING btree ("company_id" timestamp_ops,"created_at" uuid_ops) WHERE (delivery_address_snapshot IS NOT NULL);--> statement-breakpoint
+-- CREATE INDEX "idx_orders_company_pickup_created" ON "orders" USING btree ("company_id" uuid_ops,"created_at" timestamp_ops) WHERE (pickup_address_snapshot IS NOT NULL);--> statement-breakpoint
+-- CREATE INDEX "idx_orders_distance_method" ON "orders" USING btree ("distance_calculation_method" timestamp_ops,"created_at" timestamp_ops);--> statement-breakpoint
+-- CREATE INDEX "idx_orders_estimated_distance" ON "orders" USING btree ("estimated_distance_km" numeric_ops,"created_at" timestamp_ops) WHERE (estimated_distance_km IS NOT NULL);--> statement-breakpoint
+-- CREATE INDEX "idx_distance_cache_address_pair" ON "distance_cache" USING btree ("pickup_address_id" uuid_ops,"delivery_address_id" uuid_ops,"route_priority" uuid_ops);--> statement-breakpoint
+-- CREATE INDEX "idx_distance_cache_latest" ON "distance_cache" USING btree ("pickup_address_id" timestamp_ops,"delivery_address_id" timestamp_ops,"created_at" timestamp_ops);--> statement-breakpoint
+-- CREATE INDEX "idx_distance_cache_valid" ON "distance_cache" USING btree ("is_valid" timestamp_ops,"created_at" timestamp_ops) WHERE (is_valid = true);--> statement-breakpoint
+-- CREATE INDEX "idx_kakao_api_usage_daily_stats" ON "kakao_api_usage" USING btree (date(created_at) date_ops,api_type date_ops,success date_ops);--> statement-breakpoint
+-- CREATE INDEX "idx_kakao_api_usage_errors" ON "kakao_api_usage" USING btree ("response_status" timestamp_ops,"created_at" timestamp_ops) WHERE (success = false);--> statement-breakpoint
+-- CREATE INDEX "idx_kakao_api_usage_performance" ON "kakao_api_usage" USING btree ("response_time_ms" timestamp_ops,"created_at" timestamp_ops);--> statement-breakpoint
+-- CREATE INDEX "idx_kakao_api_usage_success_date" ON "kakao_api_usage" USING btree ("success" timestamp_ops,"created_at" bool_ops);--> statement-breakpoint
+-- CREATE INDEX "idx_kakao_api_usage_type_date" ON "kakao_api_usage" USING btree ("api_type" timestamp_ops,"created_at" timestamp_ops);--> statement-breakpoint
+-- CREATE INDEX "idx_kakao_api_usage_user_date" ON "kakao_api_usage" USING btree ("user_id" uuid_ops,"created_at" timestamp_ops);--> statement-breakpoint
+-- CREATE INDEX "idx_sales_bundles_company_bn" ON "sales_bundles" USING btree ("company_business_number" text_ops);--> statement-breakpoint
+-- CREATE INDEX "idx_sales_bundles_company_name" ON "sales_bundles" USING btree ("company_name" text_ops);--> statement-breakpoint
+-- CREATE INDEX "idx_purchase_bundles_company_bn" ON "purchase_bundles" USING btree ("company_business_number" text_ops);--> statement-breakpoint
+-- CREATE INDEX "idx_purchase_bundles_company_name" ON "purchase_bundles" USING btree ("company_name" text_ops);

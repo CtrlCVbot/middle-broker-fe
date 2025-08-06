@@ -7,6 +7,24 @@ import { z } from 'zod';
 import { logOrderChange } from '@/utils/order-change-logger';
 import { IUserSnapshot } from '@/types/order';
 
+// 사용자 역할 결정 함수
+const getUserRole = (systemAccessLevel?: string): 'shipper' | 'broker' | 'admin' => {
+  if (!systemAccessLevel) return 'broker';
+  
+  switch (systemAccessLevel) {
+    case 'platform_admin':
+    case 'broker_admin':
+    case 'shipper_admin':
+      return 'admin';
+    case 'broker_member':
+      return 'broker';
+    case 'shipper_member':
+      return 'shipper';
+    default:
+      return 'broker';
+  }
+};
+
 // UUID 검증을 위한 유틸리티 함수
 function isValidUUID(uuid: string): boolean {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -106,6 +124,8 @@ export async function PUT(
       );
     }
 
+    console.log('배차상태변경', existingOrder);
+
     // 현재 시간
     const now = new Date();
 
@@ -135,6 +155,7 @@ export async function PUT(
         changedByName: requestUser.name,
         changedByEmail: requestUser.email,
         changedByAccessLevel: requestUser.system_access_level,
+        changedByRole: getUserRole(requestUser.system_access_level),
         changeType: 'updateStatus',
         oldData: existingOrder,
         newData: updatedOrder,

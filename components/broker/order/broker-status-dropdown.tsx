@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { getStatusColor } from '@/components/order/order-table-ver01';
 import { ORDER_FLOW_STATUSES } from '@/types/order';
-import { updateDispatchFields } from '@/services/broker-dispatch-service';
+import { changeOrderStatus, updateDispatchFields } from '@/services/broker-dispatch-service';
 import { useToast } from '@/components/ui/use-toast';
 import { 
   Clock, 
@@ -23,6 +23,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { validate as isValidUUID, version as getUUIDVersion } from 'uuid';
+import { BrokerOrderStatusType } from '@/types/broker-order';
 
 interface BrokerStatusDropdownProps {
   currentStatus: string;
@@ -93,12 +94,23 @@ export function BrokerStatusDropdown({
         return;
       }
       
+      // 배차 정보 업데이트 (updateDispatchFields)
       await updateDispatchFields(
         dispatchId, 
         { 
           brokerFlowStatus: newStatus 
-        }
+        },
+        `상태 변경: ${currentStatus} → ${newStatus}`
       );
+      
+      // 주문 상태도 함께 업데이트 (changeOrderStatus)
+      // dispatchId를 orderId로 변환하는 로직이 필요하지만, 
+      // 현재는 updateDispatchFields에서 이미 주문 상태도 업데이트하므로 생략
+      // await changeOrderStatus(
+      //   orderId, 
+      //   newStatus as BrokerOrderStatusType,
+      //   `상태 변경: ${currentStatus} → ${newStatus}`
+      // );
       
       toast({
         title: "상태 변경 완료",
