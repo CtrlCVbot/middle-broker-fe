@@ -1,4 +1,5 @@
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { useQuery, UseQueryResult, useQueryClient } from '@tanstack/react-query';
+import { useCallback } from 'react';
 import { CargoService } from '@/services/cargo-service';
 import { ICargo } from '@/types/order';
 
@@ -55,20 +56,27 @@ export const useRecentCargos = (options: UseRecentCargosOptions): RecentCargosQu
 
   // 쿼리 키 생성 - 회사 ID와 limit을 포함
   const queryKey = ['recent-cargos', companyId, limit];
-  console.log('queryKey', queryKey);
+
+  // companyId 유효성 검사 강화
+  const isCompanyIdValid = Boolean(companyId && companyId.trim() !== '' && companyId !== 'undefined');
 
   // React Query 설정
   const queryResult: UseQueryResult<ICargo[], Error> = useQuery({
     queryKey,
     queryFn: () => CargoService.getRecentCargos(companyId, limit),
-    enabled: enabled && !!companyId,
+    enabled: Boolean(enabled && isCompanyIdValid), // 명시적으로 boolean 타입 변환
     staleTime: 5 * 60 * 1000, // 5분 동안 fresh 상태 유지
     gcTime: 10 * 60 * 1000, // 10분 동안 캐시 유지 (구 cacheTime)
     retry: 2, // 실패 시 2번 재시도
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // 지수 백오프
     refetchOnWindowFocus: false, // 윈도우 포커스 시 재요청 비활성화
-    refetchOnMount: 'always', // 마운트 시 항상 재요청
+    refetchOnMount: true, // 마운트 시 stale한 경우에만 재요청
   });
+
+  // useCallback으로 refetch 함수 안정화
+  const stableRefetch = useCallback(() => {
+    return queryResult.refetch();
+  }, [queryResult.refetch]);
 
   // 결과 객체 반환
   return {
@@ -76,7 +84,7 @@ export const useRecentCargos = (options: UseRecentCargosOptions): RecentCargosQu
     isLoading: queryResult.isLoading,
     isError: queryResult.isError,
     error: queryResult.error,
-    refetch: queryResult.refetch,
+    refetch: stableRefetch,
     isFetching: queryResult.isFetching,
   };
 };
@@ -88,14 +96,29 @@ export const useRecentCargos = (options: UseRecentCargosOptions): RecentCargosQu
  * 새로운 주문 등록 후 최근 화물 캐시를 무효화할 때 사용
  */
 export const useInvalidateRecentCargos = () => {
+  const queryClient = useQueryClient();
+  
+  // useCallback으로 invalidate 함수 안정화
+  const stableInvalidate = useCallback((companyId?: string) => {
+    if (companyId) {
+      // 특정 회사의 최근 화물 캐시만 무효화
+      queryClient.invalidateQueries({
+        queryKey: ['recent-cargos', companyId]
+      });
+    } else {
+      // 모든 최근 화물 캐시 무효화
+      queryClient.invalidateQueries({
+        queryKey: ['recent-cargos']
+      });
+    }
+    console.log('[useInvalidateRecentCargos] 최근 화물 캐시 무효화 완료');
+  }, [queryClient]);
+  
   return {
     /**
      * 최근 화물 캐시 무효화
+     * @param companyId 특정 회사의 캐시만 무효화하려면 회사 ID 전달
      */
-    invalidate: () => {
-      // React Query의 queryClient.invalidateQueries를 사용
-      // 이 기능은 실제 구현 시 QueryClient 접근이 필요합니다
-      console.log('[useInvalidateRecentCargos] 최근 화물 캐시 무효화 요청');
-    }
+    invalidate: stableInvalidate
   };
 }; 

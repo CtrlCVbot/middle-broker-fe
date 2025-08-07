@@ -1,7 +1,7 @@
 "use client";
 
 //react, next
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from 'next/navigation';
 
@@ -392,8 +392,25 @@ const {
   // 거리 및 금액 계산
   useEffect(() => {
     const { departure, destination } = registerData;
+    
+    console.log('🔍 거리 계산 useEffect 트리거됨:', {
+      departure: {
+        address: departure.address,
+        id: departure.id,
+        latitude: departure.latitude,
+        longitude: departure.longitude
+      },
+      destination: {
+        address: destination.address,
+        id: destination.id,
+        latitude: destination.latitude,
+        longitude: destination.longitude
+      }
+    });
+    
     // 출발지 또는 도착지 중 하나라도 주소가 없으면 예상 정보 초기화
     if (!departure.address || !destination.address) {
+      console.log('❌ 주소 정보 부족으로 거리 계산 건너뜀');
       if (editMode) {
         editStore.setRegisterData({
           estimatedDistance: 0,
@@ -406,6 +423,7 @@ const {
     }
     // 출발지와 도착지 주소가 모두 입력된 경우에만 계산
     const calculateDistanceAndAmount = async () => {
+      console.log('🚀 거리 계산 시작');
       setIsCalculating(true);
       
       try {
@@ -417,6 +435,7 @@ const {
         // 좌표 정보가 있는 경우 실제 API 호출
         if (departure.latitude && departure.longitude && 
             destination.latitude && destination.longitude) {
+          console.log('✅ 좌표 정보 확인됨, API 호출 진행');
           
           const result = await DistanceClientService.calculateDistanceByAddresses({
             pickupAddressId: departure.id,
@@ -479,7 +498,7 @@ const {
             );
           }
         } else {          
-          console.log('좌표 정보 없음!!!');
+          console.log('❌ 좌표 정보 없음!!!');
           // 계산 결과를 store에 반영
           if (editMode) {
             editStore.setRegisterData({
@@ -523,14 +542,23 @@ const {
     // 300ms 디바운스로 연속 호출 방지
     const timeoutId = setTimeout(() => {
       if (departure.address && destination.address) {
+        console.log('⏰ 디바운스 후 거리 계산 실행');
         calculateDistanceAndAmount();
+      } else {
+        console.log('⏰ 디바운스 후 주소 정보 부족으로 계산 건너뜀');
       }
     }, 300);
     
     return () => clearTimeout(timeoutId);
   }, [
     registerData.departure.address,
-    registerData.destination.address
+    registerData.destination.address,
+    registerData.departure.id,
+    registerData.destination.id,
+    registerData.departure.latitude,
+    registerData.departure.longitude,
+    registerData.destination.latitude,
+    registerData.destination.longitude
   ]);
 
   // 상차지 시간 설정 시 하차지 시간 자동 설정 (상차지 + 1시간)
@@ -615,6 +643,14 @@ const {
     }
     console.log('담당자 검색:', managerSearchTerm);
   };
+
+  // 화물 정보 초기화 함수 - useCallback으로 최적화
+  const handleCargoReset = useCallback(() => {
+    setWeightType('1톤');
+    setVehicleType('카고');
+    setCargoType('');
+    setRemark('');
+  }, [setWeightType, setVehicleType, setCargoType, setRemark]);
   
   
   return (
@@ -717,6 +753,12 @@ const {
                             
                             // 수동 초기화 상태 설정 (자동 설정 방지)
                             setIsManualReset(true);
+                            
+                            // 화물 정보도 초기화
+                            setWeightType('1톤');
+                            setVehicleType('카고');
+                            setCargoType('');
+                            setRemark('');
                           }}
                           isEditMode={editMode}
                           loading={isSubmitting}
@@ -733,7 +775,7 @@ const {
                   {/* 오른쪽: 화물 정보 카드 */}
                   <div className="lg:col-span-2">
                     <RegisterCargoInfoForm
-                      companyId={selectedCompanyId || ''}
+                      companyId={selectedCompanyId || undefined}
                       compact={true}
                       enabled={!editMode}
                       onCargoSelect={(cargo) => {
@@ -754,6 +796,8 @@ const {
                       onVehicleTypeChange={(value) => setVehicleType(value as any)}
                       onCargoTypeChange={(value) => setCargoType(value)}
                       onRemarkChange={(value) => setRemark(value)}
+                      // 초기화 함수 전달
+                      onReset={handleCargoReset}
                     />
                   </div>
                 </div>

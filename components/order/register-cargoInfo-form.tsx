@@ -26,14 +26,14 @@ import {
   ChevronUp
 } from 'lucide-react';
 
-import { useRecentCargos } from '@/hooks/useRecentCargos';
+import { useRecentCargos, useInvalidateRecentCargos } from '@/hooks/useRecentCargos';
 import { ICargo } from '@/types/order';
 import { ORDER_VEHICLE_TYPES, ORDER_VEHICLE_WEIGHTS } from '@/types/order';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
 interface RegisterCargoInfoFormProps {
-  companyId: string;
+  companyId?: string; // 선택적으로 변경
   compact?: boolean;
   enabled?: boolean;
   onCargoSelect?: (cargo: ICargo) => void;
@@ -48,6 +48,8 @@ interface RegisterCargoInfoFormProps {
   onVehicleTypeChange?: (value: string) => void;
   onCargoTypeChange?: (value: string) => void;
   onRemarkChange?: (value: string) => void;
+  // 초기화 관련 props 추가
+  onReset?: () => void;
 }
 
 export const RegisterCargoInfoForm: React.FC<RegisterCargoInfoFormProps> = ({
@@ -65,20 +67,29 @@ export const RegisterCargoInfoForm: React.FC<RegisterCargoInfoFormProps> = ({
   onWeightTypeChange,
   onVehicleTypeChange,
   onCargoTypeChange,
-  onRemarkChange
+  onRemarkChange,
+  // 초기화 관련 props
+  onReset
 }) => {
   const [hasEnteredCargo, setHasEnteredCargo] = useState(false);
   const [showCargoInfo, setShowCargoInfo] = useState(false);
+
+  // 캐시 무효화 훅 사용
+  const { invalidate: invalidateRecentCargos } = useInvalidateRecentCargos();
+
+  // companyId 유효성 검사
+  const isValidCompanyId = Boolean(companyId && companyId.trim() !== '' && companyId !== 'undefined');
 
   // 최근 화물 조회
   const { 
     data: recentCargos = [], 
     isLoading: isLoadingRecentCargos,
-    error: recentCargosError 
+    error: recentCargosError,
+    refetch: refetchRecentCargos
   } = useRecentCargos({ 
-    companyId,
+    companyId: companyId ?? '',
     limit: 5,
-    enabled: enabled && !hasEnteredCargo && compact 
+    enabled: Boolean(enabled && !hasEnteredCargo && compact && isValidCompanyId)
   });
 
   // 최근 화물 클릭 핸들러
@@ -102,6 +113,19 @@ export const RegisterCargoInfoForm: React.FC<RegisterCargoInfoFormProps> = ({
       setShowCargoInfo(false);
     }
   }, [hasEnteredCargo, cargoType]);
+
+  // 초기화 시 최근 화물 정보 상태 리셋
+  useEffect(() => {
+    if (onReset) {
+      setHasEnteredCargo(false);
+      setShowCargoInfo(false);
+      // 최근 화물 정보 캐시 무효화 및 재조회 (companyId가 유효할 때만)
+      if (isValidCompanyId && companyId) {
+        invalidateRecentCargos(companyId);
+        refetchRecentCargos();
+      }
+    }
+  }, [onReset, companyId, isValidCompanyId]); // 함수 참조 제거
 
   return (
     <div className="space-y-6">
@@ -134,8 +158,17 @@ export const RegisterCargoInfoForm: React.FC<RegisterCargoInfoFormProps> = ({
             <div className="space-y-4">
               
               {/* 최근 사용 화물 정보 섹션 - 중량/차량 종류 입력 필드 바로 위에 배치 */}
+              {/* 화주 미선택 상태 */}
+              {!isValidCompanyId && compact && (
+                <div className="border rounded-lg p-4 bg-muted/30 mb-4">
+                  <div className="text-center text-sm text-muted-foreground">
+                    화주를 선택하면 최근 사용 화물 정보를 확인할 수 있습니다.
+                  </div>
+                </div>
+              )}
+
               {/* 로딩 상태 UI */}
-              {!hasEnteredCargo && !cargoType && compact && isLoadingRecentCargos && (
+              {!hasEnteredCargo && !cargoType && compact && isLoadingRecentCargos && isValidCompanyId && (
                 <div className="border rounded-lg p-4 bg-muted/30 mb-4">
                   <div className="flex items-center gap-2 mb-4">
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -147,7 +180,7 @@ export const RegisterCargoInfoForm: React.FC<RegisterCargoInfoFormProps> = ({
               )}
 
               {/* 에러 상태 UI */}
-              {!hasEnteredCargo && !cargoType && compact && recentCargosError && (
+              {!hasEnteredCargo && !cargoType && compact && recentCargosError && isValidCompanyId && (
                 <Alert className="mb-4">
                   <AlertDescription>
                     최근 화물 정보를 불러올 수 없습니다.
@@ -160,7 +193,8 @@ export const RegisterCargoInfoForm: React.FC<RegisterCargoInfoFormProps> = ({
                !cargoType &&
                !isLoadingRecentCargos && 
                recentCargos.length === 0 && 
-               compact && (
+               compact && 
+               isValidCompanyId && (
                 <div className="border rounded-lg p-4 bg-muted/30 mb-4">
                   <div className="text-center text-sm text-muted-foreground">
                     최근 입력된 화물 정보가 없습니다.
@@ -173,7 +207,8 @@ export const RegisterCargoInfoForm: React.FC<RegisterCargoInfoFormProps> = ({
                !cargoType &&
                !isLoadingRecentCargos && 
                recentCargos.length > 0 && 
-               compact && (
+               compact && 
+               isValidCompanyId && (
                 <div className="border rounded-lg p-4 bg-muted/30 mb-4">
                   <div className="flex items-center gap-2 mb-4 text-primary">
                     <Package className="h-5 w-5" />
