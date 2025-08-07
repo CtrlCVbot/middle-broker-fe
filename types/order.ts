@@ -476,3 +476,16 @@ export const isStatusAtLeast = (currentStatus: OrderFlowStatus, targetStatus: Or
   return currentIndex >= targetIndex;
 };
 
+// 최근 화물 정보 인터페이스
+export interface ICargo {
+  id: string;
+  cargoName: string;           // 화물 품목명
+  requestedVehicleWeight: string;  // 요청 중량
+  requestedVehicleType: string;    // 요청 차량 종류
+  memo?: string;              // 비고
+  createdAt: string;          // 생성일
+  updatedAt: string;          // 수정일
+  createdBy: string;          // 생성자
+  updatedBy: string;          // 수정자
+}
+
