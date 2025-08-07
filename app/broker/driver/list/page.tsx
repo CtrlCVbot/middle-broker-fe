@@ -262,7 +262,7 @@ export default function BrokerDriverPage() {
 
   return (
     <>
-    <header className="flex h-16 shrink-0 items-center gap-2">
+    <header className="flex h-16 shrink-0 items-center gap-2 border-b">
         <div className="flex items-center gap-2 px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator
@@ -293,10 +293,35 @@ export default function BrokerDriverPage() {
           {/* 액션 버튼 제거 */}
         </div>
       </header>
-      <main className="flex flex-1 flex-col p-4 pt-0">
+
+      {/* CardDescription 내용을 Breadcrumb 하단에 추가 */}
+      <div className="px-4 bg-muted/50 border-b flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+        {isLoading
+                    ? "차주 목록을 불러오는 중..."
+                    : totalItems > 0
+                    ? `총 ${totalItems}명의 차주가 있습니다.`
+                    : "등록된 차주가 없습니다."}
+        </p>
+        <ToggleGroup
+                type="single"
+                value={viewMode}
+                onValueChange={handleViewModeChange}
+                size="sm"
+              >
+                <ToggleGroupItem value="table" aria-label="테이블 보기">
+                  <ListFilter className="h-4 w-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="card" aria-label="카드 보기">
+                  <Grid3x3 className="h-4 w-4" />
+                </ToggleGroupItem>
+              </ToggleGroup>        
+      </div>
+
+      <main className="flex flex-1 flex-col p-4 pt-4">
         <Card>
           {/* 검색 및 필터 */}          
-          <CardHeader className="flex flex-row items-center justify-between">
+          {/* <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>차주 목록</CardTitle>
                 <CardDescription className="hidden md:block">
@@ -323,7 +348,7 @@ export default function BrokerDriverPage() {
                   <Grid3x3 className="h-4 w-4" />
                 </ToggleGroupItem>
               </ToggleGroup>            
-          </CardHeader>
+          </CardHeader> */}
 
           <CardContent>
           <div>

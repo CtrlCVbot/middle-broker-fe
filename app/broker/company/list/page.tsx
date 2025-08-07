@@ -157,7 +157,7 @@ export default function BrokerCompanyPage() {
 
   return (
     <>
-    <header className="flex h-16 shrink-0 items-center gap-2">
+    <header className="flex h-16 shrink-0 items-center gap-2 border-b">
     <div className="flex items-center gap-2 px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator
@@ -185,9 +185,27 @@ export default function BrokerCompanyPage() {
           </Breadcrumb>
         </div>
     </header>
-    <main className="flex flex-1 flex-col p-4 pt-0">
+
+    {/* CardDescription 내용을 Breadcrumb 하단에 추가 */}
+    <div className="px-4 bg-muted/50 border-b flex items-center justify-between">
+      <p className="text-sm text-muted-foreground">
+      운송사, 주선사, 화주 등 업체 정보를 관리합니다.
+                <span className="text-xs text-muted-foreground px-4">
+                  마지막 업데이트: {lastRefreshed.toLocaleTimeString()}
+                </span>
+      </p>
+      <ToggleGroup type="single" value={viewMode} onValueChange={(value: string) => value && setViewMode(value as 'table' | 'card')}>
+        <ToggleGroupItem value="table" aria-label="테이블 보기">
+          <ListFilter className="h-4 w-4" />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="card" aria-label="카드 보기">
+          <Grid3x3 className="h-4 w-4" />
+        </ToggleGroupItem>
+      </ToggleGroup>        
+    </div>
+    <main className="flex flex-1 flex-col p-4 pt-4">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        {/* <CardHeader className="flex flex-row items-center justify-between">
           <div> 
           <CardTitle>업체 관리</CardTitle>
           <CardDescription className="hidden md:block">운송사, 주선사, 화주 등 업체 정보를 관리합니다.
@@ -208,7 +226,7 @@ export default function BrokerCompanyPage() {
             </ToggleGroupItem>
           </ToggleGroup>
         
-        </CardHeader>
+        </CardHeader> */}
       
         <CardContent>
         <div>

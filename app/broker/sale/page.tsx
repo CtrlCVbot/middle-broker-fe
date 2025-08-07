@@ -278,10 +278,25 @@ export default function IncomePage() {
           </Breadcrumb>
         </div>
       </header>
+
+      {/* CardDescription 내용을 Breadcrumb 하단에 추가 */}
+      <div className="px-4 bg-muted/50 border-b flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+        매출 정산 목록을 확인할 수 있습니다.
+        </p>
+        <ToggleGroup type="single">
+              <ToggleGroupItem value="table" aria-label="테이블 보기">
+                <ListFilter className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="card" aria-label="카드 보기">
+                <Grid3x3 className="h-4 w-4" />
+              </ToggleGroupItem>
+            </ToggleGroup>   
+      </div>
       
       <main>
         <Card  className="border-none shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between">
+          {/* <CardHeader className="flex flex-row items-center justify-between">
             <div> 
               <CardTitle>매출 정산 관리</CardTitle>
               <CardDescription className="hidden md:block">매출 정산 목록을 확인할 수 있습니다.
@@ -301,7 +316,7 @@ export default function IncomePage() {
                 <Grid3x3 className="h-4 w-4" />
               </ToggleGroupItem>
             </ToggleGroup>
-          </CardHeader>
+          </CardHeader> */}
           <CardContent>
             {/* 상태별 탭 영역 */}
             <Card>

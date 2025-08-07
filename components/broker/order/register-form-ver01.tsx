@@ -671,12 +671,12 @@ const {
 
           <Card className="border-none shadow-none">
             
-            <CardHeader>
+            {/* <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div className="flex flex-col w-full">
                   <CardTitle>{editMode  ? (
                       <>운송 정보 수정 
-                      {/* - #{orderNumber?.slice(0, 8)}  */}
+                      
                       </> 
                     ) : (
                       <>운송 요청</>
@@ -693,7 +693,7 @@ const {
                   </div>
                 )}
               </div>
-            </CardHeader>
+            </CardHeader> */}
               
             <CardContent>
               {/* 새로운 레이아웃: 2개 컬럼으로 분할 */}

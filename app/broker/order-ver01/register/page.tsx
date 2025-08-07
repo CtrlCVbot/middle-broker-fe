@@ -56,6 +56,13 @@ export default function OrderRegisterPage() {
         </div>
       </header>
       
+      {/* CardDescription 내용을 Breadcrumb 하단에 추가 */}
+      <div className="px-4 py-2 bg-muted/50 border-b">
+        <p className="text-sm text-muted-foreground">
+          운송 요청할 화물 정보를 입력하고 등록해주세요.
+        </p>
+      </div>
+      
       <main >
         <OrderRegisterForm onSubmit={() => setOpenSummary(true)} />
         

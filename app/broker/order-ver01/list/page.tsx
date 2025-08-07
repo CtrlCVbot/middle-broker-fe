@@ -333,11 +333,30 @@ export default function BrokerOrderListPage() {
         </Breadcrumb>
       </div>
     </header>
+
+    {/* CardDescription 내용을 Breadcrumb 하단에 추가 */}
+    <div className="px-4 bg-muted/50 border-b flex items-center justify-between">
+      <p className="text-sm text-muted-foreground">
+      주선 화물 목록을 확인할 수 있습니다.
+      <span className="text-xs text-muted-foreground px-4">
+              마지막 업데이트: {lastRefreshed.toLocaleTimeString()}
+            </span>
+      </p>
+      <ToggleGroup type="single" value={viewMode} onValueChange={(value: string) => value && setViewMode(value as 'table' | 'card')}>
+        <ToggleGroupItem value="table" aria-label="테이블 보기">
+          <ListFilter className="h-2 w-2" />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="card" aria-label="카드 보기">
+          <Grid3x3 className="h-2 w-2" />
+        </ToggleGroupItem>
+      </ToggleGroup>        
+    </div>
+
     <main>
       {/* 제목 및 액션 버튼 */}
       
       <Card  className="border-none shadow-none">
-        <CardHeader className="flex flex-row items-center justify-between">
+        {/* <CardHeader className="flex flex-row items-center justify-between">
           <div> 
             <CardTitle>실시간 주선 현황</CardTitle>
             <CardDescription className="hidden md:block">주선 화물 목록을 확인할 수 있습니다.
@@ -357,7 +376,7 @@ export default function BrokerOrderListPage() {
               <Grid3x3 className="h-4 w-4" />
             </ToggleGroupItem>
           </ToggleGroup>
-        </CardHeader>
+        </CardHeader> */}
 
         <CardContent>
           {/* isLoading 상태일 때 로딩 표시 */}
