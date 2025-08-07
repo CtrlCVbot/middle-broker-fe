@@ -109,6 +109,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
   const [isCompanyAutoSet, setIsCompanyAutoSet] = useState(false);
   const [isManagerAutoSet, setIsManagerAutoSet] = useState(false);
   const [isManualReset, setIsManualReset] = useState(false); // 수동 초기화 여부 추적
+  const [locationResetTrigger, setLocationResetTrigger] = useState(0); // LocationFormVer01 초기화 트리거
   
   const { setFilter } = useCompanyStore();
   const companiesQuery = useCompanies();
@@ -617,6 +618,16 @@ const {
     }
   }, [registerData.remark]);
 
+  // locationResetTrigger가 변경되면 LocationFormVer01 컴포넌트 초기화
+  useEffect(() => {
+    if (locationResetTrigger > 0) {
+      // 트리거를 리셋하여 다음 초기화를 위해 준비
+      setTimeout(() => {
+        setLocationResetTrigger(0);
+      }, 100);
+    }
+  }, [locationResetTrigger]);
+
   // 회사 검색 함수
   const handleCompanySearch = () => {
     // TODO: 실제 회사 검색 API 호출
@@ -759,6 +770,41 @@ const {
                             setVehicleType('카고');
                             setCargoType('');
                             setRemark('');
+                            
+                            // 상차/하차 정보도 초기화
+                            setDeparture({
+                              id: '',
+                              address: '',
+                              roadAddress: '',
+                              jibunAddress: '',
+                              latitude: 0,
+                              longitude: 0,
+                              detailedAddress: '',
+                              name: '',
+                              company: '',
+                              contact: '',
+                              date: '',
+                              time: '',
+                              createdAt: new Date().toISOString()
+                            });
+                            setDestination({
+                              id: '',
+                              address: '',
+                              roadAddress: '',
+                              jibunAddress: '',
+                              latitude: 0,
+                              longitude: 0,
+                              detailedAddress: '',
+                              name: '',
+                              company: '',
+                              contact: '',
+                              date: '',
+                              time: '',
+                              createdAt: new Date().toISOString()
+                            });
+                            
+                            // LocationFormVer01 컴포넌트 초기화 신호 전달을 위한 상태 추가
+                            setLocationResetTrigger(prev => prev + 1);
                           }}
                           isEditMode={editMode}
                           loading={isSubmitting}
@@ -818,6 +864,7 @@ const {
                     disabled={editMode && !isEditable('departure')}
                     onDisabledClick={() => handleDisabledFieldClick('departure')}
                     companyId={selectedCompanyId || ''}
+                    onReset={locationResetTrigger > 0 ? () => {} : undefined}
                   />
                 </CardContent>
               </Card>
@@ -833,6 +880,7 @@ const {
                     disabled={editMode && !isEditable('destination')}
                     onDisabledClick={() => handleDisabledFieldClick('destination')}                  
                     companyId={selectedCompanyId || ''}
+                    onReset={locationResetTrigger > 0 ? () => {} : undefined}
                   />
                 </CardContent>
               </Card>

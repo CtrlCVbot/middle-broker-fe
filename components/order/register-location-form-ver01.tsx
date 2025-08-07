@@ -61,6 +61,7 @@ interface LocationFormProps {
   disabled?: boolean;
   onDisabledClick?: () => void;
   companyId?: string;
+  onReset?: () => void; // 초기화 신호를 받기 위한 prop 추가
 }
 
 export const LocationFormVer01: React.FC<LocationFormProps> = ({ 
@@ -71,7 +72,8 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
   compact = false,
   disabled = false,
   onDisabledClick,
-  companyId = ''
+  companyId = '',
+  onReset
 }) => {
   const { useRecentLocation } = useOrderRegisterStore();
   const [hasSearchedAddress, setHasSearchedAddress] = useState(!!locationInfo.address);
@@ -328,6 +330,20 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
     // locationInfo가 변경되면 주소 검색 상태도 업데이트
     setHasSearchedAddress(!!locationInfo.address);
   }, [locationInfo.date, date, locationInfo.address]);
+
+  // onReset prop을 받았을 때 내부 상태 초기화
+  useEffect(() => {
+    if (onReset) {
+      setDate(undefined);
+      setHasSearchedAddress(false);
+      setSearchQuery('');
+      setSearchResults([]);
+      setSearchError(null);
+      setIsTimePopoverOpen(false);
+      setTempHour('');
+      setTempMinute('');
+    }
+  }, [onReset]);
 
   // 주소가 선택되었을 때 자동으로 날짜/시간 설정 (현재 시간 + 6시간)
   useEffect(() => {
