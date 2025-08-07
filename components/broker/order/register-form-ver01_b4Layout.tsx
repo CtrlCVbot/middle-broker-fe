@@ -20,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { TruckIcon, MapPinIcon, Settings2 as OptionsIcon, Calculator as CalculatorIcon, ChevronDown, ChevronUp, PencilIcon, Info, Weight, Truck, Container, Loader2 } from "lucide-react";
 
@@ -93,8 +93,8 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
   const [activeTab, setActiveTab] = useState<string>("vehicle");
   const [isCalculating, setIsCalculating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showRemark, setShowRemark] = useState<boolean>(true);
-  const [showOptions, setShowOptions] = useState<boolean>(true);
+  const [showRemark, setShowRemark] = useState<boolean>(false);
+  const [showOptions, setShowOptions] = useState<boolean>(false);
   const [showCargoInfo, setShowCargoInfo] = useState<boolean>(false);
   const [successDialogOpen, setSuccessDialogOpen] = useState<boolean>(false);
   const [registeredOrderId, setRegisteredOrderId] = useState<string>('');
@@ -334,21 +334,21 @@ const {
     }
   });
 
-  // // 추가: 컴포넌트 마운트 시 자동 설정 실행 - 주선사 모드에서는 사용하지 않음, 하지만 삭제금지!
-  // useEffect(() => {
-  //   // 조건: 로그인 상태 + 등록 모드 + 회사 미선택 + 사용자에 회사ID 존재 + 수동 초기화 안함
-  //   if (
-  //     isLoggedIn() && 
-  //     !editMode && 
-  //     user?.companyId && 
-  //     !selectedCompanyId && 
-  //     !isAutoSettingLoading &&
-  //     !isManualReset // 수동 초기화 하지 않은 경우에만 자동 설정
-  //   ) {
-  //     console.log('🚀 자동 설정 조건 충족, 실행 시작...');
-  //     handleAutoSetCompanyInfo();
-  //   }
-  // }, [isLoggedIn(), user?.companyId, selectedCompanyId, editMode, isManualReset]);
+  // 추가: 컴포넌트 마운트 시 자동 설정 실행 - 주선사 모드에서는 사용하지 않음, 하지만 삭제금지!
+  useEffect(() => {
+    // 조건: 로그인 상태 + 등록 모드 + 회사 미선택 + 사용자에 회사ID 존재 + 수동 초기화 안함
+    if (
+      isLoggedIn() && 
+      !editMode && 
+      user?.companyId && 
+      !selectedCompanyId && 
+      !isAutoSettingLoading &&
+      !isManualReset // 수동 초기화 하지 않은 경우에만 자동 설정
+    ) {
+      console.log('🚀 자동 설정 조건 충족, 실행 시작...');
+      handleAutoSetCompanyInfo();
+    }
+  }, [isLoggedIn(), user?.companyId, selectedCompanyId, editMode, isManualReset]);
   
   // 폼 데이터 업데이트 (수정 모드에서 폼 필드가 초기 데이터와 연결되도록 추가)
   useEffect(() => {
@@ -696,132 +696,130 @@ const {
             </CardHeader>
               
             <CardContent>
-              {/* 새로운 레이아웃: 2개 컬럼으로 분할 */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                
-                {/* 첫 번째 컬럼 (1/3): 회사 및 담당자 정보 + 화물 정보 */}
-                <div className="lg:col-span-1 space-y-4">
-                  
-                  {/* 회사 및 담당자 정보 */}
-                  <Card>
-                    <CardContent>
-                      <CompanyManagerInfoSection
-                        form={form}
-                        companySearchTerm={companySearchTerm}
-                        setCompanySearchTerm={setCompanySearchTerm}
-                        companies={companiesQuery.data?.data ?? []}
-                        onSelectCompany={(company) => {
-                          form.setValue("shipperName", company.name);
-                          form.setValue("businessNumber", company.businessNumber || "");
-                          if (company.ceoName) {
-                            form.setValue("shipperCeo", company.ceoName);
-                          }
-                          // 로컬 상태와 스토어 상태 모두 업데이트
-                          setSelectedCompanyId(company.id);
-                          setStoreCompanyId(company.id);
-                          // 수동 선택 시 자동 설정 상태 리셋
-                          setIsCompanyAutoSet(false);
-                          setIsManagerAutoSet(false);
-                          // 회사 선택 시 담당자 목록 로드
-                          if (company.id) {
-                            loadManagers(company.id);
-                          }
-                        }}
-                        selectedCompanyId={selectedCompanyId}
-                        onCompanySearch={handleCompanySearch}
-                        isLoadingCompanies={companiesQuery.isLoading}
-                        managerSearchTerm={managerSearchTerm}
-                        setManagerSearchTerm={setManagerSearchTerm}
-                        managers={brokerManagers.filter(manager => manager.status === '활성')}
-                        onSelectManager={(manager) => {
-                          setSelectedManagerId(manager.id);
-                          setStoreManagerId(manager.id);
-                          // 수동 선택 시 자동 설정 상태 리셋
-                          setIsManagerAutoSet(false);
-                          form.setValue("manager", manager.name);
-                          form.setValue("managerContact", manager.phoneNumber || "");
-                          form.setValue("managerEmail", manager.email || "");
-                        }}
-                        selectedManagerId={selectedManagerId}
-                        onManagerSearch={handleManagerSearch}
-                        isLoadingManagers={isLoadingManagers}
-                        onReset={() => {
-                          form.reset({
-                            ...form.getValues(),
-                            shipperName: "",
-                            businessNumber: "",
-                            shipperCeo: "",
-                            manager: "",
-                            managerContact: "",
-                            managerEmail: "",
-                          });
-                          setSelectedCompanyId(null);
-                          setSelectedManagerId(null);
-                          setStoreCompanyId(undefined);
-                          setStoreManagerId(undefined);
-                          
-                          // 자동 설정 상태도 초기화
-                          setAutoSettingError(null);
-                          setIsCompanyAutoSet(false);
-                          setIsManagerAutoSet(false);
-                          
-                          // 수동 초기화 상태 설정 (자동 설정 방지)
-                          setIsManualReset(true);
-                          
-                          // 화물 정보도 초기화
-                          setWeightType('1톤');
-                          setVehicleType('카고');
-                          setCargoType('');
-                          setRemark('');
-                          
-                          // 상차/하차 정보도 초기화
-                          setDeparture({
-                            id: '',
-                            address: '',
-                            roadAddress: '',
-                            jibunAddress: '',
-                            latitude: 0,
-                            longitude: 0,
-                            detailedAddress: '',
-                            name: '',
-                            company: '',
-                            contact: '',
-                            date: '',
-                            time: '',
-                            createdAt: new Date().toISOString()
-                          });
-                          setDestination({
-                            id: '',
-                            address: '',
-                            roadAddress: '',
-                            jibunAddress: '',
-                            latitude: 0,
-                            longitude: 0,
-                            detailedAddress: '',
-                            name: '',
-                            company: '',
-                            contact: '',
-                            date: '',
-                            time: '',
-                            createdAt: new Date().toISOString()
-                          });
-                          
-                          // LocationFormVer01 컴포넌트 초기화 신호 전달을 위한 상태 추가
-                          setLocationResetTrigger(prev => prev + 1);
-                        }}
-                        isEditMode={editMode}
-                        loading={isSubmitting}
-                        // 추가: 자동 설정 관련 props
-                        isAutoSettingLoading={isAutoSettingLoading}
-                        autoSettingError={autoSettingError}
-                        isCompanyAutoSet={isCompanyAutoSet}
-                        isManagerAutoSet={isManagerAutoSet}
-                      />
-                    </CardContent>
-                  </Card>
+              {/* 회사, 담당자 정보 */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4 items-stretch">
+                  {/* 회사 및 담당자 통합 정보 */}
+                  <div className="lg:col-span-1">
+                    <Card className="h-full">
+                      <CardContent className="h-full">
+                        <CompanyManagerInfoSection
+                          form={form}
+                          companySearchTerm={companySearchTerm}
+                          setCompanySearchTerm={setCompanySearchTerm}
+                          companies={companiesQuery.data?.data ?? []}
+                          onSelectCompany={(company) => {
+                            form.setValue("shipperName", company.name);
+                            form.setValue("businessNumber", company.businessNumber || "");
+                            if (company.ceoName) {
+                              form.setValue("shipperCeo", company.ceoName);
+                            }
+                            // 로컬 상태와 스토어 상태 모두 업데이트
+                            setSelectedCompanyId(company.id);
+                            setStoreCompanyId(company.id);
+                            // 수동 선택 시 자동 설정 상태 리셋
+                            setIsCompanyAutoSet(false);
+                            setIsManagerAutoSet(false);
+                            // 회사 선택 시 담당자 목록 로드
+                            if (company.id) {
+                              loadManagers(company.id);
+                            }
+                          }}
+                          selectedCompanyId={selectedCompanyId}
+                          onCompanySearch={handleCompanySearch}
+                          isLoadingCompanies={companiesQuery.isLoading}
+                          managerSearchTerm={managerSearchTerm}
+                          setManagerSearchTerm={setManagerSearchTerm}
+                          managers={brokerManagers.filter(manager => manager.status === '활성')}
+                          onSelectManager={(manager) => {
+                            setSelectedManagerId(manager.id);
+                            setStoreManagerId(manager.id);
+                            // 수동 선택 시 자동 설정 상태 리셋
+                            setIsManagerAutoSet(false);
+                            form.setValue("manager", manager.name);
+                            form.setValue("managerContact", manager.phoneNumber || "");
+                            form.setValue("managerEmail", manager.email || "");
+                          }}
+                          selectedManagerId={selectedManagerId}
+                          onManagerSearch={handleManagerSearch}
+                          isLoadingManagers={isLoadingManagers}
+                          onReset={() => {
+                            form.reset({
+                              ...form.getValues(),
+                              shipperName: "",
+                              businessNumber: "",
+                              shipperCeo: "",
+                              manager: "",
+                              managerContact: "",
+                              managerEmail: "",
+                            });
+                            setSelectedCompanyId(null);
+                            setSelectedManagerId(null);
+                            setStoreCompanyId(undefined);
+                            setStoreManagerId(undefined);
+                            
+                            // 자동 설정 상태도 초기화
+                            setAutoSettingError(null);
+                            setIsCompanyAutoSet(false);
+                            setIsManagerAutoSet(false);
+                            
+                            // 수동 초기화 상태 설정 (자동 설정 방지)
+                            setIsManualReset(true);
+                            
+                            // 화물 정보도 초기화
+                            setWeightType('1톤');
+                            setVehicleType('카고');
+                            setCargoType('');
+                            setRemark('');
+                            
+                            // 상차/하차 정보도 초기화
+                            setDeparture({
+                              id: '',
+                              address: '',
+                              roadAddress: '',
+                              jibunAddress: '',
+                              latitude: 0,
+                              longitude: 0,
+                              detailedAddress: '',
+                              name: '',
+                              company: '',
+                              contact: '',
+                              date: '',
+                              time: '',
+                              createdAt: new Date().toISOString()
+                            });
+                            setDestination({
+                              id: '',
+                              address: '',
+                              roadAddress: '',
+                              jibunAddress: '',
+                              latitude: 0,
+                              longitude: 0,
+                              detailedAddress: '',
+                              name: '',
+                              company: '',
+                              contact: '',
+                              date: '',
+                              time: '',
+                              createdAt: new Date().toISOString()
+                            });
+                            
+                            // LocationFormVer01 컴포넌트 초기화 신호 전달을 위한 상태 추가
+                            setLocationResetTrigger(prev => prev + 1);
+                          }}
+                          isEditMode={editMode}
+                          loading={isSubmitting}
+                          // 추가: 자동 설정 관련 props
+                          isAutoSettingLoading={isAutoSettingLoading}
+                          autoSettingError={autoSettingError}
+                          isCompanyAutoSet={isCompanyAutoSet}
+                          isManagerAutoSet={isManagerAutoSet}
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
 
-                  {/* 화물 정보 */}
-                  <div>
+                  {/* 오른쪽: 화물 정보 카드 */}
+                  <div className="lg:col-span-2">
                     <RegisterCargoInfoForm
                       companyId={selectedCompanyId || undefined}
                       compact={true}
@@ -850,121 +848,112 @@ const {
                   </div>
                 </div>
 
-                {/* 두 번째 컬럼 (2/3): 상차/하차 정보 + 운송 옵션/예상 정보 */}
-                <div className="lg:col-span-2 space-y-4">
-                  
-                  {/* 첫 번째 행: 상차 정보 + 하차 정보 */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    
-                    {/* 상차 정보 */}
-                    <Card className="h-full">
-                      <CardContent className="h-full">
-                        <LocationFormVer01
-                          type="departure"
-                          locationInfo={registerData.departure}
-                          onChange={(info) => setDeparture(info as any)}
-                          compact={true}
-                          disabled={editMode && !isEditable('departure')}
-                          onDisabledClick={() => handleDisabledFieldClick('departure')}
-                          companyId={selectedCompanyId || ''}
-                          onReset={locationResetTrigger > 0 ? () => {} : undefined}
-                        />
-                      </CardContent>
-                    </Card>
+              {/* 출발지, 도착지 정보/화물 정보 */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {/* 중간: 출발지/도착지 정보 카드 */}
+                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">              
 
-                    {/* 하차 정보 */}
-                    <Card className="h-full">
-                      <CardContent className="h-full">
-                        <LocationFormVer01
-                          type="destination"
-                          locationInfo={registerData.destination}
-                          onChange={(info) => setDestination(info as any)}
-                          compact={true}
-                          disabled={editMode && !isEditable('destination')}
-                          onDisabledClick={() => handleDisabledFieldClick('destination')}
-                          companyId={selectedCompanyId || ''}
-                          onReset={locationResetTrigger > 0 ? () => {} : undefined}
-                        />
-                      </CardContent>
-                    </Card>
-                  </div>
+              {/* 상차지 정보*/}
+              <Card>                
+                <CardContent>
+                  <LocationFormVer01
+                    type="departure"
+                    locationInfo={registerData.departure}
+                    onChange={(info) => setDeparture(info as any)}
+                    compact={true}
+                    disabled={editMode && !isEditable('departure')}
+                    onDisabledClick={() => handleDisabledFieldClick('departure')}
+                    companyId={selectedCompanyId || ''}
+                    onReset={locationResetTrigger > 0 ? () => {} : undefined}
+                  />
+                </CardContent>
+              </Card>
 
-                  {/* 두 번째 행: 운송 옵션 + 예상 정보 */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     {/* 운송 옵션 */}
-                    <div>                   
-                      <Card>
-                        <CardHeader className="flex flex-row items-center justify-between">
-                          <CardTitle className="text-md flex items-center">
-                            <OptionsIcon className="h-5 w-5 mr-2" />
-                            <span className="">운송 옵션</span>
-                          </CardTitle>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setShowOptions((prev) => !prev)}
-                          >
-                            {showOptions ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                          </Button>
-                        </CardHeader>
-                        {showOptions && (
-                          <CardContent>
-                            <RegisterTransportOptionCard
-                              selectedOptions={registerData.selectedOptions}
-                              onToggle={toggleOption}
-                              disabled={editMode && !isEditable('selectedOptions')}
-                            />
-                          </CardContent>
-                        )}
-                      </Card>
-                    </div>
+              {/* 하차지 정보 Copy*/}
+              <Card>                
+                <CardContent>
+                  <LocationFormVer01
+                    type="destination"
+                    locationInfo={registerData.destination}
+                    onChange={(info) => setDestination(info as any)}
+                    compact={true}
+                    disabled={editMode && !isEditable('destination')}
+                    onDisabledClick={() => handleDisabledFieldClick('destination')}                  
+                    companyId={selectedCompanyId || ''}
+                    onReset={locationResetTrigger > 0 ? () => {} : undefined}
+                  />
+                </CardContent>
+              </Card>
+              </div>
 
-                    {/* 예상 정보 */}
-                    <div className="space-y-4">                      
-                      <Card>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-lg flex items-center">
-                            <CalculatorIcon className="h-5 w-5 mr-2" />
-                            <span className="">{editMode ? '정산 정보' : '예상 정보'}</span>
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <RegisterEstimateInfoCard
-                            estimatedDistance={registerData.estimatedDistance}
-                            estimatedAmount={registerData.estimatedAmount}
-                            isCalculating={isCalculating}
-                          />
-                          
-                        </CardContent>
-                        
-                        
-                      </Card>
-                      
-                      {/* 등록 버튼 - 수정 모드에서는 표시하지 않음 */}
-                      {!editMode && (
-                        <Button 
-                          type="submit" 
-                          size="lg" 
-                          className="w-full"
-                          disabled={isSubmitting}
-                        >
-                          {isSubmitting ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              처리 중...
-                            </>
-                          ) : (
-                            '화물 등록'
-                          )}
-                        </Button>
-                      )}
-                    </div>
+                {/* 오른쪽: 화물 정보 카드 */}
+                <div className="lg:col-span-1 space-y-4">
 
-                  </div>
-                  
+              {/* 운송 옵션 카드 */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-md flex items-center">
+                    <OptionsIcon className="h-5 w-5 mr-2" />
+                    <span className="">운송 옵션</span>
+                  </CardTitle>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowOptions((prev) => !prev)}
+                  >
+                    {showOptions ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
+                </CardHeader>
+                {showOptions && (
+                  <CardContent>
+                    <RegisterTransportOptionCard
+                      selectedOptions={registerData.selectedOptions}
+                      onToggle={toggleOption}
+                      disabled={editMode && !isEditable('selectedOptions')}
+                    />
+                  </CardContent>
+                )}
+              </Card>
+
+              {/* 예상 정보 카드 */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center">
+                    <CalculatorIcon className="h-5 w-5 mr-2" />
+                    <span className="">{editMode ? '정산 정보' : '예상 정보'}</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <RegisterEstimateInfoCard
+                    estimatedDistance={registerData.estimatedDistance}
+                    estimatedAmount={registerData.estimatedAmount}
+                    isCalculating={isCalculating}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* 등록 버튼 - 수정 모드에서는 표시하지 않음 */}
+              {!editMode && (
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      처리 중...
+                    </>
+                  ) : (
+                    '화물 등록'
+                  )}
+                </Button>
+              )}
                 </div>
               </div>
+
             </CardContent>
           </Card>
 

@@ -118,7 +118,7 @@ export const RegisterCargoInfoForm: React.FC<RegisterCargoInfoFormProps> = ({
   useEffect(() => {
     if (onReset) {
       setHasEnteredCargo(false);
-      setShowCargoInfo(false);
+      setShowCargoInfo(true);
       // 최근 화물 정보 캐시 무효화 및 재조회 (companyId가 유효할 때만)
       if (isValidCompanyId && companyId) {
         invalidateRecentCargos(companyId);
@@ -130,17 +130,18 @@ export const RegisterCargoInfoForm: React.FC<RegisterCargoInfoFormProps> = ({
   return (
     <div className="space-y-6">
       {/* 화물 정보 영역 */}
-      <div className="">
+      <div>
         
         {/* 화물 정보 입력 폼 - 항상 표시되도록 수정 */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-lg flex items-center">
               <Container className="h-5 w-5 mr-2" />
-              <div className="flex items-center">
-                화물 정보 <span className="text-destructive">*</span>
-              </div>
-              <div className="flex gap-2">
+              
+              <h3 className="text-lg font-bold">화물 정보 </h3><span className="text-destructive">*</span>
+              
+              
+              </CardTitle>
             <Button
               type="button"
               variant="ghost"
@@ -150,8 +151,8 @@ export const RegisterCargoInfoForm: React.FC<RegisterCargoInfoFormProps> = ({
             >
               {showCargoInfo ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
-          </div>
-            </CardTitle>
+          
+            
           </CardHeader>
           
           <CardContent className="flex-1">

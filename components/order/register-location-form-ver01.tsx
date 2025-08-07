@@ -450,7 +450,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
             ) : (
               <LogIn className={`h-5 w-5 text-primary`} />
             )}
-            <h3 className="text-lg font-bold">{type === 'departure' ? '상차 정보' : '하차 정보'}</h3>
+            <h3 className="text-lg font-bold">{type === 'departure' ? '상차 정보' : '하차 정보'}</h3><span className="text-destructive">*</span>
           </div>
           
           <div className="flex gap-2">

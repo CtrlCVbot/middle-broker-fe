@@ -49,7 +49,7 @@ export default function OrderRegisterPage() {
              
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>운송 요청</BreadcrumbPage>
+                <BreadcrumbPage>운송 요청</BreadcrumbPage>                
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>

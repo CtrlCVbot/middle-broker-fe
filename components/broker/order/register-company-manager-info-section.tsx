@@ -84,7 +84,7 @@ export function CompanyManagerInfoSection({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2 text-primary">
           <Building2 className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-bold">회사 및 담당자 정보</h3>
+          <h3 className="text-lg font-bold">회사 및 담당자 정보</h3><span className="text-destructive">*</span>
         </div>
         <Button
           type="button"
