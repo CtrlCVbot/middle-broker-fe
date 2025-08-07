@@ -5,7 +5,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 //components
-import { OrderRegisterForm } from "@/components/order/register-form";
+//import { OrderRegisterForm } from "@/components/order/register-form";
+//import { OrderRegisterForm } from "@/components/broker/order/register-form-ver01";
+import { OrderRegisterForm } from "@/components/broker/order/register-form-ver02";
 import { OrderRegisterSummary } from "@/components/order/register-summary";
 
 //ui

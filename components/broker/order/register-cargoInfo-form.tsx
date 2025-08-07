@@ -72,7 +72,7 @@ export const RegisterCargoInfoForm: React.FC<RegisterCargoInfoFormProps> = ({
   onReset
 }) => {
   const [hasEnteredCargo, setHasEnteredCargo] = useState(false);
-  const [showCargoInfo, setShowCargoInfo] = useState(true);
+  const [showCargoInfo, setShowCargoInfo] = useState(false);
 
   // 캐시 무효화 훅 사용
   const { invalidate: invalidateRecentCargos } = useInvalidateRecentCargos();
@@ -88,7 +88,7 @@ export const RegisterCargoInfoForm: React.FC<RegisterCargoInfoFormProps> = ({
     refetch: refetchRecentCargos
   } = useRecentCargos({ 
     companyId: companyId ?? '',
-    limit: 4,
+    limit: 5,
     enabled: Boolean(enabled && !hasEnteredCargo && compact && isValidCompanyId)
   });
 
@@ -246,12 +246,12 @@ export const RegisterCargoInfoForm: React.FC<RegisterCargoInfoFormProps> = ({
                               {cargo.memo}
                             </p>
                           )}
-                          {/* <div className="flex items-center gap-1 mt-1">
+                          <div className="flex items-center gap-1 mt-1">
                             <Calendar className="h-3 w-3 text-muted-foreground" />
                             <span className="text-xs text-muted-foreground">
                               {format(new Date(cargo.updatedAt), 'yyyy-MM-dd')}
                             </span>
-                          </div> */}
+                          </div>
                         </div>
                       </Button>
                     ))}

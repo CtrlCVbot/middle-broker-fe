@@ -52,7 +52,7 @@ interface RecentCargosQueryResult {
  * ```
  */
 export const useRecentCargos = (options: UseRecentCargosOptions): RecentCargosQueryResult => {
-  const { companyId, limit = 5, enabled = true } = options;
+  const { companyId, limit = 4, enabled = true } = options;
 
   // 쿼리 키 생성 - 회사 ID와 limit을 포함
   const queryKey = ['recent-cargos', companyId, limit];

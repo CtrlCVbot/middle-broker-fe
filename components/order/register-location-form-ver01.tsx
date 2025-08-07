@@ -741,10 +741,10 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
         ) : 
         //주소록에서 찾기
         (
-          <div className={cn("flex flex-col items-center justify-center py-8 border-5 border-dashed rounded-md bg-muted/30",
+          <div className={cn("flex flex-col items-center justify-center py-4 border-2 border-dashed border-gray-300 rounded-md bg-gray-50 mb-2 mt-6",
             type === 'departure' ? 'bg-gray-100' : 'bg-gray-100'
           )}>
-            <Map className="h-10 w-10 text-muted-foreground mb-2" />
+            <Map className="h-8 w-8 text-muted-foreground mb-2" />
             <p className="text-sm text-muted-foreground mb-4">{type === 'departure' ? '상차지' : '하차지'} 주소를 검색해주세요</p>
             <div className="flex gap-2">
               
