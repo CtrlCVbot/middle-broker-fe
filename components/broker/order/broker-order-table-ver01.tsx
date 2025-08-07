@@ -351,7 +351,7 @@ export function BrokerOrderTable({
                           </Badge>
                         )}
                       </TableCell>
-                      <TableCell className="text-right font-medium">
+                      <TableCell className="text-center font-medium">
                         {order.charge?.summary?.salesAmount ? (
                           <div className="flex flex-col">
                             <div className="flex flex-row items-baseline gap-x-1">
