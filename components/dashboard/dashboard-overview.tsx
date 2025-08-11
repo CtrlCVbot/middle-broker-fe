@@ -1,9 +1,19 @@
 "use client";
 
+//ui
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDashboardStore } from "@/store/dashboard-store";
+import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { BarChart3, TruckIcon, Wallet } from "lucide-react";
+
+//store
+import { useDashboardStore } from "@/store/dashboard-store";
+
+const user = {
+  name: "John Doe",
+  avatar: "/images/globe.svg",
+};
 
 export function DashboardOverview() {
   const { kpi, loading } = useDashboardStore();
@@ -28,6 +38,7 @@ export function DashboardOverview() {
   
   return (
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-2">
+      
       {/* 월간 운송 건수 카드 */}
       <Card className="overflow-hidden border">
         <CardContent className="p-6">
@@ -72,9 +83,7 @@ export function DashboardOverview() {
             </p>
           </div>
         </CardContent>
-      </Card>
-
-      
+      </Card>      
 
       {/* 평균 운송비 카드 */}
       <Card className="overflow-hidden border">
@@ -99,7 +108,27 @@ export function DashboardOverview() {
         </CardContent>
       </Card>
 
-      
+      {/* 화주 업체 로고 */}
+      <Card className="overflow-hidden border relative w-full h-64 hidden sm:block">
+        {/* 배경 이미지 */}
+        {/* <Image
+          src="/images/globe-bg.svg"
+          alt="background"
+          fill
+          className="object-cover"
+        /> */}
+
+        {/* 카드 콘텐츠 - 중앙 로고 */}
+        <CardContent className="relative z-10 flex flex-col items-center justify-center h-full p-6">
+          <div className="rounded-full p-2 bg-green-100">
+            <Image
+              src="/globe.svg"
+              alt="logo"
+              fill
+            />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 } 
