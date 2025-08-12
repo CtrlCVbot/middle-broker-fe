@@ -19,7 +19,9 @@ import {
 import { fetchOrderChangeLogsByCompanyId } from '@/services/order-service';
 import { getCurrentUser } from '@/utils/auth';
 import { IOrderChangeLog } from '@/types/broker-order';
-import { fetchKpiData, fetchStatusStatsData } from '@/services/dashboard-service';
+import { fetchKpiData } from '@/services/dashboard-service';
+// SWR로 대체되어 제거됨
+// import { fetchStatusStatsData } from '@/services/dashboard-service';
 import { ymd } from '@/lib/date-kst';
 import { toast } from '@/components/ui/use-toast';
 import { IGroupStat, IStatusCount } from '@/types/order';
@@ -168,12 +170,13 @@ interface IDashboardState {
     to?: string;
     signal?: AbortSignal;
   }) => Promise<void>;
-  fetchStatusStats: (params: {
-    companyId: string;
-    dateFrom?: string;
-    dateTo?: string;
-    signal?: AbortSignal;
-  }) => Promise<void>;
+  // SWR로 대체되어 제거됨
+  // fetchStatusStats: (params: {
+  //   companyId: string;
+  //   dateFrom?: string;
+  //   dateTo?: string;
+  //   signal?: AbortSignal;
+  // }) => Promise<void>;
   setTrendPeriod: (period: TrendPeriod) => void;
   setRegionType: (type: RegionType) => void;
   setStatusFilter: (status: string | null) => void;
@@ -275,39 +278,13 @@ export const useDashboardStore = create<IDashboardState>((set, get) => ({
       // 현재 사용자 정보 가져오기 (상태 통계용)
       const currentUserForStats = getCurrentUser();
       
+      // SWR로 대체되어 제거됨 - 컴포넌트에서 직접 SWR 훅 사용
       // 상태 통계 실데이터 조회 (목업 데이터 완전 제거)
       let statusStats: IGroupStat[] = [];
       let rawByStatus: IStatusCount[] = [];
       
-      if (currentUserForStats?.companyId) {
-        try {
-          const statsResult = await fetchStatusStatsData({
-            companyId: currentUserForStats.companyId,
-            dateFrom: ymd(new Date(new Date().getFullYear(), new Date().getMonth(), 1)), // 이번 달 1일
-            dateTo: ymd(new Date()) // 오늘
-          });
-          
-          if (statsResult.success && statsResult.data) {
-            statusStats = statsResult.data.byGroup;
-            rawByStatus = statsResult.data.byStatus;
-          } else {
-            console.warn('상태 통계 실데이터 조회 실패:', statsResult.error);
-            // 목업 데이터 대신 빈 배열 사용
-            statusStats = [];
-            rawByStatus = [];
-          }
-        } catch (error) {
-          console.error('상태 통계 실데이터 조회 중 오류:', error);
-          // 목업 데이터 대신 빈 배열 사용
-          statusStats = [];
-          rawByStatus = [];
-        }
-      } else {
-        console.warn('사용자 정보 또는 회사 ID가 없습니다');
-        // 목업 데이터 대신 빈 배열 사용
-        statusStats = [];
-        rawByStatus = [];
-      }
+      // SWR로 대체되어 더 이상 스토어에서 관리하지 않음
+      // 컴포넌트에서 useStatusStats 훅을 직접 사용
       
       // 기타 목업 데이터
       const trendData = getTrendData(trendPeriod);
@@ -408,41 +385,42 @@ export const useDashboardStore = create<IDashboardState>((set, get) => ({
     }
     },
 
+  // SWR로 대체되어 제거됨
   // 액션: 배차 상태 통계 데이터 조회 (실데이터)
-  fetchStatusStats: async ({ companyId, dateFrom, dateTo, signal }) => {
-    set(state => ({ 
-      ...state, 
-      loading: { ...state.loading, statusStats: true }, 
-      error: null 
-    }));
+  // fetchStatusStats: async ({ companyId, dateFrom, dateTo, signal }) => {
+  //   set(state => ({ 
+  //     ...state, 
+  //     loading: { ...state.loading, statusStats: true }, 
+  //     error: null 
+  //   }));
 
-    try {
-      const result = await fetchStatusStatsData({
-        companyId,
-        dateFrom,
-        dateTo,
-        signal
-      });
+  //   try {
+  //     const result = await fetchStatusStatsData({
+  //       companyId,
+  //       dateFrom,
+  //       dateTo,
+  //       signal
+  //     });
 
-      if (result.success && result.data) {
-        set(state => ({ 
-          ...state, 
-          statusStats: result.data?.byGroup || [],
-          rawByStatus: result.data?.byStatus || [],
-          loading: { ...state.loading, statusStats: false } 
-        }));
-      } else {
-        throw new Error(result.error || '배차 상태 통계 데이터 조회 실패');
-      }
-    } catch (error) {
-      console.error('배차 상태 통계 데이터 조회 중 오류 발생:', error);
-      set(state => ({ 
-        ...state, 
-        loading: { ...state.loading, statusStats: false }, 
-        error: error instanceof Error ? error.message : '배차 상태 통계 데이터 조회 중 오류가 발생했습니다.' 
-      }));
-    }
-  },
+  //     if (result.success && result.data) {
+  //       set(state => ({ 
+  //         ...state, 
+  //         statusStats: result.data?.byGroup || [],
+  //         rawByStatus: result.data?.byStatus || [],
+  //         loading: { ...state.loading, statusStats: false } 
+  //       }));
+  //     } else {
+  //       throw new Error(result.error || '배차 상태 통계 데이터 조회 실패');
+  //     }
+  //   } catch (error) {
+  //     console.error('배차 상태 통계 데이터 조회 중 오류 발생:', error);
+  //     set(state => ({ 
+  //         ...state, 
+  //         loading: { ...state.loading, statusStats: false }, 
+  //         error: error instanceof Error ? error.message : '배차 상태 통계 데이터 조회 중 오류가 발생했습니다.' 
+  //       }));
+  //   }
+  // },
    
   // 액션: 트렌드 기간 설정
   setTrendPeriod: (period: TrendPeriod) => {

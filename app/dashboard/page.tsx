@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { SWRConfig } from "swr";
 import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
 import { DashboardStatus } from "@/components/dashboard/dashboard-status";
 import { DashboardLog } from "@/components/dashboard/dashboard-log-ver01";
@@ -21,7 +22,6 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 
-
 export default function DashboardPage() {
   const { initDashboard } = useDashboardStore();
   
@@ -29,9 +29,19 @@ export default function DashboardPage() {
   useEffect(() => {
     initDashboard();
   }, [initDashboard]);
+
+  // SWR 설정
+  const swrConfig = {
+    fallback: {
+      // 서버 데이터 프리패치 (선택사항)
+      // 실제 구현에서는 서버에서 데이터를 미리 가져와서 fallback으로 제공
+    },
+    revalidateOnFocus: true,
+    dedupingInterval: 10_000,
+  };
   
   return (
-    <>
+    <SWRConfig value={swrConfig}>
       <header className="flex h-16 shrink-0 items-center gap-2 px-4">
         <div className="flex items-center gap-2 px-4">
           <SidebarTrigger className="-ml-1" />
@@ -98,6 +108,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
-    </>
+    </SWRConfig>
   );
 } 

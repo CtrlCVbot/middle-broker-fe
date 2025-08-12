@@ -11,23 +11,32 @@ import { toYMD } from '@/utils/format';
  * GET /api/dashboard/status-stats
  * 
  * Query Parameters:
- * - companyId: string (필수)
- * - dateFrom: YYYY-MM-DD (기본: 이번 달 1일)
- * - dateTo: YYYY-MM-DD (기본: 오늘)
+ * - company_id: string (필수)
+ * - date_from: YYYY-MM-DD (필수)
+ * - date_to: YYYY-MM-DD (필수, 상한 미포함)
+ * - tenant_id: string (선택)
  */
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     
     // 쿼리 파라미터 파싱
-    const companyId = searchParams.get('companyId');
-    const dateFrom = searchParams.get('dateFrom');
-    const dateTo = searchParams.get('dateTo');
+    const companyId = searchParams.get('company_id');
+    const dateFrom = searchParams.get('date_from');
+    const dateTo = searchParams.get('date_to');
+    const tenantId = searchParams.get('tenant_id');
     
     // 필수 파라미터 검증
     if (!companyId) {
       return NextResponse.json(
-        { success: false, error: 'companyId is required' },
+        { success: false, error: 'company_id is required' },
+        { status: 400 }
+      );
+    }
+    
+    if (!dateFrom || !dateTo) {
+      return NextResponse.json(
+        { success: false, error: 'date_from and date_to are required' },
         { status: 400 }
       );
     }
@@ -41,9 +50,9 @@ export async function GET(req: NextRequest) {
     //   );
     // }
     
-    // 기간 설정 (기본값: 이번 달 1일 ~ 오늘)
-    const fromDate = dateFrom ? new Date(dateFrom) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    const toDate = dateTo ? new Date(dateTo) : new Date();
+    // 기간 설정
+    const fromDate = new Date(dateFrom);
+    const toDate = new Date(dateTo);
     
     const fromYmd = toYMD(fromDate);
     const toYmd = toYMD(toDate);
