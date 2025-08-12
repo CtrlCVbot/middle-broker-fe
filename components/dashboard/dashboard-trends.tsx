@@ -121,11 +121,11 @@ export function DashboardTrends() {
   // 데이터 포맷팅 - 서버 응답 데이터에 맞게 수정
   const chartData = points.map((item) => {
     const date = new Date(item.date);
-    const month = date.toLocaleString('en-US', { month: 'short' });
+    const month = date.toLocaleString('ko-KR', { month: 'short' });
     const day = date.getDate();
     
     return {
-      date: `${month} ${day}`, // "MM-DD" 형식으로 표시
+      date: `${month} ${day}일`, // "MM-DD" 형식으로 표시
       orderAmount: item.orderAmount / 10000, // 만원 단위로 변환
       orderCount: item.orderCount,
     };
@@ -153,14 +153,14 @@ export function DashboardTrends() {
           </CardDescription>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center space-x-2">
+          {/* <div className="flex items-center space-x-2">
             <Switch
               id="recommended-mode"
               checked={showRecommended}
               onCheckedChange={setShowRecommended}
             />
             <Label htmlFor="recommended-mode">추천만</Label>
-          </div>
+          </div> */}
           <Select 
             value={period} 
             onValueChange={handlePeriodChange}

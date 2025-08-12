@@ -3,7 +3,7 @@ import { db } from '@/db';
 import { orders } from '@/db/schema/orders';
 import { chargeGroups } from '@/db/schema/chargeGroups';
 import { chargeLines } from '@/db/schema/chargeLines';
-import { and, eq, gte, lte, sql, isNull, isNotNull } from 'drizzle-orm';
+import { and, eq, gte, lte, sql, isNull, isNotNull, inArray } from 'drizzle-orm';
 import { getCurrentUser } from '@/utils/auth';
 import { toYMD } from '@/utils/format';
 
@@ -106,7 +106,8 @@ export async function GET(req: NextRequest) {
         .from(chargeGroups)
         .innerJoin(chargeLines, eq(chargeLines.groupId, chargeGroups.id))
         .where(and(
-          sql`${chargeGroups.orderId} IN (${orderIds.join(',')})`,
+          //sql`${chargeGroups.orderId} IN (${orderIds.join(',')})`,
+          inArray(chargeGroups.orderId, orderIds),
           //eq(chargeGroups.billable, true),
           eq(chargeLines.side, 'sales') // side 조건 추가
         ))
