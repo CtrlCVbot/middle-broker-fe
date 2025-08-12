@@ -2,10 +2,13 @@ import useSWR, { SWRConfiguration } from "swr";
 import { toGroupStats, GroupStat, StatusCount } from "@/utils/status-group";
 
 export type StatusStatsResponse = {
+  success: boolean;
+  data: {
   totalCount: number;
   byStatus: StatusCount[];
-  prevPeriodTotal?: number;
-  prevPeriodByStatus?: StatusCount[];
+    prevPeriodTotal?: number;
+    prevPeriodByStatus?: StatusCount[];
+  };
 };
 
 export type StatusStatsParams = {
@@ -30,6 +33,7 @@ const buildKey = (p?: StatusStatsParams) =>
   ] as const : null;
 
 const buildUrl = (p: StatusStatsParams) => {
+  console.log("p", p);
   const qs = new URLSearchParams(p as any).toString();
   return `/api/dashboard/status-stats?${qs}`;
 };
@@ -56,8 +60,20 @@ export function useStatusStats(
     }
   );
 
-  const grouped: GroupStat[] | undefined = data ? toGroupStats(data.byStatus) : undefined;
-  const totalCount = data?.totalCount ?? 0;
+  console.log("data", data);
+
+
+  // 안전한 데이터 변환
+  const byStatus = data?.data?.byStatus ?? [];
+  console.log("data", data?.data);
+  console.log("byStatus", byStatus);
+  //const grouped: GroupStat[] | undefined = data?.byStatus ? toGroupStats(data.byStatus) : undefined;
+  //const grouped= toGroupStats(data?.byStatus as StatusCount[]);
+  const grouped = data ? toGroupStats(data.data.byStatus) : undefined;
+  const totalCount = data?.data.totalCount ?? 0;
+
+  console.log("grouped", grouped);
+  console.log("totalCount", totalCount);
 
   return {
     grouped,        // UI용 그룹 통계

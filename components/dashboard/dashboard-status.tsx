@@ -83,13 +83,15 @@ export function DashboardStatus() {
   const date_from = today.toISOString().slice(0, 10);
   const date_to = new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
-  // SWR 훅 사용
-  const { grouped, totalCount, loading, error, isValidating, mutate } = useStatusStats({
-    date_from,
-    date_to,
-    company_id: currentUser?.companyId,
-    // tenant_id: currentUser?.tenantId, // 필요시 추가
-  });
+  // SWR 훅 사용 - company_id가 있을 때만 호출
+  const { grouped, totalCount, loading, error, isValidating, mutate } = useStatusStats(
+    currentUser?.companyId ? {
+      date_from,
+      date_to,
+      company_id: currentUser.companyId,
+      // tenant_id: currentUser?.tenantId, // 필요시 추가
+    } : undefined
+  );
 
   // 포맷 함수
   const formatNumber = (num: number): string => {

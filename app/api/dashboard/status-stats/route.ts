@@ -75,6 +75,7 @@ export async function GET(req: NextRequest) {
     
     // 총 건수 계산
     const totalCount = statusStatsResult.reduce((sum, stat) => sum + Number(stat.count), 0);
+    console.log("statusStatsResult", statusStatsResult);
     
     // 응답 데이터 구성
     const response = {
@@ -84,7 +85,8 @@ export async function GET(req: NextRequest) {
         count: Number(stat.count)
       }))
     };
-    
+
+    console.log("response", response);
     console.log(`✅ 배차 상태 통계 완료: 총건수=${totalCount}, 상태별=${statusStatsResult.length}개`);
     
     return NextResponse.json({

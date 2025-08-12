@@ -294,6 +294,8 @@ export const useDashboardStore = create<IDashboardState>((set, get) => ({
       
       // 실제 변경 이력 데이터 조회
       const logs = await fetchRealChangeLogData();
+
+      console.log("statusStats!!", statusStats);
       
       // 데이터 설정
       set({ 
