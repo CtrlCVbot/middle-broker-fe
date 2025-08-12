@@ -21,6 +21,7 @@ import { getCurrentUser } from '@/utils/auth';
 import { IOrderChangeLog } from '@/types/broker-order';
 import { fetchKpiData } from '@/services/dashboard-service';
 import { ymd } from '@/lib/date-kst';
+import { toast } from '@/components/ui/use-toast';
 
 // IOrderChangeLog를 IStatusLog로 변환하는 함수
 const mapOrderChangeLogToStatusLog = (changeLog: IOrderChangeLog): IStatusLog => {
@@ -228,8 +229,41 @@ export const useDashboardStore = create<IDashboardState>((set, get) => ({
       // 데이터 로드
       const { trendPeriod, regionType } = get().filters;
       
-      // 목업 데이터 (로그를 제외하고)
-      const kpi = getKpiData();
+      // 현재 사용자 정보 가져오기
+      const currentUser = getCurrentUser();
+      
+      // KPI 실데이터 조회 (사용자가 로그인되어 있고 회사 ID가 있는 경우)
+      let kpi: IKPI;
+      if (currentUser?.companyId) {
+        try {
+          const result = await fetchKpiData({
+            companyId: currentUser.companyId,
+            period: 'month',
+            date: ymd(new Date()),
+            basisField: 'pickupDate'
+          });
+          
+          if (result.success && result.data) {
+            kpi = result.data;
+          } else {
+            console.warn('KPI 실데이터 조회 실패, 목업 데이터 사용:', result.error);
+            kpi = getKpiData();
+          }
+        } catch (error) {
+          console.error('KPI 실데이터 조회 중 오류:', error);
+          kpi = getKpiData(); // 에러 시 목업 데이터 사용
+        }
+      } else {
+        toast({
+          title: "KPI 데이터 조회 실패",
+          description: "사용자 정보 또는 회사 ID가 없어 데이터가져오지 못함",
+          variant: "destructive",
+        });
+        console.warn('사용자 정보 또는 회사 ID가 없어 데이터가져오지 못함');
+        kpi = getKpiData();
+      }
+      
+      // 기타 목업 데이터
       const statusStats = getStatusStats();
       const trendData = getTrendData(trendPeriod);
       const regionStats = getRegionStats();

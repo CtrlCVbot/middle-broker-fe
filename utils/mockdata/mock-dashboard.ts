@@ -112,18 +112,18 @@ const generateDatesArray = (days: number): { date: Date; formatted: string; disp
 
 // KPI 데이터 가져오기
 export const getKpiData = (): IKPI => ({
-  monthlyOrderCount: 325,
-  monthlyOrderAmount: 128500000,
-  monthlyOrderAverage: 395384,
+  monthlyOrderCount: 0,
+  monthlyOrderAmount: 0,
+  monthlyOrderAverage: 0,
   weeklyTarget: {
-    target: 100,
-    current: 78,
-    percentage: 78
+    target: 0,
+    current: 0,
+    percentage: 0
   },
   monthlyTarget: {
-    target: 350,
-    current: 325,
-    percentage: 93
+    target: 0,
+    current: 0,
+    percentage: 0
   }
 });
 
