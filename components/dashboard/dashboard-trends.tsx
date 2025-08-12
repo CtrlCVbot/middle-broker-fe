@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+//react
+import { useState, useMemo } from "react";
+
+//ui
 import { TrendingUp, RefreshCw } from "lucide-react";
 import { 
   Area, 
@@ -13,7 +16,6 @@ import {
   TooltipProps,
   Legend as RechartsLegend
 } from "recharts";
-import { useDashboardStore } from "@/store/dashboard-store";
 import {
   Card,
   CardContent,
@@ -41,6 +43,9 @@ import {
   Filler
 } from 'chart.js';
 
+// SWR 훅
+import { useTransportTrends } from "@/hooks/use-transport-trends";
+import { getCurrentUser } from "@/utils/auth";
 
 // Chart.js 컴포넌트 등록
 ChartJS.register(
@@ -78,33 +83,49 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>)
 };
 
 export function DashboardTrends() {
-  const { trendData, loading, filters, setTrendPeriod, refreshDashboard } = useDashboardStore();
+  const currentUser = getCurrentUser();
   const [period, setPeriod] = useState<PeriodType>("7d");
   const [showRecommended, setShowRecommended] = useState(false);
 
+  // 기간 계산 (Asia/Seoul 기준)
+  const { date_from, date_to } = useMemo(() => {
+    const today = new Date();
+    const days = period === "7d" ? 6 : 29;
+    const fromDate = new Date(today);
+    fromDate.setDate(today.getDate() - days);
+    
+    return {
+      date_from: fromDate.toISOString().slice(0, 10),
+      date_to: new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+    };
+  }, [period]);
+
+  // SWR 훅 사용
+  const { points, loading, error, isValidating, mutate } = useTransportTrends(
+    currentUser?.companyId ? {
+      date_from,
+      date_to,
+      company_id: currentUser.companyId,
+      recommended_only: showRecommended,
+    } : undefined
+  );
+
   const handlePeriodChange = (value: string) => {
     setPeriod(value as PeriodType);
-    // 기존 API 호출 방식으로 변경
-    if (value === "7d") {
-      setTrendPeriod(7);
-    } else {
-      setTrendPeriod(30);
-    }
   };
 
   const handleRefresh = () => {
-    refreshDashboard();
+    mutate();
   };
 
-  // 데이터 포맷팅 - 데이터 구조에 맞게 수정
-  const chartData = trendData.map((item, index) => {
-    // trendData에 date 필드가 있다고 가정하고, 없으면 현재 날짜에서 인덱스만큼 뺀 날짜 사용
-    const date = new Date();
-    date.setDate(date.getDate() - (trendData.length - index - 1));
+  // 데이터 포맷팅 - 서버 응답 데이터에 맞게 수정
+  const chartData = points.map((item) => {
+    const date = new Date(item.date);
     const month = date.toLocaleString('en-US', { month: 'short' });
+    const day = date.getDate();
     
     return {
-      date: item.date || month, // date 필드가 있으면 사용, 없으면 계산된 월 사용
+      date: `${month} ${day}`, // "MM-DD" 형식으로 표시
       orderAmount: item.orderAmount / 10000, // 만원 단위로 변환
       orderCount: item.orderCount,
     };
@@ -112,10 +133,11 @@ export function DashboardTrends() {
 
   // 증가율 계산 (첫 데이터와 마지막 데이터 비교)
   const calculateGrowthRate = (): string => {
-    if (trendData.length < 2) return "0.0";
-    const first = trendData[0].orderCount;
-    const last = trendData[trendData.length - 1].orderCount;
-    return ((last - first) / first * 100).toFixed(1);
+    if (points.length < 2) return "0.0";
+    const first = points[0].orderCount;
+    const last = points[points.length - 1].orderCount;
+    const denominator = Math.max(first, 1); // 분모 0 가드
+    return ((last - first) / denominator * 100).toFixed(1);
   };
 
   const growthRate = calculateGrowthRate();
@@ -155,15 +177,36 @@ export function DashboardTrends() {
             variant="ghost" 
             size="icon" 
             onClick={handleRefresh}
-            disabled={loading.trends}
+            disabled={isValidating}
           >
-            <RefreshCw className={`h-4 w-4 ${loading.trends ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 ${isValidating ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </CardHeader>
       <CardContent>
-        {loading.trends ? (
+        {loading ? (
           <Skeleton className="h-[300px] w-full" />
+        ) : error ? (
+          <div className="h-[300px] w-full flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-red-500 text-sm mb-2">데이터 로드 실패</div>
+              <div className="text-gray-500 text-xs mb-4">{error.message}</div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleRefresh}
+              >
+                다시 시도
+              </Button>
+            </div>
+          </div>
+        ) : chartData.length === 0 ? (
+          <div className="h-[300px] w-full flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-gray-500 text-sm mb-2">표시할 데이터가 없습니다</div>
+              <div className="text-gray-400 text-xs">선택한 기간에 운송 데이터가 없습니다</div>
+            </div>
+          </div>
         ) : (
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -238,6 +281,7 @@ export function DashboardTrends() {
             </div>
             <div className="flex items-center gap-2 leading-none text-muted-foreground">
               {period === "7d" ? "최근 7일간 데이터" : "최근 30일간 데이터"}
+              {showRecommended && " (추천만)"}
             </div>
           </div>
         </div>

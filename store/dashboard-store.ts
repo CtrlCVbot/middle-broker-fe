@@ -287,7 +287,9 @@ export const useDashboardStore = create<IDashboardState>((set, get) => ({
       // 컴포넌트에서 useStatusStats 훅을 직접 사용
       
       // 기타 목업 데이터
-      const trendData = getTrendData(trendPeriod);
+      // SWR로 대체되어 제거됨 - 컴포넌트에서 직접 SWR 훅 사용
+      let trendData: ITrendDataPoint[] = [];
+      
       const regionStats = getRegionStats();
       const weightStats = getWeightStats();
       const recentOrders = getRecentOrders();
@@ -295,8 +297,6 @@ export const useDashboardStore = create<IDashboardState>((set, get) => ({
       // 실제 변경 이력 데이터 조회
       const logs = await fetchRealChangeLogData();
 
-      console.log("statusStats!!", statusStats);
-      
       // 데이터 설정
       set({ 
         kpi, 

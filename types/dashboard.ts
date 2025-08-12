@@ -44,12 +44,25 @@ export interface IStatusLog {
   operator: string;
 }
 
-// 트렌드 데이터 포인트 타입
+// 트렌드 데이터 포인트 타입 (기존 호환성을 위해 유지)
 export interface ITrendDataPoint {
   date: string;
   orderCount: number;
   totalAmount: number;
   averageAmount: number;
+}
+
+// 운송추이 관련 타입 (SWR 훅에서 정의된 타입과 중복 방지)
+export interface ITrendPoint {
+  date: string;
+  orderCount: number;
+  orderAmount: number;
+}
+
+export interface ITrendsResponse {
+  period: { from: string; to: string };
+  points: ITrendPoint[];
+  meta: { currency: 'KRW' };
 }
 
 // 지역 통계 타입
