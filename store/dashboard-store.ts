@@ -19,9 +19,10 @@ import {
 import { fetchOrderChangeLogsByCompanyId } from '@/services/order-service';
 import { getCurrentUser } from '@/utils/auth';
 import { IOrderChangeLog } from '@/types/broker-order';
-import { fetchKpiData } from '@/services/dashboard-service';
+import { fetchKpiData, fetchStatusStatsData } from '@/services/dashboard-service';
 import { ymd } from '@/lib/date-kst';
 import { toast } from '@/components/ui/use-toast';
+import { IGroupStat, IStatusCount } from '@/types/order';
 
 // IOrderChangeLog를 IStatusLog로 변환하는 함수
 const mapOrderChangeLogToStatusLog = (changeLog: IOrderChangeLog): IStatusLog => {
@@ -139,7 +140,8 @@ interface IDashboardLoading {
 interface IDashboardState {
   // 데이터 상태
   kpi: IKPI | null;
-  statusStats: IStatusStat[];
+  statusStats: IGroupStat[];  // 그룹별 통계로 변경
+  rawByStatus: IStatusCount[]; // 원본 상태별 통계
   logs: IStatusLog[];
   trendData: ITrendDataPoint[];
   regionStats: IRegionStats | null;
@@ -164,6 +166,12 @@ interface IDashboardState {
     basisField?: 'pickupDate' | 'deliveryDate';
     from?: string;
     to?: string;
+    signal?: AbortSignal;
+  }) => Promise<void>;
+  fetchStatusStats: (params: {
+    companyId: string;
+    dateFrom?: string;
+    dateTo?: string;
     signal?: AbortSignal;
   }) => Promise<void>;
   setTrendPeriod: (period: TrendPeriod) => void;
@@ -196,6 +204,7 @@ export const useDashboardStore = create<IDashboardState>((set, get) => ({
   // 초기 데이터 상태
   kpi: null,
   statusStats: [],
+  rawByStatus: [],
   logs: [],
   trendData: [],
   regionStats: null,
@@ -263,8 +272,38 @@ export const useDashboardStore = create<IDashboardState>((set, get) => ({
         kpi = getKpiData();
       }
       
+      // 현재 사용자 정보 가져오기 (상태 통계용)
+      const currentUserForStats = getCurrentUser();
+      
+      // 상태 통계 실데이터 조회
+      let statusStats: IGroupStat[] = [];
+      let rawByStatus: IStatusCount[] = [];
+      
+      if (currentUserForStats?.companyId) {
+        try {
+          const statsResult = await fetchStatusStatsData({
+            companyId: currentUserForStats.companyId,
+            dateFrom: ymd(new Date(new Date().getFullYear(), new Date().getMonth(), 1)), // 이번 달 1일
+            dateTo: ymd(new Date()) // 오늘
+          });
+          
+          if (statsResult.success && statsResult.data) {
+            statusStats = statsResult.data.byGroup;
+            rawByStatus = statsResult.data.byStatus;
+          } else {
+            console.warn('상태 통계 실데이터 조회 실패, 목업 데이터 사용:', statsResult.error);
+            statusStats = getStatusStats() as any;
+          }
+        } catch (error) {
+          console.error('상태 통계 실데이터 조회 중 오류:', error);
+          statusStats = getStatusStats() as any; // 에러 시 목업 데이터 사용
+        }
+      } else {
+        console.warn('사용자 정보 또는 회사 ID가 없어 상태 통계 목업 데이터 사용');
+        statusStats = getStatusStats() as any;
+      }
+      
       // 기타 목업 데이터
-      const statusStats = getStatusStats();
       const trendData = getTrendData(trendPeriod);
       const regionStats = getRegionStats();
       const weightStats = getWeightStats();
@@ -277,6 +316,7 @@ export const useDashboardStore = create<IDashboardState>((set, get) => ({
       set({ 
         kpi, 
         statusStats, 
+        rawByStatus,
         logs, 
         trendData,
         regionStats,
@@ -360,8 +400,44 @@ export const useDashboardStore = create<IDashboardState>((set, get) => ({
         error: error instanceof Error ? error.message : 'KPI 데이터 조회 중 오류가 발생했습니다.' 
       }));
     }
+    },
+
+  // 액션: 배차 상태 통계 데이터 조회 (실데이터)
+  fetchStatusStats: async ({ companyId, dateFrom, dateTo, signal }) => {
+    set(state => ({ 
+      ...state, 
+      loading: { ...state.loading, statusStats: true }, 
+      error: null 
+    }));
+
+    try {
+      const result = await fetchStatusStatsData({
+        companyId,
+        dateFrom,
+        dateTo,
+        signal
+      });
+
+      if (result.success && result.data) {
+        set(state => ({ 
+          ...state, 
+          statusStats: result.data?.byGroup || [],
+          rawByStatus: result.data?.byStatus || [],
+          loading: { ...state.loading, statusStats: false } 
+        }));
+      } else {
+        throw new Error(result.error || '배차 상태 통계 데이터 조회 실패');
+      }
+    } catch (error) {
+      console.error('배차 상태 통계 데이터 조회 중 오류 발생:', error);
+      set(state => ({ 
+        ...state, 
+        loading: { ...state.loading, statusStats: false }, 
+        error: error instanceof Error ? error.message : '배차 상태 통계 데이터 조회 중 오류가 발생했습니다.' 
+      }));
+    }
   },
-  
+   
   // 액션: 트렌드 기간 설정
   setTrendPeriod: (period: TrendPeriod) => {
     set(state => ({

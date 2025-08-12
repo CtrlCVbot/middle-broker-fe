@@ -82,6 +82,29 @@ export const ORDER_STATUS: OrderStatusType[] = [
   '운송완료'
 ];
 
+// 배차 상태 그룹 정의
+export const GROUPED_ORDER_FLOW = [
+  { label: "운송요청", statuses: ["운송요청"] },
+  { label: "배차중",   statuses: ["배차대기", "배차완료"] },
+  { label: "운송중",   statuses: ["상차대기", "상차완료", "운송중"] },
+  { label: "운송완료", statuses: ["하차완료", "운송완료"] },
+] as const;
+
+export type GroupLabel = typeof GROUPED_ORDER_FLOW[number]["label"];
+
+// 상태별 통계 타입
+export interface IStatusCount {
+  status: OrderStatusType;
+  count: number;
+}
+
+// 그룹별 통계 타입
+export interface IGroupStat {
+  label: GroupLabel;
+  count: number;
+  percentage: number;
+}
+
 // 운송 옵션
 export interface ITransportOption {
   id: string;

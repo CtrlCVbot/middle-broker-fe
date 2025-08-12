@@ -26,7 +26,7 @@ export interface IKPI {
   };
 }
 
-// 상태 통계 타입
+// 상태 통계 타입 (기존 호환성을 위해 유지)
 export interface IStatusStat {
   status: string;
   count: number;
