@@ -1,14 +1,17 @@
 "use client";
 
-//ui
+import { useEffect } from "react";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-import { BarChart3, TruckIcon, Wallet } from "lucide-react";
+import { BarChart3, TruckIcon, Wallet, AlertCircle } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 //store
 import { useDashboardStore } from "@/store/dashboard-store";
+import { getCurrentUser } from "@/utils/auth";
+import { ymd } from "@/lib/date-kst";
 
 const user = {
   name: "John Doe",
@@ -16,7 +19,36 @@ const user = {
 };
 
 export function DashboardOverview() {
-  const { kpi, loading } = useDashboardStore();
+  const { kpi, loading, fetchKpi, error } = useDashboardStore();
+  const { toast } = useToast();
+  
+  // 현재 사용자 정보 가져오기
+  const currentUser = getCurrentUser();
+  console.log("currentUser", currentUser);
+  
+  // 컴포넌트 마운트 시 KPI 데이터 조회
+  useEffect(() => {
+    if (currentUser?.companyId) {
+      // 월간 모드: 서버에서 pickupDate 기준으로 집계
+      fetchKpi({ 
+        companyId: currentUser.companyId, 
+        period: 'month', 
+        date: ymd(new Date()), 
+        basisField: 'pickupDate' 
+      });
+    }
+  }, [currentUser?.companyId, fetchKpi]);
+  
+  // 에러 발생 시 토스트 알림
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "KPI 데이터 조회 실패",
+        description: error,
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
   
   // // 숫자 포맷 함수
   // const formatNumber = (num: number): string => {
@@ -33,6 +65,7 @@ export function DashboardOverview() {
     if (num >= 1000) {
       return (num / 1000).toFixed(num < 10000 ? 1 : 0) + 'k';
     }
+    console.log("num!!", num);
     return num.toString();
   };
   

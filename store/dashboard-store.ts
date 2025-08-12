@@ -19,6 +19,8 @@ import {
 import { fetchOrderChangeLogsByCompanyId } from '@/services/order-service';
 import { getCurrentUser } from '@/utils/auth';
 import { IOrderChangeLog } from '@/types/broker-order';
+import { fetchKpiData } from '@/services/dashboard-service';
+import { ymd } from '@/lib/date-kst';
 
 // IOrderChangeLog를 IStatusLog로 변환하는 함수
 const mapOrderChangeLogToStatusLog = (changeLog: IOrderChangeLog): IStatusLog => {
@@ -154,6 +156,15 @@ interface IDashboardState {
   initDashboard: () => void;
   refreshDashboard: () => void;
   refreshLogs: () => void;
+  fetchKpi: (params: {
+    companyId: string;
+    date?: string;
+    period?: 'month' | 'custom';
+    basisField?: 'pickupDate' | 'deliveryDate';
+    from?: string;
+    to?: string;
+    signal?: AbortSignal;
+  }) => Promise<void>;
   setTrendPeriod: (period: TrendPeriod) => void;
   setRegionType: (type: RegionType) => void;
   setStatusFilter: (status: string | null) => void;
@@ -275,6 +286,44 @@ export const useDashboardStore = create<IDashboardState>((set, get) => ({
       // 에러 발생 시 로딩 상태만 해제
       set(state => ({
         loading: { ...state.loading, logs: false }
+      }));
+    }
+  },
+
+  // 액션: KPI 데이터 조회 (실데이터)
+  fetchKpi: async ({ companyId, date, period = 'month', basisField = 'pickupDate', from, to, signal }) => {
+    set(state => ({ 
+      ...state, 
+      loading: { ...state.loading, kpi: true }, 
+      error: null 
+    }));
+
+    try {
+      const result = await fetchKpiData({
+        companyId,
+        date,
+        period,
+        basisField,
+        from,
+        to,
+        signal
+      });
+
+      if (result.success && result.data) {
+        set(state => ({ 
+          ...state, 
+          kpi: result.data, 
+          loading: { ...state.loading, kpi: false } 
+        }));
+      } else {
+        throw new Error(result.error || 'KPI 데이터 조회 실패');
+      }
+    } catch (error) {
+      console.error('KPI 데이터 조회 중 오류 발생:', error);
+      set(state => ({ 
+        ...state, 
+        loading: { ...state.loading, kpi: false }, 
+        error: error instanceof Error ? error.message : 'KPI 데이터 조회 중 오류가 발생했습니다.' 
       }));
     }
   },

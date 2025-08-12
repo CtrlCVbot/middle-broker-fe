@@ -119,3 +119,15 @@ export function safeFormatDate(input: string | Date | undefined | null, pattern 
     return '-';
   }
 }
+
+/**
+ * 날짜를 YYYY-MM-DD 형식으로 변환합니다.
+ * @param d 변환할 날짜
+ * @returns YYYY-MM-DD 형식의 문자열
+ */
+export const toYMD = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
