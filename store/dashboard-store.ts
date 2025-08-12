@@ -275,7 +275,7 @@ export const useDashboardStore = create<IDashboardState>((set, get) => ({
       // 현재 사용자 정보 가져오기 (상태 통계용)
       const currentUserForStats = getCurrentUser();
       
-      // 상태 통계 실데이터 조회
+      // 상태 통계 실데이터 조회 (목업 데이터 완전 제거)
       let statusStats: IGroupStat[] = [];
       let rawByStatus: IStatusCount[] = [];
       
@@ -291,16 +291,22 @@ export const useDashboardStore = create<IDashboardState>((set, get) => ({
             statusStats = statsResult.data.byGroup;
             rawByStatus = statsResult.data.byStatus;
           } else {
-            console.warn('상태 통계 실데이터 조회 실패, 목업 데이터 사용:', statsResult.error);
-            statusStats = getStatusStats() as any;
+            console.warn('상태 통계 실데이터 조회 실패:', statsResult.error);
+            // 목업 데이터 대신 빈 배열 사용
+            statusStats = [];
+            rawByStatus = [];
           }
         } catch (error) {
           console.error('상태 통계 실데이터 조회 중 오류:', error);
-          statusStats = getStatusStats() as any; // 에러 시 목업 데이터 사용
+          // 목업 데이터 대신 빈 배열 사용
+          statusStats = [];
+          rawByStatus = [];
         }
       } else {
-        console.warn('사용자 정보 또는 회사 ID가 없어 상태 통계 목업 데이터 사용');
-        statusStats = getStatusStats() as any;
+        console.warn('사용자 정보 또는 회사 ID가 없습니다');
+        // 목업 데이터 대신 빈 배열 사용
+        statusStats = [];
+        rawByStatus = [];
       }
       
       // 기타 목업 데이터
