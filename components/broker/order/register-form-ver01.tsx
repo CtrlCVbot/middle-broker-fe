@@ -112,6 +112,10 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
   const [locationResetTrigger, setLocationResetTrigger] = useState(0); // LocationFormVer01 초기화 트리거
   const [managersLoadedForCompany, setManagersLoadedForCompany] = useState<string | null>(null); // 담당자 목록이 로드된 업체 ID
   
+  // 추가: 섹션 활성화 상태 관리
+  const [isCompanySelected, setIsCompanySelected] = useState(false);
+  const [isManagerSelected, setIsManagerSelected] = useState(false);
+  
   const { setFilter } = useCompanyStore();
   const companiesQuery = useCompanies();
 
@@ -610,8 +614,34 @@ const {
       loadManagers(selectedCompanyId);
       // 담당자 목록 로드 시작 시 해당 업체 ID 기록
       setManagersLoadedForCompany(selectedCompanyId);
+      // 회사 선택 상태 업데이트
+      setIsCompanySelected(true);
+    } else {
+      // 회사 선택 해제 시 모든 섹션 비활성화
+      setIsCompanySelected(false);
+      setIsManagerSelected(false);
     }
   }, [selectedCompanyId, loadManagers]);
+
+  // 담당자 선택 상태 감지
+  useEffect(() => {
+    if (selectedManagerId && isCompanySelected) {
+      setIsManagerSelected(true);
+    } else {
+      setIsManagerSelected(false);
+    }
+  }, [selectedManagerId, isCompanySelected]);
+
+
+
+  // registerData 변경 시 섹션 활성화 상태 동기화
+  useEffect(() => {
+    if (editMode) {
+      // 수정 모드에서는 registerData의 상태를 기반으로 섹션 활성화
+      setIsCompanySelected(!!registerData.selectedCompanyId);
+      setIsManagerSelected(!!registerData.selectedManagerId);
+    }
+  }, [editMode, registerData.selectedCompanyId, registerData.selectedManagerId]);
 
   // 담당자 목록 로드 완료 감지 및 자동 선택
   useEffect(() => {
@@ -862,6 +892,10 @@ const {
                           // 담당자 목록 로드 상태도 초기화
                           setManagersLoadedForCompany(null);
                           
+                          // 섹션 활성화 상태 초기화
+                          setIsCompanySelected(false);
+                          setIsManagerSelected(false);
+                          
                           // 수동 초기화 상태 설정 (자동 설정 방지)
                           setIsManualReset(true);
                           
@@ -919,10 +953,25 @@ const {
 
                   {/* 화물 정보 */}
                   <div>
+                    {/* 비활성화 상태 안내 메시지 - 수정 모드에서는 표시하지 않음 */}
+                    {!editMode && !isManagerSelected && (
+                      <div className="mb-3 p-3 bg-muted/50 border border-dashed border-muted-foreground/30 rounded-md">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Info className="h-4 w-4" />
+                          <span>
+                            {!isCompanySelected 
+                              ? "화주 회사를 먼저 선택해주세요." 
+                              : "담당자를 선택한 후 화물 정보를 입력할 수 있습니다."
+                            }
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    
                     <RegisterCargoInfoForm
                       companyId={selectedCompanyId || undefined}
                       compact={true}
-                      enabled={!editMode}
+                      enabled={!editMode && isManagerSelected} // 담당자 선택 후 활성화
                       onCargoSelect={(cargo) => {
                         // 화물 정보 자동 입력
                         setWeightType(cargo.requestedVehicleWeight as any);
@@ -930,8 +979,26 @@ const {
                         setCargoType(cargo.cargoName.slice(0, 38)); // 38자 제한
                         setRemark(cargo.memo || '');
                       }}
-                      disabled={editMode}
-                      onDisabledClick={() => handleDisabledFieldClick('cargoType')}
+                      disabled={editMode || (!editMode && !isManagerSelected)} // 수정 모드가 아니고 담당자 미선택 시에만 비활성화
+                      onDisabledClick={() => {
+                        if (editMode) {
+                          handleDisabledFieldClick('cargoType');
+                        } else if (!isCompanySelected) {
+                          toast({
+                            title: "회사 선택 필요",
+                            description: "먼저 화주 회사를 선택해주세요.",
+                            variant: "default",
+                          });
+                        } else if (!isManagerSelected) {
+                          toast({
+                            title: "담당자 선택 필요",
+                            description: "먼저 담당자를 선택해주세요.",
+                            variant: "default",
+                          });
+                        } else {
+                          handleDisabledFieldClick('cargoType');
+                        }
+                      }}
                       // 폼 데이터 연동
                       weightType={registerData.weightType}
                       vehicleType={registerData.vehicleType}
@@ -954,15 +1021,48 @@ const {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     
                     {/* 상차 정보 */}
-                    <Card className="h-full">
+                    <Card className={cn("h-full", !editMode && !isManagerSelected && "opacity-60")}>
                       <CardContent className="h-full">
+                        {/* 비활성화 상태 안내 메시지 - 수정 모드에서는 표시하지 않음 */}
+                        {!editMode && !isManagerSelected && (
+                          <div className="mb-3 p-2 bg-muted/50 border border-dashed border-muted-foreground/30 rounded-md">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Info className="h-3 w-3" />
+                              <span>
+                                {!isCompanySelected 
+                                  ? "회사 선택 필요" 
+                                  : "담당자 선택 필요"
+                                }
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        
                         <LocationFormVer01
                           type="departure"
                           locationInfo={registerData.departure}
                           onChange={(info) => setDeparture(info as any)}
                           compact={true}
-                          disabled={editMode && !isEditable('departure')}
-                          onDisabledClick={() => handleDisabledFieldClick('departure')}
+                          disabled={editMode && !isEditable('departure') || (!editMode && !isManagerSelected)} // 수정 모드가 아니고 담당자 미선택 시에만 비활성화
+                          onDisabledClick={() => {
+                            if (editMode) {
+                              handleDisabledFieldClick('departure');
+                            } else if (!isCompanySelected) {
+                              toast({
+                                title: "회사 선택 필요",
+                                description: "먼저 화주 회사를 선택해주세요.",
+                                variant: "default",
+                              });
+                            } else if (!isManagerSelected) {
+                              toast({
+                                title: "담당자 선택 필요",
+                                description: "먼저 담당자를 선택해주세요.",
+                                variant: "default",
+                              });
+                            } else {
+                              handleDisabledFieldClick('departure');
+                            }
+                          }}
                           companyId={selectedCompanyId || ''}
                           onReset={locationResetTrigger > 0 ? () => {} : undefined}
                         />
@@ -970,15 +1070,48 @@ const {
                     </Card>
 
                     {/* 하차 정보 */}
-                    <Card className="h-full">
+                    <Card className={cn("h-full", !editMode && !isManagerSelected && "opacity-60")}>
                       <CardContent className="h-full">
+                        {/* 비활성화 상태 안내 메시지 - 수정 모드에서는 표시하지 않음 */}
+                        {!editMode && !isManagerSelected && (
+                          <div className="mb-3 p-2 bg-muted/50 border border-dashed border-muted-foreground/30 rounded-md">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Info className="h-3 w-3" />
+                              <span>
+                                {!isCompanySelected 
+                                  ? "회사 선택 필요" 
+                                  : "담당자 선택 필요"
+                                }
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        
                         <LocationFormVer01
                           type="destination"
                           locationInfo={registerData.destination}
                           onChange={(info) => setDestination(info as any)}
                           compact={true}
-                          disabled={editMode && !isEditable('destination')}
-                          onDisabledClick={() => handleDisabledFieldClick('destination')}
+                          disabled={editMode && !isEditable('destination') || (!editMode && !isManagerSelected)} // 수정 모드가 아니고 담당자 미선택 시에만 비활성화
+                          onDisabledClick={() => {
+                            if (editMode) {
+                              handleDisabledFieldClick('destination');
+                            } else if (!isCompanySelected) {
+                              toast({
+                                title: "회사 선택 필요",
+                                description: "먼저 화주 회사를 선택해주세요.",
+                                variant: "default",
+                              });
+                            } else if (!isManagerSelected) {
+                              toast({
+                                title: "담당자 선택 필요",
+                                description: "먼저 담당자를 선택해주세요.",
+                                variant: "default",
+                              });
+                            } else {
+                              handleDisabledFieldClick('destination');
+                            }
+                          }}
                           companyId={selectedCompanyId || ''}
                           onReset={locationResetTrigger > 0 ? () => {} : undefined}
                         />
@@ -990,7 +1123,7 @@ const {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                      {/* 운송 옵션 */}
                     <div>                   
-                      <Card>
+                      <Card className={cn("", !editMode && !isManagerSelected && "opacity-60")}>
                         <CardHeader className="flex flex-row items-center justify-between">
                           <CardTitle className="text-md flex items-center">
                             <OptionsIcon className="h-5 w-5 mr-2" />
@@ -1001,16 +1134,32 @@ const {
                             variant="ghost"
                             size="icon"
                             onClick={() => setShowOptions((prev) => !prev)}
+                            disabled={!editMode && !isManagerSelected}
                           >
                             {showOptions ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                           </Button>
                         </CardHeader>
                         {showOptions && (
                           <CardContent>
+                            {/* 비활성화 상태 안내 메시지 - 수정 모드에서는 표시하지 않음 */}
+                            {!editMode && !isManagerSelected && (
+                              <div className="mb-3 p-2 bg-muted/50 border border-dashed border-muted-foreground/30 rounded-md">
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <Info className="h-3 w-3" />
+                                  <span>
+                                    {!isCompanySelected 
+                                      ? "회사 선택 필요" 
+                                      : "담당자 선택 필요"
+                                    }
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                            
                             <RegisterTransportOptionCard
                               selectedOptions={registerData.selectedOptions}
                               onToggle={toggleOption}
-                              disabled={editMode && !isEditable('selectedOptions')}
+                              disabled={editMode && !isEditable('selectedOptions') || (!editMode && !isManagerSelected)} // 수정 모드가 아니고 담당자 미선택 시에만 비활성화
                             />
                           </CardContent>
                         )}
@@ -1019,7 +1168,7 @@ const {
 
                     {/* 예상 정보 */}
                     <div className="space-y-4">                      
-                      <Card>
+                      <Card className={cn("", !editMode && !isManagerSelected && "opacity-60")}>
                         <CardHeader className="pb-3">
                           <CardTitle className="text-lg flex items-center">
                             <CalculatorIcon className="h-5 w-5 mr-2" />
@@ -1027,6 +1176,21 @@ const {
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
+                          {/* 비활성화 상태 안내 메시지 - 수정 모드에서는 표시하지 않음 */}
+                          {!editMode && !isManagerSelected && (
+                            <div className="mb-3 p-2 bg-muted/50 border border-dashed border-muted-foreground/30 rounded-md">
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Info className="h-3 w-3" />
+                                <span>
+                                  {!isCompanySelected 
+                                    ? "회사 선택 필요" 
+                                    : "담당자 선택 필요"
+                                  }
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                          
                           <RegisterEstimateInfoCard
                             estimatedDistance={registerData.estimatedDistance}
                             estimatedAmount={registerData.estimatedAmount}
@@ -1044,13 +1208,15 @@ const {
                           type="submit" 
                           size="lg" 
                           className="w-full"
-                          disabled={isSubmitting}
+                          disabled={isSubmitting || !isManagerSelected} // 담당자 미선택 시 비활성화
                         >
                           {isSubmitting ? (
                             <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                               처리 중...
                             </>
+                          ) : !isManagerSelected ? (
+                            '회사 및 담당자 선택 필요'
                           ) : (
                             '화물 등록'
                           )}
