@@ -85,6 +85,9 @@ export function CompanyManagerInfoSection({
   //
 }: ICompanyManagerInfoSectionProps) {
   const companySelected = !!selectedCompanyId;
+  const activeManagers = managers.filter((m: any) => m.status === '활성');
+  const hasManagers = activeManagers.length > 0;
+  const selectedManager = managers.find((m: any) => m.id === selectedManagerId);
 
   // 담당자 추가 성공 핸들러
   const handleAddManagerSuccess = (newManager: IBrokerCompanyManager) => {
@@ -261,42 +264,22 @@ export function CompanyManagerInfoSection({
         )}
       </div>
 
-      
-
       {/* 담당자 정보 섹션 - 회사 선택 시에만 표시 */}
       {companySelected && (
-        <div className="space-y-2">
-          <Separator className="my-2"/>      
-          <p className="text-xs text-gray-500">담당자</p>
-          {/* 담당자 배지 표시 */}
-          <div className="flex flex-wrap gap-1.5 min-h-[24px]">
-            {isAutoSettingLoading ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                <span className="text-xs">담당자 로드 중...</span>
-              </div>
-            ) : (
-              managers.filter((m: any) => m.status === '활성').map((manager) => (
-                <Badge
-                  key={manager.id}
-                  variant="outline"
-                  className={cn(
-                    "cursor-pointer px-2 py-1 text-xs hover:bg-secondary",
-                    manager.id === selectedManagerId
-                      ? "bg-primary text-white border-primary hover:bg-primary/90"
-                      : ""
-                  )}
-                  onClick={() => onSelectManager(manager)}
-                >
-                  {manager.name}
-                </Badge>
-              ))
-            )}
-          </div>
-
-          {/* 담당자 추가 버튼 - 회사가 선택되고 담당자가 로드된 후에만 표시 */}
-          {companySelected && !isAutoSettingLoading && (
-            <div className="flex justify-start">
+        <div className="space-y-4">
+          <Separator className="my-4" />
+          
+          {/* 담당자 섹션 헤더 - 개선된 레이아웃 */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-primary" />
+              <h4 className="text-sm font-semibold text-gray-900">
+                담당자 {hasManagers && `(활성 ${activeManagers.length})`}
+              </h4>
+            </div>
+            
+            {/* 담당자 추가 버튼 - Primary 스타일로 개선 */}
+            {!isAutoSettingLoading && (
               <BrokerCompanyManagerDialog
                 companyId={selectedCompanyId!}
                 mode="add"
@@ -304,48 +287,124 @@ export function CompanyManagerInfoSection({
                 trigger={
                   <Button
                     type="button"
-                    variant="outline"
                     size="sm"
-                    className="flex items-center gap-1 text-xs"
+                    className="flex items-center gap-1.5 h-8 px-3 text-sm font-medium w-full sm:w-auto justify-center"
                     disabled={loading || isAutoSettingLoading}
                   >
-                    <UserPlus className="h-3 w-3" />
+                    <UserPlus className="h-3.5 w-3.5" />
                     담당자 추가
                   </Button>
                 }
               />
+            )}
+          </div>
+
+          {/* 선택된 담당자 카드 - 상단 고정 */}
+          {selectedManager && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full overflow-hidden flex items-center justify-center">
+                  <User className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                    <p className="text-sm font-semibold text-gray-900 truncate">
+                      {selectedManager.name}
+                    </p>
+                    {/* 자동 설정 완료 배지 (담당자) */}
+                    {isManagerAutoSet && !isAutoSettingLoading && !autoSettingError && (
+                      <Badge variant="secondary" className="text-xs w-fit">
+                        <CheckCircle className="h-3 w-3 mr-1 text-green-600" />
+                        자동 설정됨
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    {selectedManager.phoneNumber && (
+                      <p className="text-xs text-gray-600 flex items-center gap-1 break-all">
+                        <Phone className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate">{selectedManager.phoneNumber}</span>
+                      </p>
+                    )}
+                    {selectedManager.email && (
+                      <p className="text-xs text-gray-600 flex items-center gap-1 break-all">
+                        <Mail className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate">{selectedManager.email}</span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
-          {(!form.watch('manager') || form.watch('manager') === '김중개') ? (
+          {/* 담당자 후보 목록 */}
+          <div className="space-y-3">
+            {isAutoSettingLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground p-3 bg-gray-50 rounded-md">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>담당자 로드 중...</span>
+              </div>
+            ) : hasManagers ? (
+              <div className="space-y-2">
+                <p className="text-xs text-gray-500 font-medium">담당자 후보</p>
+                {/* 모바일에서 가로 스크롤 허용 */}
+                <div className="overflow-x-auto">
+                  <div className="flex gap-2 min-w-max pb-1">
+                    {activeManagers.map((manager) => (
+                      <Badge
+                        key={manager.id}
+                        variant={manager.id === selectedManagerId ? "default" : "outline"}
+                        className={cn(
+                          "cursor-pointer px-3 py-1.5 text-sm font-medium transition-all duration-200 whitespace-nowrap",
+                          manager.id === selectedManagerId
+                            ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                            : "hover:bg-secondary hover:text-secondary-foreground"
+                        )}
+                        onClick={() => onSelectManager(manager)}
+                      >
+                        {manager.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* 빈 상태 개선 - 중앙 정렬된 안내와 강조 버튼 */
+              <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+                <User className="h-12 w-12 text-gray-400 mb-3" />
+                <p className="text-sm text-gray-600 mb-2 font-medium text-center">
+                  아직 등록된 담당자가 없습니다
+                </p>
+                <p className="text-xs text-gray-500 mb-4 text-center px-4">
+                  새 담당자를 추가하면 화물 등록이 더 편리해집니다
+                </p>
+                <BrokerCompanyManagerDialog
+                  companyId={selectedCompanyId!}
+                  mode="add"
+                  onSuccess={handleAddManagerSuccess}
+                  trigger={
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="flex items-center gap-2"
+                      disabled={loading || isAutoSettingLoading}
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      담당자 추가
+                    </Button>
+                  }
+                />
+              </div>
+            )}
+          </div>
+
+          {/* 담당자 미선택 상태 - 선택된 담당자가 없을 때만 표시 */}
+          {!selectedManager && hasManagers && (
             <div className="flex flex-col items-center justify-center py-4 border-2 border-dashed border-gray-300 rounded-md bg-gray-50">
               <p className="text-sm text-muted-foreground">
-                {isAutoSettingLoading ? "담당자 자동 설정 중..." : "담당자 선택해주세요"}
+                {isAutoSettingLoading ? "담당자 자동 설정 중..." : "담당자를 선택해주세요"}
               </p>              
-            </div>
-          ) : (
-            <div>
-            <div className="flex items-center justify-between rounded-md border-2 border-gray-100 p-1 px-2">
-            <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-7 h-7 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
-                <div className="text-lg">👤</div>
-              </div>
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="text-sm font-medium">{form.watch('manager')}</p>
-                  {/* 자동 설정 완료 배지 (담당자) */}
-                  {isManagerAutoSet && !isAutoSettingLoading && !autoSettingError && (
-                    <Badge variant="secondary" className="text-xs">
-                      <CheckCircle className="h-3 w-3 mr-1 text-green-600" />
-                      자동 설정됨
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-xs text-gray-500 truncate">{form.watch('managerContact')}</p>
-                <p className="text-xs text-gray-500 truncate">{form.watch('managerEmail')}</p>
-              </div>
-            </div>
-            </div>
             </div>
           )}
         </div>
