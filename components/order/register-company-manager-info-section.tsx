@@ -45,6 +45,8 @@ export interface ICompanyManagerInfoSectionProps {
   autoSettingError?: string | null;
   isCompanyAutoSet?: boolean;
   isManagerAutoSet?: boolean;
+  // 추가: 담당자 목록 리로드 함수 (선택)
+  onManagerListReload?: () => void;
 }
 
 export function CompanyManagerInfoSection({

@@ -1,8 +1,11 @@
 "use client"
 
+//react
 import React, { useEffect } from "react"
 import { UseFormReturn } from "react-hook-form"
-import * as z from "zod"
+
+
+//ui
 import { Input } from "@/components/ui/input"
 import {
   FormField,
@@ -19,7 +22,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+
+//types
 import { VehicleType, TonnageType } from "@/types/broker-driver"
+
+//utils
+import * as z from "zod"
 
 // 차량 정보 스키마
 const vehicleInfoSchema = z.object({
