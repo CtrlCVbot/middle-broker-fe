@@ -266,14 +266,14 @@ export function CompanyManagerInfoSection({
 
       {/* 담당자 정보 섹션 - 회사 선택 시에만 표시 */}
       {companySelected && (
-        <div className="space-y-4">
+        <div className="space-y-2">
           <Separator className="my-4" />
           
           {/* 담당자 섹션 헤더 - 개선된 레이아웃 */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <User className="h-4 w-4 text-primary" />
-              <h4 className="text-sm font-semibold text-gray-900">
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              {/* <User className="h-4 w-4" /> */}
+              <h4 className="text-xs font-medium">
                 담당자 {hasManagers && `(활성 ${activeManagers.length})`}
               </h4>
             </div>
@@ -288,10 +288,10 @@ export function CompanyManagerInfoSection({
                   <Button
                     type="button"
                     size="sm"
-                    className="flex items-center gap-1.5 h-8 px-3 text-sm font-medium w-full sm:w-auto justify-center"
+                    className="flex items-center gap-1.5 h-8 px-3 text-xs font-medium w-full sm:w-auto justify-center"
                     disabled={loading || isAutoSettingLoading}
                   >
-                    <UserPlus className="h-3.5 w-3.5" />
+                    <UserPlus className="h-2 w-2" />
                     담당자 추가
                   </Button>
                 }
@@ -347,7 +347,7 @@ export function CompanyManagerInfoSection({
               </div>
             ) : hasManagers ? (
               <div className="space-y-2">
-                <p className="text-xs text-gray-500 font-medium">담당자 후보</p>
+                {/* <p className="text-xs text-gray-500 font-medium">담당자 후보</p> */}
                 {/* 모바일에서 가로 스크롤 허용 */}
                 <div className="overflow-x-auto">
                   <div className="flex gap-2 min-w-max pb-1">
@@ -356,7 +356,7 @@ export function CompanyManagerInfoSection({
                         key={manager.id}
                         variant={manager.id === selectedManagerId ? "default" : "outline"}
                         className={cn(
-                          "cursor-pointer px-3 py-1.5 text-sm font-medium transition-all duration-200 whitespace-nowrap",
+                          "cursor-pointer px-3 py-1.5 text-xs font-medium transition-all duration-200 whitespace-nowrap",
                           manager.id === selectedManagerId
                             ? "bg-primary text-primary-foreground hover:bg-primary/90"
                             : "hover:bg-secondary hover:text-secondary-foreground"
