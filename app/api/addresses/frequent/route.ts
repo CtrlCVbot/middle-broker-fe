@@ -8,9 +8,9 @@ import { decodeBase64String } from '@/utils/format';
 // 주소 목록 조회
 export async function GET(req: NextRequest) {
   try {   
-
-    // 헤더에서 회사 ID 가져오기
-    const companyId = req.headers.get('x-user-company-id');
+    const { searchParams } = new URL(req.url);
+    const companyId = searchParams.get('companyId');// || req.headers.get('x-user-company-id');
+    
     if(!companyId) {
       return NextResponse.json(
         { error: 'Company ID is required' },

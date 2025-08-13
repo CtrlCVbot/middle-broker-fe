@@ -27,7 +27,7 @@ export class AddressService {
    * @param params 검색 파라미터
    */
   static async getAddresses(params: IAddressSearchParams): Promise<IAddressResponse> {
-    const { page = 1, limit = 10, search = '', type = '' } = params;
+    const { page = 1, limit = 10, search = '', type = '', companyId } = params;
     const queryParams = new URLSearchParams();
     
     queryParams.append('page', page.toString());
@@ -35,6 +35,7 @@ export class AddressService {
     
     if (search) queryParams.append('search', search);
     if (type) queryParams.append('type', type);
+    if (companyId) queryParams.append('companyId', companyId);
     
     // 검색어가 없고 첫 페이지인 경우 더 오래 캐싱
     const useCache = !search;
@@ -85,14 +86,18 @@ export class AddressService {
   // }
 
   static async getFrequentAddresses(params: IAddressSearchParams): Promise<IAddressResponse> {
+    const { companyId } = params;
+    const queryParams = new URLSearchParams();
+    
+    if (companyId) queryParams.append('companyId', companyId);
     
     try {
       return await apiClient.get<IAddressResponse>(
-        `/addresses/frequent`, 
+        `/addresses/frequent?${queryParams.toString()}`, 
         { useCache: true, cacheLifetime: 15 * 60 * 1000 }
       );
     } catch (error) {
-      console.error('[AddressService] 주소 목록 조회 실패:', error);
+      console.error('[AddressService] 자주 사용 주소 목록 조회 실패:', error);
       throw error;
     }
   }

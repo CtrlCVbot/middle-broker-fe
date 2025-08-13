@@ -77,6 +77,7 @@ export interface IAddressSearchParams {
   limit?: number;
   search?: string;
   type?: AddressType;
+  companyId?: string; // 회사 ID 추가
 }
 
 // 레거시 주소를 새로운 형식으로 변환하는 유틸리티 타입

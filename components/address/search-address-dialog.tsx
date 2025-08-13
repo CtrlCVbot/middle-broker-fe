@@ -13,9 +13,10 @@ interface ISearchAddressDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelect: (address: IAddress) => void;
+  companyId: string; // companyId를 필수 prop으로 추가
 }
 
-export function SearchAddressDialog({ open, onOpenChange, onSelect }: ISearchAddressDialogProps) {
+export function SearchAddressDialog({ open, onOpenChange, onSelect, companyId }: ISearchAddressDialogProps) {
   // Zustand 스토어에서 주소 관련 상태 및 액션 가져오기
   const {
     addresses,
@@ -33,13 +34,14 @@ export function SearchAddressDialog({ open, onOpenChange, onSelect }: ISearchAdd
   const [activeTab, setActiveTab] = useState<string>("all");
   const [filteredAddresses, setFilteredAddresses] = useState<IAddress[]>([]);
 
-  // 컴포넌트 마운트 시 주소 데이터 로드
+  // 컴포넌트 마운트 시 주소 데이터 로드 (companyId 포함)
   useEffect(() => {
-    if (open) {
-      fetchAddresses();
-      fetchFrequentAddresses();
+    if (open && companyId) {
+      // companyId를 포함하여 주소 목록 조회
+      fetchAddresses({ companyId });
+      fetchFrequentAddresses(companyId);
     }
-  }, [open, fetchAddresses, fetchFrequentAddresses]);
+  }, [open, companyId, fetchAddresses, fetchFrequentAddresses]);
 
   // 검색 결과 필터링
   useEffect(() => {
@@ -111,6 +113,12 @@ export function SearchAddressDialog({ open, onOpenChange, onSelect }: ISearchAdd
       setFilteredAddresses(addresses);
     }
   };
+
+  // companyId가 없으면 다이얼로그를 열지 않음
+  if (!companyId) {
+    console.warn('[SearchAddressDialog] companyId가 제공되지 않았습니다.');
+    return null;
+  }
 
   // 로딩 중 표시
   const renderLoading = () => (

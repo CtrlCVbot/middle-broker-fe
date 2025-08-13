@@ -15,9 +15,10 @@ export async function GET(req: NextRequest) {
     const limit = Number(searchParams.get('limit')) || 10;
     const search = searchParams.get('search') || '';
     const type = searchParams.get('type');
+    const companyId = searchParams.get('companyId');// || req.headers.get('x-user-company-id');
 
     const offset = (page - 1) * limit;
-    const companyId = req.headers.get('x-user-company-id');
+    
     if(!companyId) {
       return NextResponse.json(
         { error: 'Company ID is required' },

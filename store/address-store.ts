@@ -23,7 +23,7 @@ interface AddressState {
   // 액션
   fetchAddresses: (params?: Partial<IAddressSearchParams>) => Promise<void>;
   fetchAddress: (id: string) => Promise<IAddress | null>;
-  fetchFrequentAddresses: () => Promise<void>;
+  fetchFrequentAddresses: (companyId?: string) => Promise<void>;
   addAddress: (address: Omit<IAddress, 'id' | 'createdAt' | 'updatedAt' | 'isFrequent' | 'createdBy' | 'updatedBy'>) => Promise<IAddress>;
   editAddress: (id: string, address: Omit<IAddress, 'id' | 'createdAt' | 'updatedAt'>) => Promise<IAddress>;
   removeAddress: (id: string) => Promise<void>;
@@ -71,11 +71,13 @@ const useAddressStore = create<AddressState>()(
             page: params?.page || currentPage,
             limit: params?.limit || itemsPerPage,
             search: params?.search !== undefined ? params.search : searchTerm,
+              
             type: params?.type !== undefined 
               ? params.type 
               : selectedType !== "all" 
                 ? selectedType as any 
-                : undefined
+                : undefined,
+            companyId: params?.companyId || undefined,
           };
           
           // API 호출
@@ -128,11 +130,12 @@ const useAddressStore = create<AddressState>()(
         }
       },
       
-      fetchFrequentAddresses: async () => {
+      fetchFrequentAddresses: async (companyId?: string) => {
         set({ isLoadingFrequent: true });
         
         try {
           const frequentAddresses = await AddressService.getFrequentAddresses({
+            companyId: companyId || undefined
           });
           set({ frequentAddresses: frequentAddresses.data, isLoadingFrequent: false });
         } catch (error: any) {

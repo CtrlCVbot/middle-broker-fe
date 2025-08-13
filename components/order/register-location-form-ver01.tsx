@@ -848,6 +848,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
         open={isAddressDialogOpen} 
         onOpenChange={setIsAddressDialogOpen}
         onSelect={handleSelectAddressFromBook}
+        companyId={companyId}
       />
     </div>
   );
