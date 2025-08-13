@@ -263,8 +263,8 @@ export const RegisterCargoInfoForm: React.FC<RegisterCargoInfoFormProps> = ({
               {/* 중량 / 차량 종류 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <div className="text-sm font-medium mb-2 flex items-center">
-                    <Weight className="h-4 w-4 mr-2 text-muted-foreground" />중량
+                  <div className="text-xs text-gray-500 mb-2 flex items-center">
+                    <Weight className="h-4 w-4 mr-2 " />중량
                   </div>
                   <Select 
                     value={weightType}
@@ -288,8 +288,8 @@ export const RegisterCargoInfoForm: React.FC<RegisterCargoInfoFormProps> = ({
                 </div>
 
                 <div>
-                  <div className="text-sm font-medium mb-2 flex items-center">
-                    <Truck className="h-4 w-4 mr-2 text-muted-foreground" />종류
+                  <div className="text-xs text-gray-500 mb-2 flex items-center">
+                    <Truck className="h-4 w-4 mr-2 " />종류
                   </div>
                   <Select 
                     value={vehicleType}
@@ -316,7 +316,7 @@ export const RegisterCargoInfoForm: React.FC<RegisterCargoInfoFormProps> = ({
               {/* 화물 품목 */}
               <div className="col-span-12 md:col-span-10 flex items-end gap-2">
                 <div className="flex-1">
-                  <div className="text-sm font-medium mb-2 flex items-center">
+                  <div className="text-xs text-gray-500 mb-2 flex items-center">
                     화물 품목
                   </div>
                   <Input
@@ -338,7 +338,7 @@ export const RegisterCargoInfoForm: React.FC<RegisterCargoInfoFormProps> = ({
               {showCargoInfo && (
                 <div className="animate-in fade-in-50 duration-200">
                   <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium">비고</div>
+                    <div className="text-xs text-gray-500">비고</div>
                   </div>
                   <Textarea
                     placeholder="비고 (선택사항)"

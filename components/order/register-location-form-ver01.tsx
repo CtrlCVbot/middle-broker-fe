@@ -529,9 +529,9 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                 {/* 회사명 / 담당자 */}
                 <div className={cn("grid gap-4", compact ? "grid-cols-2" : "grid-cols-1 md:grid-cols-2")}>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <Building className="h-5 w-5 mb-2" />
-                      <div className="text-sm font-medium mb-2">회사명</div>
+                    <div className="text-xs text-gray-500 flex items-center gap-2">
+                      <Building className="h-4 w-4 mb-2" />
+                      <div className="text-xs text-gray-500 mb-2">회사명</div>
                     </div>
                     <Input
                       value={locationInfo.company || ''}
@@ -544,9 +544,9 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                   </div>
                   
                   <div>
-                    <div className="flex items-center gap-2">
-                      <User className="h-5 w-5 mb-2" />
-                      <div className="text-sm font-medium mb-2">담당자</div>
+                    <div className="text-xs text-gray-500 flex items-center gap-2">
+                      <User className="h-4 w-4 mb-2" />
+                      <div className="text-xs text-gray-500 mb-2">담당자</div>
                     </div>
                     <Input
                       value={locationInfo.name || ''}
@@ -561,7 +561,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                 
                 {/* 연락처 */}
                 <div>
-                  <div className="text-sm font-medium mb-2">연락처</div>
+                  <div className="text-xs text-gray-500 mb-2">연락처</div>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -598,7 +598,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
             
             {/* 상세 주소 입력 */}
             <div className="mb-6">
-              <div className="text-sm font-medium mb-2">상세 주소 :</div>
+              <div className="text-xs text-gray-500 mb-2">상세 주소 :</div>
               <Input
                 value={locationInfo.detailedAddress || ''}
                 onChange={(e) => onChange({ detailedAddress: e.target.value })}
@@ -615,7 +615,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                  <div>
                    <div className="flex items-center gap-2">
                      {/* <CalendarIcon className="h-5 w-5 mb-2" /> */}
-                     <div className="text-sm font-medium mb-2">
+                     <div className="text-xs text-gray-500 mb-2">
                        {type === 'departure' ? '상차일' : '하차일'} <span className="text-destructive">*</span>
                      </div>
                    </div>
@@ -650,7 +650,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                  <div>
                    <div className="flex items-center gap-2">
                      {/* <Clock className="h-5 w-5 mb-2" /> */}
-                     <div className="text-sm font-medium mb-2">
+                     <div className="text-xs text-gray-500 mb-2">
                        {type === 'departure' ? '상차 시간' : '하차 시간'} <span className="text-destructive">*</span>
                      </div>
                    </div>
