@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Building2, Search, CheckCircle, Hash, User, Phone, Mail, Loader2 } from 'lucide-react';
+import { Building2, Search, CheckCircle, Hash, User, Phone, Mail, Loader2, UserPlus } from 'lucide-react';
 import {
   FormControl,
   FormField,
@@ -13,6 +13,9 @@ import {
 } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 import { Separator } from '@/components/ui/separator';
+// 담당자 추가 다이얼로그 import
+import { BrokerCompanyManagerDialog } from '@/components/broker/company/broker-company-manager-dialog';
+import { IBrokerCompanyManager } from '@/types/broker-company';
 
 export interface ICompanyManagerInfoSectionProps {
   form: any;
@@ -45,6 +48,8 @@ export interface ICompanyManagerInfoSectionProps {
   autoSettingError?: string | null;
   isCompanyAutoSet?: boolean;
   isManagerAutoSet?: boolean;
+  // 추가: 담당자 목록 리로드 함수
+  onManagerListReload?: () => void;
 }
 
 export function CompanyManagerInfoSection({
@@ -75,9 +80,29 @@ export function CompanyManagerInfoSection({
   autoSettingError = null,
   isCompanyAutoSet = false,
   isManagerAutoSet = false,
+  // 추가: 담당자 목록 리로드 함수
+  onManagerListReload,
   //
 }: ICompanyManagerInfoSectionProps) {
   const companySelected = !!selectedCompanyId;
+
+  // 담당자 추가 성공 핸들러
+  const handleAddManagerSuccess = (newManager: IBrokerCompanyManager) => {
+    console.log('✅ 담당자 추가 완료:', newManager.name);
+    
+    // 담당자 목록 리로드
+    if (onManagerListReload) {
+      onManagerListReload();
+    }
+    
+    // 새로 추가된 담당자를 자동으로 선택
+    onSelectManager(newManager);
+    
+    // 폼 필드 자동 업데이트
+    form.setValue('manager', newManager.name);
+    form.setValue('managerContact', newManager.phoneNumber || '');
+    form.setValue('managerEmail', newManager.email || '');
+  };
 
   return (
     <div className="space-y-4">
@@ -268,6 +293,29 @@ export function CompanyManagerInfoSection({
               ))
             )}
           </div>
+
+          {/* 담당자 추가 버튼 - 회사가 선택되고 담당자가 로드된 후에만 표시 */}
+          {companySelected && !isAutoSettingLoading && (
+            <div className="flex justify-start">
+              <BrokerCompanyManagerDialog
+                companyId={selectedCompanyId!}
+                mode="add"
+                onSuccess={handleAddManagerSuccess}
+                trigger={
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-1 text-xs"
+                    disabled={loading || isAutoSettingLoading}
+                  >
+                    <UserPlus className="h-3 w-3" />
+                    담당자 추가
+                  </Button>
+                }
+              />
+            </div>
+          )}
 
           {(!form.watch('manager') || form.watch('manager') === '김중개') ? (
             <div className="flex flex-col items-center justify-center py-4 border-2 border-dashed border-gray-300 rounded-md bg-gray-50">

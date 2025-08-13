@@ -724,6 +724,12 @@ const { user, isLoggedIn } = useAuthStore();
                           autoSettingError={autoSettingError}
                           isCompanyAutoSet={isCompanyAutoSet}
                           isManagerAutoSet={isManagerAutoSet}
+                          // 추가: 담당자 목록 리로드 함수
+                          onManagerListReload={() => {
+                            if (selectedCompanyId) {
+                              loadManagers(selectedCompanyId);
+                            }
+                          }}
                         />
                       </CardContent>
                     </Card>

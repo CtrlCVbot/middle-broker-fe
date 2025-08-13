@@ -808,11 +808,17 @@ const {
                           }}
                           isEditMode={editMode}
                           loading={isSubmitting}
-                          // 추가: 자동 설정 관련 props
-                          isAutoSettingLoading={isAutoSettingLoading}
-                          autoSettingError={autoSettingError}
-                          isCompanyAutoSet={isCompanyAutoSet}
-                          isManagerAutoSet={isManagerAutoSet}
+                                                  // 추가: 자동 설정 관련 props
+                        isAutoSettingLoading={isAutoSettingLoading}
+                        autoSettingError={autoSettingError}
+                        isCompanyAutoSet={isCompanyAutoSet}
+                        isManagerAutoSet={isManagerAutoSet}
+                        // 추가: 담당자 목록 리로드 함수
+                        onManagerListReload={() => {
+                          if (selectedCompanyId) {
+                            loadManagers(selectedCompanyId);
+                          }
+                        }}
                         />
                       </CardContent>
                     </Card>
