@@ -21,7 +21,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "@/components/ui/use-toast";
+//import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { TruckIcon, MapPinIcon, Settings2 as OptionsIcon, Calculator as CalculatorIcon, ChevronDown, ChevronUp, PencilIcon, Info, Weight, Truck, Container, Loader2 } from "lucide-react";
 
 //store, services
@@ -206,13 +207,9 @@ const {
   
   // 비활성화된 필드 클릭 시 안내 메시지 표시
   const handleDisabledFieldClick = (fieldName: string) => {
-    if (editMode && !isEditable(fieldName)) {
-      toast({
-        title: "수정 불가",
-        description: "현재 배차 상태에서는 이 항목을 수정할 수 없습니다.",
-        variant: "default",
-      });
-    }
+         if (editMode && !isEditable(fieldName)) {
+       toast("현재 배차 상태에서는 이 항목을 수정할 수 없습니다.");
+     }
   };
 
   // 추가: 자동 설정 핵심 함수
@@ -247,22 +244,14 @@ const {
       console.log('🔄 담당자 목록 로드 시작...');
       await loadManagers(company.id);
       
-      // 성공 토스트 표시
-      toast({
-        title: "자동 설정 완료",
-        description: "로그인 정보로 회사가 자동 설정되었습니다.",
-        variant: "default",
-      });
+             // 성공 토스트 표시
+       toast.success("로그인 정보로 회사가 자동 설정되었습니다.");
       
     } catch (error) {
       console.error("❌ 자동 설정 오류:", error);
       setAutoSettingError("로그인 정보로 자동 설정 중 오류가 발생했습니다.");
-      // 에러 토스트 표시
-      toast({
-        title: "자동 설정 실패",
-        description: "수동으로 회사와 담당자를 선택해주세요.",
-        variant: "destructive",
-      });
+             // 에러 토스트 표시
+       toast.error("수동으로 회사와 담당자를 선택해주세요.");
     } finally {
       setIsAutoSettingLoading(false);
     }
@@ -342,18 +331,42 @@ const {
   
   // 폼 제출 처리 함수 업데이트
   const handleFormSubmit = async (data: any) => {
-    // 폼 유효성 검증 (회사/담당자 선택 포함)
-    console.log("폼 데이터:", registerData);
-    const isValid = validateOrderFormData(registerData, registerData.selectedCompanyId, registerData.selectedManagerId);
-    console.log("폼 유효성 검증:", isValid);
-    console.log("폼 데이터:", registerData);
-    if (!isValid) {
-      return;
-    }
+    console.log("🚀 화물 등록 버튼 클릭 - 폼 제출 시작");
+    console.log("📋 현재 폼 데이터:", registerData);
     
-    // API 호출 대신 명세서 표시를 위한 콜백 호출
-    if (onSubmit) {
-      onSubmit();
+    // 제출 중 상태 설정
+    setIsSubmitting(true);
+    
+    try {
+      // 폼 유효성 검증 (회사/담당자 선택 포함)
+      console.log("🔍 유효성 검증 시작...");
+      const isValid: boolean = validateOrderFormData(
+        registerData, 
+        registerData.selectedCompanyId, 
+        registerData.selectedManagerId
+      );
+      
+      console.log("✅ 유효성 검증 결과:", isValid);
+      
+      if (!isValid) {
+        console.log("❌ 유효성 검증 실패 - 제출 중단");
+        // showValidationError 함수에서 이미 개별 필드별 토스트를 표시하므로 
+        // 여기서는 추가 토스트를 표시하지 않음
+        return;
+      }
+      
+      console.log("🎉 유효성 검증 통과 - 화물 등록 진행");
+      
+      // API 호출 대신 명세서 표시를 위한 콜백 호출
+      if (onSubmit) {
+        onSubmit();
+      }
+      
+         } catch (error) {
+       console.error("💥 폼 제출 중 오류 발생:", error);
+       toast.error("화물 등록 중 오류가 발생했습니다. 다시 시도해주세요.");
+     } finally {
+      setIsSubmitting(false);
     }
   };
   
@@ -502,11 +515,7 @@ const {
           registerStore.setEstimatedInfo(fallbackDistance, fallbackAmount);
         }
         
-        toast({
-          title: "거리 계산 오류",
-          description: "거리 계산 중 문제가 발생했습니다. 기본값으로 설정됩니다.",
-          variant: "destructive",
-        });
+        toast.error("거리 계산 중 문제가 발생했습니다. 기본값으로 설정됩니다.");
       } finally {
         setIsCalculating(false);
       }
@@ -684,11 +693,7 @@ const {
         form.setValue("managerEmail", currentUserAsManager.email);
         
         // 담당자 자동 설정 완료 토스트
-        toast({
-          title: "담당자 자동 설정 완료",
-          description: `${currentUserAsManager.name}님이 담당자로 설정되었습니다.`,
-          variant: "default",
-        });
+        toast.success(`${currentUserAsManager.name}님이 담당자로 설정되었습니다.`);
       } else {
         console.log('⚠️ 현재 사용자를 담당자 목록에서 찾을 수 없음');
         console.log('담당자 목록에서 배차 역할을 가진 활성 담당자:', 
@@ -984,17 +989,9 @@ const {
                         if (editMode) {
                           handleDisabledFieldClick('cargoType');
                         } else if (!isCompanySelected) {
-                          toast({
-                            title: "회사 선택 필요",
-                            description: "먼저 화주 회사를 선택해주세요.",
-                            variant: "default",
-                          });
+                          toast("먼저 화주 회사를 선택해주세요.");
                         } else if (!isManagerSelected) {
-                          toast({
-                            title: "담당자 선택 필요",
-                            description: "먼저 담당자를 선택해주세요.",
-                            variant: "default",
-                          });
+                          toast("먼저 담당자를 선택해주세요.");
                         } else {
                           handleDisabledFieldClick('cargoType');
                         }
@@ -1048,17 +1045,9 @@ const {
                             if (editMode) {
                               handleDisabledFieldClick('departure');
                             } else if (!isCompanySelected) {
-                              toast({
-                                title: "회사 선택 필요",
-                                description: "먼저 화주 회사를 선택해주세요.",
-                                variant: "default",
-                              });
+                              toast("먼저 화주 회사를 선택해주세요.");
                             } else if (!isManagerSelected) {
-                              toast({
-                                title: "담당자 선택 필요",
-                                description: "먼저 담당자를 선택해주세요.",
-                                variant: "default",
-                              });
+                              toast("먼저 담당자를 선택해주세요.");
                             } else {
                               handleDisabledFieldClick('departure');
                             }
@@ -1097,17 +1086,9 @@ const {
                             if (editMode) {
                               handleDisabledFieldClick('destination');
                             } else if (!isCompanySelected) {
-                              toast({
-                                title: "회사 선택 필요",
-                                description: "먼저 화주 회사를 선택해주세요.",
-                                variant: "default",
-                              });
+                              toast("먼저 화주 회사를 선택해주세요.");
                             } else if (!isManagerSelected) {
-                              toast({
-                                title: "담당자 선택 필요",
-                                description: "먼저 담당자를 선택해주세요.",
-                                variant: "default",
-                              });
+                              toast("먼저 담당자를 선택해주세요.");
                             } else {
                               handleDisabledFieldClick('destination');
                             }
@@ -1215,8 +1196,10 @@ const {
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                               처리 중...
                             </>
+                          ) : !isCompanySelected ? (
+                            '화주 회사 선택 필요'
                           ) : !isManagerSelected ? (
-                            '회사 및 담당자 선택 필요'
+                            '담당자 선택 필요'
                           ) : (
                             '화물 등록'
                           )}
