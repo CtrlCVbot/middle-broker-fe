@@ -42,7 +42,7 @@ import {
 
 //components
 import { LocationFormVer01 } from "@/components/order/register-location-form-ver01";
-import { RegisterSuccessDialog } from '@/components/order/register-success-dialog';
+import { RegisterSuccessDialog } from '@/components/broker/order/register-success-dialog';
 import { CompanyManagerInfoSection } from '@/components/broker/order/register-company-manager-info-section';
 import { RegisterTransportOptionCard } from '@/components/broker/order/register-transport-option-card';
 import { RegisterEstimateInfoCard } from '@/components/broker/order/register-estimate-info-card';
@@ -110,6 +110,7 @@ export function OrderRegisterForm({ onSubmit, editMode = false, orderNumber }: O
   const [isManagerAutoSet, setIsManagerAutoSet] = useState(false);
   const [isManualReset, setIsManualReset] = useState(false); // 수동 초기화 여부 추적
   const [locationResetTrigger, setLocationResetTrigger] = useState(0); // LocationFormVer01 초기화 트리거
+  const [managersLoadedForCompany, setManagersLoadedForCompany] = useState<string | null>(null); // 담당자 목록이 로드된 업체 ID
   
   const { setFilter } = useCompanyStore();
   const companiesQuery = useCompanies();
@@ -119,7 +120,7 @@ const {
   managers: brokerManagers,
   isLoading: isLoadingManagers,
   setFilter: setManagerFilter,
-  loadManagers,
+  loadManagers,  
   currentCompanyId
 } = useBrokerCompanyManagerStore();
 
@@ -263,40 +264,7 @@ const {
     }
   };
   
-  // 추가: 담당자 목록 로드 후 현재 사용자 자동 선택
-  useEffect(() => {
-    // 조건: 회사 선택됨 + 담당자 미선택 + 담당자 목록 존재 + 현재 로그인한 사용자 존재
-    if (
-      selectedCompanyId && 
-      !selectedManagerId && 
-      brokerManagers.length > 0 && 
-      user?.email &&
-      !editMode
-    ) {
-      const currentUserAsManager = brokerManagers.find(
-        m => m.email === user.email && m.status === '활성'
-      );
-      
-      if (currentUserAsManager) {
-        console.log('✅ 현재 사용자를 담당자로 자동 설정:', currentUserAsManager.name);
-        setSelectedManagerId(currentUserAsManager.id);
-        setStoreManagerId(currentUserAsManager.id);
-        setIsManagerAutoSet(true); // 자동 설정 표시
-        form.setValue("manager", currentUserAsManager.name);
-        form.setValue("managerContact", currentUserAsManager.phoneNumber || "");
-        form.setValue("managerEmail", currentUserAsManager.email);
-        
-        // 담당자 자동 설정 완료 토스트
-        toast({
-          title: "담당자 자동 설정 완료",
-          description: `${currentUserAsManager.name}님이 담당자로 설정되었습니다.`,
-          variant: "default",
-        });
-      } else {
-        console.log('⚠️ 현재 사용자를 담당자 목록에서 찾을 수 없음');
-      }
-    }
-  }, [selectedCompanyId, brokerManagers, user?.email, selectedManagerId, editMode]);
+  
 
   // React Hook Form 초기화 함수
   const initForm = () => {
@@ -640,8 +608,65 @@ const {
     if (selectedCompanyId) {
       console.log('🔍 선택된 회사 ID로 담당자 목록 로드:', selectedCompanyId);
       loadManagers(selectedCompanyId);
+      // 담당자 목록 로드 시작 시 해당 업체 ID 기록
+      setManagersLoadedForCompany(selectedCompanyId);
     }
   }, [selectedCompanyId, loadManagers]);
+
+  // 담당자 목록 로드 완료 감지 및 자동 선택
+  useEffect(() => {
+    // 담당자 목록 로드가 완료되었고, 해당 업체의 담당자 목록인 경우에만 자동 선택 실행
+    if (
+      !isLoadingManagers && 
+      managersLoadedForCompany === selectedCompanyId &&
+      selectedCompanyId && 
+      brokerManagers.length > 0
+    ) {
+      console.log('🎯 담당자 목록 로드 완료, 자동 선택 로직 실행');
+      
+      // 이미 담당자가 선택되어 있거나 수정 모드인 경우 스킵
+      if (selectedManagerId || editMode) {
+        console.log('⏭️ 담당자 이미 선택됨 또는 수정 모드로 자동 선택 스킵');
+        return;
+      }
+
+      // 현재 로그인한 사용자가 있는지 확인
+      if (!user?.email) {
+        console.log('⏭️ 로그인한 사용자 정보 없음으로 자동 선택 스킵');
+        return;
+      }
+
+      // 배차 역할을 가진 활성 담당자 찾기
+      const currentUserAsManager = brokerManagers.find(
+        m => m.roles.includes('배차') && m.status === '활성'
+      );
+
+      console.log('brokerManagers-->', brokerManagers);
+      console.log('currentUserAsManager-->', currentUserAsManager);
+      
+      if (currentUserAsManager) {
+        console.log('✅ 현재 사용자를 담당자로 자동 설정:', currentUserAsManager.name);
+        setSelectedManagerId(currentUserAsManager.id);
+        setStoreManagerId(currentUserAsManager.id);
+        setIsManagerAutoSet(true); // 자동 설정 표시
+        form.setValue("manager", currentUserAsManager.name);
+        form.setValue("managerContact", currentUserAsManager.phoneNumber || "");
+        form.setValue("managerEmail", currentUserAsManager.email);
+        
+        // 담당자 자동 설정 완료 토스트
+        toast({
+          title: "담당자 자동 설정 완료",
+          description: `${currentUserAsManager.name}님이 담당자로 설정되었습니다.`,
+          variant: "default",
+        });
+      } else {
+        console.log('⚠️ 현재 사용자를 담당자 목록에서 찾을 수 없음');
+        console.log('담당자 목록에서 배차 역할을 가진 활성 담당자:', 
+          brokerManagers.filter(m => m.roles.includes('배차') && m.status === '활성')
+        );
+      }
+    }
+  }, [isLoadingManagers, managersLoadedForCompany, selectedCompanyId, brokerManagers, selectedManagerId, editMode, user?.email]);
 
   // 담당자 검색 함수
   const handleManagerSearch = () => {
@@ -654,6 +679,75 @@ const {
     }
     console.log('담당자 검색:', managerSearchTerm);
   };
+
+  // 추가: 담당자 목록 로드 후 배차 담당자 자동 선택 (기존 로직 - 백업용)
+  // useEffect(() => {
+  //   console.log('🔄 자동 담당자 선택 로직 실행:', {
+  //     selectedCompanyId,
+  //     selectedManagerId,
+  //     brokerManagersLength: brokerManagers.length,
+  //     userEmail: user?.email,
+  //     editMode,
+  //     currentCompanyId,
+  //     managersLoadedForCompany,
+  //     isLoadingManagers
+  //   });
+
+  //   // 조건: 회사 선택됨 + 담당자 미선택 + 담당자 목록 존재 + 현재 로그인한 사용자 존재
+  //   // + 로딩이 완료되었는지 확인
+  //   if (
+  //     selectedCompanyId && 
+  //     !selectedManagerId && 
+  //     brokerManagers.length > 0 && 
+  //     user?.email &&
+  //     !editMode &&
+  //     !isLoadingManagers // 로딩이 완료되었는지 확인
+  //   ) {
+  //     console.log('✅ 자동 선택 조건 충족, 배차 담당자 검색 시작');
+      
+  //     const currentUserAsManager = brokerManagers.find(
+  //       m => m.roles.includes('배차') && m.status === '활성'
+  //     );
+
+  //     console.log('brokerManagers-->', brokerManagers);
+  //     console.log('currentUserAsManager-->', currentUserAsManager);
+  //     console.log('currentCompanyId-->', currentCompanyId);
+  //     console.log('selectedCompanyId-->', selectedCompanyId);
+  //     console.log('managersLoadedForCompany-->', managersLoadedForCompany);
+  //     console.log('isLoadingManagers-->', isLoadingManagers);
+      
+  //     if (currentUserAsManager) {
+  //       console.log('✅ 현재 사용자를 담당자로 자동 설정:', currentUserAsManager.name);
+  //       setSelectedManagerId(currentUserAsManager.id);
+  //       setStoreManagerId(currentUserAsManager.id);
+  //       setIsManagerAutoSet(true); // 자동 설정 표시
+  //       form.setValue("manager", currentUserAsManager.name);
+  //       form.setValue("managerContact", currentUserAsManager.phoneNumber || "");
+  //       form.setValue("managerEmail", currentUserAsManager.email);
+        
+  //       // 담당자 자동 설정 완료 토스트
+  //       toast({
+  //         title: "담당자 자동 설정 완료",
+  //         description: `${currentUserAsManager.name}님이 담당자로 설정되었습니다.`,
+  //         variant: "default",
+  //       });
+  //     } else {
+  //       console.log('⚠️ 현재 사용자를 담당자 목록에서 찾을 수 없음');
+  //       console.log('담당자 목록에서 배차 역할을 가진 활성 담당자:', 
+  //         brokerManagers.filter(m => m.roles.includes('배차') && m.status === '활성')
+  //       );
+  //     }
+  //   } else {
+  //     console.log('❌ 자동 선택 조건 미충족:', {
+  //       hasSelectedCompany: !!selectedCompanyId,
+  //       hasSelectedManager: !!selectedManagerId,
+  //       hasManagers: brokerManagers.length > 0,
+  //       hasUserEmail: !!user?.email,
+  //       isEditMode: editMode,
+  //       isLoading: isLoadingManagers
+  //     });
+  //   }
+  // }, [selectedCompanyId, brokerManagers, user?.email, selectedManagerId, editMode, currentCompanyId, managersLoadedForCompany, isLoadingManagers]);
 
   // 화물 정보 초기화 함수 - useCallback으로 최적화
   const handleCargoReset = useCallback(() => {
@@ -764,6 +858,9 @@ const {
                           setAutoSettingError(null);
                           setIsCompanyAutoSet(false);
                           setIsManagerAutoSet(false);
+                          
+                          // 담당자 목록 로드 상태도 초기화
+                          setManagersLoadedForCompany(null);
                           
                           // 수동 초기화 상태 설정 (자동 설정 방지)
                           setIsManualReset(true);

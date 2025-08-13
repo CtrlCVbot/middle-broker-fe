@@ -9,6 +9,7 @@ import { DashboardTrends } from "@/components/dashboard/dashboard-trends";
 import { DashboardGeo } from "@/components/dashboard/dashboard-geo";
 import { DashboardWeight } from "@/components/dashboard/dashboard-weight";
 import { DashboardTable } from "@/components/dashboard/dashboard-table";
+import { DashboardTable as DashboardTableVer01 } from "@/components/dashboard/dashboard-table-ver01";
 import { useDashboardStore } from "@/store/dashboard-store";
 import { 
   Breadcrumb, 
@@ -80,6 +81,16 @@ export default function DashboardPage() {
                 <DashboardLog />
               </div>
             </section>
+
+            {/* 운송 상태 및 트렌드 */}            
+            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <DashboardTrends />
+              </div>
+              <div className="lg:col-span-1">
+                <DashboardTableVer01 />
+              </div>
+            </section>
             
             {/* 운송 상태 및 트렌드 */}            
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -99,7 +110,7 @@ export default function DashboardPage() {
                 <DashboardGeo />
               </div>
               <div className="lg:col-span-2">
-              <DashboardTable />
+                <DashboardTable />
               </div>
              
             </section>

@@ -19,7 +19,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { CheckCircleIcon, MapPinIcon, PackageIcon, TruckIcon, HandCoins, Phone, Loader2 } from "lucide-react";
 
 //components
-import { RegisterSuccessDialog } from '@/components/broker/order/register-success-dialog';
+import { RegisterSuccessDialog } from '@/components/order/register-success-dialog';
 
 //store, services
 import { useOrderRegisterStore } from "@/store/order-register-store";

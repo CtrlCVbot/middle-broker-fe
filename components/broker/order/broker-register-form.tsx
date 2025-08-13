@@ -156,7 +156,7 @@ export function BrokerOrderRegisterForm({ onSubmit, editMode = false, orderNumbe
       try {
         //registerOrder(values as IBrokerOrderRegisterData);
         // 등록 후 이동
-        router.push('/broker/order/list');
+        router.push('/broker/order-ver01/list');
       } catch (error) {
         console.error('등록 실패:', error);
       }

@@ -155,7 +155,7 @@ export function BundleMatchingList({
               <TableHead className="text-right">정산 추가금</TableHead>
               <TableHead className="text-right">총 청구금액</TableHead>
               <TableHead className="text-center">세금계산서</TableHead>
-              <TableHead className="text-center">입금</TableHead>
+              <TableHead className="text-center">지급</TableHead>
               <TableHead>담당자</TableHead>
             </TableRow>
           </TableHeader>

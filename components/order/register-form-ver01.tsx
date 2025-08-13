@@ -43,7 +43,7 @@ import {
 //components
 import { LocationFormVer01 } from "@/components/order/register-location-form-ver01";
 import { RegisterSuccessDialog } from '@/components/order/register-success-dialog';
-import { CompanyManagerInfoSection } from '@/components/broker/order/register-company-manager-info-section';
+import { CompanyManagerInfoSection } from '@/components/order/register-company-manager-info-section';
 import { RegisterTransportOptionCard } from '@/components/broker/order/register-transport-option-card';
 import { RegisterEstimateInfoCard } from '@/components/broker/order/register-estimate-info-card';
 import { OrderStepProgress } from "@/components/order/order-step-progress";

@@ -27,7 +27,7 @@ export default function OrderRegisterPage() {
   // 등록 완료 후 처리
   const handleRegisterSuccess = () => {
     // 화물 리스트 페이지로 이동
-    router.push("/order/list");
+    //router.push("/order/list");
   };
   
   return (

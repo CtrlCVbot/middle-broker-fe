@@ -42,7 +42,7 @@ import {
 
 //components
 import { LocationFormVer01 } from "@/components/order/register-location-form-ver01";
-import { RegisterSuccessDialog } from '@/components/order/register-success-dialog';
+import { RegisterSuccessDialog } from '@/components/broker/order/register-success-dialog';
 import { CompanyManagerInfoSection } from '@/components/broker/order/register-company-manager-info-section';
 import { RegisterTransportOptionCard } from '@/components/broker/order/register-transport-option-card';
 import { RegisterEstimateInfoCard } from '@/components/broker/order/register-estimate-info-card';
@@ -260,9 +260,12 @@ const {
       setIsAutoSettingLoading(false);
     }
   };
+
+  
   
   // 추가: 담당자 목록 로드 후 현재 사용자 자동 선택
   useEffect(() => {
+    console.log('brokerManagers-->', brokerManagers);
     // 조건: 회사 선택됨 + 담당자 미선택 + 담당자 목록 존재 + 현재 로그인한 사용자 존재
     if (
       selectedCompanyId && 
@@ -271,8 +274,12 @@ const {
       user?.email &&
       !editMode
     ) {
+      // const currentUserAsManager = brokerManagers.find(
+      //   m => m.email === user.email && m.status === '활성'
+      // );
+      console.log('brokerManagers-->', brokerManagers);
       const currentUserAsManager = brokerManagers.find(
-        m => m.email === user.email && m.status === '활성'
+        m => m.position === '배차' && m.status === '활성'
       );
       
       if (currentUserAsManager) {
@@ -332,7 +339,7 @@ const {
     }
   });
 
-  // 추가: 컴포넌트 마운트 시 자동 설정 실행 - 주선사 모드에서는 사용하지 않음, 하지만 삭제금지!
+  // // 추가: 컴포넌트 마운트 시 자동 설정 실행 - 주선사 모드에서는 사용하지 않음, 하지만 삭제금지!
   // useEffect(() => {
   //   // 조건: 로그인 상태 + 등록 모드 + 회사 미선택 + 사용자에 회사ID 존재 + 수동 초기화 안함
   //   if (

@@ -71,10 +71,32 @@ export function DashboardOverview() {
   
   return (
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-2">
+
+      {/* 화주 업체 로고 */}
+      <Card className="overflow-hidden border relative w-full h-45 hidden sm:block">
+        {/* 배경 이미지 */}
+        {/* <Image
+          src="/images/globe-bg.svg"
+          alt="background"
+          fill
+          className="object-cover"
+        /> */}
+
+        {/* 카드 콘텐츠 - 중앙 로고 */}
+        <CardContent className="relative z-10 flex flex-col items-center justify-center h-full p-6">
+          <div className="rounded-full p-2 bg-green-100">
+            <Image
+              src="/globe.svg"
+              alt="logo"
+              fill
+            />
+          </div>
+        </CardContent>
+      </Card>
       
       {/* 월간 운송 건수 카드 */}
-      <Card className="overflow-hidden border">
-        <CardContent className="p-6">
+      <Card className="overflow-hidden border h-45">
+        <CardContent>
           <div className="flex flex-col items-center space-y-4">
             <div className="rounded-full p-2 bg-blue-100">
               <TruckIcon className="h-6 w-6 text-blue-600" />
@@ -96,8 +118,8 @@ export function DashboardOverview() {
       </Card>
 
       {/* 월간 운송 비용 카드 */}
-      <Card className="overflow-hidden border">
-        <CardContent className="p-6">
+      <Card className="overflow-hidden border h-45">
+        <CardContent>
           <div className="flex flex-col items-center space-y-4">
             <div className="rounded-full p-2 bg-red-100">
               <Wallet className="h-6 w-6 text-red-600" />
@@ -119,8 +141,8 @@ export function DashboardOverview() {
       </Card>      
 
       {/* 평균 운송비 카드 */}
-      <Card className="overflow-hidden border">
-        <CardContent className="p-6">
+      <Card className="overflow-hidden border h-45">
+        <CardContent>
           <div className="flex flex-col items-center space-y-4">
             <div className="rounded-full p-2 bg-purple-100">
               <BarChart3 className="h-6 w-6 text-purple-600" />
@@ -141,27 +163,7 @@ export function DashboardOverview() {
         </CardContent>
       </Card>
 
-      {/* 화주 업체 로고 */}
-      <Card className="overflow-hidden border relative w-full h-64 hidden sm:block">
-        {/* 배경 이미지 */}
-        {/* <Image
-          src="/images/globe-bg.svg"
-          alt="background"
-          fill
-          className="object-cover"
-        /> */}
-
-        {/* 카드 콘텐츠 - 중앙 로고 */}
-        <CardContent className="relative z-10 flex flex-col items-center justify-center h-full p-6">
-          <div className="rounded-full p-2 bg-green-100">
-            <Image
-              src="/globe.svg"
-              alt="logo"
-              fill
-            />
-          </div>
-        </CardContent>
-      </Card>
+      
     </div>
   );
 } 
