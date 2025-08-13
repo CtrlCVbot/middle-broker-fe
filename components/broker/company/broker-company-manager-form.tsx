@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import { 
   Form, 
   FormControl, 
@@ -14,14 +14,22 @@ import {
   FormLabel, 
   FormMessage 
 } from '@/components/ui/form';
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Eye, EyeOff, Mail, ChevronDown, ChevronUp } from 'lucide-react';
 import { IBrokerCompanyManager } from '@/types/broker-company';
 import { MANAGER_ROLES } from '@/utils/mockdata/mock-broker-company-managers';
 import { useBrokerCompanyManagerStore } from '@/store/broker-company-manager-store';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 // 백엔드 타입 참조를 위한 임포트 추가
 import { IUser, UserDomain, UserStatus, SystemAccessLevel } from '@/types/user';
 import { v4 as uuidv4 } from 'uuid';
@@ -35,12 +43,17 @@ interface BrokerCompanyManagerFormProps {
   onCancel?: () => void;
 }
 
-// 담당자 등록/수정 폼 스키마 정의
+const emailOptionalSchema = z.preprocess(
+  (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+  z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }).optional()
+);
+
+// 담당자 등록/수정 폼 스키마 정의 - 단순화
 const managerFormSchema = z.object({
   name: z.string().min(1, { message: '이름은 필수 입력 항목입니다.' }),  
-  password: z.string().optional(),//.min(8, { message: '비밀번호는 8자리 이상이어야 합니다.' }).optional(),
-  email: z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }),
-  phoneNumber: z.string().min(1, { message: '연락처는 필수 입력 항목입니다.' }).optional(),
+  phoneNumber: z.string().min(1, { message: '연락처는 필수 입력 항목입니다.' }),
+  email: emailOptionalSchema,
+  password: z.string().optional(),
   department: z.string().optional(),
   position: z.string().optional(),
   rank: z.string().optional(),
@@ -59,6 +72,7 @@ export function BrokerCompanyManagerForm({
   onCancel
 }: BrokerCompanyManagerFormProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const [accordionValue, setAccordionValue] = useState<string>('');
   
   const { addManager, updateManager } = useBrokerCompanyManagerStore();
   console.log('manager :', manager);
@@ -68,9 +82,9 @@ export function BrokerCompanyManagerForm({
     resolver: zodResolver(managerFormSchema),
     defaultValues: {
       name: manager?.name || '',      
-      password: '', // 수정 시 비밀번호는 비워두고 변경할 때만 입력
-      email: manager?.email || '',
       phoneNumber: manager?.phoneNumber || '',
+      email: manager?.email || '',
+      password: '', // 수정 시 비밀번호는 비워두고 변경할 때만 입력
       department: manager?.department || '',
       position: manager?.position || '',
       rank: manager?.rank || '',
@@ -106,8 +120,8 @@ export function BrokerCompanyManagerForm({
       const updatedManager: IBrokerCompanyManager = {
         ...manager,
         name: data.name,
-        email: data.email,
-        phoneNumber: data.phoneNumber || '',
+        email: data.email || '',
+        phoneNumber: data.phoneNumber,
         department: data.department || '',
         position: data.position || '',
         rank: data.rank || '',
@@ -124,20 +138,11 @@ export function BrokerCompanyManagerForm({
     } 
     // 신규 등록 모드인 경우
     else {
-      if (!data.email) {
-        console.error('❌ email가 없습니다. 유효성 검사가 제대로 작동하지 않습니다.');
-        form.setError('email', {
-          type: 'manual',
-          message: 'ID는 필수 입력 항목입니다.'
-        });
-        return;
-      }
-
       const newManager: IBrokerCompanyManager = {
         id: uuidv4(), // 클라이언트에서 임시 ID 생성
         name: data.name,
-        email: data.email,
-        phoneNumber: data.phoneNumber || '',
+        email: data.email || '',
+        phoneNumber: data.phoneNumber,
         password: data.password || '',
         department: data.department || '',
         position: data.position || '',
@@ -148,11 +153,6 @@ export function BrokerCompanyManagerForm({
         systemAccessLevel: 'broker_member' as SystemAccessLevel,
         registeredDate: new Date().toISOString() // 현재 날짜를 등록일로 설정
       };
-      
-      // 비밀번호가 입력된 경우에만 추가
-      if (data.password) {
-        newManager.password = data.password;
-      }
       
       console.log('📤 폼에서 생성된 신규 담당자 데이터:', {
         name: newManager.name,
@@ -171,7 +171,7 @@ export function BrokerCompanyManagerForm({
         e.stopPropagation(); // 이벤트 버블링 방지
         console.log('담당자 폼 제출 이벤트 발생, 기본 동작 및 버블링 방지');
         form.handleSubmit(handleSubmit)(e);
-      }} className="space-y-4">
+      }} className="space-y-6">
         {globalError && (
           <Alert variant="destructive" className="mb-4">
             <AlertTitle>오류 발생</AlertTitle>
@@ -179,215 +179,285 @@ export function BrokerCompanyManagerForm({
           </Alert>
         )}
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* 이름 */}
+        {/* 필수 정보 섹션 */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-gray-900">필수 정보</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* 이름 */}
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">이름 *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="홍길동" 
+                      className="h-10" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {/* 연락처 */}
+            <FormField
+              control={form.control}
+              name="phoneNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">연락처 *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="010-0000-0000" 
+                      className="h-10"
+                      onChange={(e) => {
+                        field.onChange(formatPhoneNumber(e.target.value));
+                      }}
+                      value={field.value}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          {/* 역할 선택 - 칩 형태로 변경 */}
           <FormField
             control={form.control}
-            name="name"
+            name="roles"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>이름 *</FormLabel>
-                <FormControl>
-                  <Input placeholder="이름을 입력하세요" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          {/* 이메일 */}
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>이메일 *</FormLabel>
-                <FormControl>
-                  <Input placeholder="이메일 주소" type="email" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-        </div>
-        
-        {/* 비밀번호 */}
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{manager ? '새 비밀번호' : '비밀번호 *'}</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input 
-                    placeholder={manager ? "변경 시에만 입력하세요" : "비밀번호를 입력하세요"} 
-                    type={showPassword ? "text" : "password"}
-                    {...field} 
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
+                <FormLabel className="text-sm font-medium">역할 *</FormLabel>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {MANAGER_ROLES.map((role) => (
+                    <Badge
+                      key={role}
+                      variant={field.value?.includes(role) ? "default" : "outline"}
+                      className={cn(
+                        "cursor-pointer px-3 h-8 rounded-full text-sm font-medium transition-all duration-200",
+                        field.value?.includes(role)
+                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                          : "hover:bg-secondary hover:text-secondary-foreground"
+                      )}
+                      onClick={() => {
+                        const updatedRoles = field.value?.includes(role)
+                          ? field.value?.filter((value) => value !== role)
+                          : [...(field.value || []), role];
+                        field.onChange(updatedRoles);
+                      }}
+                    >
+                      {role}
+                    </Badge>
+                  ))}
                 </div>
-              </FormControl>
-              <FormDescription>
-                {manager 
-                  ? '비밀번호를 변경하지 않으려면 비워두세요.' 
-                  : '8자 이상의 비밀번호가 필요합니다.'}
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           
-          
-          {/* 전화번호 */}
+          {/* 로그인 활성화 상태 */}
           <FormField
             control={form.control}
-            name="phoneNumber"
+            name="status"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>연락처 *</FormLabel>
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-sm font-medium">로그인 활성화</FormLabel>
+                  <FormDescription className="text-xs text-gray-500">
+                    비활성화 시 해당 담당자는 로그인할 수 없습니다.
+                  </FormDescription>
+                </div>
                 <FormControl>
-                  <Input 
-                    placeholder="010-0000-0000" 
-                    onChange={(e) => {
-                      field.onChange(formatPhoneNumber(e.target.value));
+                  <Switch
+                    checked={field.value === '활성'}
+                    onCheckedChange={(checked) => {
+                      field.onChange(checked ? '활성' : '비활성');
                     }}
-                    value={field.value}
                   />
                 </FormControl>
-                <FormMessage />
               </FormItem>
             )}
           />
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* 부서 */}
-          <FormField
-            control={form.control}
-            name="department"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>부서</FormLabel>
-                <FormControl>
-                  <Input placeholder="부서명" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          {/* 직책 */}
-          <FormField
-            control={form.control}
-            name="position"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>직책</FormLabel>
-                <FormControl>
-                  <Input placeholder="직책" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          {/* 직급 */}
-          <FormField
-            control={form.control}
-            name="rank"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>직급</FormLabel>
-                <FormControl>
-                  <Input placeholder="직급" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        {/* 부가 정보 섹션 */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-gray-900">부가 정보</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* 부서 */}
+            <FormField
+              control={form.control}
+              name="department"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">부서</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="예: 영업팀" 
+                      className="h-10"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* 직책 */}
+            <FormField
+              control={form.control}
+              name="position"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">직책</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="예: 대리" 
+                      className="h-10"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* 직급 */}
+            <FormField
+              control={form.control}
+              name="rank"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">직급</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="예: 사원" 
+                      className="h-10"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
         
-        {/* 역할 선택 */}
-        <FormField
-          control={form.control}
-          name="roles"
-          render={() => (
-            <FormItem>
-              <div className="mb-2">
-                <FormLabel>역할 *</FormLabel>
-                <FormDescription>
-                  담당자의 역할을 하나 이상 선택하세요
-                </FormDescription>
-              </div>
-              <div className="flex flex-wrap gap-4">
-                {MANAGER_ROLES.map((role) => (
+        <Separator />
+        
+        {/* 계정 정보 섹션 - Accordion */}
+        <Accordion 
+          type="single" 
+          collapsible 
+          value={accordionValue}
+          onValueChange={setAccordionValue}
+          className="w-full"
+        >
+          <AccordionItem value="account" className="border-none">
+            <AccordionTrigger className="flex items-center gap-2 hover:bg-gray-50 rounded-lg px-3 py-2 transition-colors">
+              <Mail className="h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-900">계정 (선택)</span>
+              {/* {accordionValue === 'account' ? (
+                <ChevronUp className="h-4 w-4 text-gray-500" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-gray-500" />
+              )} */}
+            </AccordionTrigger>
+            <AccordionContent className="pt-4">
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* 이메일 */}
                   <FormField
-                    key={role}
                     control={form.control}
-                    name="roles"
-                    render={({ field }) => {
-                      return (
-                        <FormItem key={role} className="flex flex-row items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value?.includes(role)}
-                              onCheckedChange={(checked) => {
-                                const updatedRoles = checked
-                                  ? [...field.value, role]
-                                  : field.value?.filter((value) => value !== role);
-                                field.onChange(updatedRoles);
-                              }}
-                            />
-                          </FormControl>
-                          <FormLabel className="font-normal cursor-pointer">
-                            {role}
-                          </FormLabel>
-                        </FormItem>
-                      );
-                    }}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">이메일</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="hong@example.com" 
+                            type="email" 
+                            className="h-10"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                ))}
+                  
+                  {/* 비밀번호 */}
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          {manager ? '새 비밀번호' : '비밀번호'}
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input 
+                              placeholder={manager ? "변경 시에만 입력하세요" : "비밀번호를 입력하세요"} 
+                              type={showPassword ? "text" : "password"}
+                              className="h-10 pr-10"
+                              {...field} 
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-md">
+                  미입력 시 로그인 계정이 생성되지 않습니다.
+                </div>
               </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
         
-        {/* 로그인 활성화 상태 */}
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-              <div className="space-y-0.5">
-                <FormLabel>로그인 활성화</FormLabel>
-                <FormDescription>
-                  비활성화 시 해당 담당자는 로그인할 수 없습니다.
-                </FormDescription>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value === '활성'}
-                  onCheckedChange={(checked) => {
-                    field.onChange(checked ? '활성' : '비활성');
-                  }}
-                />
-              </FormControl>
-            </FormItem>
+        {/* 하단 버튼 영역 */}
+        <div className="flex justify-end gap-3 pt-4 border-t">
+          {onCancel && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onCancel}
+              disabled={isSubmitting}
+            >
+              취소
+            </Button>
           )}
-        />
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="min-w-[100px]"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                저장 중...
+              </>
+            ) : (
+              '저장'
+            )}
+          </Button>
+        </div>
       </form>
     </Form>
   );

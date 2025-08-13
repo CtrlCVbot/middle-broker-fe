@@ -110,8 +110,8 @@ export class BrokerManagerService {
       const userData = convertBrokerManagerToUser(manager);
       
       // 필수 필드 확인
-      if (!userData.email || !userData.name) {
-        throw new Error('이메일과 이름은 필수 입력 항목입니다.');
+      if (!userData.name) {
+        throw new Error('이름은 필수 입력 항목입니다.');
       }
       
       // 비밀번호가 없는 경우 기본값 설정

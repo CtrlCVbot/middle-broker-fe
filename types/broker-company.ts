@@ -182,7 +182,7 @@ export function convertBrokerManagerToUser(
   // 백엔드 필드 형식에 맞게 변환
   const userData: IBrokerManagerRequest = {
     id: manager.id,
-    email: manager.email,
+    email: manager.email || '',
     name: manager.name,
     phone_number: manager.phoneNumber || '',
     company_id: manager.companyId,
