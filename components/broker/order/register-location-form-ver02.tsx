@@ -811,12 +811,12 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                   <div>
                     <div className="text-xs text-gray-500 flex items-center gap-2">
                       <Building className="h-4 w-4 mb-2" />
-                      <div className="text-xs text-gray-500 mb-2">회사명</div>
+                      <div className="text-xs text-gray-500 mb-2">{type === 'departure' ? '상차지명' : '하차지명'}</div>
                     </div>
                     <Input
                       value={locationInfo.company || ''}
                       onChange={(e) => onChange({ company: e.target.value })}
-                      placeholder="회사명을 입력하세요"
+                      placeholder={type === 'departure' ? '상차지명을 입력하세요' : '하차지명을 입력하세요'}
                       disabled={disabled}
                       className={disabled ? 'bg-muted' : ''}
                       onClick={handleDisabledClick}
