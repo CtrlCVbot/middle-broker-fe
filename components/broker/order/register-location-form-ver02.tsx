@@ -771,8 +771,8 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
 
             {/* 주소 표시 영역 - 주소가 선택되었을 때만 표시 */}
             {locationInfo.address && (
-              <div className="mb-4">
-                <div className="flex items-center justify-between border p-4 rounded bg-background bg-muted/30">
+              <div className="mb-4 ">
+                <div className="flex items-center justify-between p-4 rounded  bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <div className="flex flex-col text-sm">
                     <div className="font-medium text-base text-primary">
                       {locationInfo.address}
@@ -879,7 +879,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                 className={type === 'departure' ? 'hover:bg-green-800 cursor-pointer' : 'hover:bg-blue-800 cursor-pointer'}
               >
                 <Building className="h-4 w-4 mr-2" />
-                주소록에서 찾기1
+                주소록에서 찾기
               </Button>
               
               <Button 
