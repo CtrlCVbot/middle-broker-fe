@@ -321,6 +321,10 @@ export const data = {
         {
           title: "문자 메시지 발송",
           url: "/test/sms",
+        },
+        {
+          title: "오더 등록 ver02",
+          url: "/broker/order-ver02/register",
         }
       ],
     }
@@ -562,6 +566,10 @@ export const brokerData = {
         {
           title: "문자 메시지 발송",
           url: "/test/sms",
+        },
+        {
+          title: "오더 등록 ver02",
+          url: "/broker/order-ver02/register",
         }
       ],
     }
