@@ -9,6 +9,7 @@ import {
   SheetDescription,
   SheetTrigger
 } from "@/components/ui/sheet";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Plus, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IBrokerDriver } from "@/types/broker-driver";
@@ -75,12 +76,14 @@ export function BrokerDriverRegisterSheetNew({
         {trigger || defaultTrigger}
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl overflow-y-auto p-4">
-        {/* <SheetHeader className="mb-6">
-          <SheetTitle className="text-xl">{title}</SheetTitle>
+        <SheetHeader className="sr-only">
+          <SheetTitle>
+            <VisuallyHidden>{title}</VisuallyHidden>
+          </SheetTitle>
           <SheetDescription>
-            {description}
+            <VisuallyHidden>{description}</VisuallyHidden>
           </SheetDescription>
-        </SheetHeader> */}
+        </SheetHeader>
 
         <div className="px-2">
           <BrokerDriverRegisterForm
