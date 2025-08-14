@@ -82,6 +82,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
   const searchInputRef = useRef<HTMLDivElement>(null);
   const searchInputElementRef = useRef<HTMLInputElement>(null);
   const searchResultsRef = useRef<HTMLDivElement>(null);
+  const detailedAddressInputRef = useRef<HTMLInputElement>(null);
   
   // type 변환: 'departure' -> 'pickup', 'destination' -> 'delivery'
   const addressType = type === 'departure' ? 'pickup' : 'delivery';
@@ -254,6 +255,11 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
     setSearchQuery(''); // 검색어 초기화
     setSearchResults([]); // 검색 결과 초기화
     setFocusedResultIndex(-1); // 포커스 인덱스 초기화
+    
+    // 상세주소 입력창에 포커스 이동 (약간의 지연을 두어 DOM 업데이트 후 실행)
+    setTimeout(() => {
+      detailedAddressInputRef.current?.focus();
+    }, 100);
   };
   
   // 주소록에서 주소 선택 함수
@@ -305,6 +311,11 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
     }
     
     setHasSearchedAddress(true);
+    
+    // 상세주소 입력창에 포커스 이동 (약간의 지연을 두어 DOM 업데이트 후 실행)
+    setTimeout(() => {
+      detailedAddressInputRef.current?.focus();
+    }, 100);
   };
   
   // 날짜 변경 함수
@@ -501,6 +512,11 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
       longitude: location.metadata?.lng || 0
     });
     setHasSearchedAddress(true);
+    
+    // 상세주소 입력창에 포커스 이동 (약간의 지연을 두어 DOM 업데이트 후 실행)
+    setTimeout(() => {
+      detailedAddressInputRef.current?.focus();
+    }, 100);
   };
   
   // 전화번호 자동 포맷팅 함수
@@ -776,6 +792,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
               <div className="mb-6">
                 <div className="text-xs text-gray-500 mb-2">상세 주소 :</div>
                 <Input
+                  ref={detailedAddressInputRef}
                   value={locationInfo.detailedAddress || ''}
                   onChange={(e) => onChange({ detailedAddress: e.target.value })}
                   placeholder="상세 주소를 입력하세요"
