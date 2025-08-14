@@ -442,6 +442,35 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
     }
   };
 
+  // 포커스된 항목이 변경될 때 스크롤 조정
+  useEffect(() => {
+    if (focusedResultIndex >= 0 && searchResultsRef.current) {
+      const container = searchResultsRef.current;
+      const focusedElement = container.querySelector(`[data-index="${focusedResultIndex}"]`) as HTMLElement;
+      
+      if (focusedElement) {
+        // 포커스된 요소가 컨테이너의 보이는 영역 밖에 있는지 확인
+        const containerRect = container.getBoundingClientRect();
+        const elementRect = focusedElement.getBoundingClientRect();
+        
+        // 요소가 컨테이너 아래쪽에 있는 경우
+        if (elementRect.bottom > containerRect.bottom) {
+          focusedElement.scrollIntoView({ 
+            block: 'end', 
+            behavior: 'smooth' 
+          });
+        }
+        // 요소가 컨테이너 위쪽에 있는 경우
+        else if (elementRect.top < containerRect.top) {
+          focusedElement.scrollIntoView({ 
+            block: 'start', 
+            behavior: 'smooth' 
+          });
+        }
+      }
+    }
+  }, [focusedResultIndex]);
+
   // 검색 결과가 변경될 때 포커스 인덱스 초기화
   useEffect(() => {
     setFocusedResultIndex(-1);
@@ -639,6 +668,7 @@ export const LocationFormVer01: React.FC<LocationFormProps> = ({
                              <Button
                                key={result.id || `search-result-${index}`}
                                variant="ghost"
+                               data-index={index}
                                className={cn(
                                  "w-full justify-start text-left p-2 h-auto text-sm",
                                  focusedResultIndex === index && "bg-accent text-accent-foreground"
