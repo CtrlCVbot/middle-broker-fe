@@ -19,7 +19,7 @@ import {
   Upload,
 } from "lucide-react";
 
-import { BrokerDriverRegisterSheet } from "./broker-driver-register-sheet";
+import { BrokerDriverRegisterSheetNew } from "./broker-driver-register-sheet-new";
 
 interface IBrokerDriverActionButtonsProps {
   isLoading?: boolean;
@@ -82,7 +82,7 @@ export function BrokerDriverActionButtons({
         </Button>
 
         {/* 차주 등록 시트 */}
-        <BrokerDriverRegisterSheet
+        <BrokerDriverRegisterSheetNew
           open={isRegisterSheetOpen}
           onOpenChange={setIsRegisterSheetOpen}
           onRegisterSuccess={handleRegisterSuccess}

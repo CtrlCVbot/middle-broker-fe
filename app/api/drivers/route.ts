@@ -145,7 +145,7 @@ const CreateDriverSchema = z.object({
   }).nullable(),
   companyType: z.enum(['개인', '소속']).default('개인'),
   companyId: z.string().uuid().optional(),
-  businessNumber: z.string().min(10, '올바른 사업자번호 형식이 아닙니다.').optional().nullable(),
+  businessNumber: z.string().optional().nullable(),
   manufactureYear: z.string().optional(),
   isActive: z.boolean().default(true),
   inactiveReason: z.string().optional(),
