@@ -55,7 +55,7 @@ export function BrokerDriverAdditionalInfoSection({ form }: IBrokerDriverAdditio
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>은행명</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="은행 선택" />
@@ -107,7 +107,7 @@ export function BrokerDriverAdditionalInfoSection({ form }: IBrokerDriverAdditio
                     <Input 
                       placeholder="예금주명" 
                       {...field}
-                      defaultValue={watchName || field.value}
+                      value={field.value || watchName || ""}
                     />
                   </FormControl>
                   <FormDescription>
@@ -130,7 +130,7 @@ export function BrokerDriverAdditionalInfoSection({ form }: IBrokerDriverAdditio
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>화물함 종류</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="화물함 종류 선택" />
@@ -167,7 +167,7 @@ export function BrokerDriverAdditionalInfoSection({ form }: IBrokerDriverAdditio
                         className="flex-1"
                       />
                     </FormControl>
-                    <Select defaultValue="m">
+                    <Select value="m">
                       <SelectTrigger className="w-20">
                         <SelectValue />
                       </SelectTrigger>
@@ -195,7 +195,7 @@ export function BrokerDriverAdditionalInfoSection({ form }: IBrokerDriverAdditio
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>제조년도</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="제조년도 선택" />

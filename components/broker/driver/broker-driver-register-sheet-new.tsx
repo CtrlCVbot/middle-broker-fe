@@ -74,13 +74,13 @@ export function BrokerDriverRegisterSheetNew({
       <SheetTrigger asChild>
         {trigger || defaultTrigger}
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl overflow-y-auto">
-        <SheetHeader className="mb-6">
+      <SheetContent side="right" className="w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl overflow-y-auto p-4">
+        {/* <SheetHeader className="mb-6">
           <SheetTitle className="text-xl">{title}</SheetTitle>
           <SheetDescription>
             {description}
           </SheetDescription>
-        </SheetHeader>
+        </SheetHeader> */}
 
         <div className="px-2">
           <BrokerDriverRegisterForm

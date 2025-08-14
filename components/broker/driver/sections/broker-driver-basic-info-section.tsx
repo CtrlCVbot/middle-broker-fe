@@ -162,7 +162,7 @@ export function BrokerDriverBasicInfoSection({ form }: IBrokerDriverBasicInfoSec
                   <FormLabel>
                     차량종류 <span className="text-destructive">*</span>
                   </FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="차량종류 선택" />
@@ -193,7 +193,7 @@ export function BrokerDriverBasicInfoSection({ form }: IBrokerDriverBasicInfoSec
                   <FormLabel>
                     톤수 <span className="text-destructive">*</span>
                   </FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="톤수 선택" />

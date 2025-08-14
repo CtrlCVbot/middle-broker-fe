@@ -35,7 +35,7 @@ export function mapDriverFormToApiRequest(formData: any): any {
     vehicleWeight: formData.tonnage, // tonnage → vehicleWeight로 매핑
     address: addressObject,
     companyType: '개인', // 기본값
-    businessNumber: formData.businessNumber || '0000000000',
+    businessNumber: formData.businessNumber, //|| '0000000000',
     manufactureYear: formData.manufactureYear || '',
     isActive: formData.status === '활성',
     inactiveReason: formData.status === '비활성' ? '사용자에 의한 비활성화' : '',

@@ -28,7 +28,7 @@ import { ToggleGroup } from "@/components/ui/toggle-group";
 import { ToggleGroupItem } from "@/components/ui/toggle-group";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
-import { BrokerDriverRegisterSheet } from "@/components/broker/driver/broker-driver-register-sheet";
+import { BrokerDriverRegisterSheetNew } from "@/components/broker/driver/broker-driver-register-sheet-new";
 import { getDrivers } from "@/services/driver-service";
 
 // 결과 타입 정의
@@ -521,7 +521,7 @@ export default function BrokerDriverPage() {
 
         {/* 차주 수정 시트 */}
         {selectedDriver && (
-          <BrokerDriverRegisterSheet
+          <BrokerDriverRegisterSheetNew
             driver={selectedDriver}
             mode="edit"
             open={isEditSheetOpen}
