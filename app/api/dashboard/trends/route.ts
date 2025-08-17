@@ -72,6 +72,9 @@ export async function GET(req: NextRequest) {
     
     console.log(`📊 운송추이 통계 요청: companyId=${effectiveCompanyId}, 기간=${dateFrom}~${dateTo}, 추천만=${recommendedOnly}`);
     
+    
+    
+    
     // 1. 기간 내 주문 조회 (필터링)
     const orderQuery = db
       .select({

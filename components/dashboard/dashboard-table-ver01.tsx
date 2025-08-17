@@ -84,7 +84,7 @@ export function DashboardTable() {
   };
   
   return (
-    <Card className="flex flex-col" style={{ minHeight: '500px' }}>
+    <Card className="flex flex-col h-full">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg flex items-center">
           <Package className="h-5 w-5 mr-2" />

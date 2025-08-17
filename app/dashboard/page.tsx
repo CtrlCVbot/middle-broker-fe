@@ -70,24 +70,24 @@ export default function DashboardPage() {
         <div className="container mx-auto px-4">
           <div className="space-y-6">
             {/* KPI 카드 */}
-            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ gridTemplateRows: 'minmax(400px, auto)' }}>
-              <div className="lg:col-span-1">
+            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ gridTemplateRows: 'minmax(400px, 1fr)' }}>
+              <div className="lg:col-span-1 h-full">
                 <DashboardOverview />
               </div>
-              <div className="lg:col-span-1">
+              <div className="lg:col-span-1 h-full">
                 <DashboardStatus />
               </div>
-              <div className="lg:col-span-1">
+              <div className="lg:col-span-1 h-full">
                 <DashboardLog />
               </div>
             </section>
 
             {/* 운송 상태 및 트렌드 */}            
-            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ gridTemplateRows: 'minmax(500px, auto)' }}>
-              <div className="lg:col-span-2">
+            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ gridTemplateRows: 'minmax(500px, 1fr)' }}>
+              <div className="lg:col-span-2 h-full">
                 <DashboardTrends />
               </div>
-              <div className="lg:col-span-1">
+              <div className="lg:col-span-1 h-full">
                 <DashboardTableVer01 />
               </div>
             </section>

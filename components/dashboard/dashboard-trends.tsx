@@ -30,34 +30,9 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// 원래의 ChartJS 관련 라이브러리를 다시 불러옵니다
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip as ChartTooltip,
-  Legend,
-  Filler
-} from 'chart.js';
-
 // SWR 훅
 import { useTransportTrends } from "@/hooks/use-transport-trends";
 import { getCurrentUser } from "@/utils/auth";
-
-// Chart.js 컴포넌트 등록
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  ChartTooltip,
-  Legend,
-  Filler
-);
 
 // 타입 정의
 type PeriodType = "7d" | "30d";
@@ -110,6 +85,17 @@ export function DashboardTrends() {
     } : undefined
   );
 
+  // 디버깅을 위한 콘솔 로그
+  console.log('DashboardTrends Debug:', {
+    currentUser: currentUser?.companyId,
+    date_from,
+    date_to,
+    points,
+    loading,
+    error,
+    chartDataLength: points.length
+  });
+
   const handlePeriodChange = (value: string) => {
     setPeriod(value as PeriodType);
   };
@@ -118,8 +104,19 @@ export function DashboardTrends() {
     mutate();
   };
 
+  // 테스트 데이터 (개발 중에만 사용)
+  const testData = [
+    { date: '2024-01-01', orderCount: 5, orderAmount: 500000 },
+    { date: '2024-01-02', orderCount: 8, orderAmount: 800000 },
+    { date: '2024-01-03', orderCount: 12, orderAmount: 1200000 },
+    { date: '2024-01-04', orderCount: 6, orderAmount: 600000 },
+    { date: '2024-01-05', orderCount: 15, orderAmount: 1500000 },
+    { date: '2024-01-06', orderCount: 10, orderAmount: 1000000 },
+    { date: '2024-01-07', orderCount: 18, orderAmount: 1800000 },
+  ];
+
   // 데이터 포맷팅 - 서버 응답 데이터에 맞게 수정
-  const chartData = points.map((item) => {
+  const chartData = (points.length > 0 ? points : testData).map((item) => {
     const date = new Date(item.date);
     const month = date.toLocaleString('ko-KR', { month: 'short' });
     const day = date.getDate();
@@ -144,7 +141,8 @@ export function DashboardTrends() {
   const isPositiveGrowth = parseFloat(growthRate) >= 0;
 
   return (
-    <Card className="flex flex-col" style={{ minHeight: '500px' }}>
+    // <Card className="flex flex-col" style={{ minHeight: '500px' }}>
+    <Card className="flex flex-col h-full">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
           <CardTitle>운송 추이 분석</CardTitle>
@@ -184,9 +182,11 @@ export function DashboardTrends() {
         </div>
       </CardHeader>
       <CardContent className="flex-1">
-                 {loading ? (
-           <Skeleton className="flex-1 w-full" style={{ minHeight: '300px' }} />
-                 ) : error ? (
+        {loading ? (
+          <div className="flex-1 w-full flex items-center justify-center" style={{ minHeight: '300px' }}>
+            <Skeleton className="w-full h-full" />
+          </div>
+        ) : error ? (
            <div className="flex-1 w-full flex items-center justify-center" style={{ minHeight: '300px' }}>
             <div className="text-center">
               <div className="text-red-500 text-sm mb-2">데이터 로드 실패</div>
@@ -208,11 +208,11 @@ export function DashboardTrends() {
             </div>
           </div>
         ) : (
-          <div className="flex-1 w-full" style={{ minHeight: '300px' }}>
+          <div className="flex-1 w-full" style={{ minHeight: '300px', height: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={chartData}
-                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
               >
                 <CartesianGrid vertical={false} strokeDasharray="3 3" />
                 <XAxis 
@@ -220,6 +220,8 @@ export function DashboardTrends() {
                   tickLine={false} 
                   axisLine={false} 
                   tickMargin={8}
+                  fontSize={12}
+                  tick={{ fill: '#6b7280' }}
                 />
                 <YAxis 
                   yAxisId="left"
@@ -228,6 +230,8 @@ export function DashboardTrends() {
                   axisLine={false}
                   tickMargin={8}
                   tickFormatter={(value) => `${value}`}
+                  fontSize={12}
+                  tick={{ fill: '#6b7280' }}
                 />
                 <YAxis 
                   yAxisId="right"
@@ -236,17 +240,19 @@ export function DashboardTrends() {
                   axisLine={false}
                   tickMargin={8}
                   tickFormatter={(value) => `${value}만`}
+                  fontSize={12}
+                  tick={{ fill: '#6b7280' }}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <RechartsLegend />
                 <defs>
                   <linearGradient id="colorOrderCount" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0.1}/>
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
                   </linearGradient>
                   <linearGradient id="colorOrderAmount" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.1}/>
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
                   </linearGradient>
                 </defs>
                 <Area
@@ -254,7 +260,7 @@ export function DashboardTrends() {
                   type="monotone"
                   name="운송 건수"
                   dataKey="orderCount"
-                  stroke="hsl(var(--chart-2))"
+                  stroke="#3b82f6"
                   fill="url(#colorOrderCount)"
                   strokeWidth={2}
                 />
@@ -263,7 +269,7 @@ export function DashboardTrends() {
                   type="monotone"
                   name="운송 비용"
                   dataKey="orderAmount"
-                  stroke="hsl(var(--chart-1))"
+                  stroke="#10b981"
                   fill="url(#colorOrderAmount)"
                   strokeWidth={2}
                 />

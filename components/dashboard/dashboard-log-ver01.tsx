@@ -89,7 +89,7 @@ export function DashboardLog() {
   };
 
   return (
-    <Card className="flex flex-col" style={{ minHeight: '400px' }}>
+    <Card className="flex flex-col h-full">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-lg flex items-center">
           <Activity className="h-5 w-5 mr-2" />

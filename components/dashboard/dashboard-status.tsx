@@ -114,7 +114,7 @@ export function DashboardStatus() {
   };
 
   return (
-    <Card className="overflow-hidden border-1 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <Card className="overflow-hidden border-1 shadow-sm hover:shadow-md transition-shadow duration-200 h-full">
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex items-center space-x-2">
           <div className="p-2 rounded-lg bg-white shadow-sm">
