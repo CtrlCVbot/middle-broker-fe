@@ -73,7 +73,7 @@ export function DashboardOverview() {
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-2">
 
       {/* 화주 업체 로고 */}
-      <Card className="overflow-hidden border relative w-full h-45 hidden sm:block">
+      <Card className="overflow-hidden border relative w-full h-32 hidden sm:block">
         {/* 배경 이미지 */}
         {/* <Image
           src="/images/globe-bg.svg"
@@ -95,7 +95,7 @@ export function DashboardOverview() {
       </Card>
       
       {/* 월간 운송 건수 카드 */}
-      <Card className="overflow-hidden border h-45">
+      <Card className="overflow-hidden border h-32">
         <CardContent>
           <div className="flex flex-col items-center space-y-4">
             <div className="rounded-full p-2 bg-blue-100">
@@ -118,7 +118,7 @@ export function DashboardOverview() {
       </Card>
 
       {/* 월간 운송 비용 카드 */}
-      <Card className="overflow-hidden border h-45">
+      <Card className="overflow-hidden border h-32">
         <CardContent>
           <div className="flex flex-col items-center space-y-4">
             <div className="rounded-full p-2 bg-red-100">
@@ -141,7 +141,7 @@ export function DashboardOverview() {
       </Card>      
 
       {/* 평균 운송비 카드 */}
-      <Card className="overflow-hidden border h-45">
+      <Card className="overflow-hidden border h-32">
         <CardContent>
           <div className="flex flex-col items-center space-y-4">
             <div className="rounded-full p-2 bg-purple-100">

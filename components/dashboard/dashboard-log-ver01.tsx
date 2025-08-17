@@ -89,7 +89,7 @@ export function DashboardLog() {
   };
 
   return (
-    <Card className="h-full">
+    <Card className="flex flex-col" style={{ minHeight: '400px' }}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-lg flex items-center">
           <Activity className="h-5 w-5 mr-2" />
@@ -121,7 +121,7 @@ export function DashboardLog() {
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 overflow-y-auto">
         {loading.logs && logs.length === 0 ? (
           // 로딩 스켈레톤
           <div className="space-y-4">

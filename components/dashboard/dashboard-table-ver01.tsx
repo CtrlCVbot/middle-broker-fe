@@ -84,7 +84,7 @@ export function DashboardTable() {
   };
   
   return (
-    <Card className="h-full">
+    <Card className="flex flex-col" style={{ minHeight: '500px' }}>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg flex items-center">
           <Package className="h-5 w-5 mr-2" />
@@ -101,7 +101,7 @@ export function DashboardTable() {
           <RefreshCw className={loading.recentOrders ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
         </Button>
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent className="p-0 flex-1 overflow-y-auto">
         {loading.recentOrders ? (
           // 로딩 스켈레톤
           <div className="space-y-4 p-4">

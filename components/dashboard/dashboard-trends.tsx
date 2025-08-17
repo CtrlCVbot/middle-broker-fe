@@ -144,7 +144,7 @@ export function DashboardTrends() {
   const isPositiveGrowth = parseFloat(growthRate) >= 0;
 
   return (
-    <Card>
+    <Card className="flex flex-col" style={{ minHeight: '500px' }}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
           <CardTitle>운송 추이 분석</CardTitle>
@@ -183,11 +183,11 @@ export function DashboardTrends() {
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        {loading ? (
-          <Skeleton className="h-[300px] w-full" />
-        ) : error ? (
-          <div className="h-[300px] w-full flex items-center justify-center">
+      <CardContent className="flex-1">
+                 {loading ? (
+           <Skeleton className="flex-1 w-full" style={{ minHeight: '300px' }} />
+                 ) : error ? (
+           <div className="flex-1 w-full flex items-center justify-center" style={{ minHeight: '300px' }}>
             <div className="text-center">
               <div className="text-red-500 text-sm mb-2">데이터 로드 실패</div>
               <div className="text-gray-500 text-xs mb-4">{error.message}</div>
@@ -200,15 +200,15 @@ export function DashboardTrends() {
               </Button>
             </div>
           </div>
-        ) : chartData.length === 0 ? (
-          <div className="h-[300px] w-full flex items-center justify-center">
+                 ) : chartData.length === 0 ? (
+           <div className="flex-1 w-full flex items-center justify-center" style={{ minHeight: '300px' }}>
             <div className="text-center">
               <div className="text-gray-500 text-sm mb-2">표시할 데이터가 없습니다</div>
               <div className="text-gray-400 text-xs">선택한 기간에 운송 데이터가 없습니다</div>
             </div>
           </div>
         ) : (
-          <div className="h-[300px] w-full">
+          <div className="flex-1 w-full" style={{ minHeight: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={chartData}
