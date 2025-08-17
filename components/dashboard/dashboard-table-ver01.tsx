@@ -105,7 +105,7 @@ export function DashboardTable() {
         {loading.recentOrders ? (
           // 로딩 스켈레톤
           <div className="space-y-4 p-4">
-            {[1, 2, 3, 4, 5].map((i) => (
+            {[1, 2, 3].map((i) => (
               <div key={i} className="flex items-start space-x-4">
                 <Skeleton className="h-4 w-4 rounded-full mt-1" />
                 <div className="flex-1 space-y-2">
@@ -121,9 +121,9 @@ export function DashboardTable() {
             {/* 타임라인 컨테이너 */}
             <div className="space-y-0">
               {recentOrders.length > 0 ? (
-                recentOrders.map((order, index) => {
+                recentOrders.slice(0, 3).map((order, index) => {
                   const { variant, className } = getStatusBadgeStyles(order.status);
-                  const isLast = index === recentOrders.length - 1;
+                  const isLast = index === 2 || index === recentOrders.slice(0, 3).length - 1;
                   
                   return (
                     <div key={order.id} className="relative">
@@ -197,7 +197,7 @@ export function DashboardTable() {
           </div>
         )}
         
-        {/* "더 보기" 버튼 */}
+        {/* "모든 화물 보기" 버튼 */}
         {recentOrders.length > 0 && (
           <div className="flex justify-center p-4 border-t bg-muted/20">
             <Button 
@@ -205,7 +205,7 @@ export function DashboardTable() {
               onClick={() => router.push('/order/list')}
               className="w-full"
             >
-              모든 화물 목록 보기
+              모든 화물 보기
             </Button>
           </div>
         )}
