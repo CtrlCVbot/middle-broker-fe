@@ -78,8 +78,9 @@ export default function DashboardPage() {
                 <DashboardStatus />
               </div>
               <div className="lg:col-span-1 h-full">
-                <DashboardLog />
+                <DashboardTableVer01 />
               </div>
+              
             </section>
 
             {/* 운송 상태 및 트렌드 */}            
@@ -87,8 +88,9 @@ export default function DashboardPage() {
               <div className="lg:col-span-2 h-full">
                 <DashboardTrends />
               </div>
+              
               <div className="lg:col-span-1 h-full">
-                <DashboardTableVer01 />
+                <DashboardLog />
               </div>
             </section>
             

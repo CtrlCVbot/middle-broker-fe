@@ -117,7 +117,8 @@ export function DashboardLog() {
             disabled={loading.logs}
             title="수동 새로고침"
           >
-            <RefreshCw className={cn("h-4 w-4", loading.logs && "animate-spin")} />
+            <RefreshCw className={cn("h-4 w-4", (loading.logs || filters.autoRefresh) && "animate-spin")} />
+            
           </Button>
         </div>
       </CardHeader>

@@ -1,4 +1,5 @@
 import { IKPI } from '@/types/dashboard';
+import { IRecentOrder } from '@/utils/mockdata/mock-dashboard';
 // SWR로 대체되어 제거됨
 // import { IStatusCount, IGroupStat, GROUPED_ORDER_FLOW, GroupLabel } from '@/types/order';
 
@@ -185,3 +186,82 @@ export async function fetchKpiData(params: IFetchKpiParams): Promise<IFetchKpiRe
 //     };
 //   }
 // }
+
+/**
+ * 대시보드용 최근 화물 목록 조회
+ * @param companyId 회사 ID
+ * @param limit 조회할 화물 수 (기본값: 3)
+ * @returns 최근 화물 목록
+ */
+export async function fetchRecentOrders(
+  companyId: string,
+  limit: number = 3
+): Promise<{
+  success: boolean;
+  data?: IRecentOrder[];
+  error?: string;
+}> {
+  try {
+    const params = new URLSearchParams({
+      page: '1',
+      pageSize: limit.toString(),
+      companyId: companyId,
+      // 최신순으로 정렬하기 위해 추가 파라미터
+    });
+
+    const response = await fetch(`/api/orders?${params}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (result.data && Array.isArray(result.data)) {
+      // API 응답을 IRecentOrder 형식으로 변환
+      const recentOrders: IRecentOrder[] = result.data.map((order: any) => ({
+        id: order.order?.id || order.id,
+        orderNumber: order.order?.id?.slice(0, 8) || order.id?.slice(0, 8) || 'N/A',
+        status: order.order?.flowStatus || '배차대기',
+        departure: {
+          address: order.order?.pickupAddressSnapshot?.roadAddress || 
+                  order.order?.pickupAddressSnapshot?.address || 
+                  '주소 정보 없음'
+        },
+        destination: {
+          address: order.order?.deliveryAddressSnapshot?.roadAddress || 
+                  order.order?.deliveryAddressSnapshot?.address || 
+                  '주소 정보 없음'
+        },
+        amount: order.charge?.summary?.totalAmount 
+          ? `${new Intl.NumberFormat('ko-KR').format(order.charge.summary.totalAmount)}원`
+          : '0원',
+        registeredDate: order.order?.createdAt || new Date().toISOString(),
+        vehicleType: order.order?.requestedVehicleType || '카고',
+        weightType: order.order?.requestedVehicleWeight || '1톤'
+      }));
+
+      return {
+        success: true,
+        data: recentOrders
+      };
+    }
+
+    return {
+      success: false,
+      error: '데이터 형식이 올바르지 않습니다.'
+    };
+
+  } catch (error) {
+    console.error('최근 화물 목록 조회 중 오류 발생:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : '최근 화물 목록 조회 중 오류가 발생했습니다.'
+    };
+  }
+}

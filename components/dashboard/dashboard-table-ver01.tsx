@@ -62,11 +62,11 @@ const getStatusIcon = (status: OrderStatusType) => {
 
 export function DashboardTable() {
   const router = useRouter();
-  const { recentOrders, loading, refreshDashboard } = useDashboardStore();
+  const { recentOrders, loading, refreshRecentOrders } = useDashboardStore();
   
   // 새로고침 핸들러
   const handleRefresh = () => {
-    refreshDashboard();
+    refreshRecentOrders();
   };
   
   // 상세 페이지로 이동 핸들러
@@ -98,7 +98,7 @@ export function DashboardTable() {
           disabled={loading.recentOrders}
           title="새로고침"
         >
-          <RefreshCw className={loading.recentOrders ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
+          <RefreshCw className={`h-4 w-4 ${loading.recentOrders ? 'animate-spin' : ''}`} />
         </Button>
       </CardHeader>
       <CardContent className="p-0 flex-1 overflow-y-auto">

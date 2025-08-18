@@ -19,7 +19,7 @@ import {
 import { fetchOrderChangeLogsByCompanyId } from '@/services/order-service';
 import { getCurrentUser } from '@/utils/auth';
 import { IOrderChangeLog } from '@/types/broker-order';
-import { fetchKpiData } from '@/services/dashboard-service';
+import { fetchKpiData, fetchRecentOrders } from '@/services/dashboard-service';
 // SWR로 대체되어 제거됨
 // import { fetchStatusStatsData } from '@/services/dashboard-service';
 import { ymd } from '@/lib/date-kst';
@@ -161,6 +161,7 @@ interface IDashboardState {
   initDashboard: () => void;
   refreshDashboard: () => void;
   refreshLogs: () => void;
+  refreshRecentOrders: () => void;
   fetchKpi: (params: {
     companyId: string;
     date?: string;
@@ -292,7 +293,26 @@ export const useDashboardStore = create<IDashboardState>((set, get) => ({
       
       const regionStats = getRegionStats();
       const weightStats = getWeightStats();
-      const recentOrders = getRecentOrders();
+      
+      // 최근 화물 목록 실데이터 조회
+      let recentOrders: IRecentOrder[] = [];
+      if (currentUser?.companyId) {
+        try {
+          const result = await fetchRecentOrders(currentUser.companyId, 3);
+          if (result.success && result.data) {
+            recentOrders = result.data;
+          } else {
+            console.warn('최근 화물 목록 실데이터 조회 실패, 목업 데이터 사용:', result.error);
+            recentOrders = getRecentOrders();
+          }
+        } catch (error) {
+          console.error('최근 화물 목록 실데이터 조회 중 오류:', error);
+          recentOrders = getRecentOrders(); // 에러 시 목업 데이터 사용
+        }
+      } else {
+        console.warn('사용자 정보 또는 회사 ID가 없어 목업 데이터 사용');
+        recentOrders = getRecentOrders();
+      }
       
       // 실제 변경 이력 데이터 조회
       const logs = await fetchRealChangeLogData();
@@ -345,6 +365,49 @@ export const useDashboardStore = create<IDashboardState>((set, get) => ({
       // 에러 발생 시 로딩 상태만 해제
       set(state => ({
         loading: { ...state.loading, logs: false }
+      }));
+    }
+  },
+
+  // 액션: 최근 화물 목록 새로고침 (실제 API 데이터 조회)
+  refreshRecentOrders: async () => {
+    try {
+      // 로딩 상태 설정
+      set(state => ({
+        loading: { ...state.loading, recentOrders: true }
+      }));
+      
+      const currentUser = getCurrentUser();
+      if (!currentUser?.companyId) {
+        console.warn('사용자 정보 또는 회사 ID가 없습니다.');
+        set(state => ({
+          loading: { ...state.loading, recentOrders: false }
+        }));
+        return;
+      }
+      
+      // 실제 최근 화물 목록 데이터 조회
+      const result = await fetchRecentOrders(currentUser.companyId, 3);
+      
+      if (result.success && result.data) {
+        set(state => ({ 
+          recentOrders: result.data,
+          loading: { ...state.loading, recentOrders: false }
+        }));
+      } else {
+        console.warn('최근 화물 목록 조회 실패:', result.error);
+        // 에러 발생 시 목업 데이터 사용
+        set(state => ({ 
+          recentOrders: getRecentOrders(),
+          loading: { ...state.loading, recentOrders: false }
+        }));
+      }
+    } catch (error) {
+      console.error('최근 화물 목록 업데이트 중 오류 발생:', error);
+      // 에러 발생 시 목업 데이터 사용
+      set(state => ({ 
+        recentOrders: getRecentOrders(),
+        loading: { ...state.loading, recentOrders: false }
       }));
     }
   },
