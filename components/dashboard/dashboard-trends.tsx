@@ -4,7 +4,7 @@
 import { useState, useMemo } from "react";
 
 //ui
-import { TrendingUp, RefreshCw } from "lucide-react";
+import { TrendingUp, RefreshCw, ChartLine } from "lucide-react";
 import { 
   Area, 
   AreaChart, 
@@ -33,6 +33,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 // SWR 훅
 import { useTransportTrends } from "@/hooks/use-transport-trends";
 import { getCurrentUser } from "@/utils/auth";
+import { cn } from "@/lib/utils";
 
 // 타입 정의
 type PeriodType = "7d" | "30d";
@@ -186,12 +187,21 @@ export function DashboardTrends() {
     // <Card className="flex flex-col" style={{ minHeight: '500px' }}>
     <Card className="flex flex-col h-full">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <div>
+        <div className="flex items-center space-x-2">
+          <div className="p-2 rounded-lg bg-white shadow-sm">
+            <ChartLine className="h-4 w-4 text-slate-600" />
+          </div>
+          <div>
+            <CardTitle className="text-base font-semibold text-slate-800">운송 추이 분석</CardTitle>
+            <p className="text-xs text-slate-500">{period === "7d" ? "지난 7일간" : "지난 30일간"} 운송 건수 및 비용 추이</p>
+          </div>
+        </div>
+        {/* <div>
           <CardTitle>운송 추이 분석</CardTitle>
           <CardDescription>
             {period === "7d" ? "지난 7일간" : "지난 30일간"} 운송 건수 및 비용 추이
           </CardDescription>
-        </div>
+        </div> */}
         <div className="flex items-center gap-2">
           {/* <div className="flex items-center space-x-2">
             <Switch
@@ -213,14 +223,20 @@ export function DashboardTrends() {
               <SelectItem value="30d">최근 30일</SelectItem>
             </SelectContent>
           </Select>
+          <div className="flex items-center space-x-1">
           <Button 
             variant="ghost" 
             size="icon" 
+            className={cn(
+              "p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-white hover:cursor-pointer transition-all duration-200",
+              isValidating && "opacity-50 cursor-not-allowed"
+            )}
             onClick={handleRefresh}
             disabled={isValidating}
           >
             <RefreshCw className={`h-4 w-4 ${isValidating ? 'animate-spin' : ''}`} />
           </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="flex-1">

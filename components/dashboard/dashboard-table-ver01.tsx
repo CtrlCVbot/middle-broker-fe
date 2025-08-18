@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Package, RefreshCw, ArrowRight, Calendar, MapPin, Truck, Clock } from "lucide-react";
+import { Package, RefreshCw, ArrowRight, Calendar, MapPin, Truck, Clock, MoreVertical } from "lucide-react";
 
 //store
 import { useDashboardStore } from "@/store/dashboard-store";
@@ -16,6 +16,7 @@ import { useDashboardStore } from "@/store/dashboard-store";
 //utils
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 //types
 import { OrderStatusType } from "@/types/order";
@@ -86,20 +87,56 @@ export function DashboardTable() {
   return (
     <Card className="flex flex-col h-full">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg flex items-center">
+        {/* <CardTitle className="text-base font-semibold text-slate-800">
           <Package className="h-5 w-5 mr-2" />
           최근 등록된 화물
-        </CardTitle>
+        </CardTitle> */}
+        <div className="flex items-center space-x-2">
+          <div className="p-2 rounded-lg bg-white shadow-sm">
+            <Package className="h-4 w-4 text-slate-600" />
+          </div>
+          <div>
+            <CardTitle className="text-base font-semibold text-slate-800">최근 등록된 화물</CardTitle>
+            <p className="text-xs text-slate-500">오늘 기준</p>
+          </div>
+        </div>
+        <div className="flex items-center space-x-1">
         <Button 
-          variant="outline" 
+          variant="ghost" 
           size="icon" 
-          className="h-8 w-8" 
+          className={cn(
+            "p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-white hover:cursor-pointer transition-all duration-200",
+            loading.recentOrders &&"opacity-50 cursor-not-allowed"
+          )}
           onClick={handleRefresh}
           disabled={loading.recentOrders}
           title="새로고침"
         >
           <RefreshCw className={`h-4 w-4 ${loading.recentOrders ? 'animate-spin' : ''}`} />
         </Button>
+
+        <Button 
+        variant="ghost" 
+          size="icon" 
+          className="p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-white transition-colors">
+          <MoreVertical className="h-4 w-4" />
+        </Button>
+        </div>
+
+        {/* <button 
+            onClick={() => mutate()}
+            disabled={isValidating}
+            className={cn(
+              "p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-white transition-all duration-200",
+              isValidating && "opacity-50 cursor-not-allowed"
+            )}
+            title="새로고침"
+          >
+            <RefreshCw className={cn("h-4 w-4", isValidating && "animate-spin")} />
+          </button>
+          <button className="p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-white transition-colors">
+            <MoreVertical className="h-4 w-4" />
+          </button> */}
       </CardHeader>
       <CardContent className="p-0 flex-1 overflow-y-auto">
         {loading.recentOrders ? (

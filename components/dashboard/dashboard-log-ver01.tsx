@@ -91,28 +91,46 @@ export function DashboardLog() {
   return (
     <Card className="flex flex-col h-full">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg flex items-center">
-          <Activity className="h-5 w-5 mr-2" />
+        {/* <CardTitle className="text-lg flex items-center">
+          <div className="p-2 rounded-lg bg-white shadow-sm">
+          <Activity className="h-4 w-4 text-slate-600" />
+          </div>
           운송 상태 변경 로그
-        </CardTitle>
+        </CardTitle> */}
+
+        <div className="flex items-center space-x-2">
+          <div className="p-2 rounded-lg bg-white shadow-sm">
+            <Activity className="h-4 w-4 text-slate-600" />
+          </div>
+          <div>
+            <CardTitle className="text-base font-semibold text-slate-800">운송 상태 변경 로그</CardTitle>
+            <p className="text-xs text-slate-500">오늘 기준</p>
+          </div>
+        </div>
         <div className="flex items-center gap-2">
           <Button 
-            variant="outline" 
+            variant="ghost" 
             size="icon" 
-            className="h-8 w-8" 
+            className={cn(
+              "p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-white hover:cursor-pointer transition-all duration-200",
+              loading.logs && "opacity-50 cursor-not-allowed"
+            )}
             onClick={toggleAutoRefresh}
             title={filters.autoRefresh ? "자동 새로고침 중지" : "자동 새로고침 시작"}
           >
             {filters.autoRefresh ? (
-              <PauseCircle className="h-4 w-4" />
+              <PauseCircle className="h-8 w-8" />
             ) : (
-              <PlayCircle className="h-4 w-4" />
+              <PlayCircle className="h-8 w-8" />
             )}
           </Button>
           <Button 
-            variant="outline" 
+            variant="ghost" 
             size="icon" 
-            className="h-8 w-8" 
+            className={cn(
+              "p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-white hover:cursor-pointer transition-all duration-200",
+              loading.logs && "opacity-50 cursor-not-allowed"
+            )}
             onClick={handleRefresh}
             disabled={loading.logs}
             title="수동 새로고침"

@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MoreVertical, ArrowUp, ArrowDown, TrendingUp, Package, Truck, CheckCircle, Clock, RefreshCw } from "lucide-react";
+import { MoreVertical, ArrowUp, ArrowDown, TrendingUp, Package, Truck, CheckCircle, Clock, RefreshCw, ChartCandlestick } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 import { useStatusStats } from "@/hooks/use-status-stats";
@@ -130,7 +130,7 @@ export function DashboardStatus() {
             onClick={() => mutate()}
             disabled={isValidating}
             className={cn(
-              "p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-white transition-all duration-200",
+              "p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-white hover:cursor-pointer transition-all duration-200",
               isValidating && "opacity-50 cursor-not-allowed"
             )}
             title="새로고침"
