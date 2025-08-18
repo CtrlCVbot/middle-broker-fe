@@ -39,17 +39,46 @@ type PeriodType = "7d" | "30d";
 
 // 커스텀 툴팁 컴포넌트
 const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+  // 디버깅을 위한 콘솔 로그
+  console.log('CustomTooltip Debug:', {
+    active,
+    payload: payload?.map(p => ({ name: p.name, value: p.value, dataKey: p.dataKey })),
+    label
+  });
+
   if (active && payload && payload.length) {
     return (
       <div className="bg-card text-card-foreground border border-border rounded-lg shadow-sm p-2">
         <p className="font-medium text-sm">{label}</p>
-        {payload.map((entry, index) => (
-          <p key={index} className="text-xs" style={{ color: entry.color }}>
-            {entry.name === "orderAmount" 
-              ? `운송 비용: ${new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 }).format(Number(entry.value) * 10000)}` 
-              : `운송 건수: ${entry.value}건`}
-          </p>
-        ))}
+        {payload.map((entry, index) => {
+          // 디버깅: 각 entry 정보 출력
+          console.log('Tooltip Entry:', {
+            name: entry.name,
+            dataKey: entry.dataKey,
+            value: entry.value
+          });
+          
+          // dataKey를 기준으로 판단 (더 안정적)
+          if (entry.dataKey === "orderAmount") {
+            return (
+              <p key={index} className="text-xs" style={{ color: entry.color }}>
+                운송 비용: {new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 }).format(Number(entry.value) * 10000)}
+              </p>
+            );
+          } else if (entry.dataKey === "orderCount") {
+            return (
+              <p key={index} className="text-xs" style={{ color: entry.color }}>
+                운송 건수: {entry.value}건
+              </p>
+            );
+          } else {
+            return (
+              <p key={index} className="text-xs" style={{ color: entry.color }}>
+                {entry.name}: {entry.value}
+              </p>
+            );
+          }
+        })}
       </div>
     );
   }
@@ -115,17 +144,30 @@ export function DashboardTrends() {
     { date: '2024-01-07', orderCount: 18, orderAmount: 1800000 },
   ];
 
+  // 디버깅: 사용할 데이터 확인
+  console.log('Using data:', points.length > 0 ? 'API data' : 'Test data');
+  console.log('Data source:', points.length > 0 ? points : testData);
+
   // 데이터 포맷팅 - 서버 응답 데이터에 맞게 수정
   const chartData = (points.length > 0 ? points : testData).map((item) => {
     const date = new Date(item.date);
     const month = date.toLocaleString('ko-KR', { month: 'short' });
     const day = date.getDate();
     
-    return {
+    // API 데이터와 테스트 데이터의 구조 차이를 고려한 안전한 접근
+    const orderAmount = (item.orderAmount ||  0) / 10000; // 만원 단위로 변환
+    const orderCount = item.orderCount || 0;
+    
+    const formattedData = {
       date: `${month} ${day}일`, // "MM-DD" 형식으로 표시
-      orderAmount: item.orderAmount / 10000, // 만원 단위로 변환
-      orderCount: item.orderCount,
+      orderAmount: orderAmount,
+      orderCount: orderCount,
     };
+    
+    // 디버깅을 위한 콘솔 로그
+    console.log('Chart Data Item:', formattedData);
+    
+    return formattedData;
   });
 
   // 증가율 계산 (첫 데이터와 마지막 데이터 비교)

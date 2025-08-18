@@ -53,7 +53,7 @@ export function DashboardLog() {
       interval = setInterval(async () => {
         await refreshLogs();
         setRefreshCounter((prev) => prev + 1);
-      }, 10000); // 10초마다 새로고침 (API 호출 부담 고려)
+      }, 30000); // 30초마다 새로고침 (API 호출 부담 고려)
     }
     
     // 컴포넌트 언마운트 시 인터벌 정리
