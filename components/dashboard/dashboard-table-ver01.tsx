@@ -240,7 +240,7 @@ export function DashboardTable() {
             <Button 
               variant="outline" 
               onClick={() => router.push('/order/list')}
-              className="w-full"
+              className="w-full hover:cursor-pointer"
             >
               모든 화물 보기
             </Button>

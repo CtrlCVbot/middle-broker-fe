@@ -43,7 +43,7 @@ export default function DashboardPage() {
   
   return (
     <SWRConfig value={swrConfig}>
-      <header className="flex h-16 shrink-0 items-center gap-2 px-4">
+      {/* <header className="flex h-16 shrink-0 items-center gap-2 px-4">
         <div className="flex items-center gap-2 px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator
@@ -64,9 +64,33 @@ export default function DashboardPage() {
             </BreadcrumbList>
           </Breadcrumb>
         </div>
+      </header> */}
+
+      <header className="flex h-16 shrink-0 items-center gap-2 border-b">
+        <div className="flex items-center gap-2 px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator
+            orientation="vertical"
+            className="mr-2 data-[orientation=vertical]:h-4"
+          />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink href="/">                  
+                  홈
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+             
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <BreadcrumbPage>대시보드</BreadcrumbPage>                
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
       </header>
       
-      <main className="min-h-screen flex flex-col items-center pt-4">
+      <main className="min-h-screen flex flex-col items-center p-4 pt-8">
         <div className="container mx-auto px-4">
           <div className="space-y-6">
             {/* KPI 카드 */}
