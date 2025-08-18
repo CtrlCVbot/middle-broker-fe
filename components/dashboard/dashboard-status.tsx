@@ -143,7 +143,7 @@ export function DashboardStatus() {
         </div>
       </CardHeader>
       
-      <CardContent className="p-4">
+      <CardContent className="p-4 h-full flex flex-col justify-center">
         {loading ? (
           <div className="space-y-4">
             <div className="flex items-baseline justify-between">

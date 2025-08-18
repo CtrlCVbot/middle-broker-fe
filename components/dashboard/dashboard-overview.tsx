@@ -62,11 +62,15 @@ export function DashboardOverview() {
   
   // 숫자를 약식으로 표시 (예: 9.3k, 24k)
   const formatCompactNumber = (num: number): string => {
+    const formatter = new Intl.NumberFormat('ko-KR', {
+      maximumFractionDigits: 1,
+      minimumFractionDigits: 0
+    });
+  
     if (num >= 1000) {
-      return (num / 1000).toFixed(num < 10000 ? 1 : 0) + 'k';
+      return formatter.format(num / 1000) + 'k';
     }
-    console.log("num!!", num);
-    return num.toString();
+    return formatter.format(num);
   };
   
   return (
@@ -96,7 +100,7 @@ export function DashboardOverview() {
       
       {/* 월간 운송 건수 카드 */}
       <Card className="overflow-hidden border h-full">
-        <CardContent>
+        <CardContent className="h-full flex items-center justify-center">
           <div className="flex flex-col items-center space-y-4">
             <div className="rounded-full p-2 bg-blue-100">
               <TruckIcon className="h-6 w-6 text-blue-600" />
@@ -119,7 +123,7 @@ export function DashboardOverview() {
 
       {/* 월간 운송 비용 카드 */}
       <Card className="overflow-hidden border h-full">
-        <CardContent>
+        <CardContent className="h-full flex items-center justify-center">
           <div className="flex flex-col items-center space-y-4">
             <div className="rounded-full p-2 bg-red-100">
               <Wallet className="h-6 w-6 text-red-600" />
@@ -142,7 +146,7 @@ export function DashboardOverview() {
 
       {/* 평균 운송비 카드 */}
       <Card className="overflow-hidden border h-full">
-        <CardContent>
+        <CardContent className="h-full flex items-center justify-center">
           <div className="flex flex-col items-center space-y-4">
             <div className="rounded-full p-2 bg-purple-100">
               <BarChart3 className="h-6 w-6 text-purple-600" />
