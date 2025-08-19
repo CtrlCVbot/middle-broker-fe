@@ -145,7 +145,7 @@ export function LoginForm({
            주선사 테스트 계정: beckmin@naver.com / 12341234
           </button>
           <button onClick={fillTestCredentials2} className="text-blue-500 hover:underline on cursor-pointer text-sm text-muted-foreground">
-           화주 테스트 계정: park1@naver.com / 12341234
+           화주 테스트 계정: park1@example.com / 12341234
           </button>
         </div>
       </div>
