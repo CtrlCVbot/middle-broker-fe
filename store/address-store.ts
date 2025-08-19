@@ -5,6 +5,10 @@ import { IAddress, IAddressResponse, IAddressSearchParams } from '@/types/addres
 import { ToastUtils } from '@/utils/toast-utils';
 import { IApiError } from '@/utils/api-client';
 import { toast } from 'sonner';
+import { getCurrentUser } from '@/utils/auth';
+import { IUser } from '@/types/user';
+
+
 
 interface AddressState {
   // 상태
@@ -19,7 +23,8 @@ interface AddressState {
   selectedAddresses: IAddress[];
   frequentAddresses: IAddress[];
   isLoadingFrequent: boolean;
-  
+  currentUser: IUser | null;
+
   // 액션
   fetchAddresses: (params?: Partial<IAddressSearchParams>) => Promise<void>;
   fetchAddress: (id: string) => Promise<IAddress | null>;
@@ -59,7 +64,8 @@ const useAddressStore = create<AddressState>()(
       selectedAddresses: [],
       frequentAddresses: [],
       isLoadingFrequent: false,
-      
+      currentUser: getCurrentUser(),
+
       // 액션 구현
       fetchAddresses: async (params?: Partial<IAddressSearchParams>) => {
         try {
@@ -393,6 +399,7 @@ const useAddressStore = create<AddressState>()(
           page: get().currentPage,
           search: get().searchTerm,
           type: get().selectedType === 'all' ? undefined : get().selectedType as any,
+          companyId: get().currentUser?.companyId || undefined,
         };
         await get().fetchAddresses(params);
       },

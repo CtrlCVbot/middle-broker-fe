@@ -4,7 +4,7 @@
 import { useState, useMemo } from "react";
 
 //ui
-import { TrendingUp, RefreshCw, ChartLine } from "lucide-react";
+import { TrendingUp, TrendingDown, RefreshCw, ChartLine } from "lucide-react";
 import { 
   Area, 
   AreaChart, 
@@ -341,7 +341,11 @@ export function DashboardTrends() {
           <div className="grid gap-2">
             <div className="flex items-center gap-2 font-medium leading-none">
               {isPositiveGrowth ? "증가" : "감소"}하는 추세: {growthRate}% 
-              <TrendingUp className={`h-4 w-4 ${isPositiveGrowth ? 'text-green-500' : 'text-red-500'}`} />
+              {isPositiveGrowth ? (
+                <TrendingUp className={`h-4 w-4 text-green-500`} />
+              ) : (
+                <TrendingDown className={`h-4 w-4 text-red-500`} />
+              )}
             </div>
             <div className="flex items-center gap-2 leading-none text-muted-foreground">
               {period === "7d" ? "최근 7일간 데이터" : "최근 30일간 데이터"}

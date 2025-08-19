@@ -35,6 +35,9 @@ import { ChevronDown, RefreshCw, Star, StarOff } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { SidebarTrigger } from "../ui/sidebar";
+import { getCurrentUser } from "@/utils/auth";
+
+const currentUser = getCurrentUser();
 
 /**
  * 주소록 클라이언트 페이지 컴포넌트
@@ -84,15 +87,15 @@ export default function AddressClientPage() {
   
   // 컴포넌트 마운트 시 주소 목록 로드
   useEffect(() => {
-    fetchAddresses();
-    fetchFrequentAddresses();
+    fetchAddresses({companyId: currentUser?.companyId});
+    fetchFrequentAddresses(currentUser?.companyId);
   }, [fetchAddresses, fetchFrequentAddresses]);
   
   // 검색 핸들러
   const handleSearch = useCallback((term: string, type?: string) => {
     setSearchTerm(term);
     setSelectedType(type || "all");
-    fetchAddresses({ page: 1, search: term, type: type as any });
+    fetchAddresses({ page: 1, search: term, type: type as any, companyId: currentUser?.companyId });
   }, [setSearchTerm, setSelectedType, fetchAddresses]);
   
   // 페이지 변경 핸들러
@@ -177,7 +180,7 @@ export default function AddressClientPage() {
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     await refreshAddresses();
-    await fetchFrequentAddresses();
+    await fetchFrequentAddresses(currentUser?.companyId);
     setRefreshing(false);
   }, [refreshAddresses, fetchFrequentAddresses]);
   
@@ -185,7 +188,7 @@ export default function AddressClientPage() {
   const handleTabChange = useCallback((tab: string) => {
     setActiveTab(tab);
     if (tab === "frequent") {
-      fetchFrequentAddresses();
+      fetchFrequentAddresses(currentUser?.companyId);
     }
   }, [fetchFrequentAddresses]);
   
@@ -201,7 +204,7 @@ export default function AddressClientPage() {
   const renderError = () => (
     <div className="flex flex-col items-center justify-center py-12">
       <p className="text-destructive mb-2">데이터를 불러오는 중 오류가 발생했습니다.</p>
-      <Button onClick={() => fetchAddresses()} variant="outline" size="sm">
+      <Button onClick={() => handleSearch("", "all")} variant="outline" size="sm">
         <RefreshCw className="mr-2 h-4 w-4" /> 다시 시도
       </Button>
     </div>

@@ -125,8 +125,8 @@ export async function GET(request: NextRequest) {
     // 정렬 조건 설정
     const orderByClause = sortOrder === 'desc'
       ? (sortBy.startsWith('dispatch.') 
-          ? asc(getSafeOrderColumn(orderDispatches, sortBy.replace('dispatch.', '')))
-          : asc(getSafeOrderColumn(orders, sortBy)))
+          ? desc(getSafeOrderColumn(orderDispatches, sortBy.replace('dispatch.', '')))
+          : desc(getSafeOrderColumn(orders, sortBy)))
       : (sortBy.startsWith('dispatch.') 
           ? desc(getSafeOrderColumn(orderDispatches, sortBy.replace('dispatch.', '')))
           : desc(getSafeOrderColumn(orders, sortBy)));

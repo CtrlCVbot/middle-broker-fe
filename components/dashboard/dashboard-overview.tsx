@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-import { BarChart3, TruckIcon, Wallet, AlertCircle } from "lucide-react";
+import { BarChart3, TruckIcon, Wallet, AlertCircle, SquareDivide } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 //store
@@ -149,7 +149,7 @@ export function DashboardOverview() {
         <CardContent className="h-full flex items-center justify-center">
           <div className="flex flex-col items-center space-y-4">
             <div className="rounded-full p-2 bg-purple-100">
-              <BarChart3 className="h-6 w-6 text-purple-600" />
+              <SquareDivide className="h-6 w-6 text-purple-600" />
             </div>
             
             {loading.kpi ? (

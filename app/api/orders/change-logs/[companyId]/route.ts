@@ -36,7 +36,8 @@ export async function GET(
     const changeLogs = await db
       .select()
       .from(orderChangeLogs)
-      //.where(eq(orderChangeLogs.companyId, companyId))
+      .leftJoin(orders, eq(orderChangeLogs.orderId, orders.id))
+      .where(eq(orders.companyId, companyId))
       .orderBy(desc(orderChangeLogs.changedAt))
       .limit(pageSize)
       .offset(offset)
@@ -51,20 +52,20 @@ export async function GET(
 
     // 응답 데이터 변환
     const formattedLogs = changeLogs.map(log => ({
-      id: log.id,
-      orderId: log.orderId,
-      changeType: log.changeType,
+      id: log.order_change_logs.id,
+      orderId: log.order_change_logs.orderId,
+      changeType: log.order_change_logs.changeType,
       changedBy: {
-        id: log.changedBy,
-        name: log.changedByName,
-        email: log.changedByEmail,
-        accessLevel: log.changedByAccessLevel
+        id: log.order_change_logs.changedBy,
+        name: log.order_change_logs.changedByName,
+        email: log.order_change_logs.changedByEmail,
+        accessLevel: log.order_change_logs.changedByAccessLevel
       },
-      changedByRole: log.changedByRole,
-      changedAt: log.changedAt?.toISOString(),
-      oldData: log.oldData,
-      newData: log.newData,
-      reason: log.reason || ''
+      changedByRole: log.order_change_logs.changedByRole,
+      changedAt: log.order_change_logs.changedAt?.toISOString(),
+      oldData: log.order_change_logs.oldData,
+      newData: log.order_change_logs.newData,
+      reason: log.order_change_logs.reason || ''
     }));
 
     return NextResponse.json({

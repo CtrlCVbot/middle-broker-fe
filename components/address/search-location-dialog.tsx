@@ -132,6 +132,7 @@ export function SearchLocationDialog({ open, onOpenChange, onSelect }: ISearchLo
                         <div className="flex items-start text-sm text-muted-foreground pl-6">
                           <MapPin className="h-3.5 w-3.5 mr-2 shrink-0 mt-0.5" />
                           <span>도로명: {result.road_address?.address_name}</span>
+                          
                         </div>
                       )}
                       {(result.address_type === 'ROAD' || result.address_type === 'ROAD_ADDR') && (result.address?.address_name) && (
