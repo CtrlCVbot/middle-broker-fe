@@ -41,45 +41,16 @@ export default function LoginPage() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-white">
-      <motion.div
+      {/* 정적인 FHD 썸네일 이미지 배경 */}
+      <motion.img
+        src="/images/thumbnail_fhd.jpg"
+        alt="Background thumbnail"
         initial={{ width: '100%' }}
         animate={{ width: '500px' }}
         transition={{ duration: 1.4, ease: 'easeInOut' }}
-        className="absolute top-0 left-1/2 h-full z-0 overflow-hidden"
+        className="absolute top-0 left-1/2 h-full object-cover z-0"
         style={{ transform: 'translateX(-50%)' }}
-      >
-        {/* Video A */}
-        <motion.video
-          ref={videoARef}
-          src="/videos/mixkit-young-woman-starting-a-jeep-40036-full-hd.mp4"
-          autoPlay={isVideoA}
-          muted
-          playsInline
-          className="absolute top-0 left-0 h-full w-full object-cover"
-          animate={{
-            opacity: isVideoA ? (fadeOutA ? 0 : 1) : 0,
-            scale: isVideoA ? (fadeOutA ? 1.02 : 1) : 1,
-            filter: fadeOutA
-              ? 'blur(2px) brightness(1.15) grayscale(0.4) saturate(1.3)'
-              : 'blur(0px) brightness(1) grayscale(0) saturate(1)',
-          }}
-          transition={{ duration: 0.5, ease: 'easeInOut' }}
-        />
-
-        {/* Video B */}
-        <motion.video
-          ref={videoBRef}
-          src="/videos/mixkit-young-woman-starting-a-jeep-40036-full-hd.mp4"
-          autoPlay={!isVideoA}
-          muted
-          playsInline
-          className="absolute top-0 left-0 h-full w-full object-cover"
-          animate={{
-            opacity: isVideoA ? (fadeOutA ? 1 : 0) : 1,
-          }}
-          transition={{ duration: 0.5, ease: 'easeInOut' }}
-        />
-      </motion.div>
+      />
 
       {/* 로그인 폼 */}
       <motion.div

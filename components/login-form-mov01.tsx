@@ -66,6 +66,10 @@ export function LoginForm({
     setEmail('beckmin@naver.com');
     setPassword('12341234');
   };
+  const fillTestCredentials2 = () => {
+    setEmail('park1@naver.com');
+    setPassword('12341234');
+  };
 
   return (
     <div className="flex w-full max-w-sm flex-col gap-6">
@@ -138,9 +142,12 @@ export function LoginForm({
         </Card>
         <div className="flex justify-center text-sm text-muted-foreground mt-2">
           {/* <span>🔐 비밀번호를 잊으셨나요?</span> */}
-          <button onClick={fillTestCredentials} className="text-blue-500 hover:underline on cursor-pointer text-sm text-muted-foreground">
-            테스트 계정: beckmin@naver.com / 12341234
-          </button>
+            <button onClick={fillTestCredentials} className="text-blue-500 hover:underline on cursor-pointer text-sm text-muted-foreground">
+              주선사 테스트 계정: beckmin@naver.com / 12341234
+            </button>
+            <button onClick={fillTestCredentials2} className="text-blue-500 hover:underline on cursor-pointer text-sm text-muted-foreground">
+              화주 테스트 계정: park1@naver.com / 12341234
+            </button>
         </div>
       </div>
     </div>
