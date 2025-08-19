@@ -67,7 +67,7 @@ export function LoginForm({
     setPassword('12341234');
   };
   const fillTestCredentials2 = () => {
-    setEmail('park1@naver.com');
+    setEmail('park1@example.com');
     setPassword('12341234');
   };
 
