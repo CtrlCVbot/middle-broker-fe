@@ -50,6 +50,24 @@ export function NavUser({
   const router = useRouter()
   const { toast } = useToast()
 
+  // 사용자 정보가 없을 때의 안전한 처리
+  const safeUser = {
+    name: user?.name || "사용자",
+    email: user?.email || "user@example.com",
+    avatar: user?.avatar || null
+  }
+
+  // 사용자 이름의 이니셜 생성 (안전한 처리)
+  const getInitials = (name: string) => {
+    if (!name || name.trim() === "") return "U"
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
   const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault()
     
@@ -94,17 +112,14 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar || ""} alt={user.name} />
+                <AvatarImage src={safeUser.avatar || ""} alt={safeUser.name} />
                 <AvatarFallback className="rounded-lg">
-                  {user.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
+                  {getInitials(safeUser.name)}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate font-medium">{safeUser.name}</span>
+                <span className="truncate text-xs">{safeUser.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -118,17 +133,14 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar || ""} alt={user.name} />
+                  <AvatarImage src={safeUser.avatar || ""} alt={safeUser.name} />
                   <AvatarFallback className="rounded-lg">
-                    {user.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
+                    {getInitials(safeUser.name)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-medium">{safeUser.name}</span>
+                  <span className="truncate text-xs">{safeUser.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
